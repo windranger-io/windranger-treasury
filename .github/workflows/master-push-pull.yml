@@ -1,0 +1,29 @@
+name: Run tests
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Run-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up node
+        uses: actions/setup-node@v2.4.1
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build application
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test

@@ -1,0 +1,64 @@
+{
+  "name": "solidity-project-template",
+  "version": "0.0.3",
+  "description": "Everything you need for creating Solidity smart contract with TypeScript testing",
+  "private": true,
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/windranger-io/solidity-project-template"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "hardhat compile",
+    "clean": "hardhat clean",
+    "format": "npm run format-ts && npm run format-sol",
+    "format-ts": "prettier **/*.ts --write",
+    "format-sol": "prettier **/*.sol --write",
+    "lint": "npm run lint-ts && npm run lint-sol",
+    "lint-ts": "eslint . --ext .ts",
+    "lint-sol": "solhint ./contracts/**/*.sol",
+    "prepare": "husky install",
+    "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register 'test/**/*.test.ts'"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@typechain/ethers-v5": "^7.0.1",
+    "@typechain/hardhat": "^2.3.0",
+    "@types/bunyan": "^1.8.7",
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.7.10",
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
+    "chai": "^4.3.4",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.0.0",
+    "hardhat": "^2.6.2",
+    "husky": "^7.0.2",
+    "lint-staged": "^11.1.2",
+    "prettier": "^2.4.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.18",
+    "solhint": "^3.3.6",
+    "ts-node": "^10.2.1",
+    "typechain": "^5.1.2",
+    "typescript": "^4.4.2"
+  },
+  "dependencies": {
+    "bunyan": "^1.8.15"
+  },
+  "lint-staged": {
+    "*": [
+      "npm run format",
+      "npm run lint-ts --fix"
+    ]
+  }
+}
