@@ -14,8 +14,11 @@ WIP
 
 ---
 
-??? Funding Cycles, dated withdrawals
+??? Might still need a comptroller for querying accounts payable & receivable
 
+??? Funding Cycles, dated withdrawals / resets (could be performed in the strategies)
+
+??? Access control to the deposit & withdraw - who / at all?
 
 ### Pool of funds under control (vault)
 Must concurrently support dealing in variety of assets
