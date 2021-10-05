@@ -1,9 +1,21 @@
 # Solidity Architecture
 
+Each of the native currency or token has a abstract implementation of a vault that the Treasury extends (Solidity multiple inheritance, separating ecah concern into it's own parent).
+
+There is a strategy for depositing and withdrawing for each of the classes of asset.
+The granularity for each strategy would depend on the type. ETH would be a singleton, while ERC20 a mapping of token to strategy and ERC721 perhaps something else again.
+
+Limitation from dividing strategies is difficulty if wanting a variable mix of assets e.g withdraw 100ETH of BIT or USDT in any ratio.
+
+
+
 ----
 WIP
 
 ---
+
+??? Funding Cycles, dated withdrawals
+
 
 ### Pool of funds under control (vault)
 Must concurrently support dealing in variety of assets
@@ -57,4 +69,3 @@ Incoming (accounts receivable), when the treasury pulls funds from another sourc
 - As dealing with ETH requires specific methods and keywords, are separate vaults warranted or merely extra hassle?
 
 - Do we want a multi-sig or backup account with access to withdraw fund, for backup?
-
