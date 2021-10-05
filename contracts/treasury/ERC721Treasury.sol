@@ -9,10 +9,11 @@ import "../interfaces/Treasury.sol";
  *
  * @dev
  */
-interface ERC20Treasury is Treasury, Ownable {
+interface ERC721Treasury is Treasury, Ownable {
 
     function deposit(uint256 amount) public onlyOwner {
-        //TODO contact the ERC20 contract and transfer
+        //TODO either approve & transferFrom or Orcale sends in notifications on transfer events
+
         //TODO emit transfer in event
     }
 

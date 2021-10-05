@@ -55,4 +55,6 @@ Incoming (accounts receivable), when the treasury pulls funds from another sourc
 - Where should flow control reside, at the 
 
 - As dealing with ETH requires specific methods and keywords, are separate vaults warranted or merely extra hassle?
-- 
+
+- Do we want a multi-sig or backup account with access to withdraw fund, for backup?
+
