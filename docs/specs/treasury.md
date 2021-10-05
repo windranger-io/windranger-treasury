@@ -32,16 +32,21 @@
 ## Inbound treasury
 
 - support for logging accounts receivable
+- support for reconciliation
+- support for handling anticipated commitments for 30 days
+- support for different period of contributions/flow (daily to hourly)
+- inbound flow can be controlled by same BitDAO multi-sig
+- inbound can use allow lists and deny lists
 
 ## Outbound treasury
 
-- support for handling anticipated commitments for 30 days
+- outbound flow can be controlled by same BitDAO multi-sig
+- outbound can use allow lists and deny lists
 
-## Pluggability and extensibility
+## Pluggable and extensible
 
 - lending mechanism
 - insurance
-- 
 
 ## Treasury user stories
 
