@@ -24,8 +24,35 @@ task('blockNumber', 'Prints the current block number', async (_, {ethers}) => {
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
-
-// Last Solidity for 0.7.x stream is 0.7.6
+// At time of authoring 0.8.4 was the latest version supported by Hardhat
 export default {
-    solidity: '0.7.6'
+    networks: {
+        hardhat: {
+            chainId: 33133,
+            allowUnlimitedContractSize: true,
+            loggingEnabled: false
+        },
+        local: {
+            url: 'http://localhost:8545',
+            chainId: 33133,
+            allowUnlimitedContractSize: true,
+            loggingEnabled: true
+        }
+    },
+    solidity: {
+        compilers: [
+            {
+                version: '0.7.6'
+                // settings: {
+                //   optimizer: {
+                //     enabled: true,
+                //     runs: 200
+                //   }
+                // }
+            },
+            {
+                version: '0.8.4'
+            }
+        ]
+    }
 }

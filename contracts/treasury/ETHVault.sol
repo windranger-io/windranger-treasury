@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity 0.8.9;
+pragma solidity ^0.8.0;
 
 import '@openzeppelin/contracts/utils/Context.sol';
+import '../interfaces/ETHDepositStrategy.sol';
+import '../interfaces/ETHWithdrawStrategy.sol';
 
 /**
  * @title Vault for a ETH.
@@ -9,6 +11,13 @@ import '@openzeppelin/contracts/utils/Context.sol';
  * @dev
  */
 contract ETHVault is Context {
+    ETHDepositStrategy private depositStrategy;
+    ETHWithdrawStrategy private withdrawStrategy;
+
+    constructor(ETHDepositStrategy deposit, ETHWithdrawStrategy withdraw){
+        depositStrategy = deposit;
+        withdrawStrategy = withdraw;
+    }
 
     // Function to receive Ether. msg.data must be empty
     receive() external payable {
@@ -27,12 +36,12 @@ contract ETHVault is Context {
     }
 
     //TODO use call to send, with re-entry guard
-    function withdraw(address payable _to) public payable {
+    function withdraw(address payable to) public payable {
 
         //TODO use withdraw strategy
 
         // Call returns a boolean value indicating success or failure.
-        (bool sent, bytes memory data) = _to.call{value: msg.value}("");
+        (bool sent, bytes memory data) = to.call{value: msg.value}("");
         require(sent, "Failed to send Ether");
     }
 }
