@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.9;
 
+import '@openzeppelin/contracts/utils/Context.sol';
 import "./ETHVault.sol";
 import "./ERC20Vault.sol";
 import "./ERC721Vault.sol";
@@ -10,7 +11,7 @@ import "./ERC721Vault.sol";
  *
  * @dev
  */
-contract Treasury is ETHVault, ERC20Vault, ERC721Vault {
+contract Treasury is Context, ETHVault, ERC20Vault, ERC721Vault {
 
 
 }

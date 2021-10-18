@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.9;
 
+import '@openzeppelin/contracts/utils/Context.sol';
 
 /**
  * @title Vault for a ETH.
  *
  * @dev
  */
-contract ETHVault {
+contract ETHVault is Context {
 
     // Function to receive Ether. msg.data must be empty
     receive() external payable {

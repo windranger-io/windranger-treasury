@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.9;
 
+import '@openzeppelin/contracts/utils/Context.sol';
+
 /**
  * @title Vault for ERC20 token types.
  *
  * @dev
  */
-contract ERC20Vault {
+contract ERC20Vault is Context {
 
     function deposit(uint256 amount) public {
 
