@@ -11,8 +11,8 @@ import "../interfaces/ETHWithdrawStrategy.sol";
  * @dev
  */
 contract ETHVault is Context {
-    ETHDepositStrategy private depositStrategy;
-    ETHWithdrawStrategy private withdrawStrategy;
+    ETHDepositStrategy private _depositStrategy;
+    ETHWithdrawStrategy private _withdrawStrategy;
 
     // Function to receive Ether. msg.data must be empty
     receive() external payable {
@@ -24,9 +24,9 @@ contract ETHVault is Context {
         //TODO call deposit
     }
 
-    constructor(ETHDepositStrategy _deposit, ETHWithdrawStrategy _withdraw) {
-        depositStrategy = _deposit;
-        withdrawStrategy = _withdraw;
+    constructor(ETHDepositStrategy deposit, ETHWithdrawStrategy withdraw) {
+        _depositStrategy = deposit;
+        _withdrawStrategy = withdraw;
     }
 
     function deposit(uint256 amount) public payable {
