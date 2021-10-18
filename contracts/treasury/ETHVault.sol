@@ -25,8 +25,8 @@ contract ETHVault is Context {
     }
 
     constructor(ETHDepositStrategy _deposit, ETHWithdrawStrategy _withdraw) {
-        this.depositStrategy = _deposit;
-        this.withdrawStrategy = _withdraw;
+        depositStrategy = _deposit;
+        withdrawStrategy = _withdraw;
     }
 
     function deposit(uint256 amount) public payable {
