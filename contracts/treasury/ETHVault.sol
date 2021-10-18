@@ -27,6 +27,9 @@ contract ETHVault {
 
     //TODO use call to send, with re-entry guard
     function withdraw(address payable _to) public payable {
+
+        //TODO use withdraw strategy
+
         // Call returns a boolean value indicating success or failure.
         (bool sent, bytes memory data) = _to.call{value: msg.value}("");
         require(sent, "Failed to send Ether");
