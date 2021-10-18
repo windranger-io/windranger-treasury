@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/utils/Context.sol';
+import "@openzeppelin/contracts/utils/Context.sol";
 
 /**
  * @title Vault for ERC20 token types.
@@ -9,14 +9,10 @@ import '@openzeppelin/contracts/utils/Context.sol';
  * @dev
  */
 contract ERC20Vault is Context {
-
     function deposit(uint256 amount) public {
-
         //TODO either approve & transferFrom or Orcale sends in notifications on transfer events
-
         //TODO emit transfer in event
     }
-
 
     /*
 function stake(address _token, uint256 amount)
@@ -31,7 +27,6 @@ function stake(address _token, uint256 amount)
         emit Staked(msg.sender, amount);
     }
     */
-
 
     function withdraw(address destination, uint256 amount) public {
         //TODO check balance, maybe do that elsewhere?
