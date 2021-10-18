@@ -55,11 +55,5 @@
   },
   "dependencies": {
     "bunyan": "^1.8.15"
-  },
-  "lint-staged": {
-    "*": [
-      "npm run format",
-      "npm run lint-ts --fix"
-    ]
   }
 }
