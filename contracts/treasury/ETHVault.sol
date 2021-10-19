@@ -29,13 +29,13 @@ contract ETHVault is Context {
         _withdrawStrategy = withdraw;
     }
 
-    function deposit(uint256 amount) public payable {
+    function depositETH(uint256 amount) public payable {
         //TODO deposit strategy
         //TODO emit transfer in event
     }
 
     //TODO use call to send, with re-entry guard
-    function withdraw(address payable to) public payable {
+    function withdrawETH(address payable to) public payable {
         //TODO use withdraw strategy
 
         // Call returns a boolean value indicating success or failure.
