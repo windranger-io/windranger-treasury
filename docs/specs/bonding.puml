@@ -1,0 +1,115 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title Bonding
+
+box "(community)" #LightYellow
+actor Alice as alice
+end box
+
+box "(offchain)" #Coral
+actor Forum as forum
+end box
+
+box "(community)" #LightGray
+actor Community as community
+actor Guarantor as guarantor
+end box
+
+box "(offchain)" #Coral
+database Snapshot as snapshot
+end box
+
+box "(multisig)" #Peru
+actor BitDAOAdmin as bitdaoadmin
+end box
+
+box "(onchain)" #Lavender
+collections Bond as bond
+collections BondFactory as bondFactory
+collections GrantsTreasury as grantstreasury
+collections BitDAOTreasury as bitdaotreasury
+end box
+
+
+== Deciding funds, bond and guarantors ==
+
+alice->forum                : post outlining plan
+note right                  : 100 ETH wanted,\n150K BIT bond
+community->forum            : feedback
+guarantor->forum            : agree to guarantor
+note right                  : May have multiple guarantors
+forum-->alice               : quorum of guarantors
+
+
+== Bond Funding ==
+
+alice->bondFactory          : request bond creation
+bondFactory->bond           : create
+bondFactory->bondFactory    : emit bond address
+bondFactory-->alice         : bond address
+alice->forum                : bond details
+forum->guarantor            : bond address
+note left of bond           : Bond balance 0 BIT
+
+group#lightgray #white Repeats until bond target satisfied
+    guarantor->bond         : deposit bond
+    bond-->guarantor        : receive bond certificates (tokens)
+end
+
+note left of bond           : Bond balance 150K BIT
+note left of guarantor      : Guarantors hold 150K debt certificates
+
+== Grants Treasury Funding ==
+alice -> snapshot               : submit proposal
+snapshot-->community            : new proposal notification
+community -> snapshot           : vote on proposal
+
+group#white #LightBlue Proposal success
+    note right of grantstreasury    : Grants balance 0 ETH
+    snapshot -> bitdaoadmin         : proposal success
+    bitdaoadmin -> bitdaotreasury   : perform transfer of 100 ETH to GrantsTreasury
+    bitdaotreasury -> grantstreasury: transfer funds
+    note right of grantstreasury    : Grants balance 100 ETH
+
+else #Pink Proposal rejected
+    note left of bond               : Bond balance 150K BIT
+    snapshot -> bitdaoadmin         : proposal failed
+    bitdaoadmin -> bond             : release bond
+    bond -> bond                    : unlock BIT tokens for guarantor redemption
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond             : exchange bond certificate
+        bond-->guarantor            : receive bonded BIT tokens
+    end
+    note left of bond               : Bond balance 0 BIT
+end
+
+
+== Bond Certification Redemption ==
+
+alice->alice                    : successful\nproject\ndelivery
+alice->snapshot                 : proposal to allow bond certificate redemption
+snapshot-->community            : new proposal notification
+community -> snapshot           : vote on proposal
+snapshot -> bitdaoadmin         : proposal success
+
+
+note right of bond              : Bond balance 150K BIT (locked)
+group#white #LightBlue Bond redeemable
+    bitdaoadmin->bond           : release
+    bond->bond                  : unlock BIT tokens
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond         : exchange bond certificate
+        bond-->guarantor        : receive bonded BIT tokens
+    end
+else #Pink Slash bond
+    bitdaoadmin->bond           : slash full bond
+    bond->bitdaotreasury        : transfer all tokens
+    bitdaotreasury-->bond
+    bond->bond                  : self-destruct
+    note left of bitdaotreasury : balance +150K BIT
+end
+
+note right of bond              : Bond balance 0 BIT
+
+@enduml
