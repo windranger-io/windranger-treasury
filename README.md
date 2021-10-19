@@ -1,10 +1,9 @@
 # WindRanger Treasury
-
 Inbound and outbound treasury
 
 
 ## Development Process
-As defined in the WindRanger template https://github.com/windranger-io/solidity-project-template
+Development follows these processes outlined in [development process](docs/development_process.md)
 
 ## Setup
 

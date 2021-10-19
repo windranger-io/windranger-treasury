@@ -1,0 +1,102 @@
+<mxfile host="app.diagrams.net" modified="2021-10-05T05:40:57.758Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36" etag="Cbylw1o9rs9YHfDpkbjH" version="15.2.7" type="github">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
+    <mxGraphModel dx="493" dy="310" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-0" value="Treasury" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="359" y="310" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=diamond;endFill=0;strokeWidth=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="428" y="360" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="428" y="605" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-1" value="«interface»&lt;br&gt;&lt;b&gt;ETHDepositStrategy&lt;/b&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="468.5" y="580" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=diamond;endFill=0;strokeWidth=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="361" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-2" value="«interface»&lt;br&gt;&lt;b&gt;ERC20DespoitStrategy&lt;/b&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="470" y="490" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.827;entryY=1.02;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=diamond;endFill=0;strokeWidth=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-3" target="1sZv5OhQjklSvzK0Cqbl-0">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="425" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-3" value="«interface»&lt;br&gt;&lt;b&gt;ERC721DepositStrategy&lt;/b&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="468.5" y="400" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.25;entryY=0;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-4" target="1sZv5OhQjklSvzK0Cqbl-0">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="255" y="250" />
+              <mxPoint x="387" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-4" value="&lt;i&gt;ETHVault&lt;/i&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="200" y="160" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-5" target="1sZv5OhQjklSvzK0Cqbl-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-5" value="&lt;i&gt;ERC20Vault&lt;/i&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="358.5" y="160" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-6" target="1sZv5OhQjklSvzK0Cqbl-0">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="575" y="250" />
+              <mxPoint x="442" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-6" value="&lt;i&gt;ERC721Vault&lt;/i&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="520" y="160" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=diamond;endFill=0;strokeWidth=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-17" target="1sZv5OhQjklSvzK0Cqbl-0">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="425" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-17" value="«interface»&lt;br&gt;&lt;b&gt;ERC721WithdrawStrategy&lt;/b&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="200" y="400" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=diamond;endFill=0;strokeWidth=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-18" target="1sZv5OhQjklSvzK0Cqbl-0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="370" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="390" y="515" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-18" value="«interface»&lt;br&gt;&lt;b&gt;ERC20WithdrawStrategy&lt;/b&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="200" y="490" width="159" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=diamond;endFill=0;strokeWidth=1;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="1sZv5OhQjklSvzK0Cqbl-19">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="404" y="362" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="404" y="605" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1sZv5OhQjklSvzK0Cqbl-19" value="«interface»&lt;br&gt;&lt;b&gt;ETHWithdrawStrategy&lt;/b&gt;" style="html=1;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="200" y="580" width="159" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

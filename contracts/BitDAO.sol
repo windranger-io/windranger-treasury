@@ -501,7 +501,7 @@ interface IERC20 {
 // import "@openzeppelin/contracts/math/SafeMath.sol";
 
 /**
- * @dev Implementation of the {IERC20} interface.
+ * @dev Implementation of the {IERC20} interfaces.
  *
  * This implementation is agnostic to the way tokens are created. This means
  * that a supply mechanism has to be added in a derived contract using {_mint}.
