@@ -1,14 +1,14 @@
 {
-  "name": "solidity-project-template",
-  "version": "0.0.3",
-  "description": "Everything you need for creating Solidity smart contract with TypeScript testing",
+  "name": "windranger-treasury",
+  "version": "0.0.1",
+  "description": "The WindRanger-io Treasury specifications and implementation",
   "private": true,
   "directories": {
     "test": "test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/windranger-io/solidity-project-template"
+    "url": "git+https://github.com/windranger-io/windranger-treasury"
   },
   "keywords": [],
   "author": "",
