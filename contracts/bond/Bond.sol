@@ -110,14 +110,25 @@ contract Bond is Context, ERC20, Ownable {
         );
         _burn(sender, amount);
 
-        // Deposited at 1 to 1 ratio, slashing can change that
-        uint256 securities = _securityToken.balanceOf(address(this));
-        uint256 redemptionRatio = (DECIMAL_OFFSET * securities) / totalSupply();
-        uint256 redemptionAmount = (redemptionRatio * amount) / DECIMAL_OFFSET;
-
         // Unknown ERC20 token behaviour, cater for bool usage
+        uint256 redemptionAmount = _redemptionAmount(amount);
         bool transferred = _securityToken.transfer(sender, redemptionAmount);
         require(transferred, "Bond::redeem: Security transfer failed");
         emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
+    }
+
+    /**
+     * @dev Securities are deposited at a 1 to 1 ratio, however slashing can change that.
+     */
+    function _redemptionAmount(uint256 amount) internal view {
+        uint256 securities = _securityToken.balanceOf(address(this));
+
+        if (securities == totalSupply()) {
+            return amount;
+        } else {
+            uint256 redemptionRatio = (DECIMAL_OFFSET * securities) /
+                totalSupply();
+            return (redemptionRatio * amount) / DECIMAL_OFFSET;
+        }
     }
 }
