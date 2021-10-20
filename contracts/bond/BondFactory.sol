@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Bond.sol";
 
 /**
@@ -9,30 +10,20 @@ import "./Bond.sol";
  *
  * @dev Applies common configuration to bond contract created.
  */
-contract BondFactory is Context {
-    event BondCreated();
+contract BondFactory is Context, Ownable {
+    event BondCreated(address bond, string name, string symbol, address owner);
 
     //TODO do we need a reference to each created bond in the factory?
 
-    constructor() {}
-
-    function createBond() external returns (address) {
-        address from = _msgSender();
-
-        //TODO init/create with config
-
+    function createBond(uint256 debtCertificates) external returns (address) {
         //TODO generate these / pull from config
         string memory name = "Bond Debt Certificate";
         string memory symbol = "BDC0001";
-        address token = address(0);
 
-        Bond bond = new Bond(name, symbol, token);
-
-        emit BondCreated();
-
-        //TODO mint the initial supply of debt tokens
-
-        //TODO transfer ownership to bitdaoadmin
+        Bond bond = new Bond(name, symbol, owner());
+        bond.mint(debtCertificates);
+        bond.transferOwnership(owner());
+        emit BondCreated(address(bond), name, symbol, owner());
 
         return address(bond);
     }
