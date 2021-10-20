@@ -23,7 +23,7 @@ contract BondFactory is Context, Ownable {
         Bond bond = new Bond(name, symbol, owner());
         bond.mint(debtCertificates);
         bond.transferOwnership(owner());
-        emit BondCreated(address(bond), name, symbol, owner());
+        emit BondCreated(address(bond), name, symbol, bond.owner());
 
         return address(bond);
     }
