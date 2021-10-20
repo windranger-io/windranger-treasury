@@ -15,11 +15,11 @@ contract BondFactory is Context, Ownable {
 
     //TODO do we need a reference to each created bond in the factory?
 
-    function createBond(uint256 debtCertificates) external returns (address) {
-        //TODO generate these / pull from config
-        string memory name = "Bond Debt Certificate";
-        string memory symbol = "BDC0001";
-
+    function createBond(
+        uint256 debtCertificates,
+        string calldata name,
+        string calldata symbol
+    ) external returns (address) {
         Bond bond = new Bond(name, symbol, owner());
         bond.mint(debtCertificates);
         bond.transferOwnership(owner());
