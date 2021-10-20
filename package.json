@@ -17,8 +17,8 @@
     "build": "hardhat compile",
     "clean": "hardhat clean",
     "format": "npm run format-ts && npm run format-sol",
-    "format-ts": "prettier **/*.ts --write",
-    "format-sol": "prettier **/*.sol --write",
+    "format-ts": "prettier '**/*.ts' --write",
+    "format-sol": "prettier '**/*.sol' --write",
     "lint": "eslint . --ext .ts",
     "prepare": "husky install",
     "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register 'test/**/*.test.ts'"
