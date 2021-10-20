@@ -2,7 +2,7 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
 /**
@@ -11,10 +11,10 @@ import "@openzeppelin/contracts/utils/Context.sol";
  * @dev A single token type is held by the contract as security.
  */
 contract Bond is Context, ERC20 {
-    event Deposit(address depositor, uint256 amount);
-    event DebtCertificate(address receiver, uint256 amount);
+    event Deposit(address depositor, string symbol, uint256 amount);
+    event DebtCertificate(address receiver, string symbol, uint256 amount);
 
-    IERC20 private _securityToken;
+    IERC20Metadata private _securityToken;
 
     constructor(
         string memory name,
@@ -38,10 +38,10 @@ contract Bond is Context, ERC20 {
             amount
         );
         require(transferred, "Bond::deposit:Security transfer failed");
-        emit Deposit(sender, amount);
+        emit Deposit(sender, _securityToken.symbol(), amount);
 
         transfer(sender, amount);
-        emit DebtCertificate(sender, amount);
+        emit DebtCertificate(sender, symbol(), amount);
     }
 
     //TODO override the mint operation with access control
