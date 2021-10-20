@@ -16,9 +16,7 @@ contract Bond is Context, ERC20, Ownable {
     event Deposit(address depositor, string symbol, uint256 amount);
     event DebtCertificate(address receiver, string symbol, uint256 amount);
     event Redemption(address redeemer, string symbol, uint256 amount);
-
-    IERC20Metadata private _securityToken;
-    bool private _isRedemptionAllowed;
+    event Slash(string symbol, uint256 amount);
 
     /**
      * @dev Modifier to make a function callable only when the contract is not redeemable.
@@ -41,6 +39,12 @@ contract Bond is Context, ERC20, Ownable {
         require(_isRedemptionAllowed, "Bond::whenRedeemable: not redeemable");
         _;
     }
+
+    /// Multiplier / divider for four decimal places
+    uint256 private constant DECIMAL_OFFSET = 10000;
+
+    IERC20Metadata private _securityToken;
+    bool private _isRedemptionAllowed;
 
     constructor(
         string memory name,
@@ -79,14 +83,22 @@ contract Bond is Context, ERC20, Ownable {
         _isRedemptionAllowed = true;
     }
 
-    function slash(uint256 amount) external onlyOwner {
+    /**
+     * The amount of debt certificates remains the same. Slashing reduces the security tokens, so each debt token
+     * is redeemable for fewer securities.
+     *
+     * @dev Transfers the amount to the Bond owner, reducing the amount available for later redemption.
+     */
+    function slash(uint256 amount) external whenNotRedeemable onlyOwner {
+        uint256 securities = _securityToken.balanceOf(address(this));
         require(
-            totalSupply() >= amount,
-            "Bond::slash: Amount greater than total supply"
+            securities >= amount,
+            "Bond::slash: Amount greater than total security supply"
         );
 
-        //TODO partial slashing
-        //TODO calc percentage and apply to each holder
+        _securityToken.transfer(owner(), amount);
+
+        emit Slash(_securityToken.symbol(), amount);
     }
 
     function redeem(uint256 amount) external whenRedeemable {
@@ -98,9 +110,14 @@ contract Bond is Context, ERC20, Ownable {
         );
         _burn(sender, amount);
 
+        // Deposited at 1 to 1 ratio, slashing can change that
+        uint256 securities = _securityToken.balanceOf(address(this));
+        uint256 redemptionRatio = (DECIMAL_OFFSET * securities) / totalSupply();
+        uint256 redemptionAmount = (redemptionRatio * amount) / DECIMAL_OFFSET;
+
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transfer(sender, amount);
+        bool transferred = _securityToken.transfer(sender, redemptionAmount);
         require(transferred, "Bond::redeem: Security transfer failed");
-        emit Redemption(sender, _securityToken.symbol(), amount);
+        emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
     }
 }
