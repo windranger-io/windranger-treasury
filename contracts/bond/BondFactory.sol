@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Context.sol";
-import "./bond.sol";
+import "./Bond.sol";
 
 /**
  * @title Creates configured bond contracts.
@@ -21,12 +21,19 @@ contract BondFactory is Context {
 
         //TODO init/create with config
 
-        Bond bond = new Bond();
+        //TODO generate these / pull from config
+        string memory name = "Bond Debt Certificate";
+        string memory symbol = "BDC0001";
+        address token = address(0);
+
+        Bond bond = new Bond(name, symbol, token);
 
         emit BondCreated();
 
         //TODO mint the initial supply of debt tokens
 
-        return bond;
+        //TODO transfer ownership to bitdaoadmin
+
+        return address(bond);
     }
 }

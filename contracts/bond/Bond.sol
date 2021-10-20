@@ -2,16 +2,17 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/extensions/IERC20Metadata.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title Bond contract that issues debt tokens in exchange for a security.
  *
  * @dev A single token type is held by the contract as security.
  */
-contract Bond is Context, ERC20 {
+contract Bond is Context, ERC20, Ownable {
     event Deposit(address depositor, string symbol, uint256 amount);
     event DebtCertificate(address receiver, string symbol, uint256 amount);
     event Redemption(address redeemer, string symbol, uint256 amount);
@@ -45,8 +46,8 @@ contract Bond is Context, ERC20 {
         string memory name,
         string memory symbol,
         address securityToken
-    ) ERC20(name, bond) {
-        _securityToken = IERC20(securityToken);
+    ) ERC20(name, symbol) {
+        _securityToken = IERC20Metadata(securityToken);
         _isRedemptionAllowed = false;
     }
 
@@ -70,18 +71,15 @@ contract Bond is Context, ERC20 {
         emit DebtCertificate(sender, symbol(), amount);
     }
 
-    //TODO access control - only who? - BondFactory as part of init
-    function mint(uint256 amount) external {
+    function mint(uint256 amount) external onlyOwner {
         _mint(address(this), amount);
     }
 
-    //TODO access control - bitdaoadmin
-    function allowRedemption() external whenNotRedeemable {
+    function allowRedemption() external whenNotRedeemable onlyOwner {
         _isRedemptionAllowed = true;
     }
 
-    //TODO access control - bitdaoadmin
-    function slash(uint256 amount) external {
+    function slash(uint256 amount) external onlyOwner {
         require(
             totalSupply() >= amount,
             "Bond::slash: Amount greater than total supply"
