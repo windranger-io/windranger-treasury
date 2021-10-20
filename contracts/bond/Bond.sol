@@ -120,7 +120,7 @@ contract Bond is Context, ERC20, Ownable {
     /**
      * @dev Securities are deposited at a 1 to 1 ratio, however slashing can change that.
      */
-    function _redemptionAmount(uint256 amount) internal view {
+    function _redemptionAmount(uint256 amount) internal view returns (uint256) {
         uint256 securities = _securityToken.balanceOf(address(this));
 
         if (securities == totalSupply()) {
