@@ -12,7 +12,7 @@ import "../interfaces/ERC721WithdrawStrategy.sol";
  *
  * @dev
  */
-contract ERC721Vault is Context, IERC721Receiver {
+contract ERC721Treasury is Context, IERC721Receiver {
     ERC721DepositStrategy private _depositStrategy;
     ERC721WithdrawStrategy private _withdrawStrategy;
 

@@ -10,7 +10,7 @@ import "../interfaces/ERC20WithdrawStrategy.sol";
  *
  * @dev
  */
-contract ERC20Vault is Context {
+contract ERC20Treasury is Context {
     ERC20DepositStrategy private _depositStrategy;
     ERC20WithdrawStrategy private _withdrawStrategy;
     mapping(string => address) private _tokens;

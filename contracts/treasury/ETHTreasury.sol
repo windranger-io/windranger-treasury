@@ -10,7 +10,7 @@ import "../interfaces/ETHWithdrawStrategy.sol";
  *
  * @dev
  */
-contract ETHVault is Context {
+contract ETHTreasury is Context {
     ETHDepositStrategy private _depositStrategy;
     ETHWithdrawStrategy private _withdrawStrategy;
 
