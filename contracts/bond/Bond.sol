@@ -96,7 +96,9 @@ contract Bond is Context, ERC20, Ownable {
             "Bond::slash: Amount greater than total security supply"
         );
 
-        _securityToken.transfer(owner(), amount);
+        // Unknown ERC20 token behaviour, cater for bool usage
+        bool transferred = _securityToken.transfer(owner(), amount);
+        require(transferred, "Bond::slash: Security transfer failed");
 
         emit Slash(_securityToken.symbol(), amount);
     }
@@ -114,6 +116,7 @@ contract Bond is Context, ERC20, Ownable {
         uint256 redemptionAmount = _redemptionAmount(amount);
         bool transferred = _securityToken.transfer(sender, redemptionAmount);
         require(transferred, "Bond::redeem: Security transfer failed");
+
         emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
     }
 
