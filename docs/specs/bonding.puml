@@ -87,28 +87,40 @@ end
 
 == Bond Certification Redemption ==
 
-alice->alice                    : successful\nproject\ndelivery
-alice->snapshot                 : proposal to allow bond certificate redemption
+alice->alice                    : project\ndelivery
+alice->forum                    : temperature gauge\nfor project success
+forum-->alice                   : vote must include full payment,\npartial slashing option\nand full slashing option
+alice->snapshot                 : proposal on bond certificate redemption
 snapshot-->community            : new proposal notification
 community -> snapshot           : vote on proposal
-snapshot -> bitdaoadmin         : proposal success
+snapshot -> bitdaoadmin         : proposal outcome
 
 
 note right of bond              : Bond balance 150K BIT (locked)
-group#white #LightBlue Bond redeemable
+
+group#white #LightBlue Full bond redemption
     bitdaoadmin->bond           : release
     bond->bond                  : unlock BIT tokens
     group#lightgray #white Repeat until full redemption
         guarantor->bond         : exchange bond certificate
         bond-->guarantor        : receive bonded BIT tokens
     end
-else #Pink Slash bond
+else #Pink Full bond slash
     bitdaoadmin->bond           : slash full bond
     bond->bitdaotreasury        : transfer all tokens
     bitdaotreasury-->bond
     bond->bond                  : self-destruct
     note left of bitdaotreasury : balance +150K BIT
+else #lightseagreen Partial bond slashed, remaining redeemable
+    bitdaoadmin->bond           : slash partial bond
+    bond->bitdaotreasury        : transfer tokens
+    bitdaotreasury-->bond
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond         : exchange bond certificate
+        bond-->guarantor        : receive bonded BIT tokens
+    end
 end
+
 
 note right of bond              : Bond balance 0 BIT
 
