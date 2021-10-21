@@ -10,11 +10,10 @@ import "../interfaces/ERC20WithdrawStrategy.sol";
  *
  * @dev
  */
-contract ERC20Vault is Context {
-
+contract ERC20Treasury is Context {
     ERC20DepositStrategy private _depositStrategy;
     ERC20WithdrawStrategy private _withdrawStrategy;
-    mapping (string => address) private _tokens;
+    mapping(string => address) private _tokens;
 
     constructor(ERC20DepositStrategy deposit, ERC20WithdrawStrategy withdraw) {
         _depositStrategy = deposit;
@@ -27,18 +26,22 @@ contract ERC20Vault is Context {
         //TODO get the abbreviation from the token & put into _tokens
     }
 
-    function depositERC20(uint256 amount, string calldata tokenAbbreviation) public {
+    function depositERC20(uint256 amount, string calldata tokenAbbreviation)
+        public
+    {
         //TODO require the token to be one that is being stored
-
         //TODO either approve & transferFrom or Orcale sends in notifications on transfer events
         //TODO emit transfer in event
-
         // Before this you should have approved the amount
         // This will transfer the amount of  _token from caller to contract
-         //   IERC20(_token).transferFrom(msg.sender, address(this), amount);
+        //   IERC20(_token).transferFrom(msg.sender, address(this), amount);
     }
 
-    function withdrawERC20(address destination, string calldata tokenAbbreviation, uint256 amount) public {
+    function withdrawERC20(
+        address destination,
+        string calldata tokenAbbreviation,
+        uint256 amount
+    ) public {
         //TODO check balance, maybe do that elsewhere or delegate to token contract?
         //TODO contact the ERC20 contract and transfer
         //TODO emit transfer out event

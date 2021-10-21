@@ -12,14 +12,14 @@ import "../interfaces/ERC721WithdrawStrategy.sol";
  *
  * @dev
  */
-contract ERC721Vault is Context, IERC721Receiver {
+contract ERC721Treasury is Context, IERC721Receiver {
+    ERC721DepositStrategy private _depositStrategy;
+    ERC721WithdrawStrategy private _withdrawStrategy;
 
-ERC721DepositStrategy private _depositStrategy;
-ERC721WithdrawStrategy private _withdrawStrategy;
-
-    constructor(ERC721DepositStrategy deposit, ERC721WithdrawStrategy withdraw) {
-    _depositStrategy = deposit;
-    _withdrawStrategy = withdraw;
+    constructor(ERC721DepositStrategy deposit, ERC721WithdrawStrategy withdraw)
+    {
+        _depositStrategy = deposit;
+        _withdrawStrategy = withdraw;
     }
 
     function onERC721Received(
@@ -27,7 +27,7 @@ ERC721WithdrawStrategy private _withdrawStrategy;
         address from,
         uint256 tokenId,
         bytes calldata data
-    ) external override returns (bytes4){
+    ) external override returns (bytes4) {
         //TODO require on input parameters to reject certain (non-whitelisted tokens)
 
         //TODO invoke despositERC721()
@@ -35,7 +35,9 @@ ERC721WithdrawStrategy private _withdrawStrategy;
         return IERC721Receiver.onERC721Received.selector;
     }
 
-    function doSomethingWith721Token(IERC721 nftAddress, uint256 tokenId) external {
+    function doSomethingWith721Token(IERC721 nftAddress, uint256 tokenId)
+        external
+    {
         // do something here
     }
 
