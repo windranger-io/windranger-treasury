@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "hardhat/console.sol";
 
 /**
  * @title Bond contract that issues debt tokens in exchange for a security.
@@ -110,6 +109,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
         address sender = _msgSender();
+        uint256 totalSupply = totalSupply();
 
         require(
             balanceOf(sender) >= amount,
@@ -118,15 +118,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         _burn(sender, amount);
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        uint256 redemptionAmount = _redemptionAmount(amount);
-
-        console.log("Amount: %s -> %s", amount, redemptionAmount);
-
-        bool transferred = _securityToken.transferFrom(
-            address(this),
-            sender,
-            redemptionAmount
-        );
+        uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
+        bool transferred = _securityToken.transfer(sender, redemptionAmount);
         require(transferred, "Bond::redeem: Security transfer failed");
 
         emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
@@ -185,26 +178,18 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /**
      * @dev Securities are deposited at a 1 to 1 ratio, however slashing can change that.
      */
-    function _redemptionAmount(uint256 amount) internal view returns (uint256) {
+    function _redemptionAmount(uint256 amount, uint256 totalSupply)
+        internal
+        view
+        returns (uint256)
+    {
         uint256 securities = _securityToken.balanceOf(address(this));
 
-        console.log("Amount: %s", amount);
-        console.log("Securities: %s", securities);
-        console.log("Total supply: %s", totalSupply());
-        console.log("Total supply: %s", _securityToken.totalSupply());
-
-        if (securities == totalSupply()) {
+        if (securities == totalSupply) {
             return amount;
         } else {
             uint256 redemptionRatio = (DECIMAL_OFFSET * securities) /
-                totalSupply();
-
-            console.log("Ratio: %s", redemptionRatio);
-            console.log(
-                "Redemption :%s",
-                ((redemptionRatio * amount) / DECIMAL_OFFSET)
-            );
-
+                totalSupply;
             return (redemptionRatio * amount) / DECIMAL_OFFSET;
         }
     }

@@ -47,12 +47,12 @@ describe('Bond contract', () => {
         const guarantorOnePledge = 240050n
         const guarantorTwoPledge = 99500n
         const debtCertificates = guarantorOnePledge + guarantorTwoPledge
+        await securityAsset.transfer(guarantorOne.address, guarantorOnePledge)
+        await securityAsset.transfer(guarantorTwo.address, guarantorTwoPledge)
         const bond = await createBond(factory, debtCertificates)
 
         //TODO parse the response for the expected events - all calls
-
-        await securityAsset.transfer(guarantorOne.address, guarantorOnePledge)
-        await securityAsset.transfer(guarantorTwo.address, guarantorTwoPledge)
+        //TODO check for successfull transaction responses
 
         await securityAsset
             .connect(guarantorOne)
@@ -65,12 +65,9 @@ describe('Bond contract', () => {
             .increaseAllowance(bond.address, guarantorTwoPledge)
         await bond.connect(guarantorTwo).deposit(guarantorTwoPledge)
 
-        //TODO check balances (debt & security
-
         await bond.connect(admin).allowRedemption()
 
-        const bondBalance = await securityAsset.balanceOf(bond.address)
-        const bondSupply = await bond.totalSupply()
+        //TODO check balances (debt & security
 
         await bond.connect(guarantorOne).redeem(guarantorOnePledge)
         await bond.connect(guarantorTwo).redeem(guarantorTwoPledge)
