@@ -9,8 +9,9 @@ import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BondFactory} from '../typechain'
 import {deployBondFactory, signer} from './utils/contracts'
-import {ContractReceipt, Event} from 'ethers'
+import {ContractReceipt, ContractTransaction, Event} from 'ethers'
 import {BondCreatedEvent} from '../typechain/BondFactory'
+import {validateEvents} from './utils/events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -27,13 +28,13 @@ describe('BondFactory contract', () => {
         const bondName = 'Special Debt Certificate'
         const bondSymbol = 'SDC001'
 
-        const receipt = await (
-            await bonds.createBond(debtTokens, bondName, bondSymbol)
-        ).wait(0)
+        const receipt = await execute(
+            bonds.createBond(debtTokens, bondName, bondSymbol)
+        )
 
-        const events = getEvents(receipt)
+        const events = validateEvents(receipt)
         expect(events.length).equals(4)
-        const bondCreated = getBondCreateEvent(events[3]).args
+        const bondCreated = validateBondCreateEvent(events[3]).args
         expect(ethers.utils.isAddress(bondCreated.bond)).is.true
         expect(bondCreated.bond).is.not.equal(admin)
         expect(bondCreated.bond).is.not.equal(treasury)
@@ -49,17 +50,16 @@ describe('BondFactory contract', () => {
     let bonds: BondFactory
 })
 
-function getEvents(receipt: ContractReceipt): Event[] {
-    expect(receipt.events).is.not.undefined
-    const events = receipt.events
-    expect(events).is.not.undefined
-    return events ? events : []
+async function execute(
+    transaction: Promise<ContractTransaction>
+): Promise<ContractReceipt> {
+    return (await transaction).wait(0)
 }
 
 /**
  * Shape check for a BondCreatedEvent
  */
-function getBondCreateEvent(event: Event): BondCreatedEvent {
+function validateBondCreateEvent(event: Event): BondCreatedEvent {
     const bondCreated = event as BondCreatedEvent
     expect(event.args).is.not.undefined
 
