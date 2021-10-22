@@ -8,8 +8,8 @@ import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BondFactory} from '../typechain'
-import {deployBondFactory, signer} from './utils/contracts'
-import {ContractReceipt, ContractTransaction, Event} from 'ethers'
+import {deployBondFactory, execute, signer} from './utils/contracts'
+import {Event} from 'ethers'
 import {BondCreatedEvent} from '../typechain/BondFactory'
 import {validateEvents} from './utils/events'
 
@@ -49,12 +49,6 @@ describe('BondFactory contract', () => {
     let treasury: string
     let bonds: BondFactory
 })
-
-async function execute(
-    transaction: Promise<ContractTransaction>
-): Promise<ContractReceipt> {
-    return (await transaction).wait(0)
-}
 
 /**
  * Shape check for a BondCreatedEvent
