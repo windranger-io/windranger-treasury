@@ -19,10 +19,12 @@ contract BondFactory is Context, Ownable {
         address treasury
     );
 
+    address private _securityToken;
     address private _treasury;
 
-    constructor(address treasury) {
-        _treasury = treasury;
+    constructor(address securityToken_, address treasury_) {
+        _securityToken = securityToken_;
+        _treasury = treasury_;
     }
 
     function createBond(
@@ -30,7 +32,7 @@ contract BondFactory is Context, Ownable {
         string calldata name,
         string calldata symbol
     ) external returns (address) {
-        Bond bond = new Bond(name, symbol, owner(), _treasury);
+        Bond bond = new Bond(name, symbol, _securityToken, _treasury);
         bond.mint(debtCertificates);
         bond.transferOwnership(owner());
         emit BondCreated(
@@ -54,7 +56,21 @@ contract BondFactory is Context, Ownable {
     /**
      * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
      */
-    function treasury(address treasury) external onlyOwner {
-        _treasury = treasury;
+    function setTreasury(address treasury_) external onlyOwner {
+        _treasury = treasury_;
+    }
+
+    /**
+     * @dev Retrieves the address for the security token.
+     */
+    function securityToken() external view returns (address) {
+        return _securityToken;
+    }
+
+    /**
+     * @dev Permits the owner to update the security token address.
+     */
+    function setSecurityToken(address securityToken_) external onlyOwner {
+        _securityToken = securityToken_;
     }
 }

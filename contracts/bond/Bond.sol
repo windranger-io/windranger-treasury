@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Bond contract that issues debt tokens in exchange for a security.
@@ -48,14 +49,14 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     bool private _isRedemptionAllowed;
 
     constructor(
-        string memory name,
-        string memory symbol,
-        address securityToken,
-        address treasury
-    ) ERC20(name, symbol) {
-        _securityToken = IERC20Metadata(securityToken);
+        string memory name_,
+        string memory symbol_,
+        address securityToken_,
+        address treasury_
+    ) ERC20(name_, symbol_) {
+        _securityToken = IERC20Metadata(securityToken_);
         _isRedemptionAllowed = false;
-        _treasury = treasury;
+        _treasury = treasury_;
     }
 
     /**
@@ -86,7 +87,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         require(transferred, "Bond::deposit: Security transfer failed");
         emit Deposit(sender, _securityToken.symbol(), amount);
 
-        transfer(sender, amount);
+        _transfer(address(this), sender, amount);
         emit DebtCertificate(sender, symbol(), amount);
     }
 
@@ -118,7 +119,14 @@ contract Bond is Context, ERC20, Ownable, Pausable {
 
         // Unknown ERC20 token behaviour, cater for bool usage
         uint256 redemptionAmount = _redemptionAmount(amount);
-        bool transferred = _securityToken.transfer(sender, redemptionAmount);
+
+        console.log("Amount: %s -> %s", amount, redemptionAmount);
+
+        bool transferred = _securityToken.transferFrom(
+            address(this),
+            sender,
+            redemptionAmount
+        );
         require(transferred, "Bond::redeem: Security transfer failed");
 
         emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
@@ -150,7 +158,11 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transfer(_treasury, amount);
+        bool transferred = _securityToken.transferFrom(
+            address(this),
+            _treasury,
+            amount
+        );
         require(transferred, "Bond::slash: Security transfer failed");
 
         emit Slash(_securityToken.symbol(), amount);
@@ -166,8 +178,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /**
      * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
      */
-    function treasury(address treasury) external whenNotPaused onlyOwner {
-        _treasury = treasury;
+    function setTreasury(address treasury_) external whenNotPaused onlyOwner {
+        _treasury = treasury_;
     }
 
     /**
@@ -176,11 +188,23 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     function _redemptionAmount(uint256 amount) internal view returns (uint256) {
         uint256 securities = _securityToken.balanceOf(address(this));
 
+        console.log("Amount: %s", amount);
+        console.log("Securities: %s", securities);
+        console.log("Total supply: %s", totalSupply());
+        console.log("Total supply: %s", _securityToken.totalSupply());
+
         if (securities == totalSupply()) {
             return amount;
         } else {
             uint256 redemptionRatio = (DECIMAL_OFFSET * securities) /
                 totalSupply();
+
+            console.log("Ratio: %s", redemptionRatio);
+            console.log(
+                "Redemption :%s",
+                ((redemptionRatio * amount) / DECIMAL_OFFSET)
+            );
+
             return (redemptionRatio * amount) / DECIMAL_OFFSET;
         }
     }
