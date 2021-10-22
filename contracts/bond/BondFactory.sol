@@ -11,7 +11,13 @@ import "./Bond.sol";
  * @dev Applies common configuration to bond contract created.
  */
 contract BondFactory is Context, Ownable {
-    event BondCreated(address bond, string name, string symbol, address owner);
+    event BondCreated(
+        address bond,
+        string name,
+        string symbol,
+        address owner,
+        address treasry
+    );
 
     //TODO do we need a reference to each created bond in the factory?
 
@@ -20,10 +26,16 @@ contract BondFactory is Context, Ownable {
         string calldata name,
         string calldata symbol
     ) external returns (address) {
-        Bond bond = new Bond(name, symbol, owner());
+        Bond bond = new Bond(name, symbol, owner(), owner());
         bond.mint(debtCertificates);
         bond.transferOwnership(owner());
-        emit BondCreated(address(bond), name, symbol, bond.owner());
+        emit BondCreated(
+            address(bond),
+            name,
+            symbol,
+            bond.owner(),
+            bond.treasury()
+        );
 
         return address(bond);
     }

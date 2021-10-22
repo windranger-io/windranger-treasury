@@ -43,20 +43,23 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /// Multiplier / divider for four decimal places
     uint256 private constant DECIMAL_OFFSET = 10000;
 
-    IERC20Metadata private _securityToken;
+    IERC20Metadata private immutable _securityToken;
+    address private _treasury;
     bool private _isRedemptionAllowed;
 
     constructor(
         string memory name,
         string memory symbol,
-        address securityToken
+        address securityToken,
+        address treasury
     ) ERC20(name, symbol) {
         _securityToken = IERC20Metadata(securityToken);
         _isRedemptionAllowed = false;
+        _treasury = treasury;
     }
 
     /**
-     * @dev Pauses contract, preventing operation of all external functions.
+     * @dev Pauses contract, preventing operation of all external Bond functions that are not simple accessors.
      */
     function pause() external whenNotPaused onlyOwner {
         _pause();
@@ -106,7 +109,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      * The amount of debt certificates remains the same. Slashing reduces the security tokens, so each debt token
      * is redeemable for fewer securities.
      *
-     * @dev Transfers the amount to the Bond owner, reducing the amount available for later redemption.
+     * @dev Transfers the amount to the Bond owner, reducing the amount available for later redemption (redemption ratio).
      */
     function slash(uint256 amount)
         external
@@ -117,11 +120,11 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         uint256 securities = _securityToken.balanceOf(address(this));
         require(
             securities >= amount,
-            "Bond::slash: Amount greater than total security supply"
+            "Bond::slash: Amount greater than available security supply"
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transfer(owner(), amount);
+        bool transferred = _securityToken.transfer(_treasury, amount);
         require(transferred, "Bond::slash: Security transfer failed");
 
         emit Slash(_securityToken.symbol(), amount);
@@ -145,6 +148,20 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         require(transferred, "Bond::redeem: Security transfer failed");
 
         emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
+    }
+
+    /**
+     * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
+     */
+    function treasury(address treasury) external whenNotPaused onlyOwner {
+        _treasury = treasury;
+    }
+
+    /**
+     * @dev Retrieves the address that receives any slashed funds.this
+     */
+    function treasury() external view returns (address) {
+        return _treasury;
     }
 
     /**
