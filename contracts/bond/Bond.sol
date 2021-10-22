@@ -127,6 +127,9 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         emit Slash(_securityToken.symbol(), amount);
     }
 
+    /**
+     * @dev Converts the amount of debt certificates owned by the sender, at the exchange ratio to the security asset.
+     */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
         address sender = _msgSender();
 
