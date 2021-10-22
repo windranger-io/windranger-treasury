@@ -157,7 +157,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Retrieves the address that receives any slashed funds.this
+     * @dev Retrieves the address that receives any slashed funds.
      */
     function treasury() external view returns (address) {
         return _treasury;

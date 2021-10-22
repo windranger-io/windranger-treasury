@@ -16,17 +16,21 @@ contract BondFactory is Context, Ownable {
         string name,
         string symbol,
         address owner,
-        address treasry
+        address treasury
     );
 
-    //TODO do we need a reference to each created bond in the factory?
+    address private _treasury;
+
+    constructor(address treasury) {
+        _treasury = treasury;
+    }
 
     function createBond(
         uint256 debtCertificates,
         string calldata name,
         string calldata symbol
     ) external returns (address) {
-        Bond bond = new Bond(name, symbol, owner(), owner());
+        Bond bond = new Bond(name, symbol, owner(), _treasury);
         bond.mint(debtCertificates);
         bond.transferOwnership(owner());
         emit BondCreated(
@@ -38,5 +42,19 @@ contract BondFactory is Context, Ownable {
         );
 
         return address(bond);
+    }
+
+    /**
+     * @dev Retrieves the address that receives any slashed funds.
+     */
+    function treasury() external view returns (address) {
+        return _treasury;
+    }
+
+    /**
+     * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
+     */
+    function treasury(address treasury) external onlyOwner {
+        _treasury = treasury;
     }
 }
