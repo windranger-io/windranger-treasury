@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  *
  * @dev A single token type is held by the contract as security.
  */
-contract Bond is Context, ERC20, Ownable {
+contract Bond is Context, ERC20, Ownable, Pausable {
     event Deposit(address depositor, string symbol, uint256 amount);
     event DebtCertificate(address receiver, string symbol, uint256 amount);
     event Redemption(address redeemer, string symbol, uint256 amount);
@@ -56,9 +56,23 @@ contract Bond is Context, ERC20, Ownable {
     }
 
     /**
+     * @dev Pauses contract, preventing operation of all external functions.
+     */
+    function pause() external whenNotPaused onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @dev Resumes / unpauses contract, allowing operation of all external functions.
+     */
+    function resume() external whenPaused onlyOwner {
+        _pause();
+    }
+
+    /**
      * @dev This contract must have been approved to transfer the given amount from the ERC20 token being used as security.
      */
-    function deposit(uint256 amount) external {
+    function deposit(uint256 amount) external whenNotPaused {
         require(amount <= totalSupply(), "Bond:deposit: Deposit too large");
         address sender = _msgSender();
 
@@ -75,11 +89,16 @@ contract Bond is Context, ERC20, Ownable {
         emit DebtCertificate(sender, symbol(), amount);
     }
 
-    function mint(uint256 amount) external onlyOwner {
+    function mint(uint256 amount) external whenNotPaused onlyOwner {
         _mint(address(this), amount);
     }
 
-    function allowRedemption() external whenNotRedeemable onlyOwner {
+    function allowRedemption()
+        external
+        whenNotPaused
+        whenNotRedeemable
+        onlyOwner
+    {
         _isRedemptionAllowed = true;
     }
 
@@ -89,7 +108,12 @@ contract Bond is Context, ERC20, Ownable {
      *
      * @dev Transfers the amount to the Bond owner, reducing the amount available for later redemption.
      */
-    function slash(uint256 amount) external whenNotRedeemable onlyOwner {
+    function slash(uint256 amount)
+        external
+        whenNotPaused
+        whenNotRedeemable
+        onlyOwner
+    {
         uint256 securities = _securityToken.balanceOf(address(this));
         require(
             securities >= amount,
@@ -103,7 +127,7 @@ contract Bond is Context, ERC20, Ownable {
         emit Slash(_securityToken.symbol(), amount);
     }
 
-    function redeem(uint256 amount) external whenRedeemable {
+    function redeem(uint256 amount) external whenNotPaused whenRedeemable {
         address sender = _msgSender();
 
         require(
