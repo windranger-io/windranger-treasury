@@ -13,8 +13,8 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  * @dev A single token type is held by the contract as security.
  */
 contract Bond is Context, ERC20, Ownable, Pausable {
-    event Deposit(address depositor, string symbol, uint256 amount);
     event DebtCertificate(address receiver, string symbol, uint256 amount);
+    event Deposit(address depositor, string symbol, uint256 amount);
     event Redemption(address redeemer, string symbol, uint256 amount);
     event Slash(string symbol, uint256 amount);
 
@@ -59,17 +59,15 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Pauses contract, preventing operation of all external Bond functions that are not simple accessors.
+     * @dev Debt certificates are not allowed to be redeemed before the owner gives their permission.
      */
-    function pause() external whenNotPaused onlyOwner {
-        _pause();
-    }
-
-    /**
-     * @dev Resumes / unpauses contract, allowing operation of all external functions.
-     */
-    function resume() external whenPaused onlyOwner {
-        _pause();
+    function allowRedemption()
+        external
+        whenNotPaused
+        whenNotRedeemable
+        onlyOwner
+    {
+        _isRedemptionAllowed = true;
     }
 
     /**
@@ -100,15 +98,37 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Debt certificates are not allowed to be redeemed before the owner gives their permission.
+     * @dev Pauses contract, preventing operation of all external Bond functions that are not simple accessors.
      */
-    function allowRedemption()
-        external
-        whenNotPaused
-        whenNotRedeemable
-        onlyOwner
-    {
-        _isRedemptionAllowed = true;
+    function pause() external whenNotPaused onlyOwner {
+        _pause();
+    }
+
+    /**
+     * @dev Converts the amount of debt certificates owned by the sender, at the exchange ratio to the security asset.
+     */
+    function redeem(uint256 amount) external whenNotPaused whenRedeemable {
+        address sender = _msgSender();
+
+        require(
+            balanceOf(sender) >= amount,
+            "Bond:redeem: too few debt tokens"
+        );
+        _burn(sender, amount);
+
+        // Unknown ERC20 token behaviour, cater for bool usage
+        uint256 redemptionAmount = _redemptionAmount(amount);
+        bool transferred = _securityToken.transfer(sender, redemptionAmount);
+        require(transferred, "Bond::redeem: Security transfer failed");
+
+        emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
+    }
+
+    /**
+     * @dev Resumes / unpauses contract, allowing operation of all external functions.
+     */
+    function resume() external whenPaused onlyOwner {
+        _pause();
     }
 
     /**
@@ -137,23 +157,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Converts the amount of debt certificates owned by the sender, at the exchange ratio to the security asset.
+     * @dev Retrieves the address that receives any slashed funds.this
      */
-    function redeem(uint256 amount) external whenNotPaused whenRedeemable {
-        address sender = _msgSender();
-
-        require(
-            balanceOf(sender) >= amount,
-            "Bond:redeem: too few debt tokens"
-        );
-        _burn(sender, amount);
-
-        // Unknown ERC20 token behaviour, cater for bool usage
-        uint256 redemptionAmount = _redemptionAmount(amount);
-        bool transferred = _securityToken.transfer(sender, redemptionAmount);
-        require(transferred, "Bond::redeem: Security transfer failed");
-
-        emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
+    function treasury() external view returns (address) {
+        return _treasury;
     }
 
     /**
@@ -161,13 +168,6 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      */
     function treasury(address treasury) external whenNotPaused onlyOwner {
         _treasury = treasury;
-    }
-
-    /**
-     * @dev Retrieves the address that receives any slashed funds.this
-     */
-    function treasury() external view returns (address) {
-        return _treasury;
     }
 
     /**
