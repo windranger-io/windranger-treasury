@@ -92,10 +92,16 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         emit DebtCertificate(sender, symbol(), amount);
     }
 
+    /**
+     * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
+     */
     function mint(uint256 amount) external whenNotPaused onlyOwner {
         _mint(address(this), amount);
     }
 
+    /**
+     * @dev Debt certificates are not allowed to be redeemed before the owner gives their permission.
+     */
     function allowRedemption()
         external
         whenNotPaused
