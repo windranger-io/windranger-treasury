@@ -40,7 +40,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         _;
     }
 
-    /// Multiplier / divider for four decimal places
+    /// Multiplier / divider for four decimal places, used in redemption ratio calculation.
     uint256 private constant DECIMAL_OFFSET = 10000;
 
     IERC20Metadata private immutable _securityToken;
