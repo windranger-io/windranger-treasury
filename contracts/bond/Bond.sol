@@ -14,10 +14,24 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  */
 contract Bond is Context, ERC20, Ownable, Pausable {
     event AllowRedemption(address authorizer);
-    event DebtCertificateIssue(address receiver, string symbol, uint256 amount);
-    event Deposit(address depositor, string symbol, uint256 amount);
-    event Redemption(address redeemer, string symbol, uint256 amount);
-    event Slash(string symbol, uint256 amount);
+    event DebtCertificateIssue(
+        address receiver,
+        string debSymbol,
+        uint256 debtAmount
+    );
+    event Deposit(
+        address depositor,
+        string securitySymbol,
+        uint256 securityAmount
+    );
+    event Redemption(
+        address redeemer,
+        string debtSymbol,
+        uint256 debtAmount,
+        string securitySymbol,
+        uint256 securityAmount
+    );
+    event Slash(string securitySymbol, uint256 securityAmount);
 
     /**
      * @dev Modifier to make a function callable only when the contract is not redeemable.
@@ -124,7 +138,13 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         bool transferred = _securityToken.transfer(sender, redemptionAmount);
         require(transferred, "Bond::redeem: Security transfer failed");
 
-        emit Redemption(sender, _securityToken.symbol(), redemptionAmount);
+        emit Redemption(
+            sender,
+            symbol(),
+            amount,
+            _securityToken.symbol(),
+            redemptionAmount
+        );
     }
 
     /**
@@ -153,11 +173,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transferFrom(
-            address(this),
-            _treasury,
-            amount
-        );
+        bool transferred = _securityToken.transfer(_treasury, amount);
         require(transferred, "Bond::slash: Security transfer failed");
 
         emit Slash(_securityToken.symbol(), amount);

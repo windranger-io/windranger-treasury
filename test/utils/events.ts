@@ -4,7 +4,8 @@ import {BondCreatedEvent} from '../../typechain/BondFactory'
 import {
     AllowRedemptionEvent,
     DebtCertificateIssueEvent,
-    RedemptionEvent
+    RedemptionEvent,
+    SlashEvent
 } from '../../typechain/Bond'
 
 /**
@@ -63,18 +64,28 @@ export function eventBondCreated(event: Event): [
 /**
  * Shape check and conversion for a RedemptionEvent.
  */
-export function eventRedemption(event: Event): [string, string, BigNumber] & {
+export function eventRedemption(event: Event): [
+    string,
+    string,
+    BigNumber,
+    string,
+    BigNumber
+] & {
     redeemer: string
-    symbol: string
-    amount: BigNumber
+    debtSymbol: string
+    debtAmount: BigNumber
+    securitySymbol: string
+    securityAmount: BigNumber
 } {
     const debt = event as RedemptionEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
     expect(args?.redeemer).is.not.undefined
-    expect(args?.symbol).is.not.undefined
-    expect(args?.amount).is.not.undefined
+    expect(args?.debtSymbol).is.not.undefined
+    expect(args?.debtAmount).is.not.undefined
+    expect(args?.securitySymbol).is.not.undefined
+    expect(args?.securityAmount).is.not.undefined
 
     return debt.args
 }
@@ -95,6 +106,22 @@ export function eventAllowRedemption(
 }
 
 /**
+ * Shape check and conversion for a SlashEvent.
+ */
+export function eventSlash(
+    event: Event
+): [string, BigNumber] & {securitySymbol: string; securityAmount: BigNumber} {
+    const debt = event as SlashEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.securitySymbol).is.not.undefined
+    expect(args?.securityAmount).is.not.undefined
+
+    return debt.args
+}
+
+/**
  * Shape check and conversion for a DebtCertificateIssueEvent.
  */
 export function eventDebtCertificateIssue(event: Event): [
@@ -103,16 +130,16 @@ export function eventDebtCertificateIssue(event: Event): [
     BigNumber
 ] & {
     receiver: string
-    symbol: string
-    amount: BigNumber
+    debSymbol: string
+    debtAmount: BigNumber
 } {
     const debt = event as DebtCertificateIssueEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
     expect(args?.receiver).is.not.undefined
-    expect(args?.symbol).is.not.undefined
-    expect(args?.amount).is.not.undefined
+    expect(args?.debSymbol).is.not.undefined
+    expect(args?.debtAmount).is.not.undefined
 
     return debt.args
 }
