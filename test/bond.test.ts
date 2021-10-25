@@ -23,6 +23,8 @@ import {transactionSuccess} from './utils/transaction'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
+const ZERO = 0n
+
 describe('Bond contract', () => {
     before(async () => {
         admin = await signer(0)
@@ -44,7 +46,7 @@ describe('Bond contract', () => {
         expect(treasuryAfter).equals(admin.address)
     })
 
-    it('two guarantors who fully deposit, then fully withdraw', async () => {
+    it('two guarantors who fully deposit, then fully redeem', async () => {
         const guarantorOnePledge = 240050n
         const guarantorTwoPledge = 99500n
         const debtCertificates = guarantorOnePledge + guarantorTwoPledge
@@ -53,7 +55,6 @@ describe('Bond contract', () => {
         const bond = await createBond(factory, debtCertificates)
         const bondGuarantorOne = bond.connect(guarantorOne)
         const bondGuarantorTwo = bond.connect(guarantorTwo)
-
         await securityAsset
             .connect(guarantorOne)
             .increaseAllowance(bond.address, guarantorOnePledge)
@@ -63,17 +64,43 @@ describe('Bond contract', () => {
 
         //TODO validate events (Type & content) on my contracts
 
+        // Guarantors deposit full pledge amount
+        expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
+        expect(await securityAsset.balanceOf(guarantorOne.address)).equals(
+            guarantorOnePledge
+        )
+        expect(await bond.balanceOf(guarantorTwo.address)).equals(ZERO)
+        expect(await securityAsset.balanceOf(guarantorTwo.address)).equals(
+            guarantorTwoPledge
+        )
+
         await transactionSuccess(bondGuarantorOne.deposit(guarantorOnePledge))
         await transactionSuccess(bondGuarantorTwo.deposit(guarantorTwoPledge))
 
-        await transactionSuccess(bond.connect(admin).allowRedemption())
+        expect(await bond.balanceOf(guarantorOne.address)).equals(
+            guarantorOnePledge
+        )
+        expect(await securityAsset.balanceOf(guarantorOne.address)).equals(ZERO)
+        expect(await bond.balanceOf(guarantorTwo.address)).equals(
+            guarantorTwoPledge
+        )
+        expect(await securityAsset.balanceOf(guarantorTwo.address)).equals(ZERO)
 
-        //TODO check balances (debt & security
+        // Bond released by Owner
+        await transactionSuccess(bond.allowRedemption())
 
+        // Guarantors redeem their bonds
         await transactionSuccess(bondGuarantorOne.redeem(guarantorOnePledge))
         await transactionSuccess(bondGuarantorTwo.redeem(guarantorTwoPledge))
 
-        //TODO check balances (debt & security
+        expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
+        expect(await securityAsset.balanceOf(guarantorOne.address)).equals(
+            guarantorOnePledge
+        )
+        expect(await bond.balanceOf(guarantorTwo.address)).equals(ZERO)
+        expect(await securityAsset.balanceOf(guarantorTwo.address)).equals(
+            guarantorTwoPledge
+        )
     })
 
     let admin: SignerWithAddress
