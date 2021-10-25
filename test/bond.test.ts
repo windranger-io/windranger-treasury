@@ -46,6 +46,7 @@ describe('Bond contract', () => {
 
     beforeEach(async () => {
         securityAsset = await deployBitDao(admin)
+        securityAssetSymbol = await securityAsset.symbol()
         factory = await deployBondFactory(securityAsset.address, treasury)
     })
 
@@ -64,19 +65,20 @@ describe('Bond contract', () => {
         const guarantorOnePledge = 240050n
         const guarantorTwoPledge = 99500n
         const debtCertificates = guarantorOnePledge + guarantorTwoPledge
-        await securityAsset.transfer(guarantorOne.address, guarantorOnePledge)
-        await securityAsset.transfer(guarantorTwo.address, guarantorTwoPledge)
-        const securityAssetSymbol = await securityAsset.symbol()
         const bond = await createBond(factory, debtCertificates)
         const debtSymbol = await bond.symbol()
+        await setupGuarantorWithSecurityAsset(
+            guarantorOne,
+            guarantorOnePledge,
+            bond
+        )
+        await setupGuarantorWithSecurityAsset(
+            guarantorTwo,
+            guarantorTwoPledge,
+            bond
+        )
         const bondGuarantorOne = bond.connect(guarantorOne)
         const bondGuarantorTwo = bond.connect(guarantorTwo)
-        await securityAsset
-            .connect(guarantorOne)
-            .increaseAllowance(bond.address, guarantorOnePledge)
-        await securityAsset
-            .connect(guarantorTwo)
-            .increaseAllowance(bond.address, guarantorTwoPledge)
 
         // Setup with each guarantor having only just enough funding
         expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
@@ -178,27 +180,26 @@ describe('Bond contract', () => {
             guarantorOnePledge + guarantorTwoPledge + guarantorThreePledge
         const slashedSecurities =
             debtCertificates - slash(debtCertificates, FORTY_PERCENT)
-        await securityAsset.transfer(guarantorOne.address, guarantorOnePledge)
-        await securityAsset.transfer(guarantorTwo.address, guarantorTwoPledge)
-        await securityAsset.transfer(
-            guarantorThree.address,
-            guarantorThreePledge
-        )
-        const securityAssetSymbol = await securityAsset.symbol()
         const bond = await createBond(factory, debtCertificates)
         const debtSymbol = await bond.symbol()
+        await setupGuarantorWithSecurityAsset(
+            guarantorOne,
+            guarantorOnePledge,
+            bond
+        )
+        await setupGuarantorWithSecurityAsset(
+            guarantorTwo,
+            guarantorTwoPledge,
+            bond
+        )
+        await setupGuarantorWithSecurityAsset(
+            guarantorThree,
+            guarantorThreePledge,
+            bond
+        )
         const bondGuarantorOne = bond.connect(guarantorOne)
         const bondGuarantorTwo = bond.connect(guarantorTwo)
         const bondGuarantorThree = bond.connect(guarantorThree)
-        await securityAsset
-            .connect(guarantorOne)
-            .increaseAllowance(bond.address, guarantorOnePledge)
-        await securityAsset
-            .connect(guarantorTwo)
-            .increaseAllowance(bond.address, guarantorTwoPledge)
-        await securityAsset
-            .connect(guarantorThree)
-            .increaseAllowance(bond.address, guarantorThreePledge)
 
         // Setup with each guarantor having only just enough funding
         expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
@@ -356,9 +357,21 @@ describe('Bond contract', () => {
         )
     })
 
+    async function setupGuarantorWithSecurityAsset(
+        guarantor: SignerWithAddress,
+        pledge: bigint,
+        bond: Bond
+    ) {
+        await securityAsset.transfer(guarantor.address, pledge)
+        await securityAsset
+            .connect(guarantor)
+            .increaseAllowance(bond.address, pledge)
+    }
+
     let admin: SignerWithAddress
     let treasury: string
     let securityAsset: ERC20
+    let securityAssetSymbol: string
     let guarantorOne: SignerWithAddress
     let guarantorTwo: SignerWithAddress
     let guarantorThree: SignerWithAddress
