@@ -7,6 +7,7 @@ import {
     RedemptionEvent,
     SlashEvent
 } from '../../typechain/Bond'
+import {TransferEvent} from '../../typechain/IERC20'
 
 /**
  * Retrieves an event with matching name, otherwise fails the test.
@@ -117,6 +118,23 @@ export function eventSlash(
     const args = event.args
     expect(args?.securitySymbol).is.not.undefined
     expect(args?.securityAmount).is.not.undefined
+
+    return debt.args
+}
+
+/**
+ * Shape check and conversion for a SlashEvent.
+ */
+export function eventTransfer(
+    event: Event
+): [string, string, BigNumber] & {from: string; to: string; value: BigNumber} {
+    const debt = event as TransferEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.from).is.not.undefined
+    expect(args?.to).is.not.undefined
+    expect(args?.value).is.not.undefined
 
     return debt.args
 }

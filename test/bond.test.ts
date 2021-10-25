@@ -23,7 +23,8 @@ import {
     eventDebtCertificateIssue,
     eventRedemption,
     events,
-    eventSlash
+    eventSlash,
+    eventTransfer
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -175,7 +176,7 @@ describe('Bond contract', () => {
         const guarantorThreeSlashed = slash(guarantorThreePledge, FORTY_PERCENT)
         const debtCertificates =
             guarantorOnePledge + guarantorTwoPledge + guarantorThreePledge
-        const fortyPercentSlashing =
+        const slashedSecurities =
             debtCertificates - slash(debtCertificates, FORTY_PERCENT)
         await securityAsset.transfer(guarantorOne.address, guarantorOnePledge)
         await securityAsset.transfer(guarantorTwo.address, guarantorTwoPledge)
@@ -263,16 +264,27 @@ describe('Bond contract', () => {
         expect(await securityAsset.balanceOf(guarantorThree.address)).equals(
             ZERO
         )
+        expect(await bond.balanceOf(treasury)).equals(ZERO)
+        expect(await securityAsset.balanceOf(treasury)).equals(ZERO)
 
         // Slash forty percent of the security assets
         const slashReceipt = await successfulTransaction(
-            bond.slash(fortyPercentSlashing)
+            bond.slash(slashedSecurities)
         )
         const slashEvent = eventSlash(event('Slash', events(slashReceipt)))
         expect(slashEvent.securitySymbol).equals(securityAssetSymbol)
-        expect(slashEvent.securityAmount).equals(fortyPercentSlashing)
-        //TODO check for transfer to treasury
+        expect(slashEvent.securityAmount).equals(slashedSecurities)
+        const transferEvent = eventTransfer(
+            event('Transfer', events(slashReceipt))
+        )
+        expect(transferEvent.from).equals(bond.address)
+        expect(transferEvent.to).equals(treasury)
+        expect(transferEvent.value).equals(slashedSecurities)
 
+        expect(await bond.balanceOf(treasury)).equals(ZERO)
+        expect(await securityAsset.balanceOf(treasury)).equals(
+            slashedSecurities
+        )
         // Bond released by Owner
         const allowRedemptionReceipt = await successfulTransaction(
             bond.allowRedemption()
@@ -337,6 +349,10 @@ describe('Bond contract', () => {
         expect(await bond.balanceOf(guarantorThree.address)).equals(ZERO)
         expect(await securityAsset.balanceOf(guarantorThree.address)).equals(
             guarantorThreeSlashed
+        )
+        expect(await bond.balanceOf(treasury)).equals(ZERO)
+        expect(await securityAsset.balanceOf(treasury)).equals(
+            slashedSecurities
         )
 
         //TODO check treasury
