@@ -21,10 +21,10 @@ import {
     allowRedemptionEvent,
     bondCreatedEvent,
     debtCertificateIssueEvent,
-    redemptionEvent,
     events,
     slashEvent,
-    transferEvent
+    transferEvent,
+    verifyRedemptionEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -77,8 +77,6 @@ describe('Bond contract', () => {
             guarantorTwoPledge,
             bond
         )
-        const bondGuarantorOne = bond.connect(guarantorOne)
-        const bondGuarantorTwo = bond.connect(guarantorTwo)
 
         // Setup with each guarantor having only just enough funding
         expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
@@ -92,7 +90,7 @@ describe('Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOneReceipt = await successfulTransaction(
-            bondGuarantorOne.deposit(guarantorOnePledge)
+            bond.connect(guarantorOne).deposit(guarantorOnePledge)
         )
         const depositOneEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositOneReceipt))
@@ -103,7 +101,7 @@ describe('Bond contract', () => {
 
         // Guarantor Two deposits their full pledge amount
         const depositTwoReceipt = await successfulTransaction(
-            bondGuarantorTwo.deposit(guarantorTwoPledge)
+            bond.connect(guarantorTwo).deposit(guarantorTwoPledge)
         )
         const depositTwoEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositTwoReceipt))
@@ -133,30 +131,25 @@ describe('Bond contract', () => {
 
         // Guarantor One redeem their bond in full
         const redeemOneReceipt = await successfulTransaction(
-            bondGuarantorOne.redeem(guarantorOnePledge)
+            bond.connect(guarantorOne).redeem(guarantorOnePledge)
         )
-        const redemptionOneEvent = redemptionEvent(
-            event('Redemption', events(redeemOneReceipt))
+        await verifyRedemptionEvent(
+            redeemOneReceipt,
+            guarantorOne.address,
+            {symbol: debtSymbol, amount: guarantorOnePledge},
+            {symbol: securityAssetSymbol, amount: guarantorOnePledge}
         )
-        expect(redemptionOneEvent.redeemer).equals(guarantorOne.address)
-        expect(redemptionOneEvent.debtSymbol).equals(debtSymbol)
-        expect(redemptionOneEvent.debtAmount).equals(guarantorOnePledge)
-        expect(redemptionOneEvent.securitySymbol).equals(securityAssetSymbol)
-        expect(redemptionOneEvent.securityAmount).equals(guarantorOnePledge)
 
         // Guarantor Two redeem their bond in full
         const redeemTwoReceipt = await successfulTransaction(
-            bondGuarantorTwo.redeem(guarantorTwoPledge)
+            bond.connect(guarantorTwo).redeem(guarantorTwoPledge)
         )
-
-        const redemptionTwoEvent = redemptionEvent(
-            event('Redemption', events(redeemTwoReceipt))
+        await verifyRedemptionEvent(
+            redeemTwoReceipt,
+            guarantorTwo.address,
+            {symbol: debtSymbol, amount: guarantorTwoPledge},
+            {symbol: securityAssetSymbol, amount: guarantorTwoPledge}
         )
-        expect(redemptionTwoEvent.redeemer).equals(guarantorTwo.address)
-        expect(redemptionTwoEvent.debtSymbol).equals(debtSymbol)
-        expect(redemptionTwoEvent.debtAmount).equals(guarantorTwoPledge)
-        expect(redemptionTwoEvent.securitySymbol).equals(securityAssetSymbol)
-        expect(redemptionTwoEvent.securityAmount).equals(guarantorTwoPledge)
 
         // State is equivalent to the test beginning
         expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
@@ -197,9 +190,6 @@ describe('Bond contract', () => {
             guarantorThreePledge,
             bond
         )
-        const bondGuarantorOne = bond.connect(guarantorOne)
-        const bondGuarantorTwo = bond.connect(guarantorTwo)
-        const bondGuarantorThree = bond.connect(guarantorThree)
 
         // Setup with each guarantor having only just enough funding
         expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
@@ -217,7 +207,7 @@ describe('Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOneReceipt = await successfulTransaction(
-            bondGuarantorOne.deposit(guarantorOnePledge)
+            bond.connect(guarantorOne).deposit(guarantorOnePledge)
         )
         const depositOneEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositOneReceipt))
@@ -228,7 +218,7 @@ describe('Bond contract', () => {
 
         // Guarantor Two deposits their full pledge amount
         const depositTwoReceipt = await successfulTransaction(
-            bondGuarantorTwo.deposit(guarantorTwoPledge)
+            bond.connect(guarantorTwo).deposit(guarantorTwoPledge)
         )
         const depositTwoEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositTwoReceipt))
@@ -239,7 +229,7 @@ describe('Bond contract', () => {
 
         // Guarantor Three deposits their full pledge amount
         const depositThreeReceipt = await successfulTransaction(
-            bondGuarantorThree.deposit(guarantorThreePledge)
+            bond.connect(guarantorThree).deposit(guarantorThreePledge)
         )
         const depositThreeEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositThreeReceipt))
@@ -297,45 +287,35 @@ describe('Bond contract', () => {
 
         // Guarantor One redeem their slashed bond
         const redeemOneReceipt = await successfulTransaction(
-            bondGuarantorOne.redeem(guarantorOnePledge)
+            bond.connect(guarantorOne).redeem(guarantorOnePledge)
         )
-        const redemptionOneEvent = redemptionEvent(
-            event('Redemption', events(redeemOneReceipt))
+        await verifyRedemptionEvent(
+            redeemOneReceipt,
+            guarantorOne.address,
+            {symbol: debtSymbol, amount: guarantorOnePledge},
+            {symbol: securityAssetSymbol, amount: guarantorOneSlashed}
         )
-        expect(redemptionOneEvent.redeemer).equals(guarantorOne.address)
-        expect(redemptionOneEvent.debtSymbol).equals(debtSymbol)
-        expect(redemptionOneEvent.debtAmount).equals(guarantorOnePledge)
-        expect(redemptionOneEvent.securitySymbol).equals(securityAssetSymbol)
-        expect(redemptionOneEvent.securityAmount).equals(guarantorOneSlashed)
 
         // Guarantor Two redeem their bond in full
         const redeemTwoReceipt = await successfulTransaction(
-            bondGuarantorTwo.redeem(guarantorTwoPledge)
+            bond.connect(guarantorTwo).redeem(guarantorTwoPledge)
         )
-
-        const redemptionTwoEvent = redemptionEvent(
-            event('Redemption', events(redeemTwoReceipt))
+        await verifyRedemptionEvent(
+            redeemTwoReceipt,
+            guarantorTwo.address,
+            {symbol: debtSymbol, amount: guarantorTwoPledge},
+            {symbol: securityAssetSymbol, amount: guarantorTwoSlashed}
         )
-        expect(redemptionTwoEvent.redeemer).equals(guarantorTwo.address)
-        expect(redemptionTwoEvent.debtSymbol).equals(debtSymbol)
-        expect(redemptionTwoEvent.debtAmount).equals(guarantorTwoPledge)
-        expect(redemptionTwoEvent.securitySymbol).equals(securityAssetSymbol)
-        expect(redemptionTwoEvent.securityAmount).equals(guarantorTwoSlashed)
 
         // Guarantor Three redeem their bond in full
         const redeemThreeReceipt = await successfulTransaction(
-            bondGuarantorThree.redeem(guarantorThreePledge)
+            bond.connect(guarantorThree).redeem(guarantorThreePledge)
         )
-
-        const redemptionThreeEvent = redemptionEvent(
-            event('Redemption', events(redeemThreeReceipt))
-        )
-        expect(redemptionThreeEvent.redeemer).equals(guarantorThree.address)
-        expect(redemptionThreeEvent.debtSymbol).equals(debtSymbol)
-        expect(redemptionThreeEvent.debtAmount).equals(guarantorThreePledge)
-        expect(redemptionThreeEvent.securitySymbol).equals(securityAssetSymbol)
-        expect(redemptionThreeEvent.securityAmount).equals(
-            guarantorThreeSlashed
+        await verifyRedemptionEvent(
+            redeemThreeReceipt,
+            guarantorThree.address,
+            {symbol: debtSymbol, amount: guarantorThreePledge},
+            {symbol: securityAssetSymbol, amount: guarantorThreeSlashed}
         )
 
         // State is equivalent to the test beginning

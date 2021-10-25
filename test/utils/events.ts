@@ -24,6 +24,11 @@ export function allowRedemptionEvent(
     return debt.args
 }
 
+export type BalanceExpected = {
+    symbol: string
+    amount: bigint
+}
+
 /**
  * Shape check and conversion for a BondCreatedEvent.
  */
@@ -160,4 +165,20 @@ export function transferEvent(
     expect(args?.value).is.not.undefined
 
     return debt.args
+}
+
+export async function verifyRedemptionEvent(
+    receipt: ContractReceipt,
+    redeemer: string,
+    debt: BalanceExpected,
+    security: BalanceExpected
+): Promise<void> {
+    const redemptionTwoEvent = redemptionEvent(
+        event('Redemption', events(receipt))
+    )
+    expect(redemptionTwoEvent.redeemer).equals(redeemer)
+    expect(redemptionTwoEvent.debtSymbol).equals(debt.symbol)
+    expect(redemptionTwoEvent.debtAmount).equals(debt.amount)
+    expect(redemptionTwoEvent.securitySymbol).equals(security.symbol)
+    expect(redemptionTwoEvent.securityAmount).equals(security.amount)
 }
