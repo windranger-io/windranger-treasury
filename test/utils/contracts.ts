@@ -4,7 +4,7 @@ import {expect} from 'chai'
 import {BitDAO, Bond, BondFactory} from '../../typechain'
 import {ContractReceipt, ContractTransaction} from 'ethers'
 
-export async function connectBond(address: string): Promise<Bond> {
+export async function bondContractAt(address: string): Promise<Bond> {
     const factory = await ethers.getContractFactory('Bond')
     return <Bond>factory.attach(address)
 }

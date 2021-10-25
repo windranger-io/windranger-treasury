@@ -13,7 +13,8 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  * @dev A single token type is held by the contract as security.
  */
 contract Bond is Context, ERC20, Ownable, Pausable {
-    event DebtCertificate(address receiver, string symbol, uint256 amount);
+    event AllowRedemption(address authorizer);
+    event DebtCertificateIssue(address receiver, string symbol, uint256 amount);
     event Deposit(address depositor, string symbol, uint256 amount);
     event Redemption(address redeemer, string symbol, uint256 amount);
     event Slash(string symbol, uint256 amount);
@@ -68,6 +69,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         onlyOwner
     {
         _isRedemptionAllowed = true;
+        emit AllowRedemption(_msgSender());
     }
 
     /**
@@ -87,7 +89,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         emit Deposit(sender, _securityToken.symbol(), amount);
 
         _transfer(address(this), sender, amount);
-        emit DebtCertificate(sender, symbol(), amount);
+        emit DebtCertificateIssue(sender, symbol(), amount);
     }
 
     /**
