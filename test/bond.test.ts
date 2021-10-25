@@ -18,6 +18,7 @@ import {
 import {BigNumberish} from 'ethers'
 import {validateBondCreateEvent, validateEvents} from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {transactionSuccess} from './utils/transaction'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -50,27 +51,32 @@ describe('Bond contract', () => {
         await securityAsset.transfer(guarantorOne.address, guarantorOnePledge)
         await securityAsset.transfer(guarantorTwo.address, guarantorTwoPledge)
         const bond = await createBond(factory, debtCertificates)
-
-        //TODO parse the response for the expected events - all calls
-        //TODO check for successfull transaction responses
-
         await securityAsset
             .connect(guarantorOne)
             .increaseAllowance(bond.address, guarantorOnePledge)
-
-        await bond.connect(guarantorOne).deposit(guarantorOnePledge)
-
         await securityAsset
             .connect(guarantorTwo)
             .increaseAllowance(bond.address, guarantorTwoPledge)
-        await bond.connect(guarantorTwo).deposit(guarantorTwoPledge)
 
-        await bond.connect(admin).allowRedemption()
+        //TODO validate events (Type & content) on my contracts
+
+        await transactionSuccess(
+            bond.connect(guarantorOne).deposit(guarantorOnePledge)
+        )
+        await transactionSuccess(
+            bond.connect(guarantorTwo).deposit(guarantorTwoPledge)
+        )
+
+        await transactionSuccess(bond.connect(admin).allowRedemption())
 
         //TODO check balances (debt & security
 
-        await bond.connect(guarantorOne).redeem(guarantorOnePledge)
-        await bond.connect(guarantorTwo).redeem(guarantorTwoPledge)
+        await transactionSuccess(
+            bond.connect(guarantorOne).redeem(guarantorOnePledge)
+        )
+        await transactionSuccess(
+            bond.connect(guarantorTwo).redeem(guarantorTwoPledge)
+        )
 
         //TODO check balances (debt & security
     })

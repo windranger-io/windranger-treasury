@@ -12,7 +12,7 @@ export async function connectBond(address: string): Promise<Bond> {
 export async function execute(
     transaction: Promise<ContractTransaction>
 ): Promise<ContractReceipt> {
-    return (await transaction).wait(0)
+    return (await transaction).wait()
 }
 
 export async function deployBondFactory(
