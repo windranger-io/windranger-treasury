@@ -51,6 +51,9 @@ describe('Bond contract', () => {
         await securityAsset.transfer(guarantorOne.address, guarantorOnePledge)
         await securityAsset.transfer(guarantorTwo.address, guarantorTwoPledge)
         const bond = await createBond(factory, debtCertificates)
+        const bondGuarantorOne = bond.connect(guarantorOne)
+        const bondGuarantorTwo = bond.connect(guarantorTwo)
+
         await securityAsset
             .connect(guarantorOne)
             .increaseAllowance(bond.address, guarantorOnePledge)
@@ -60,23 +63,15 @@ describe('Bond contract', () => {
 
         //TODO validate events (Type & content) on my contracts
 
-        await transactionSuccess(
-            bond.connect(guarantorOne).deposit(guarantorOnePledge)
-        )
-        await transactionSuccess(
-            bond.connect(guarantorTwo).deposit(guarantorTwoPledge)
-        )
+        await transactionSuccess(bondGuarantorOne.deposit(guarantorOnePledge))
+        await transactionSuccess(bondGuarantorTwo.deposit(guarantorTwoPledge))
 
         await transactionSuccess(bond.connect(admin).allowRedemption())
 
         //TODO check balances (debt & security
 
-        await transactionSuccess(
-            bond.connect(guarantorOne).redeem(guarantorOnePledge)
-        )
-        await transactionSuccess(
-            bond.connect(guarantorTwo).redeem(guarantorTwoPledge)
-        )
+        await transactionSuccess(bondGuarantorOne.redeem(guarantorOnePledge))
+        await transactionSuccess(bondGuarantorTwo.redeem(guarantorTwoPledge))
 
         //TODO check balances (debt & security
     })
