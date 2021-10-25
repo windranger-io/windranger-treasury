@@ -9,7 +9,7 @@ import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BondFactory} from '../typechain'
 import {deployBondFactory, execute, signer} from './utils/contracts'
-import {eventBondCreated, event, events} from './utils/events'
+import {bondCreatedEvent, event, events} from './utils/events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -30,7 +30,7 @@ describe('BondFactory contract', () => {
             bonds.createBond(555666777n, bondName, bondSymbol)
         )
 
-        const creationEvent = eventBondCreated(
+        const creationEvent = bondCreatedEvent(
             event('BondCreated', events(receipt))
         )
         expect(ethers.utils.isAddress(creationEvent.bond)).is.true

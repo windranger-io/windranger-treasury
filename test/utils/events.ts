@@ -10,33 +10,24 @@ import {
 import {TransferEvent} from '../../typechain/IERC20'
 
 /**
- * Retrieves an event with matching name, otherwise fails the test.
- *
- * @param name exact expected within the events.
- * @param events events that is expected to contain an exact match for the given name.
+ * Shape check and conversion for a AllowRedemptionEvent.
  */
-export function event(name: string, events: Event[]): Event {
-    for (let i = 0; i < events.length; i++) {
-        if (events[i]?.event === name) return events[i]
-    }
+export function allowRedemptionEvent(
+    event: Event
+): [string] & {authorizer: string} {
+    const debt = event as AllowRedemptionEvent
+    expect(event.args).is.not.undefined
 
-    expect.fail('Failed to find event matching name: %s', name)
-}
+    const args = event.args
+    expect(args?.authorizer).is.not.undefined
 
-/**
- * Checked retrieval of the event array from a receipt.
- */
-export function events(receipt: ContractReceipt): Event[] {
-    expect(receipt.events).is.not.undefined
-    const events = receipt.events
-    expect(events).is.not.undefined
-    return events ? events : []
+    return debt.args
 }
 
 /**
  * Shape check and conversion for a BondCreatedEvent.
  */
-export function eventBondCreated(event: Event): [
+export function bondCreatedEvent(event: Event): [
     string,
     string,
     string,
@@ -63,9 +54,56 @@ export function eventBondCreated(event: Event): [
 }
 
 /**
+ * Shape check and conversion for a DebtCertificateIssueEvent.
+ */
+export function debtCertificateIssueEvent(event: Event): [
+    string,
+    string,
+    BigNumber
+] & {
+    receiver: string
+    debSymbol: string
+    debtAmount: BigNumber
+} {
+    const debt = event as DebtCertificateIssueEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.receiver).is.not.undefined
+    expect(args?.debSymbol).is.not.undefined
+    expect(args?.debtAmount).is.not.undefined
+
+    return debt.args
+}
+
+/**
+ * Retrieves an event with matching name, otherwise fails the test.
+ *
+ * @param name exact expected within the events.
+ * @param events events that is expected to contain an exact match for the given name.
+ */
+export function event(name: string, events: Event[]): Event {
+    for (let i = 0; i < events.length; i++) {
+        if (events[i]?.event === name) return events[i]
+    }
+
+    expect.fail('Failed to find event matching name: %s', name)
+}
+
+/**
+ * Checked retrieval of the event array from a receipt.
+ */
+export function events(receipt: ContractReceipt): Event[] {
+    expect(receipt.events).is.not.undefined
+    const events = receipt.events
+    expect(events).is.not.undefined
+    return events ? events : []
+}
+
+/**
  * Shape check and conversion for a RedemptionEvent.
  */
-export function eventRedemption(event: Event): [
+export function redemptionEvent(event: Event): [
     string,
     string,
     BigNumber,
@@ -92,24 +130,9 @@ export function eventRedemption(event: Event): [
 }
 
 /**
- * Shape check and conversion for a AllowRedemptionEvent.
- */
-export function eventAllowRedemption(
-    event: Event
-): [string] & {authorizer: string} {
-    const debt = event as AllowRedemptionEvent
-    expect(event.args).is.not.undefined
-
-    const args = event.args
-    expect(args?.authorizer).is.not.undefined
-
-    return debt.args
-}
-
-/**
  * Shape check and conversion for a SlashEvent.
  */
-export function eventSlash(
+export function slashEvent(
     event: Event
 ): [string, BigNumber] & {securitySymbol: string; securityAmount: BigNumber} {
     const debt = event as SlashEvent
@@ -125,7 +148,7 @@ export function eventSlash(
 /**
  * Shape check and conversion for a SlashEvent.
  */
-export function eventTransfer(
+export function transferEvent(
     event: Event
 ): [string, string, BigNumber] & {from: string; to: string; value: BigNumber} {
     const debt = event as TransferEvent
@@ -135,29 +158,6 @@ export function eventTransfer(
     expect(args?.from).is.not.undefined
     expect(args?.to).is.not.undefined
     expect(args?.value).is.not.undefined
-
-    return debt.args
-}
-
-/**
- * Shape check and conversion for a DebtCertificateIssueEvent.
- */
-export function eventDebtCertificateIssue(event: Event): [
-    string,
-    string,
-    BigNumber
-] & {
-    receiver: string
-    debSymbol: string
-    debtAmount: BigNumber
-} {
-    const debt = event as DebtCertificateIssueEvent
-    expect(event.args).is.not.undefined
-
-    const args = event.args
-    expect(args?.receiver).is.not.undefined
-    expect(args?.debSymbol).is.not.undefined
-    expect(args?.debtAmount).is.not.undefined
 
     return debt.args
 }

@@ -18,13 +18,13 @@ import {
 import {BigNumberish} from 'ethers'
 import {
     event,
-    eventAllowRedemption,
-    eventBondCreated,
-    eventDebtCertificateIssue,
-    eventRedemption,
+    allowRedemptionEvent,
+    bondCreatedEvent,
+    debtCertificateIssueEvent,
+    redemptionEvent,
     events,
-    eventSlash,
-    eventTransfer
+    slashEvent,
+    transferEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -92,7 +92,7 @@ describe('Bond contract', () => {
         const depositOneReceipt = await successfulTransaction(
             bondGuarantorOne.deposit(guarantorOnePledge)
         )
-        const depositOneEvent = eventDebtCertificateIssue(
+        const depositOneEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositOneReceipt))
         )
         expect(depositOneEvent.receiver).equals(guarantorOne.address)
@@ -103,7 +103,7 @@ describe('Bond contract', () => {
         const depositTwoReceipt = await successfulTransaction(
             bondGuarantorTwo.deposit(guarantorTwoPledge)
         )
-        const depositTwoEvent = eventDebtCertificateIssue(
+        const depositTwoEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositTwoReceipt))
         )
         expect(depositTwoEvent.receiver).equals(guarantorTwo.address)
@@ -124,16 +124,16 @@ describe('Bond contract', () => {
         const allowRedemptionReceipt = await successfulTransaction(
             bond.allowRedemption()
         )
-        const allowRedemptionEvent = eventAllowRedemption(
+        const allowRedemption = allowRedemptionEvent(
             event('AllowRedemption', events(allowRedemptionReceipt))
         )
-        expect(allowRedemptionEvent.authorizer).equals(admin.address)
+        expect(allowRedemption.authorizer).equals(admin.address)
 
         // Guarantor One redeem their bond in full
         const redeemOneReceipt = await successfulTransaction(
             bondGuarantorOne.redeem(guarantorOnePledge)
         )
-        const redemptionOneEvent = eventRedemption(
+        const redemptionOneEvent = redemptionEvent(
             event('Redemption', events(redeemOneReceipt))
         )
         expect(redemptionOneEvent.redeemer).equals(guarantorOne.address)
@@ -147,7 +147,7 @@ describe('Bond contract', () => {
             bondGuarantorTwo.redeem(guarantorTwoPledge)
         )
 
-        const redemptionTwoEvent = eventRedemption(
+        const redemptionTwoEvent = redemptionEvent(
             event('Redemption', events(redeemTwoReceipt))
         )
         expect(redemptionTwoEvent.redeemer).equals(guarantorTwo.address)
@@ -218,7 +218,7 @@ describe('Bond contract', () => {
         const depositOneReceipt = await successfulTransaction(
             bondGuarantorOne.deposit(guarantorOnePledge)
         )
-        const depositOneEvent = eventDebtCertificateIssue(
+        const depositOneEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositOneReceipt))
         )
         expect(depositOneEvent.receiver).equals(guarantorOne.address)
@@ -229,7 +229,7 @@ describe('Bond contract', () => {
         const depositTwoReceipt = await successfulTransaction(
             bondGuarantorTwo.deposit(guarantorTwoPledge)
         )
-        const depositTwoEvent = eventDebtCertificateIssue(
+        const depositTwoEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositTwoReceipt))
         )
         expect(depositTwoEvent.receiver).equals(guarantorTwo.address)
@@ -240,7 +240,7 @@ describe('Bond contract', () => {
         const depositThreeReceipt = await successfulTransaction(
             bondGuarantorThree.deposit(guarantorThreePledge)
         )
-        const depositThreeEvent = eventDebtCertificateIssue(
+        const depositThreeEvent = debtCertificateIssueEvent(
             event('DebtCertificateIssue', events(depositThreeReceipt))
         )
         expect(depositThreeEvent.receiver).equals(guarantorThree.address)
@@ -271,15 +271,15 @@ describe('Bond contract', () => {
         const slashReceipt = await successfulTransaction(
             bond.slash(slashedSecurities)
         )
-        const slashEvent = eventSlash(event('Slash', events(slashReceipt)))
-        expect(slashEvent.securitySymbol).equals(securityAssetSymbol)
-        expect(slashEvent.securityAmount).equals(slashedSecurities)
-        const transferEvent = eventTransfer(
+        const onlySlashEvent = slashEvent(event('Slash', events(slashReceipt)))
+        expect(onlySlashEvent.securitySymbol).equals(securityAssetSymbol)
+        expect(onlySlashEvent.securityAmount).equals(slashedSecurities)
+        const onlyTransferEvent = transferEvent(
             event('Transfer', events(slashReceipt))
         )
-        expect(transferEvent.from).equals(bond.address)
-        expect(transferEvent.to).equals(treasury)
-        expect(transferEvent.value).equals(slashedSecurities)
+        expect(onlyTransferEvent.from).equals(bond.address)
+        expect(onlyTransferEvent.to).equals(treasury)
+        expect(onlyTransferEvent.value).equals(slashedSecurities)
 
         expect(await bond.balanceOf(treasury)).equals(ZERO)
         expect(await securityAsset.balanceOf(treasury)).equals(
@@ -289,16 +289,16 @@ describe('Bond contract', () => {
         const allowRedemptionReceipt = await successfulTransaction(
             bond.allowRedemption()
         )
-        const allowRedemptionEvent = eventAllowRedemption(
+        const allowRedemption = allowRedemptionEvent(
             event('AllowRedemption', events(allowRedemptionReceipt))
         )
-        expect(allowRedemptionEvent.authorizer).equals(admin.address)
+        expect(allowRedemption.authorizer).equals(admin.address)
 
         // Guarantor One redeem their slashed bond
         const redeemOneReceipt = await successfulTransaction(
             bondGuarantorOne.redeem(guarantorOnePledge)
         )
-        const redemptionOneEvent = eventRedemption(
+        const redemptionOneEvent = redemptionEvent(
             event('Redemption', events(redeemOneReceipt))
         )
         expect(redemptionOneEvent.redeemer).equals(guarantorOne.address)
@@ -312,7 +312,7 @@ describe('Bond contract', () => {
             bondGuarantorTwo.redeem(guarantorTwoPledge)
         )
 
-        const redemptionTwoEvent = eventRedemption(
+        const redemptionTwoEvent = redemptionEvent(
             event('Redemption', events(redeemTwoReceipt))
         )
         expect(redemptionTwoEvent.redeemer).equals(guarantorTwo.address)
@@ -326,7 +326,7 @@ describe('Bond contract', () => {
             bondGuarantorThree.redeem(guarantorThreePledge)
         )
 
-        const redemptionThreeEvent = eventRedemption(
+        const redemptionThreeEvent = redemptionEvent(
             event('Redemption', events(redeemThreeReceipt))
         )
         expect(redemptionThreeEvent.redeemer).equals(guarantorThree.address)
@@ -354,8 +354,6 @@ describe('Bond contract', () => {
         expect(await securityAsset.balanceOf(treasury)).equals(
             slashedSecurities
         )
-
-        //TODO check treasury
     })
 
     let admin: SignerWithAddress
@@ -378,7 +376,7 @@ async function createBond(
             'SDC001'
         )
     )
-    const creationEvent = eventBondCreated(
+    const creationEvent = bondCreatedEvent(
         event('BondCreated', events(receipt))
     )
     const bondAddress = creationEvent.bond
