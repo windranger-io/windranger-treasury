@@ -64,7 +64,7 @@ describe('Bond contract', () => {
 
         //TODO validate events (Type & content) on my contracts
 
-        // Guarantors deposit full pledge amount
+        // Setup with each guarantor having only just enough funding
         expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
         expect(await securityAsset.balanceOf(guarantorOne.address)).equals(
             guarantorOnePledge
@@ -74,6 +74,7 @@ describe('Bond contract', () => {
             guarantorTwoPledge
         )
 
+        // Guarantors deposit full pledge amount
         await transactionSuccess(bondGuarantorOne.deposit(guarantorOnePledge))
         await transactionSuccess(bondGuarantorTwo.deposit(guarantorTwoPledge))
 
@@ -93,6 +94,7 @@ describe('Bond contract', () => {
         await transactionSuccess(bondGuarantorOne.redeem(guarantorOnePledge))
         await transactionSuccess(bondGuarantorTwo.redeem(guarantorTwoPledge))
 
+        // State is equivalent to the test beginning
         expect(await bond.balanceOf(guarantorOne.address)).equals(ZERO)
         expect(await securityAsset.balanceOf(guarantorOne.address)).equals(
             guarantorOnePledge
