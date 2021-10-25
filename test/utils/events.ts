@@ -12,9 +12,7 @@ import {TransferEvent} from '../../typechain/IERC20'
 /**
  * Shape check and conversion for a AllowRedemptionEvent.
  */
-export function allowRedemptionEvent(
-    event: Event
-): [string] & {authorizer: string} {
+export function allowRedemptionEvent(event: Event): {authorizer: string} {
     const debt = event as AllowRedemptionEvent
     expect(event.args).is.not.undefined
 
@@ -32,13 +30,7 @@ export type BalanceExpected = {
 /**
  * Shape check and conversion for a BondCreatedEvent.
  */
-export function bondCreatedEvent(event: Event): [
-    string,
-    string,
-    string,
-    string,
-    string
-] & {
+export function bondCreatedEvent(event: Event): {
     bond: string
     name: string
     symbol: string
@@ -61,11 +53,7 @@ export function bondCreatedEvent(event: Event): [
 /**
  * Shape check and conversion for a DebtCertificateIssueEvent.
  */
-export function debtCertificateIssueEvent(event: Event): [
-    string,
-    string,
-    BigNumber
-] & {
+export function debtCertificateIssueEvent(event: Event): {
     receiver: string
     debSymbol: string
     debtAmount: BigNumber
@@ -108,13 +96,7 @@ export function events(receipt: ContractReceipt): Event[] {
 /**
  * Shape check and conversion for a RedemptionEvent.
  */
-export function redemptionEvent(event: Event): [
-    string,
-    string,
-    BigNumber,
-    string,
-    BigNumber
-] & {
+export function redemptionEvent(event: Event): {
     redeemer: string
     debtSymbol: string
     debtAmount: BigNumber
@@ -137,9 +119,10 @@ export function redemptionEvent(event: Event): [
 /**
  * Shape check and conversion for a SlashEvent.
  */
-export function slashEvent(
-    event: Event
-): [string, BigNumber] & {securitySymbol: string; securityAmount: BigNumber} {
+export function slashEvent(event: Event): {
+    securitySymbol: string
+    securityAmount: BigNumber
+} {
     const debt = event as SlashEvent
     expect(event.args).is.not.undefined
 
@@ -153,9 +136,11 @@ export function slashEvent(
 /**
  * Shape check and conversion for a SlashEvent.
  */
-export function transferEvent(
-    event: Event
-): [string, string, BigNumber] & {from: string; to: string; value: BigNumber} {
+export function transferEvent(event: Event): {
+    from: string
+    to: string
+    value: BigNumber
+} {
     const debt = event as TransferEvent
     expect(event.args).is.not.undefined
 
