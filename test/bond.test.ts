@@ -81,7 +81,7 @@ describe('Bond contract', () => {
         ])
 
         // Guarantor One deposits their full pledge amount
-        const depositOne = await bondDeposit(guarantorOne, pledgeOne)
+        const depositOne = await depositBond(guarantorOne, pledgeOne)
         await verifyDebtCertificateIssueEvent(
             depositOne,
             guarantorOne.address,
@@ -89,7 +89,7 @@ describe('Bond contract', () => {
         )
 
         // Guarantor Two deposits their full pledge amount
-        const depositTwo = await bondDeposit(guarantorTwo, pledgeTwo)
+        const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
         await verifyDebtCertificateIssueEvent(
             depositTwo,
             guarantorTwo.address,
@@ -168,7 +168,7 @@ describe('Bond contract', () => {
         ])
 
         // Guarantor One deposits their full pledge amount
-        const depositOne = await bondDeposit(guarantorOne, pledgeOne)
+        const depositOne = await depositBond(guarantorOne, pledgeOne)
         await verifyDebtCertificateIssueEvent(
             depositOne,
             guarantorOne.address,
@@ -176,7 +176,7 @@ describe('Bond contract', () => {
         )
 
         // Guarantor Two deposits their full pledge amount
-        const depositTwo = await bondDeposit(guarantorTwo, pledgeTwo)
+        const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
         await verifyDebtCertificateIssueEvent(
             depositTwo,
             guarantorTwo.address,
@@ -184,7 +184,7 @@ describe('Bond contract', () => {
         )
 
         // Guarantor Three deposits their full pledge amount
-        const depositThree = await bondDeposit(guarantorThree, pledgeThree)
+        const depositThree = await depositBond(guarantorThree, pledgeThree)
         await verifyDebtCertificateIssueEvent(
             depositThree,
             guarantorThree.address,
@@ -201,9 +201,7 @@ describe('Bond contract', () => {
         ])
 
         // Slash forty percent from the security assets
-        const slashReceipt = await successfulTransaction(
-            bond.slash(slashedSecurities)
-        )
+        const slashReceipt = await slashSecurities(slashedSecurities)
         await verifySlashEvent(slashReceipt, {
             symbol: securityAssetSymbol,
             amount: slashedSecurities
@@ -270,11 +268,15 @@ describe('Bond contract', () => {
         ])
     })
 
+    async function slashSecurities(amount: bigint): Promise<ContractReceipt> {
+        return bond.slash(amount)
+    }
+
     async function allowRedemption(): Promise<ContractReceipt> {
         return successfulTransaction(bond.allowRedemption())
     }
 
-    async function bondDeposit(
+    async function depositBond(
         guarantor: SignerWithAddress,
         pledge: bigint
     ): Promise<ContractReceipt> {
