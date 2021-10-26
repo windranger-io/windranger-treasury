@@ -15,7 +15,7 @@ import {
     execute,
     signer
 } from './utils/contracts'
-import {BigNumberish} from 'ethers'
+import {BigNumberish, ContractReceipt} from 'ethers'
 import {
     event,
     bondCreatedEvent,
@@ -283,6 +283,13 @@ describe('Bond contract', () => {
             {address: treasury, bond: ZERO, security: slashedSecurities}
         ])
     })
+
+    async function bondDeposit(
+        guarantor: SignerWithAddress,
+        pledge: bigint
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(bond.connect(guarantor).deposit(pledge))
+    }
 
     async function verifyBalances(balances: ExpectedBalance[]): Promise<void> {
         for (let i = 0; i < balances.length; i++) {
