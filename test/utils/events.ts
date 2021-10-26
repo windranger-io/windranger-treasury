@@ -164,6 +164,18 @@ export function transferEvent(event: Event): {
     return debt.args
 }
 
+export async function verifyAllowRedemptionEvent(
+    receipt: ContractReceipt,
+    authorizer: string
+): Promise<void> {
+    const allowRedemption = allowRedemptionEvent(
+        event('AllowRedemption', events(receipt))
+    )
+    expect(allowRedemption.authorizer, 'AllowRedemption authorizer').equals(
+        authorizer
+    )
+}
+
 export async function verifyDebtCertificateIssueEvent(
     receipt: ContractReceipt,
     guarantor: string,
@@ -214,8 +226,12 @@ export async function verifySlashEvent(
     security: ExpectTokenBalance
 ): Promise<void> {
     const onlySlashEvent = slashEvent(event('Slash', events(receipt)))
-    expect(onlySlashEvent.securitySymbol).equals(security.symbol)
-    expect(onlySlashEvent.securityAmount).equals(security.amount)
+    expect(onlySlashEvent.securitySymbol, 'Slash symbol').equals(
+        security.symbol
+    )
+    expect(onlySlashEvent.securityAmount, 'Slash amount').equals(
+        security.amount
+    )
 }
 
 /**

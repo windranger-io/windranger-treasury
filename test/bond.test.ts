@@ -18,13 +18,13 @@ import {
 import {BigNumberish} from 'ethers'
 import {
     event,
-    allowRedemptionEvent,
     bondCreatedEvent,
     events,
     verifyRedemptionEvent,
     verifyDebtCertificateIssueEvent,
     verifySlashEvent,
-    verifyTransferEvent
+    verifyTransferEvent,
+    verifyAllowRedemptionEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -112,10 +112,7 @@ describe('Bond contract', () => {
         const allowRedemptionReceipt = await successfulTransaction(
             bond.allowRedemption()
         )
-        const allowRedemption = allowRedemptionEvent(
-            event('AllowRedemption', events(allowRedemptionReceipt))
-        )
-        expect(allowRedemption.authorizer).equals(admin.address)
+        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, full conversion
         const redeemOneReceipt = await successfulTransaction(
@@ -242,10 +239,7 @@ describe('Bond contract', () => {
         const allowRedemptionReceipt = await successfulTransaction(
             bond.allowRedemption()
         )
-        const allowRedemption = allowRedemptionEvent(
-            event('AllowRedemption', events(allowRedemptionReceipt))
-        )
-        expect(allowRedemption.authorizer).equals(admin.address)
+        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, partial conversion (slashed)
         const redeemOneReceipt = await successfulTransaction(
