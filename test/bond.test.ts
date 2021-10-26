@@ -188,6 +188,80 @@ describe('Bond contract', () => {
         ])
     })
 
+    it('one guarantor fully deposit, then is fully slashed', async () => {
+        const pledgeOne = 40050n
+        const debtCertificates = pledgeOne
+        const slashedSecurities = debtCertificates
+        bond = await createBond(factory, debtCertificates)
+        const debtSymbol = await bond.symbol()
+        await setupGuarantorsWithSecurity([
+            {signer: guarantorOne, pledge: pledgeOne}
+        ])
+
+        // Each Guarantor has their full security amount (their pledge)
+        await verifyBalances([
+            {address: bond.address, bond: debtCertificates, security: ZERO},
+            {address: guarantorOne, bond: ZERO, security: pledgeOne},
+            {address: treasury, bond: ZERO, security: ZERO}
+        ])
+
+        // Guarantor One deposits their full pledge amount
+        const depositOne = await depositBond(guarantorOne, pledgeOne)
+        await verifyDebtCertificateIssueEvent(
+            depositOne,
+            guarantorOne.address,
+            {symbol: debtSymbol, amount: pledgeOne}
+        )
+
+        // Bond holds all securities and has issued debt certificates
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, security: debtCertificates},
+            {address: guarantorOne, bond: pledgeOne, security: ZERO},
+            {address: treasury, bond: ZERO, security: ZERO}
+        ])
+
+        // Slash forty percent from the security assets
+        const slashReceipt = await slashSecurities(slashedSecurities)
+        await verifySlashEvent(slashReceipt, {
+            symbol: securityAssetSymbol,
+            amount: slashedSecurities
+        })
+        await verifyTransferEvent(slashReceipt, {
+            from: bond.address,
+            to: treasury,
+            amount: slashedSecurities
+        })
+
+        // Debt holdings should remain the same, only securities moved
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, security: ZERO},
+            {address: guarantorOne, bond: pledgeOne, security: ZERO},
+            {address: treasury, bond: ZERO, security: slashedSecurities}
+        ])
+
+        // Bond released by Owner
+        const allowRedemptionReceipt = await allowRedemption()
+        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+
+        // Guarantor One redeem their bond, partial conversion (slashed)
+        const redeemOneReceipt = await successfulTransaction(
+            bond.connect(guarantorOne).redeem(pledgeOne)
+        )
+        await verifyRedemptionEvent(
+            redeemOneReceipt,
+            guarantorOne.address,
+            {symbol: debtSymbol, amount: pledgeOne},
+            {symbol: securityAssetSymbol, amount: ZERO}
+        )
+
+        // Slashed securities in Treasury, Guarantors redeemed, no debt remain
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, security: ZERO},
+            {address: guarantorOne, bond: ZERO, security: ZERO},
+            {address: treasury, bond: ZERO, security: slashedSecurities}
+        ])
+    })
+
     it('three guarantors fully deposit, partially slashed, then redeem', async () => {
         const pledgeOne = 40050n
         const pledgeOneSlashed = slash(pledgeOne, FORTY_PERCENT)
