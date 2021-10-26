@@ -21,8 +21,6 @@ import {
     allowRedemptionEvent,
     bondCreatedEvent,
     events,
-    slashEvent,
-    transferEvent,
     verifyRedemptionEvent,
     verifyDebtCertificateIssueEvent,
     verifySlashEvent,
@@ -160,6 +158,7 @@ describe('Bond contract', () => {
         const debtCertificates = pledgeOne + pledgeTwo + pledgeThree
         const slashedSecurities =
             debtCertificates - slash(debtCertificates, FORTY_PERCENT)
+        const remainingSecurities = debtCertificates - slashedSecurities
         bond = await createBond(factory, debtCertificates)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithSecurity([
@@ -230,11 +229,14 @@ describe('Bond contract', () => {
             amount: slashedSecurities
         })
 
-        //TODO balance checks - should only affect Treasury
-        expect(await bond.balanceOf(treasury)).equals(ZERO)
-        expect(await securityAsset.balanceOf(treasury)).equals(
-            slashedSecurities
-        )
+        // Debt holdings should remain the same, only securities moved
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, security: remainingSecurities},
+            {address: guarantorOne, bond: pledgeOne, security: ZERO},
+            {address: guarantorTwo, bond: pledgeTwo, security: ZERO},
+            {address: guarantorThree, bond: pledgeThree, security: ZERO},
+            {address: treasury, bond: ZERO, security: slashedSecurities}
+        ])
 
         // Bond released by Owner
         const allowRedemptionReceipt = await successfulTransaction(
