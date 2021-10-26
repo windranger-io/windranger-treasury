@@ -61,16 +61,29 @@ describe('Bond contract', () => {
         expect(treasuryAfter).equals(admin.address)
     })
 
-    it('no deposit when redemption allowed', async () => {
+    it('no deposit while redemption allowed', async () => {
         const pledge = 60n
         bond = await createBond(factory, 235666777n)
         await setupGuarantorsWithSecurity([
             {signer: guarantorOne, pledge: pledge}
         ])
-        const allowRedemptionReceipt = await allowRedemption()
-        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        await allowRedemption()
 
-        expect(bond.connect(guarantorOne).deposit(pledge)).to.be.revertedWith(
+        await expect(
+            bond.connect(guarantorOne).deposit(pledge)
+        ).to.be.revertedWith('Bond::whenNotRedeemable: redeemable')
+    })
+
+    it('no slashing while redemption allowed', async () => {
+        const pledge = 500n
+        bond = await createBond(factory, 235666777n)
+        await setupGuarantorsWithSecurity([
+            {signer: guarantorOne, pledge: pledge}
+        ])
+        await depositBond(guarantorOne, pledge)
+        await allowRedemption()
+
+        await expect(bond.slash(pledge)).to.be.revertedWith(
             'Bond::whenNotRedeemable: redeemable'
         )
     })
@@ -83,9 +96,9 @@ describe('Bond contract', () => {
         ])
         await depositBond(guarantorOne, pledge)
 
-        expect(bond.connect(guarantorOne).redeem(pledge)).to.be.revertedWith(
-            'Bond::whenRedeemable: not redeemable'
-        )
+        await expect(
+            bond.connect(guarantorOne).redeem(pledge)
+        ).to.be.revertedWith('Bond::whenRedeemable: not redeemable')
     })
 
     it('two guarantors fully deposit, then fully redeem', async () => {
