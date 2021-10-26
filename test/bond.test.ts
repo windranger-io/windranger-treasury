@@ -24,7 +24,9 @@ import {
     slashEvent,
     transferEvent,
     verifyRedemptionEvent,
-    verifyDebtCertificateIssueEvent
+    verifyDebtCertificateIssueEvent,
+    verifySlashEvent,
+    verifyTransferEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -214,24 +216,26 @@ describe('Bond contract', () => {
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
-        // Slash forty percent of the security assets
+        // Slash forty percent from the security assets
         const slashReceipt = await successfulTransaction(
             bond.slash(slashedSecurities)
         )
-        const onlySlashEvent = slashEvent(event('Slash', events(slashReceipt)))
-        expect(onlySlashEvent.securitySymbol).equals(securityAssetSymbol)
-        expect(onlySlashEvent.securityAmount).equals(slashedSecurities)
-        const onlyTransferEvent = transferEvent(
-            event('Transfer', events(slashReceipt))
-        )
-        expect(onlyTransferEvent.from).equals(bond.address)
-        expect(onlyTransferEvent.to).equals(treasury)
-        expect(onlyTransferEvent.value).equals(slashedSecurities)
+        await verifySlashEvent(slashReceipt, {
+            symbol: securityAssetSymbol,
+            amount: slashedSecurities
+        })
+        await verifyTransferEvent(slashReceipt, {
+            from: bond.address,
+            to: treasury,
+            amount: slashedSecurities
+        })
 
+        //TODO balance checks - should only affect Treasury
         expect(await bond.balanceOf(treasury)).equals(ZERO)
         expect(await securityAsset.balanceOf(treasury)).equals(
             slashedSecurities
         )
+
         // Bond released by Owner
         const allowRedemptionReceipt = await successfulTransaction(
             bond.allowRedemption()

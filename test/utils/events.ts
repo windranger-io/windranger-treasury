@@ -18,6 +18,15 @@ export type ExpectTokenBalance = {
 }
 
 /**
+ * Expected balance combination of a symbol and amount (value).
+ */
+export type ExpectTokenTransfer = {
+    from: string
+    to: string
+    amount: bigint
+}
+
+/**
  * Shape check and conversion for a AllowRedemptionEvent.
  */
 export function allowRedemptionEvent(event: Event): {authorizer: string} {
@@ -198,4 +207,26 @@ export async function verifyRedemptionEvent(
         redemptionTwoEvent.securityAmount,
         'Redemption security amount'
     ).equals(security.amount)
+}
+
+export async function verifySlashEvent(
+    receipt: ContractReceipt,
+    security: ExpectTokenBalance
+): Promise<void> {
+    const onlySlashEvent = slashEvent(event('Slash', events(receipt)))
+    expect(onlySlashEvent.securitySymbol).equals(security.symbol)
+    expect(onlySlashEvent.securityAmount).equals(security.amount)
+}
+
+/**
+ * Verifies the content for a ERC20 Transfer event.
+ */
+export async function verifyTransferEvent(
+    receipt: ContractReceipt,
+    transfer: ExpectTokenTransfer
+): Promise<void> {
+    const onlyTransferEvent = transferEvent(event('Transfer', events(receipt)))
+    expect(onlyTransferEvent.from, 'Transfer from').equals(transfer.from)
+    expect(onlyTransferEvent.to, 'Transfer to').equals(transfer.to)
+    expect(onlyTransferEvent.value, 'Transfer amount').equals(transfer.amount)
 }
