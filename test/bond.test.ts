@@ -81,21 +81,17 @@ describe('Bond contract', () => {
         ])
 
         // Guarantor One deposits their full pledge amount
-        const depositOneReceipt = await successfulTransaction(
-            bond.connect(guarantorOne).deposit(pledgeOne)
-        )
+        const depositOne = await bondDeposit(guarantorOne, pledgeOne)
         await verifyDebtCertificateIssueEvent(
-            depositOneReceipt,
+            depositOne,
             guarantorOne.address,
             {symbol: debtSymbol, amount: pledgeOne}
         )
 
         // Guarantor Two deposits their full pledge amount
-        const depositTwoReceipt = await successfulTransaction(
-            bond.connect(guarantorTwo).deposit(pledgeTwo)
-        )
+        const depositTwo = await bondDeposit(guarantorTwo, pledgeTwo)
         await verifyDebtCertificateIssueEvent(
-            depositTwoReceipt,
+            depositTwo,
             guarantorTwo.address,
             {symbol: debtSymbol, amount: pledgeTwo}
         )
@@ -174,31 +170,25 @@ describe('Bond contract', () => {
         ])
 
         // Guarantor One deposits their full pledge amount
-        const depositOneReceipt = await successfulTransaction(
-            bond.connect(guarantorOne).deposit(pledgeOne)
-        )
+        const depositOne = await bondDeposit(guarantorOne, pledgeOne)
         await verifyDebtCertificateIssueEvent(
-            depositOneReceipt,
+            depositOne,
             guarantorOne.address,
             {symbol: debtSymbol, amount: pledgeOne}
         )
 
         // Guarantor Two deposits their full pledge amount
-        const depositTwoReceipt = await successfulTransaction(
-            bond.connect(guarantorTwo).deposit(pledgeTwo)
-        )
+        const depositTwo = await bondDeposit(guarantorTwo, pledgeTwo)
         await verifyDebtCertificateIssueEvent(
-            depositTwoReceipt,
+            depositTwo,
             guarantorTwo.address,
             {symbol: debtSymbol, amount: pledgeTwo}
         )
 
         // Guarantor Three deposits their full pledge amount
-        const depositThreeReceipt = await successfulTransaction(
-            bond.connect(guarantorThree).deposit(pledgeThree)
-        )
+        const depositThree = await bondDeposit(guarantorThree, pledgeThree)
         await verifyDebtCertificateIssueEvent(
-            depositThreeReceipt,
+            depositThree,
             guarantorThree.address,
             {symbol: debtSymbol, amount: pledgeThree}
         )
