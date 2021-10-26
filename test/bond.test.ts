@@ -50,8 +50,8 @@ describe('Bond contract', () => {
         factory = await deployBondFactory(securityAsset.address, treasury)
     })
 
-    it('update the treasury address', async () => {
-        const bond = await createBond(factory, 555666777n)
+    it('update treasury address', async () => {
+        bond = await createBond(factory, 555666777n)
 
         const treasuryBefore = await bond.treasury()
         expect(treasuryBefore).equals(treasury)
@@ -59,6 +59,20 @@ describe('Bond contract', () => {
         await bond.setTreasury(admin.address)
         const treasuryAfter = await bond.treasury()
         expect(treasuryAfter).equals(admin.address)
+    })
+
+    it('deposit disabled when redemption allowed', async () => {
+        const pledge = 60n
+        bond = await createBond(factory, 235666777n)
+        await setupGuarantorsWithSecurity([
+            {signer: guarantorOne, pledge: pledge}
+        ])
+        const allowRedemptionReceipt = await allowRedemption()
+        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+
+        expect(bond.connect(guarantorOne).deposit(pledge)).to.be.revertedWith(
+            'Bond::whenNotRedeemable: redeemable'
+        )
     })
 
     it('two guarantors fully deposit, then fully redeem', async () => {

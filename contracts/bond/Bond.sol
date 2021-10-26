@@ -89,7 +89,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /**
      * @dev This contract must have been approved to transfer the given amount from the ERC20 token being used as security.
      */
-    function deposit(uint256 amount) external whenNotPaused {
+    function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
         require(amount <= totalSupply(), "Bond:deposit: Deposit too large");
         address sender = _msgSender();
 
