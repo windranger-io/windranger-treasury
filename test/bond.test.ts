@@ -105,9 +105,7 @@ describe('Bond contract', () => {
         ])
 
         // Bond released by Owner
-        const allowRedemptionReceipt = await successfulTransaction(
-            bond.allowRedemption()
-        )
+        const allowRedemptionReceipt = await allowRedemption()
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, full conversion
@@ -226,9 +224,7 @@ describe('Bond contract', () => {
         ])
 
         // Bond released by Owner
-        const allowRedemptionReceipt = await successfulTransaction(
-            bond.allowRedemption()
-        )
+        const allowRedemptionReceipt = await allowRedemption()
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, partial conversion (slashed)
@@ -273,6 +269,10 @@ describe('Bond contract', () => {
             {address: treasury, bond: ZERO, security: slashedSecurities}
         ])
     })
+
+    async function allowRedemption(): Promise<ContractReceipt> {
+        return successfulTransaction(bond.allowRedemption())
+    }
 
     async function bondDeposit(
         guarantor: SignerWithAddress,
