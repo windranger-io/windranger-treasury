@@ -192,6 +192,24 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
+     * @dev Slashing can result in securities remaining after full redemption due to flooring.
+     * After full redemption, the left over securities can be transferred to the treasury using close.
+     */
+    function close() external whenNotPaused whenRedeemable onlyOwner {
+        require(
+            totalSupply() == 0,
+            "Bond::close: Debt Certificates outstanding"
+        );
+
+        uint256 securities = _securityToken.balanceOf(address(this));
+        require(securities > 0, "Bond::close: No securities remain");
+
+        // Unknown ERC20 token behaviour, cater for bool usage
+        bool transferred = _securityToken.transfer(_treasury, securities);
+        require(transferred, "Bond::close: Security transfer failed");
+    }
+
+    /**
      * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
      */
     function setTreasury(address treasury_) external whenNotPaused onlyOwner {
