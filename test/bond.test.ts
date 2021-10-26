@@ -113,34 +113,34 @@ describe('Bond contract', () => {
     })
 
     it('one guarantor fully deposit, then is fully slashed', async () => {
-        const pledgeOne = 40050n
-        const debtCertificates = pledgeOne
+        const pledge = 40050n
+        const debtCertificates = pledge
         const slashedSecurities = debtCertificates
         bond = await createBond(factory, debtCertificates)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithSecurity([
-            {signer: guarantorOne, pledge: pledgeOne}
+            {signer: guarantorOne, pledge: pledge}
         ])
 
         // Each Guarantor has their full security amount (their pledge)
         await verifyBalances([
             {address: bond.address, bond: debtCertificates, security: ZERO},
-            {address: guarantorOne, bond: ZERO, security: pledgeOne},
+            {address: guarantorOne, bond: ZERO, security: pledge},
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
         // Guarantor One deposits their full pledge amount
-        const depositOne = await depositBond(guarantorOne, pledgeOne)
+        const depositOne = await depositBond(guarantorOne, pledge)
         await verifyDebtCertificateIssueEvent(
             depositOne,
             guarantorOne.address,
-            {symbol: debtSymbol, amount: pledgeOne}
+            {symbol: debtSymbol, amount: pledge}
         )
 
         // Bond holds all securities, issued debt certificates
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: debtCertificates},
-            {address: guarantorOne, bond: pledgeOne, security: ZERO},
+            {address: guarantorOne, bond: pledge, security: ZERO},
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
@@ -159,7 +159,7 @@ describe('Bond contract', () => {
         // Debt holdings should remain the same, securities moved
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: ZERO},
-            {address: guarantorOne, bond: pledgeOne, security: ZERO},
+            {address: guarantorOne, bond: pledge, security: ZERO},
             {address: treasury, bond: ZERO, security: slashedSecurities}
         ])
 
@@ -168,13 +168,11 @@ describe('Bond contract', () => {
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, partial conversion (slashed)
-        const redeemOneReceipt = await successfulTransaction(
-            bond.connect(guarantorOne).redeem(pledgeOne)
-        )
+        const redeemOneReceipt = await redeem(guarantorOne, pledge)
         await verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
-            {symbol: debtSymbol, amount: pledgeOne},
+            {symbol: debtSymbol, amount: pledge},
             {symbol: securityAssetSymbol, amount: ZERO}
         )
 
@@ -234,9 +232,7 @@ describe('Bond contract', () => {
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, full conversion
-        const redeemOneReceipt = await successfulTransaction(
-            bond.connect(guarantorOne).redeem(pledgeOne)
-        )
+        const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
         await verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
@@ -245,9 +241,7 @@ describe('Bond contract', () => {
         )
 
         // Guarantor Two redeem their bond, full conversion
-        const redeemTwoReceipt = await successfulTransaction(
-            bond.connect(guarantorTwo).redeem(pledgeTwo)
-        )
+        const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
         await verifyRedemptionEvent(
             redeemTwoReceipt,
             guarantorTwo.address,
@@ -265,34 +259,34 @@ describe('Bond contract', () => {
     })
 
     it('one guarantor fully deposit, then is fully slashed', async () => {
-        const pledgeOne = 40050n
-        const debtCertificates = pledgeOne
+        const pledge = 40050n
+        const debtCertificates = pledge
         const slashedSecurities = debtCertificates
         bond = await createBond(factory, debtCertificates)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithSecurity([
-            {signer: guarantorOne, pledge: pledgeOne}
+            {signer: guarantorOne, pledge: pledge}
         ])
 
         // Each Guarantor has their full security amount (their pledge)
         await verifyBalances([
             {address: bond.address, bond: debtCertificates, security: ZERO},
-            {address: guarantorOne, bond: ZERO, security: pledgeOne},
+            {address: guarantorOne, bond: ZERO, security: pledge},
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
         // Guarantor One deposits their full pledge amount
-        const depositOne = await depositBond(guarantorOne, pledgeOne)
+        const depositOne = await depositBond(guarantorOne, pledge)
         await verifyDebtCertificateIssueEvent(
             depositOne,
             guarantorOne.address,
-            {symbol: debtSymbol, amount: pledgeOne}
+            {symbol: debtSymbol, amount: pledge}
         )
 
         // Bond holds all securities, issued debt certificates
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: debtCertificates},
-            {address: guarantorOne, bond: pledgeOne, security: ZERO},
+            {address: guarantorOne, bond: pledge, security: ZERO},
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
@@ -311,7 +305,7 @@ describe('Bond contract', () => {
         // Debt holdings should remain the same, securities moved
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: ZERO},
-            {address: guarantorOne, bond: pledgeOne, security: ZERO},
+            {address: guarantorOne, bond: pledge, security: ZERO},
             {address: treasury, bond: ZERO, security: slashedSecurities}
         ])
 
@@ -320,13 +314,11 @@ describe('Bond contract', () => {
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, zero conversion (slashed)
-        const redeemOneReceipt = await successfulTransaction(
-            bond.connect(guarantorOne).redeem(pledgeOne)
-        )
+        const redeemOneReceipt = await redeem(guarantorOne, pledge)
         await verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
-            {symbol: debtSymbol, amount: pledgeOne},
+            {symbol: debtSymbol, amount: pledge},
             {symbol: securityAssetSymbol, amount: ZERO}
         )
 
@@ -397,9 +389,7 @@ describe('Bond contract', () => {
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, partial conversion (slashed)
-        const redeemOneReceipt = await successfulTransaction(
-            bond.connect(guarantorOne).redeem(pledge)
-        )
+        const redeemOneReceipt = await redeem(guarantorOne, pledge)
         const pledgeSlashedFloored = pledgeSlashed - ONE
         await verifyRedemptionEvent(
             redeemOneReceipt,
@@ -416,7 +406,7 @@ describe('Bond contract', () => {
         ])
 
         // Move the rounding error from the Bond contract to the Treasury
-        const closeReceipt = await successfulTransaction(bond.close())
+        const closeReceipt = await close()
         await verifyTransferEvent(closeReceipt, {
             from: bond.address,
             to: treasury,
@@ -518,9 +508,7 @@ describe('Bond contract', () => {
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, partial conversion (slashed)
-        const redeemOneReceipt = await successfulTransaction(
-            bond.connect(guarantorOne).redeem(pledgeOne)
-        )
+        const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
         await verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
@@ -529,9 +517,7 @@ describe('Bond contract', () => {
         )
 
         // Guarantor Two redeem their bond, partial conversion (slashed)
-        const redeemTwoReceipt = await successfulTransaction(
-            bond.connect(guarantorTwo).redeem(pledgeTwo)
-        )
+        const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
         await verifyRedemptionEvent(
             redeemTwoReceipt,
             guarantorTwo.address,
@@ -540,9 +526,7 @@ describe('Bond contract', () => {
         )
 
         // Guarantor Three redeem their bond, partial conversion (slashed)
-        const redeemThreeReceipt = await successfulTransaction(
-            bond.connect(guarantorThree).redeem(pledgeThree)
-        )
+        const redeemThreeReceipt = await redeem(guarantorThree, pledgeThree)
         await verifyRedemptionEvent(
             redeemThreeReceipt,
             guarantorThree.address,
@@ -560,12 +544,23 @@ describe('Bond contract', () => {
         ])
     })
 
+    async function redeem(
+        guarantor: SignerWithAddress,
+        amount: bigint
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(bond.connect(guarantor).redeem(amount))
+    }
+
     async function slashSecurities(amount: bigint): Promise<ContractReceipt> {
         return successfulTransaction(bond.slash(amount))
     }
 
     async function allowRedemption(): Promise<ContractReceipt> {
         return successfulTransaction(bond.allowRedemption())
+    }
+
+    async function close(): Promise<ContractReceipt> {
+        return successfulTransaction(bond.close())
     }
 
     async function depositBond(
