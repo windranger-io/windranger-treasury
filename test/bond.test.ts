@@ -20,15 +20,14 @@ import {
     event,
     allowRedemptionEvent,
     bondCreatedEvent,
-    debtCertificateIssueEvent,
     events,
     slashEvent,
     transferEvent,
-    verifyRedemptionEvent
+    verifyRedemptionEvent,
+    verifyDebtCertificateIssueEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
-import {string} from 'hardhat/internal/core/params/argumentTypes'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -85,23 +84,21 @@ describe('Bond contract', () => {
         const depositOneReceipt = await successfulTransaction(
             bond.connect(guarantorOne).deposit(pledgeOne)
         )
-        const depositOneEvent = debtCertificateIssueEvent(
-            event('DebtCertificateIssue', events(depositOneReceipt))
+        await verifyDebtCertificateIssueEvent(
+            depositOneReceipt,
+            guarantorOne.address,
+            {symbol: debtSymbol, amount: pledgeOne}
         )
-        expect(depositOneEvent.receiver).equals(guarantorOne.address)
-        expect(depositOneEvent.debSymbol).equals(debtSymbol)
-        expect(depositOneEvent.debtAmount).equals(pledgeOne)
 
         // Guarantor Two deposits their full pledge amount
         const depositTwoReceipt = await successfulTransaction(
             bond.connect(guarantorTwo).deposit(pledgeTwo)
         )
-        const depositTwoEvent = debtCertificateIssueEvent(
-            event('DebtCertificateIssue', events(depositTwoReceipt))
+        await verifyDebtCertificateIssueEvent(
+            depositTwoReceipt,
+            guarantorTwo.address,
+            {symbol: debtSymbol, amount: pledgeTwo}
         )
-        expect(depositTwoEvent.receiver).equals(guarantorTwo.address)
-        expect(depositTwoEvent.debSymbol).equals(debtSymbol)
-        expect(depositTwoEvent.debtAmount).equals(pledgeTwo)
 
         // Bond holds all securities and has issued debt certificates
         await verifyBalances([
@@ -120,7 +117,7 @@ describe('Bond contract', () => {
         )
         expect(allowRedemption.authorizer).equals(admin.address)
 
-        // Guarantor One redeem their bond in full
+        // Guarantor One redeem their bond, full conversion
         const redeemOneReceipt = await successfulTransaction(
             bond.connect(guarantorOne).redeem(pledgeOne)
         )
@@ -131,7 +128,7 @@ describe('Bond contract', () => {
             {symbol: securityAssetSymbol, amount: pledgeOne}
         )
 
-        // Guarantor Two redeem their bond in full
+        // Guarantor Two redeem their bond, full conversion
         const redeemTwoReceipt = await successfulTransaction(
             bond.connect(guarantorTwo).redeem(pledgeTwo)
         )
@@ -182,34 +179,31 @@ describe('Bond contract', () => {
         const depositOneReceipt = await successfulTransaction(
             bond.connect(guarantorOne).deposit(pledgeOne)
         )
-        const depositOneEvent = debtCertificateIssueEvent(
-            event('DebtCertificateIssue', events(depositOneReceipt))
+        await verifyDebtCertificateIssueEvent(
+            depositOneReceipt,
+            guarantorOne.address,
+            {symbol: debtSymbol, amount: pledgeOne}
         )
-        expect(depositOneEvent.receiver).equals(guarantorOne.address)
-        expect(depositOneEvent.debSymbol).equals(debtSymbol)
-        expect(depositOneEvent.debtAmount).equals(pledgeOne)
 
         // Guarantor Two deposits their full pledge amount
         const depositTwoReceipt = await successfulTransaction(
             bond.connect(guarantorTwo).deposit(pledgeTwo)
         )
-        const depositTwoEvent = debtCertificateIssueEvent(
-            event('DebtCertificateIssue', events(depositTwoReceipt))
+        await verifyDebtCertificateIssueEvent(
+            depositTwoReceipt,
+            guarantorTwo.address,
+            {symbol: debtSymbol, amount: pledgeTwo}
         )
-        expect(depositTwoEvent.receiver).equals(guarantorTwo.address)
-        expect(depositTwoEvent.debSymbol).equals(debtSymbol)
-        expect(depositTwoEvent.debtAmount).equals(pledgeTwo)
 
         // Guarantor Three deposits their full pledge amount
         const depositThreeReceipt = await successfulTransaction(
             bond.connect(guarantorThree).deposit(pledgeThree)
         )
-        const depositThreeEvent = debtCertificateIssueEvent(
-            event('DebtCertificateIssue', events(depositThreeReceipt))
+        await verifyDebtCertificateIssueEvent(
+            depositThreeReceipt,
+            guarantorThree.address,
+            {symbol: debtSymbol, amount: pledgeThree}
         )
-        expect(depositThreeEvent.receiver).equals(guarantorThree.address)
-        expect(depositThreeEvent.debSymbol).equals(debtSymbol)
-        expect(depositThreeEvent.debtAmount).equals(pledgeThree)
 
         // Bond holds all securities and has issued debt certificates
         await verifyBalances([
@@ -247,7 +241,7 @@ describe('Bond contract', () => {
         )
         expect(allowRedemption.authorizer).equals(admin.address)
 
-        // Guarantor One redeem their slashed bond
+        // Guarantor One redeem their bond, partial conversion (slashed)
         const redeemOneReceipt = await successfulTransaction(
             bond.connect(guarantorOne).redeem(pledgeOne)
         )
@@ -258,7 +252,7 @@ describe('Bond contract', () => {
             {symbol: securityAssetSymbol, amount: pledgeOneSlashed}
         )
 
-        // Guarantor Two redeem their bond in full
+        // Guarantor Two redeem their bond, partial conversion (slashed)
         const redeemTwoReceipt = await successfulTransaction(
             bond.connect(guarantorTwo).redeem(pledgeTwo)
         )
@@ -269,7 +263,7 @@ describe('Bond contract', () => {
             {symbol: securityAssetSymbol, amount: pledgeTwoSlashed}
         )
 
-        // Guarantor Three redeem their bond in full
+        // Guarantor Three redeem their bond, partial conversion (slashed)
         const redeemThreeReceipt = await successfulTransaction(
             bond.connect(guarantorThree).redeem(pledgeThree)
         )

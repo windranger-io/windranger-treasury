@@ -10,6 +10,14 @@ import {
 import {TransferEvent} from '../../typechain/IERC20'
 
 /**
+ * Expected balance combination of a symbol and amount (value).
+ */
+export type ExpectTokenBalance = {
+    symbol: string
+    amount: bigint
+}
+
+/**
  * Shape check and conversion for a AllowRedemptionEvent.
  */
 export function allowRedemptionEvent(event: Event): {authorizer: string} {
@@ -20,14 +28,6 @@ export function allowRedemptionEvent(event: Event): {authorizer: string} {
     expect(args?.authorizer).is.not.undefined
 
     return debt.args
-}
-
-/**
- * Expected balance combination of a symbol and amount (value).
- */
-export type BalanceExpected = {
-    symbol: string
-    amount: bigint
 }
 
 /**
@@ -155,18 +155,47 @@ export function transferEvent(event: Event): {
     return debt.args
 }
 
+export async function verifyDebtCertificateIssueEvent(
+    receipt: ContractReceipt,
+    guarantor: string,
+    debt: ExpectTokenBalance
+): Promise<void> {
+    const depositOneEvent = debtCertificateIssueEvent(
+        event('DebtCertificateIssue', events(receipt))
+    )
+    expect(depositOneEvent.receiver, 'Debt Certificate receiver').equals(
+        guarantor
+    )
+    expect(depositOneEvent.debSymbol, 'Debt Certificate symbol').equals(
+        debt.symbol
+    )
+    expect(depositOneEvent.debtAmount, 'Debt Certificate amount').equals(
+        debt.amount
+    )
+}
+
 export async function verifyRedemptionEvent(
     receipt: ContractReceipt,
     redeemer: string,
-    debt: BalanceExpected,
-    security: BalanceExpected
+    debt: ExpectTokenBalance,
+    security: ExpectTokenBalance
 ): Promise<void> {
     const redemptionTwoEvent = redemptionEvent(
         event('Redemption', events(receipt))
     )
-    expect(redemptionTwoEvent.redeemer).equals(redeemer)
-    expect(redemptionTwoEvent.debtSymbol).equals(debt.symbol)
-    expect(redemptionTwoEvent.debtAmount).equals(debt.amount)
-    expect(redemptionTwoEvent.securitySymbol).equals(security.symbol)
-    expect(redemptionTwoEvent.securityAmount).equals(security.amount)
+    expect(redemptionTwoEvent.redeemer, 'Redemption redeemer').equals(redeemer)
+    expect(redemptionTwoEvent.debtSymbol, 'Redemption debt symbol').equals(
+        debt.symbol
+    )
+    expect(redemptionTwoEvent.debtAmount, 'Redemption debt amount').equals(
+        debt.amount
+    )
+    expect(
+        redemptionTwoEvent.securitySymbol,
+        'Redemption security symbol'
+    ).equals(security.symbol)
+    expect(
+        redemptionTwoEvent.securityAmount,
+        'Redemption security amount'
+    ).equals(security.amount)
 }
