@@ -22,6 +22,9 @@ export function allowRedemptionEvent(event: Event): {authorizer: string} {
     return debt.args
 }
 
+/**
+ * Expected balance combination of a symbol and amount (value).
+ */
 export type BalanceExpected = {
     symbol: string
     amount: bigint

@@ -67,14 +67,11 @@ describe('Bond contract', () => {
         const debtCertificates = guarantorOnePledge + guarantorTwoPledge
         const bond = await createBond(factory, debtCertificates)
         const debtSymbol = await bond.symbol()
-        await setupGuarantorWithSecurityAsset(
-            guarantorOne,
-            guarantorOnePledge,
-            bond
-        )
-        await setupGuarantorWithSecurityAsset(
-            guarantorTwo,
-            guarantorTwoPledge,
+        await setupGuarantorsWithSecurity(
+            [
+                {signer: guarantorOne, pledge: guarantorOnePledge},
+                {signer: guarantorTwo, pledge: guarantorTwoPledge}
+            ],
             bond
         )
 
@@ -175,19 +172,12 @@ describe('Bond contract', () => {
             debtCertificates - slash(debtCertificates, FORTY_PERCENT)
         const bond = await createBond(factory, debtCertificates)
         const debtSymbol = await bond.symbol()
-        await setupGuarantorWithSecurityAsset(
-            guarantorOne,
-            guarantorOnePledge,
-            bond
-        )
-        await setupGuarantorWithSecurityAsset(
-            guarantorTwo,
-            guarantorTwoPledge,
-            bond
-        )
-        await setupGuarantorWithSecurityAsset(
-            guarantorThree,
-            guarantorThreePledge,
+        await setupGuarantorsWithSecurity(
+            [
+                {signer: guarantorOne, pledge: guarantorOnePledge},
+                {signer: guarantorTwo, pledge: guarantorTwoPledge},
+                {signer: guarantorThree, pledge: guarantorThreePledge}
+            ],
             bond
         )
 
@@ -337,15 +327,13 @@ describe('Bond contract', () => {
         )
     })
 
-    async function setupGuarantorWithSecurityAsset(
-        guarantor: SignerWithAddress,
-        pledge: bigint,
+    async function setupGuarantorsWithSecurity(
+        guarantors: GuarantorSecuritySetup[],
         bond: Bond
-    ) {
-        await securityAsset.transfer(guarantor.address, pledge)
-        await securityAsset
-            .connect(guarantor)
-            .increaseAllowance(bond.address, pledge)
+    ): Promise<void> {
+        for (let i = 0; i < guarantors.length; i++) {
+            await setupGuarantorWithSecurity(guarantors[i], bond, securityAsset)
+        }
     }
 
     let admin: SignerWithAddress
@@ -380,4 +368,20 @@ async function createBond(
 
 function slash(amount: bigint, percent: bigint): bigint {
     return ((100n - percent) * amount) / 100n
+}
+
+type GuarantorSecuritySetup = {
+    signer: SignerWithAddress
+    pledge: bigint
+}
+
+async function setupGuarantorWithSecurity(
+    guarantor: GuarantorSecuritySetup,
+    bond: Bond,
+    security: ERC20
+) {
+    await security.transfer(guarantor.signer.address, guarantor.pledge)
+    await security
+        .connect(guarantor.signer)
+        .increaseAllowance(bond.address, guarantor.pledge)
 }
