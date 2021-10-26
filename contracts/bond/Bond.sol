@@ -109,7 +109,12 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /**
      * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
      */
-    function mint(uint256 amount) external whenNotPaused onlyOwner {
+    function mint(uint256 amount)
+        external
+        whenNotPaused
+        whenNotRedeemable
+        onlyOwner
+    {
         _mint(address(this), amount);
     }
 

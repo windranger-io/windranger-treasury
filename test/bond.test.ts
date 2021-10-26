@@ -61,7 +61,7 @@ describe('Bond contract', () => {
         expect(treasuryAfter).equals(admin.address)
     })
 
-    it('no deposit while redemption allowed', async () => {
+    it('no deposit after redemption is allowed', async () => {
         const pledge = 60n
         bond = await createBond(factory, 235666777n)
         await setupGuarantorsWithSecurity([
@@ -74,7 +74,7 @@ describe('Bond contract', () => {
         ).to.be.revertedWith('Bond::whenNotRedeemable: redeemable')
     })
 
-    it('no slashing while redemption allowed', async () => {
+    it('no slashing after redemption is allowed', async () => {
         const pledge = 500n
         bond = await createBond(factory, 235666777n)
         await setupGuarantorsWithSecurity([
@@ -88,7 +88,16 @@ describe('Bond contract', () => {
         )
     })
 
-    it('no redemption before redemption allowed', async () => {
+    it('no minting after redemption is allowed', async () => {
+        bond = await createBond(factory, 235666777n)
+        await allowRedemption()
+
+        await expect(bond.mint(500n)).to.be.revertedWith(
+            'Bond::whenNotRedeemable: redeemable'
+        )
+    })
+
+    it('no redemption before redemption is allowed', async () => {
         const pledge = 500n
         bond = await createBond(factory, 235666777n)
         await setupGuarantorsWithSecurity([
