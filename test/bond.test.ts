@@ -137,14 +137,14 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeOne}
         )
 
-        // Bond holds all securities and has issued debt certificates
+        // Bond holds all securities, issued debt certificates
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: debtCertificates},
             {address: guarantorOne, bond: pledgeOne, security: ZERO},
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
-        // Slash forty percent from the security assets
+        // Slash forty percent of the security assets
         const slashReceipt = await slashSecurities(slashedSecurities)
         await verifySlashEvent(slashReceipt, {
             symbol: securityAssetSymbol,
@@ -156,14 +156,14 @@ describe('Bond contract', () => {
             amount: slashedSecurities
         })
 
-        // Debt holdings should remain the same, only securities moved
+        // Debt holdings should remain the same, securities moved
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: ZERO},
             {address: guarantorOne, bond: pledgeOne, security: ZERO},
             {address: treasury, bond: ZERO, security: slashedSecurities}
         ])
 
-        // Bond released by Owner
+        // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
@@ -221,7 +221,7 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeTwo}
         )
 
-        // Bond holds all securities and has issued debt certificates
+        // Bond holds all securities, issued debt certificates
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: debtCertificates},
             {address: guarantorOne, bond: pledgeOne, security: ZERO},
@@ -229,7 +229,7 @@ describe('Bond contract', () => {
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
-        // Bond released by Owner
+        // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
@@ -289,14 +289,14 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeOne}
         )
 
-        // Bond holds all securities and has issued debt certificates
+        // Bond holds all securities, issued debt certificates
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: debtCertificates},
             {address: guarantorOne, bond: pledgeOne, security: ZERO},
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
-        // Slash forty percent from the security assets
+        // Slash all the security assets
         const slashReceipt = await slashSecurities(slashedSecurities)
         await verifySlashEvent(slashReceipt, {
             symbol: securityAssetSymbol,
@@ -308,18 +308,18 @@ describe('Bond contract', () => {
             amount: slashedSecurities
         })
 
-        // Debt holdings should remain the same, only securities moved
+        // Debt holdings should remain the same, securities moved
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: ZERO},
             {address: guarantorOne, bond: pledgeOne, security: ZERO},
             {address: treasury, bond: ZERO, security: slashedSecurities}
         ])
 
-        // Bond released by Owner
+        // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
-        // Guarantor One redeem their bond, partial conversion (slashed)
+        // Guarantor One redeem their bond, zero conversion (slashed)
         const redeemOneReceipt = await successfulTransaction(
             bond.connect(guarantorOne).redeem(pledgeOne)
         )
@@ -366,14 +366,14 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledge}
         )
 
-        // Bond holds all securities and has issued debt certificates
+        // Bond holds all securities, issued debt certificates
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: debtCertificates},
             {address: guarantorOne, bond: pledge, security: ZERO},
             {address: treasury, bond: ZERO, security: ZERO}
         ])
 
-        // Slash forty percent from the security assets
+        // Slash fifty percent of the security assets
         const slashReceipt = await slashSecurities(slashedSecurities)
         await verifySlashEvent(slashReceipt, {
             symbol: securityAssetSymbol,
@@ -385,14 +385,14 @@ describe('Bond contract', () => {
             amount: slashedSecurities
         })
 
-        // Debt holdings should remain the same, only securities moved
+        // Debt holdings should remain the same, securities moved
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: remainingSecurities},
             {address: guarantorOne, bond: pledge, security: ZERO},
             {address: treasury, bond: ZERO, security: slashedSecurities}
         ])
 
-        // Bond released by Owner
+        // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
@@ -423,6 +423,7 @@ describe('Bond contract', () => {
             amount: ONE
         })
 
+        // Nothing in bond, with the rounding error now in the Treasury
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: ZERO},
             {address: guarantorOne, bond: ZERO, security: pledgeSlashedFloored},
@@ -482,7 +483,7 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeThree}
         )
 
-        // Bond holds all securities and has issued debt certificates
+        // Bond holds all securities, issued debt certificates
         await verifyBalances([
             {address: bond.address, bond: ZERO, security: debtCertificates},
             {address: guarantorOne, bond: pledgeOne, security: ZERO},
@@ -512,7 +513,7 @@ describe('Bond contract', () => {
             {address: treasury, bond: ZERO, security: slashedSecurities}
         ])
 
-        // Bond released by Owner
+        // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
         await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
