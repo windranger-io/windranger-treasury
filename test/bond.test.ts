@@ -269,7 +269,7 @@ describe('Bond contract', () => {
     })
 
     async function slashSecurities(amount: bigint): Promise<ContractReceipt> {
-        return bond.slash(amount)
+        return successfulTransaction(bond.slash(amount))
     }
 
     async function allowRedemption(): Promise<ContractReceipt> {
