@@ -112,6 +112,42 @@ describe('Bond contract', () => {
         ).to.be.revertedWith('Bond::whenRedeemable: not redeemable')
     })
 
+    it('slash can be done in three times', async () => {
+        const pledge = 500n
+        const debtCertificates = pledge
+        const oneThirdOfSlash = 100n
+        const slashAmount = 3n * oneThirdOfSlash
+        const remainingSecurity = pledge - slashAmount
+        bond = await createBond(factory, debtCertificates)
+        await setupGuarantorsWithSecurity([
+            {signer: guarantorOne, pledge: pledge}
+        ])
+        await depositBond(guarantorOne, pledge)
+
+        await bond.slash(oneThirdOfSlash)
+        await bond.slash(oneThirdOfSlash)
+        await bond.slash(oneThirdOfSlash)
+
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, security: remainingSecurity},
+            {address: guarantorOne, bond: debtCertificates, security: ZERO},
+            {address: treasury, bond: ZERO, security: slashAmount}
+        ])
+    })
+
+    it('slash amount must be greater than zero', async () => {
+        const pledge = 500n
+        bond = await createBond(factory, 235666777n)
+        await setupGuarantorsWithSecurity([
+            {signer: guarantorOne, pledge: pledge}
+        ])
+        await depositBond(guarantorOne, pledge)
+
+        await expect(bond.slash(ZERO)).to.be.revertedWith(
+            'Bond::Slash: amount must be > 0'
+        )
+    })
+
     it('one guarantor fully deposit, then is fully slashed', async () => {
         const pledge = 40050n
         const debtCertificates = pledge

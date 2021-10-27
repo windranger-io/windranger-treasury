@@ -171,6 +171,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         whenNotRedeemable
         onlyOwner
     {
+        require(amount > 0, "Bond::Slash: amount must be > 0");
+
         uint256 securities = _securityToken.balanceOf(address(this));
         require(
             securities >= amount,
