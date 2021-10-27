@@ -148,6 +148,19 @@ describe('Bond contract', () => {
         )
     })
 
+    it('slash amount cannot be greater than securities held', async () => {
+        const pledge = 500n
+        bond = await createBond(factory, 235666777n)
+        await setupGuarantorsWithSecurity([
+            {signer: guarantorOne, pledge: pledge}
+        ])
+        await depositBond(guarantorOne, pledge)
+
+        await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
+            'Bond::slash: Amount greater than available security supply'
+        )
+    })
+
     it('one guarantor fully deposit, then is fully slashed', async () => {
         const pledge = 40050n
         const debtCertificates = pledge
