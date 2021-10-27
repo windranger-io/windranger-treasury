@@ -52,121 +52,135 @@ describe('Bond contract', () => {
         factory = await deployBondFactory(securityAsset.address, treasury)
     })
 
-    it('update treasury address', async () => {
-        bond = await createBond(factory, 555666777n)
+    describe('deposit', () => {
+        it('disallowed after redemption', async () => {
+            const pledge = 60n
+            bond = await createBond(factory, 235666777n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await allowRedemption()
 
-        const treasuryBefore = await bond.treasury()
-        expect(treasuryBefore).equals(treasury)
-
-        await bond.setTreasury(admin.address)
-        const treasuryAfter = await bond.treasury()
-        expect(treasuryAfter).equals(admin.address)
+            await expect(
+                bond.connect(guarantorOne).deposit(pledge)
+            ).to.be.revertedWith('Bond::whenNotRedeemable: redeemable')
+        })
     })
 
-    it('no deposit after redemption is allowed', async () => {
-        const pledge = 60n
-        bond = await createBond(factory, 235666777n)
-        await setupGuarantorsWithSecurity([
-            {signer: guarantorOne, pledge: pledge}
-        ])
-        await allowRedemption()
+    describe('mint', () => {
+        it('amount must be greater than zero', async () => {
+            bond = await createBond(factory, 235666777n)
 
-        await expect(
-            bond.connect(guarantorOne).deposit(pledge)
-        ).to.be.revertedWith('Bond::whenNotRedeemable: redeemable')
+            await expect(bond.mint(ZERO)).to.be.revertedWith(
+                'Bond::mint: amount too small'
+            )
+        })
+
+        it('disallowed after redemption', async () => {
+            bond = await createBond(factory, 235666777n)
+            await allowRedemption()
+
+            await expect(bond.mint(500n)).to.be.revertedWith(
+                'Bond::whenNotRedeemable: redeemable'
+            )
+        })
     })
 
-    it('no slashing after redemption is allowed', async () => {
-        const pledge = 500n
-        bond = await createBond(factory, 235666777n)
-        await setupGuarantorsWithSecurity([
-            {signer: guarantorOne, pledge: pledge}
-        ])
-        await depositBond(guarantorOne, pledge)
-        await allowRedemption()
+    describe('redeem', () => {
+        it('disallowed before redemption', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 235666777n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
 
-        await expect(bond.slash(pledge)).to.be.revertedWith(
-            'Bond::whenNotRedeemable: redeemable'
-        )
+            await expect(
+                bond.connect(guarantorOne).redeem(pledge)
+            ).to.be.revertedWith('Bond::whenRedeemable: not redeemable')
+        })
     })
 
-    it('no minting after redemption is allowed', async () => {
-        bond = await createBond(factory, 235666777n)
-        await allowRedemption()
+    describe('slash', () => {
+        it('amount must be greater than zero', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 235666777n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
 
-        await expect(bond.mint(500n)).to.be.revertedWith(
-            'Bond::whenNotRedeemable: redeemable'
-        )
+            await expect(bond.slash(ZERO)).to.be.revertedWith(
+                'Bond::slash: amount too small'
+            )
+        })
+
+        it('amount must be equal to less than securities held', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 235666777n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+
+            await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
+                'Bond::slash: Amount greater than available security supply'
+            )
+        })
+
+        it('disallowed after redemption', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 235666777n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await allowRedemption()
+
+            await expect(bond.slash(pledge)).to.be.revertedWith(
+                'Bond::whenNotRedeemable: redeemable'
+            )
+        })
+
+        it('can be performed three times', async () => {
+            const pledge = 500n
+            const debtCertificates = pledge
+            const oneThirdOfSlash = 100n
+            const slashAmount = 3n * oneThirdOfSlash
+            const remainingSecurity = pledge - slashAmount
+            bond = await createBond(factory, debtCertificates)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+
+            await bond.slash(oneThirdOfSlash)
+            await bond.slash(oneThirdOfSlash)
+            await bond.slash(oneThirdOfSlash)
+
+            await verifyBalances([
+                {
+                    address: bond.address,
+                    bond: ZERO,
+                    security: remainingSecurity
+                },
+                {address: guarantorOne, bond: debtCertificates, security: ZERO},
+                {address: treasury, bond: ZERO, security: slashAmount}
+            ])
+        })
     })
 
-    it('no redemption before redemption is allowed', async () => {
-        const pledge = 500n
-        bond = await createBond(factory, 235666777n)
-        await setupGuarantorsWithSecurity([
-            {signer: guarantorOne, pledge: pledge}
-        ])
-        await depositBond(guarantorOne, pledge)
+    describe('treasury', () => {
+        it('update address', async () => {
+            bond = await createBond(factory, 555666777n)
 
-        await expect(
-            bond.connect(guarantorOne).redeem(pledge)
-        ).to.be.revertedWith('Bond::whenRedeemable: not redeemable')
-    })
+            const treasuryBefore = await bond.treasury()
+            expect(treasuryBefore).equals(treasury)
 
-    it('slash can be done in three times', async () => {
-        const pledge = 500n
-        const debtCertificates = pledge
-        const oneThirdOfSlash = 100n
-        const slashAmount = 3n * oneThirdOfSlash
-        const remainingSecurity = pledge - slashAmount
-        bond = await createBond(factory, debtCertificates)
-        await setupGuarantorsWithSecurity([
-            {signer: guarantorOne, pledge: pledge}
-        ])
-        await depositBond(guarantorOne, pledge)
-
-        await bond.slash(oneThirdOfSlash)
-        await bond.slash(oneThirdOfSlash)
-        await bond.slash(oneThirdOfSlash)
-
-        await verifyBalances([
-            {address: bond.address, bond: ZERO, security: remainingSecurity},
-            {address: guarantorOne, bond: debtCertificates, security: ZERO},
-            {address: treasury, bond: ZERO, security: slashAmount}
-        ])
-    })
-
-    it('slash amount must be greater than zero', async () => {
-        const pledge = 500n
-        bond = await createBond(factory, 235666777n)
-        await setupGuarantorsWithSecurity([
-            {signer: guarantorOne, pledge: pledge}
-        ])
-        await depositBond(guarantorOne, pledge)
-
-        await expect(bond.slash(ZERO)).to.be.revertedWith(
-            'Bond::slash: amount too small'
-        )
-    })
-
-    it('slash amount cannot be greater than securities held', async () => {
-        const pledge = 500n
-        bond = await createBond(factory, 235666777n)
-        await setupGuarantorsWithSecurity([
-            {signer: guarantorOne, pledge: pledge}
-        ])
-        await depositBond(guarantorOne, pledge)
-
-        await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
-            'Bond::slash: Amount greater than available security supply'
-        )
-    })
-
-    it('minting amount must be greater than zero', async () => {
-        bond = await createBond(factory, 235666777n)
-
-        await expect(bond.mint(ZERO)).to.be.revertedWith(
-            'Bond::mint: amount too small'
-        )
+            await bond.setTreasury(admin.address)
+            const treasuryAfter = await bond.treasury()
+            expect(treasuryAfter).equals(admin.address)
+        })
     })
 
     it('one guarantor fully deposit, then is fully slashed', async () => {
