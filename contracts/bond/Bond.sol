@@ -90,6 +90,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      * @dev This contract must have been approved to transfer the given amount from the ERC20 token being used as security.
      */
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
+        require(amount > 0, "Bond::deposit: amount too small");
         require(amount <= totalSupply(), "Bond:deposit: Deposit too large");
         address sender = _msgSender();
 
@@ -115,6 +116,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         whenNotRedeemable
         onlyOwner
     {
+        require(amount > 0, "Bond::mint: amount too small");
         _mint(address(this), amount);
     }
 
@@ -129,6 +131,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      * @dev Converts the amount of debt certificates owned by the sender, at the exchange ratio to the security asset.
      */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
+        require(amount > 0, "Bond::redeem: amount too small");
+
         address sender = _msgSender();
         uint256 totalSupply = totalSupply();
 
@@ -171,7 +175,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         whenNotRedeemable
         onlyOwner
     {
-        require(amount > 0, "Bond::Slash: amount must be > 0");
+        require(amount > 0, "Bond::Slash: amount too small");
 
         uint256 securities = _securityToken.balanceOf(address(this));
         require(
