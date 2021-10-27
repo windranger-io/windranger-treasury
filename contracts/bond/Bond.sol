@@ -87,6 +87,24 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
+     * @dev Slashing can result in securities remaining after full redemption due to flooring.
+     * After full redemption, the left over securities can be transferred to the treasury using close.
+     */
+    function close() external whenNotPaused whenRedeemable onlyOwner {
+        require(
+            totalSupply() == 0,
+            "Bond::close: debt certificates outstanding"
+        );
+
+        uint256 securities = _securityToken.balanceOf(address(this));
+        require(securities > 0, "Bond::close: no securities remain");
+
+        // Unknown ERC20 token behaviour, cater for bool usage
+        bool transferred = _securityToken.transfer(_treasury, securities);
+        require(transferred, "Bond::close: security transfer failed");
+    }
+
+    /**
      * @dev This contract must have been approved to transfer the given amount from the ERC20 token being used as security.
      */
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
@@ -195,24 +213,6 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      */
     function treasury() external view returns (address) {
         return _treasury;
-    }
-
-    /**
-     * @dev Slashing can result in securities remaining after full redemption due to flooring.
-     * After full redemption, the left over securities can be transferred to the treasury using close.
-     */
-    function close() external whenNotPaused whenRedeemable onlyOwner {
-        require(
-            totalSupply() == 0,
-            "Bond::close: debt Certificates outstanding"
-        );
-
-        uint256 securities = _securityToken.balanceOf(address(this));
-        require(securities > 0, "Bond::close: no securities remain");
-
-        // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transfer(_treasury, securities);
-        require(transferred, "Bond::close: security transfer failed");
     }
 
     /**

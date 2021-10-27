@@ -52,6 +52,35 @@ describe('Bond contract', () => {
         factory = await deployBondFactory(securityAsset.address, treasury)
     })
 
+    describe('close', () => {
+        it('cannot have outstanding Debt Certificates', async () => {
+            bond = await createBond(factory, ONE)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: ONE}
+            ])
+            await depositBond(guarantorOne, ONE)
+            await allowRedemption()
+
+            await expect(bond.close()).to.be.revertedWith(
+                'Bond::close: debt certificates outstanding'
+            )
+        })
+
+        it('needs securities remaining', async () => {
+            bond = await createBond(factory, ONE)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: ONE}
+            ])
+            await depositBond(guarantorOne, ONE)
+            await allowRedemption()
+            await redeem(guarantorOne, ONE)
+
+            await expect(bond.close()).to.be.revertedWith(
+                'Bond::close: no securities remain'
+            )
+        })
+    })
+
     describe('deposit', () => {
         it('cannot be zero', async () => {
             bond = await createBond(factory, 5566777n)
@@ -214,7 +243,7 @@ describe('Bond contract', () => {
         })
     })
 
-    it('one guarantor fully deposit, then is fully slashed', async () => {
+    it('one guarantor deposit, then is fully slashed', async () => {
         const pledge = 40050n
         const debtCertificates = pledge
         const slashedSecurities = debtCertificates
@@ -286,7 +315,7 @@ describe('Bond contract', () => {
         ])
     })
 
-    it('two guarantors fully deposit, then fully redeem', async () => {
+    it('two guarantors deposit, then fully redeem', async () => {
         const pledgeOne = 240050n
         const pledgeTwo = 99500n
         const debtCertificates = pledgeOne + pledgeTwo
@@ -360,7 +389,7 @@ describe('Bond contract', () => {
         ])
     })
 
-    it('one guarantor fully deposit, partially slashed, then redeems, with rounding left over securities', async () => {
+    it('one guarantor deposit, are partially slashed, then redeems, leaving a se security due to rounding', async () => {
         const pledge = 12345n
         const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
         const debtCertificates = pledge
@@ -399,7 +428,7 @@ describe('Bond contract', () => {
         ])
     })
 
-    it('three guarantors fully deposit, partially slashed, then redeems', async () => {
+    it('three guarantors deposit, are partially slashed, then redeems', async () => {
         const pledgeOne = 40050n
         const pledgeOneSlashed = slash(pledgeOne, FORTY_PERCENT)
         const pledgeTwo = 229500n
