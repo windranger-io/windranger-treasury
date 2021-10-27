@@ -1,0 +1,57 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title Escrow Token Swap
+
+box "(multisig)" #Peru
+actor Alice_expert as alice
+actor Bob_expert as bob
+end box
+
+'box "(offchain)" #Coral
+'database Etherscan as etherscan
+'end box
+
+box "(onchain)" #Lavender
+collections Escrow as escrow
+collections EscrowFactory as escrowfactory
+end box
+
+alice -> escrowfactory: create escrow
+note right: party A reqmt, party B reqmt, timelock
+escrowfactory -> escrowfactory: emit escrow address
+escrowfactory -> alice: escrow address
+
+alice -> escrow: deposit eth, erc20, or nfts (party A reqmt))
+escrow -> escrow: disallow deposits from Alice
+
+alice -> bob: escrow details
+alice -> alice: wait for timelock to expire
+
+group#lightgray #pink if timelock expires before counterparty desposit
+  alice -> escrow: claim Alice's deposit
+  alice <-- escrow: return deposited funds
+  escrow -> escrow: delete escrow
+end
+
+bob -> escrow: deposit eth, erc20, or nfts (party B reqmt)
+escrow -> escrow: disallow deposits from Bob
+
+group#lightgray #pink if timelock expires and one of alice or bob have not yet claimed
+  alice -> escrow: claim Alice's deposit
+  alice <-- escrow: return Alice's deposited funds
+  bob -> escrow: claim Bob's deposit
+  bob <-- escrow: return Bob's deposited funds
+  escrow -> escrow: delete escrow
+end
+
+alice -> escrow: claim Bob's escrowed funds
+alice <-- escrow: transfer Bob's deposit
+bob -> escrow: claim Alice's escrowed funds
+bob <-- escrow: transfer Alice's deposit
+
+group#lightgray #lightgreen Completed
+escrow -> escrow: delete escrow
+end
+
+@enduml
