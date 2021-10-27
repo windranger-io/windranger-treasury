@@ -87,6 +87,13 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
+     * @dev whether the Bond is in the redemption state (allows redeem operation, but denies deposit, mint and slash)
+     */
+    function redeemable() external view returns (bool) {
+        return _isRedemptionAllowed;
+    }
+
+    /**
      * @dev Slashing can result in securities remaining after full redemption due to flooring.
      * After full redemption, the left over securities can be transferred to the treasury using close.
      */

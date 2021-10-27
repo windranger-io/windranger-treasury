@@ -52,6 +52,43 @@ describe('Bond contract', () => {
         factory = await deployBondFactory(securityAsset.address, treasury)
     })
 
+    describe('allow redemption', () => {
+        it('changes state', async () => {
+            bond = await createBond(factory, ONE)
+            expect(await bond.redeemable()).is.false
+
+            await bond.allowRedemption()
+
+            expect(await bond.redeemable()).is.true
+        })
+
+        it('only when not paused', async () => {
+            bond = await createBond(factory, ONE)
+            await bond.pause()
+
+            await expect(bond.allowRedemption()).to.be.revertedWith(
+                'Pausable: paused'
+            )
+        })
+
+        it('only when not redeemable', async () => {
+            bond = await createBond(factory, ONE)
+            await bond.allowRedemption()
+
+            await expect(bond.allowRedemption()).to.be.revertedWith(
+                'Bond::whenNotRedeemable: redeemable'
+            )
+        })
+
+        it('only owner', async () => {
+            bond = await createBond(factory, ONE)
+
+            await expect(
+                bond.connect(guarantorOne).allowRedemption()
+            ).to.be.revertedWith('Ownable: caller is not the owner')
+        })
+    })
+
     describe('close', () => {
         it('cannot have outstanding Debt Certificates', async () => {
             bond = await createBond(factory, ONE)
