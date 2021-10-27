@@ -186,6 +186,32 @@ describe('Bond contract', () => {
         })
     })
 
+    describe('pause', () => {
+        it('changes state', async () => {
+            bond = await createBond(factory, ONE)
+            expect(await bond.paused()).is.false
+
+            await bond.pause()
+
+            expect(await bond.paused()).is.true
+        })
+
+        it('only when not paused', async () => {
+            bond = await createBond(factory, ONE)
+            await bond.pause()
+
+            await expect(bond.pause()).to.be.revertedWith('Pausable: paused')
+        })
+
+        it('only owner', async () => {
+            bond = await createBond(factory, ONE)
+
+            await expect(bond.connect(guarantorTwo).pause()).to.be.revertedWith(
+                'Ownable: caller is not the owner'
+            )
+        })
+    })
+
     describe('redeem', () => {
         it('cannot be zero', async () => {
             const pledge = 500n
@@ -335,6 +361,35 @@ describe('Bond contract', () => {
             await bond.setTreasury(admin.address)
             const treasuryAfter = await bond.treasury()
             expect(treasuryAfter).equals(admin.address)
+        })
+    })
+
+    describe('unpause', () => {
+        it('changes state', async () => {
+            bond = await createBond(factory, ONE)
+            await bond.pause()
+            expect(await bond.paused()).is.true
+
+            await bond.unpause()
+
+            expect(await bond.paused()).is.false
+        })
+
+        it('only when paused', async () => {
+            bond = await createBond(factory, ONE)
+
+            await expect(bond.unpause()).to.be.revertedWith(
+                'Pausable: not paused'
+            )
+        })
+
+        it('only owner', async () => {
+            bond = await createBond(factory, ONE)
+            await bond.pause()
+
+            await expect(
+                bond.connect(guarantorTwo).unpause()
+            ).to.be.revertedWith('Ownable: caller is not the owner')
         })
     })
 
