@@ -175,7 +175,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         whenNotRedeemable
         onlyOwner
     {
-        require(amount > 0, "Bond::Slash: amount too small");
+        require(amount > 0, "Bond::slash: amount too small");
 
         uint256 securities = _securityToken.balanceOf(address(this));
         require(

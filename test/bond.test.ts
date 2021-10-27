@@ -144,7 +144,7 @@ describe('Bond contract', () => {
         await depositBond(guarantorOne, pledge)
 
         await expect(bond.slash(ZERO)).to.be.revertedWith(
-            'Bond::Slash: amount must be > 0'
+            'Bond::slash: amount too small'
         )
     })
 
@@ -158,6 +158,14 @@ describe('Bond contract', () => {
 
         await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
             'Bond::slash: Amount greater than available security supply'
+        )
+    })
+
+    it('minting amount must be greater than zero', async () => {
+        bond = await createBond(factory, 235666777n)
+
+        await expect(bond.mint(ZERO)).to.be.revertedWith(
+            'Bond::mint: amount too small'
         )
     })
 
