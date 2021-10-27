@@ -178,7 +178,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      * @dev Resumes / unpauses contract, allowing operation of all external functions.
      */
     function resume() external whenPaused onlyOwner {
-        _pause();
+        _unpause();
     }
 
     /**

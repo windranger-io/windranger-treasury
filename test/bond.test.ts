@@ -79,6 +79,31 @@ describe('Bond contract', () => {
                 'Bond::close: no securities remain'
             )
         })
+
+        it('only when not paused', async () => {
+            bond = await createBond(factory, ONE)
+            await allowRedemption()
+            await bond.pause()
+
+            await expect(bond.close()).to.be.revertedWith('Pausable: paused')
+        })
+
+        it('only when redeemable', async () => {
+            bond = await createBond(factory, ONE)
+
+            await expect(bond.close()).to.be.revertedWith(
+                'Bond::whenRedeemable: not redeemable'
+            )
+        })
+
+        it('only owner', async () => {
+            bond = await createBond(factory, ONE)
+            await allowRedemption()
+
+            await expect(bond.connect(guarantorOne).close()).to.be.revertedWith(
+                'Ownable: caller is not the owner'
+            )
+        })
     })
 
     describe('deposit', () => {
@@ -99,7 +124,21 @@ describe('Bond contract', () => {
             ).to.be.revertedWith('Bond::deposit: too large')
         })
 
-        it('disallowed after redemption', async () => {
+        it('only when not paused', async () => {
+            const pledge = 60n
+            bond = await createBond(factory, 555777n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            bond = await createBond(factory, ONE)
+            await bond.pause()
+
+            await expect(
+                bond.connect(guarantorOne).deposit(pledge)
+            ).to.be.revertedWith('Pausable: paused')
+        })
+
+        it('only when not redeemable', async () => {
             const pledge = 60n
             bond = await createBond(factory, 235666777n)
             await setupGuarantorsWithSecurity([
@@ -122,13 +161,28 @@ describe('Bond contract', () => {
             )
         })
 
-        it('disallowed after redemption', async () => {
-            bond = await createBond(factory, 23565477n)
+        it('only when not paused', async () => {
+            bond = await createBond(factory, ONE)
+            await bond.pause()
+
+            await expect(bond.mint(ONE)).to.be.revertedWith('Pausable: paused')
+        })
+
+        it('only when not redeemable', async () => {
+            bond = await createBond(factory, ONE)
             await allowRedemption()
 
-            await expect(bond.mint(500n)).to.be.revertedWith(
+            await expect(bond.mint(ONE)).to.be.revertedWith(
                 'Bond::whenNotRedeemable: redeemable'
             )
+        })
+
+        it('only owner', async () => {
+            bond = await createBond(factory, ONE)
+
+            await expect(
+                bond.connect(guarantorOne).mint(ONE)
+            ).to.be.revertedWith('Ownable: caller is not the owner')
         })
     })
 
@@ -147,7 +201,7 @@ describe('Bond contract', () => {
             )
         })
 
-        it('disallowed before redemption', async () => {
+        it('only when redeemable', async () => {
             const pledge = 500n
             bond = await createBond(factory, 238877n)
             await setupGuarantorsWithSecurity([
@@ -158,6 +212,20 @@ describe('Bond contract', () => {
             await expect(
                 bond.connect(guarantorOne).redeem(pledge)
             ).to.be.revertedWith('Bond::whenRedeemable: not redeemable')
+        })
+
+        it('only when not paused', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 238877n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.pause()
+
+            await expect(
+                bond.connect(guarantorOne).redeem(pledge)
+            ).to.be.revertedWith('Pausable: paused')
         })
     })
 
@@ -202,7 +270,20 @@ describe('Bond contract', () => {
             )
         })
 
-        it('disallowed after redemption', async () => {
+        it('cannot be greater than securities held', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 23563377n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+
+            await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
+                'Bond::slash: greater than available security supply'
+            )
+        })
+
+        it('ony when not redeemable', async () => {
             const pledge = 500n
             bond = await createBond(factory, 2356677n)
             await setupGuarantorsWithSecurity([
@@ -216,17 +297,31 @@ describe('Bond contract', () => {
             )
         })
 
-        it('cannot be greater than securities held', async () => {
+        it('ony when not paused', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 23563377n)
+            bond = await createBond(factory, 2356677n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.pause()
+
+            await expect(bond.slash(pledge)).to.be.revertedWith(
+                'Pausable: paused'
+            )
+        })
+
+        it('ony owner', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 2356677n)
             await setupGuarantorsWithSecurity([
                 {signer: guarantorOne, pledge: pledge}
             ])
             await depositBond(guarantorOne, pledge)
 
-            await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
-                'Bond::slash: greater than available security supply'
-            )
+            await expect(
+                bond.connect(guarantorOne).slash(pledge)
+            ).to.be.revertedWith('Ownable: caller is not the owner')
         })
     })
 
