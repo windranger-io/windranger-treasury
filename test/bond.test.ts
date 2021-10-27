@@ -70,7 +70,7 @@ describe('Bond contract', () => {
             bond = await createBond(factory, 5566777n)
 
             await expect(bond.deposit(ZERO)).to.be.revertedWith(
-                'Bond::deposit: amount too small'
+                'Bond::deposit: too small'
             )
         })
     })
@@ -89,7 +89,7 @@ describe('Bond contract', () => {
             bond = await createBond(factory, 23566337n)
 
             await expect(bond.mint(ZERO)).to.be.revertedWith(
-                'Bond::mint: amount too small'
+                'Bond::mint: too small'
             )
         })
     })
@@ -118,7 +118,7 @@ describe('Bond contract', () => {
             await allowRedemption()
 
             await expect(redeem(guarantorOne, ZERO)).to.be.revertedWith(
-                'Bond::redeem: amount too small'
+                'Bond::redeem: too small'
             )
         })
     })
@@ -174,7 +174,7 @@ describe('Bond contract', () => {
             await depositBond(guarantorOne, pledge)
 
             await expect(bond.slash(ZERO)).to.be.revertedWith(
-                'Bond::slash: amount too small'
+                'Bond::slash: too small'
             )
         })
 
@@ -187,7 +187,7 @@ describe('Bond contract', () => {
             await depositBond(guarantorOne, pledge)
 
             await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
-                'Bond::slash: Amount greater than available security supply'
+                'Bond::slash: greater than available security supply'
             )
         })
     })

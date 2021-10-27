@@ -90,8 +90,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      * @dev This contract must have been approved to transfer the given amount from the ERC20 token being used as security.
      */
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
-        require(amount > 0, "Bond::deposit: amount too small");
-        require(amount <= totalSupply(), "Bond:deposit: Deposit too large");
+        require(amount > 0, "Bond::deposit: too small");
+        require(amount <= totalSupply(), "Bond:deposit: too large");
         address sender = _msgSender();
 
         // Unknown ERC20 token behaviour, cater for bool usage
@@ -100,7 +100,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
             address(this),
             amount
         );
-        require(transferred, "Bond::deposit: Security transfer failed");
+        require(transferred, "Bond::deposit: security transfer failed");
         emit Deposit(sender, _securityToken.symbol(), amount);
 
         _transfer(address(this), sender, amount);
@@ -116,7 +116,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         whenNotRedeemable
         onlyOwner
     {
-        require(amount > 0, "Bond::mint: amount too small");
+        require(amount > 0, "Bond::mint: too small");
         _mint(address(this), amount);
     }
 
@@ -131,7 +131,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      * @dev Converts the amount of debt certificates owned by the sender, at the exchange ratio to the security asset.
      */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
-        require(amount > 0, "Bond::redeem: amount too small");
+        require(amount > 0, "Bond::redeem: too small");
 
         address sender = _msgSender();
         uint256 totalSupply = totalSupply();
@@ -145,7 +145,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         // Unknown ERC20 token behaviour, cater for bool usage
         uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
         bool transferred = _securityToken.transfer(sender, redemptionAmount);
-        require(transferred, "Bond::redeem: Security transfer failed");
+        require(transferred, "Bond::redeem: security transfer failed");
 
         emit Redemption(
             sender,
@@ -175,17 +175,17 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         whenNotRedeemable
         onlyOwner
     {
-        require(amount > 0, "Bond::slash: amount too small");
+        require(amount > 0, "Bond::slash: too small");
 
         uint256 securities = _securityToken.balanceOf(address(this));
         require(
             securities >= amount,
-            "Bond::slash: Amount greater than available security supply"
+            "Bond::slash: greater than available security supply"
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _securityToken.transfer(_treasury, amount);
-        require(transferred, "Bond::slash: Security transfer failed");
+        require(transferred, "Bond::slash: security transfer failed");
 
         emit Slash(_securityToken.symbol(), amount);
     }
@@ -204,15 +204,15 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     function close() external whenNotPaused whenRedeemable onlyOwner {
         require(
             totalSupply() == 0,
-            "Bond::close: Debt Certificates outstanding"
+            "Bond::close: debt Certificates outstanding"
         );
 
         uint256 securities = _securityToken.balanceOf(address(this));
-        require(securities > 0, "Bond::close: No securities remain");
+        require(securities > 0, "Bond::close: no securities remain");
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _securityToken.transfer(_treasury, securities);
-        require(transferred, "Bond::close: Security transfer failed");
+        require(transferred, "Bond::close: security transfer failed");
     }
 
     /**
