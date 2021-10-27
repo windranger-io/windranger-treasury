@@ -53,6 +53,23 @@ describe('Bond contract', () => {
     })
 
     describe('deposit', () => {
+        it('cannot be zero', async () => {
+            bond = await createBond(factory, 5566777n)
+
+            await expect(bond.deposit(ZERO)).to.be.revertedWith(
+                'Bond::deposit: too small'
+            )
+        })
+
+        it('cannot be greater than available Debt Certificates', async () => {
+            const debtCertificates = 500000n
+            bond = await createBond(factory, debtCertificates)
+
+            await expect(
+                bond.deposit(debtCertificates + 1n)
+            ).to.be.revertedWith('Bond::deposit: too large')
+        })
+
         it('disallowed after redemption', async () => {
             const pledge = 60n
             bond = await createBond(factory, 235666777n)
@@ -65,17 +82,17 @@ describe('Bond contract', () => {
                 bond.connect(guarantorOne).deposit(pledge)
             ).to.be.revertedWith('Bond::whenNotRedeemable: redeemable')
         })
-
-        it('must be greater than zero', async () => {
-            bond = await createBond(factory, 5566777n)
-
-            await expect(bond.deposit(ZERO)).to.be.revertedWith(
-                'Bond::deposit: too small'
-            )
-        })
     })
 
     describe('mint', () => {
+        it('cannot be zero', async () => {
+            bond = await createBond(factory, 23566337n)
+
+            await expect(bond.mint(ZERO)).to.be.revertedWith(
+                'Bond::mint: too small'
+            )
+        })
+
         it('disallowed after redemption', async () => {
             bond = await createBond(factory, 23565477n)
             await allowRedemption()
@@ -84,31 +101,10 @@ describe('Bond contract', () => {
                 'Bond::whenNotRedeemable: redeemable'
             )
         })
-
-        it('must be greater than zero', async () => {
-            bond = await createBond(factory, 23566337n)
-
-            await expect(bond.mint(ZERO)).to.be.revertedWith(
-                'Bond::mint: too small'
-            )
-        })
     })
 
     describe('redeem', () => {
-        it('disallowed before redemption', async () => {
-            const pledge = 500n
-            bond = await createBond(factory, 238877n)
-            await setupGuarantorsWithSecurity([
-                {signer: guarantorOne, pledge: pledge}
-            ])
-            await depositBond(guarantorOne, pledge)
-
-            await expect(
-                bond.connect(guarantorOne).redeem(pledge)
-            ).to.be.revertedWith('Bond::whenRedeemable: not redeemable')
-        })
-
-        it('must be greater than zero', async () => {
+        it('cannot be zero', async () => {
             const pledge = 500n
             bond = await createBond(factory, 23336777n)
             await setupGuarantorsWithSecurity([
@@ -120,6 +116,19 @@ describe('Bond contract', () => {
             await expect(redeem(guarantorOne, ZERO)).to.be.revertedWith(
                 'Bond::redeem: too small'
             )
+        })
+
+        it('disallowed before redemption', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 238877n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+
+            await expect(
+                bond.connect(guarantorOne).redeem(pledge)
+            ).to.be.revertedWith('Bond::whenRedeemable: not redeemable')
         })
     })
 
@@ -151,6 +160,19 @@ describe('Bond contract', () => {
             ])
         })
 
+        it('cannot be zero', async () => {
+            const pledge = 500n
+            bond = await createBond(factory, 2356666n)
+            await setupGuarantorsWithSecurity([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+
+            await expect(bond.slash(ZERO)).to.be.revertedWith(
+                'Bond::slash: too small'
+            )
+        })
+
         it('disallowed after redemption', async () => {
             const pledge = 500n
             bond = await createBond(factory, 2356677n)
@@ -165,20 +187,7 @@ describe('Bond contract', () => {
             )
         })
 
-        it('must be greater than zero', async () => {
-            const pledge = 500n
-            bond = await createBond(factory, 2356666n)
-            await setupGuarantorsWithSecurity([
-                {signer: guarantorOne, pledge: pledge}
-            ])
-            await depositBond(guarantorOne, pledge)
-
-            await expect(bond.slash(ZERO)).to.be.revertedWith(
-                'Bond::slash: too small'
-            )
-        })
-
-        it('must be equal or less than securities held', async () => {
+        it('cannot be greater than securities held', async () => {
             const pledge = 500n
             bond = await createBond(factory, 23563377n)
             await setupGuarantorsWithSecurity([
