@@ -116,6 +116,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      */
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond::deposit: too small");
+
+        //TODO against available debt certs, not total supply
         require(amount < totalSupply(), "Bond::deposit: too large");
         address sender = _msgSender();
 

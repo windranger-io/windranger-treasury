@@ -161,19 +161,6 @@ describe('Bond contract', () => {
             ).to.be.revertedWith('Bond::deposit: too large')
         })
 
-        //TODO
-        it('can be equal to all Debt Certificates', async () => {
-            const pledge = 60n
-            bond = await createBond(factory, pledge)
-            await setupGuarantorsWithSecurity([
-                {signer: guarantorOne, pledge: pledge}
-            ])
-
-            await expect(bond.deposit(pledge)).to.be.revertedWith(
-                'Bond::deposit: too large'
-            )
-        })
-
         it('only when not paused', async () => {
             const pledge = 60n
             bond = await createBond(factory, pledge)
