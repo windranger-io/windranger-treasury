@@ -58,6 +58,13 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /// Multiplier / divider for four decimal places, used in redemption ratio calculation.
     uint256 private constant DECIMAL_OFFSET = 10000;
 
+    /*
+     * An isolated count of securities is kept to guard against the edge case of extra securities being transferred
+     * to the contract address inflating redemption amounts.
+     */
+    /// Count of securities currently owed to guarantors.
+    uint256 private _guarantorSecurities;
+
     IERC20Metadata private immutable _securityToken;
     address private _treasury;
     bool private _isRedemptionAllowed;
@@ -117,7 +124,9 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond::deposit: too small");
         require(amount <= balanceOf(address(this)), "Bond::deposit: too large");
+
         address sender = _msgSender();
+        _guarantorSecurities += amount;
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _securityToken.transferFrom(
@@ -167,8 +176,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         );
         _burn(sender, amount);
 
-        // Unknown ERC20 token behaviour, cater for bool usage
         uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
+        _guarantorSecurities -= redemptionAmount;
+
+        // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _securityToken.transfer(sender, redemptionAmount);
         require(transferred, "Bond::redeem: security transfer failed");
 
@@ -201,12 +212,12 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         onlyOwner
     {
         require(amount > 0, "Bond::slash: too small");
-
-        uint256 securities = _securityToken.balanceOf(address(this));
         require(
-            securities >= amount,
+            amount <= _guarantorSecurities,
             "Bond::slash: greater than available security supply"
         );
+
+        _guarantorSecurities -= amount;
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _securityToken.transfer(_treasury, amount);
@@ -237,12 +248,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         view
         returns (uint256)
     {
-        uint256 securities = _securityToken.balanceOf(address(this));
-
-        if (securities == totalSupply) {
+        if (_guarantorSecurities == totalSupply) {
             return amount;
         } else {
-            uint256 redemptionRatio = (DECIMAL_OFFSET * securities) /
+            uint256 redemptionRatio = (DECIMAL_OFFSET * _guarantorSecurities) /
                 totalSupply;
             return (redemptionRatio * amount) / DECIMAL_OFFSET;
         }
