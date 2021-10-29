@@ -3,6 +3,7 @@ import {expect} from 'chai'
 import {BondCreatedEvent} from '../../typechain/BondFactory'
 import {
     AllowRedemptionEvent,
+    CloseEvent,
     DebtCertificateIssueEvent,
     RedemptionEvent,
     SlashEvent
@@ -18,11 +19,20 @@ export type ExpectTokenBalance = {
 }
 
 /**
- * Expected balance combination of a symbol and amount (value).
+ * Expected ERC20 transfer event, with sender, receiver and value.
  */
 export type ExpectTokenTransfer = {
     from: string
     to: string
+    amount: bigint
+}
+
+/**
+ * Expected transfer event, with receiver, token symbol and value.
+ */
+export type ExpectFlushTransfer = {
+    to: string
+    symbol: string
     amount: bigint
 }
 
@@ -60,6 +70,25 @@ export function bondCreatedEvent(event: Event): {
     expect(args?.treasury).is.not.undefined
 
     return bondCreated.args
+}
+
+/**
+ * Shape check and conversion for a CloseEvent.
+ */
+export function closeEvent(event: Event): {
+    receiver: string
+    symbol: string
+    amount: BigNumber
+} {
+    const close = event as CloseEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.receiver).is.not.undefined
+    expect(args?.symbol).is.not.undefined
+    expect(args?.amount).is.not.undefined
+
+    return close.args
 }
 
 /**
@@ -245,4 +274,17 @@ export async function verifyTransferEvent(
     expect(onlyTransferEvent.from, 'Transfer from').equals(transfer.from)
     expect(onlyTransferEvent.to, 'Transfer to').equals(transfer.to)
     expect(onlyTransferEvent.value, 'Transfer amount').equals(transfer.amount)
+}
+
+/**
+ * Verifies the content for a close (flush of remaining security assets) event.
+ */
+export async function verifyCloseEvent(
+    receipt: ContractReceipt,
+    transfer: ExpectFlushTransfer
+): Promise<void> {
+    const onlyTransferEvent = closeEvent(event('Close', events(receipt)))
+    expect(onlyTransferEvent.receiver, 'Transfer from').equals(transfer.to)
+    expect(onlyTransferEvent.symbol, 'Transfer to').equals(transfer.symbol)
+    expect(onlyTransferEvent.amount, 'Transfer amount').equals(transfer.amount)
 }

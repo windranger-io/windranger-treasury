@@ -24,7 +24,8 @@ import {
     verifyDebtCertificateIssueEvent,
     verifySlashEvent,
     verifyTransferEvent,
-    verifyAllowRedemptionEvent
+    verifyAllowRedemptionEvent,
+    verifyCloseEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -600,6 +601,11 @@ describe('Bond contract', () => {
 
         // Move the rounding error from the Bond contract to the Treasury
         const closeReceipt = await close()
+        await verifyCloseEvent(closeReceipt, {
+            to: treasury,
+            symbol: securityAssetSymbol,
+            amount: ONE
+        })
         await verifyTransferEvent(closeReceipt, {
             from: bond.address,
             to: treasury,

@@ -14,6 +14,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  */
 contract Bond is Context, ERC20, Ownable, Pausable {
     event AllowRedemption(address authorizer);
+    event Close(address receiver, string symbol, uint256 amount);
     event DebtCertificateIssue(
         address receiver,
         string debSymbol,
@@ -116,6 +117,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _securityToken.transfer(_treasury, securities);
         require(transferred, "Bond::close: security transfer failed");
+
+        emit Close(_treasury, _securityToken.symbol(), securities);
     }
 
     /**
