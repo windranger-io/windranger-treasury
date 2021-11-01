@@ -8,9 +8,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
- * @title Bond contract that issues debt tokens in exchange for a collateral.
+ * @title Bond contract that issues debt tokens in exchange for a collateral deposited.
  *
- * @dev A single token type is held by the contract as collateral.
+ * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
  */
 contract Bond is Context, ERC20, Ownable, Pausable {
     event AllowRedemption(address authorizer);
@@ -56,10 +56,11 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     uint256 private constant DECIMAL_OFFSET = 10000;
 
     /*
-     * An isolated count for the collateral that is kept to guard against the edge case of extra collateral tokens being
-     * transferred to the contract address inflating redemption amounts.
+     * An isolated count for the collateral that currently owed to Guarantors.
+     * Kept to guard against the edge case of collateral tokens being directly transferred
+     * (i.e. transfer in the collateral contract, not via deposit) to the contract address inflating redemption amounts.
      */
-    /// Count of collateral currently owed to guarantors.
+    /// Collateral currently owed to guarantors.
     uint256 private _guarantorCollateral;
 
     IERC20Metadata private immutable _collateralToken;
@@ -78,7 +79,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Debt tokens are not allowed to be redeemed before the owner gives their permission.
+     * @dev Debt tokens are not allowed to be redeemed before the owner grants permission.
      */
     function allowRedemption()
         external
@@ -91,14 +92,15 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev whether the Bond is in the redemption state (allows redeem operation, but denies deposit, mint and slash)
+     * @dev whether the Bond is in the redemption state (allows redeem operation, but denies deposit, mint and slash).
      */
     function redeemable() external view returns (bool) {
         return _isRedemptionAllowed;
     }
 
     /**
-     * @dev This contract must have been approved to transfer the given amount from the ERC20 token being used as collateral.
+     * @dev Before the deposit can be made, this contract must have been approved to transfer the given amount
+     * from the ERC20 token being used as collateral.
      */
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond::deposit: too small");
@@ -141,7 +143,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Converts the amount of debt tokens owned by the sender, at the exchange ratio to the collateral asset.
+     * @dev Converts the amount of debt tokens owned by the sender, at the exchange ratio determined by the remaining
+     * amount of collateral against the remaining amount of debt.
      */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
         require(amount > 0, "Bond::redeem: too small");
@@ -172,7 +175,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Resumes / unpauses contract, allowing operation of all external functions.
+     * @dev Resumes (unpauses) contract, allowing operation of all external functions.
      */
     function unpause() external whenPaused onlyOwner {
         _unpause();
@@ -182,7 +185,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      * The amount of debt tokens remains the same. Slashing reduces the collateral tokens, so each debt token
      * is redeemable for less collateral.
      *
-     * @dev Transfers the amount to the Bond owner, reducing the amount available for later redemption (redemption ratio).
+     * @dev Transfers the amount to the Treasury, reducing the amount available for later redemption (redemption ratio).
      */
     function slash(uint256 amount)
         external
@@ -255,7 +258,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Collateral is deposited at a 1 to 1 ratio, however slashing can change that.
+     * @dev Collateral is deposited at a 1 to 1 ratio, however slashing can change that lower.
      */
     function _redemptionAmount(uint256 amount, uint256 totalSupply)
         internal
