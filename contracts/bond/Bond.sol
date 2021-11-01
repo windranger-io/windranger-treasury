@@ -8,31 +8,27 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
- * @title Bond contract that issues debt tokens in exchange for a security.
+ * @title Bond contract that issues debt tokens in exchange for a collateral.
  *
- * @dev A single token type is held by the contract as security.
+ * @dev A single token type is held by the contract as collateral.
  */
 contract Bond is Context, ERC20, Ownable, Pausable {
     event AllowRedemption(address authorizer);
-    event Close(address receiver, string symbol, uint256 amount);
-    event DebtCertificateIssue(
-        address receiver,
-        string debSymbol,
-        uint256 debtAmount
-    );
+    event WithdrawCollateral(address receiver, string symbol, uint256 amount);
+    event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
     event Deposit(
         address depositor,
-        string securitySymbol,
-        uint256 securityAmount
+        string collateralSymbol,
+        uint256 collateralAmount
     );
     event Redemption(
         address redeemer,
         string debtSymbol,
         uint256 debtAmount,
-        string securitySymbol,
-        uint256 securityAmount
+        string collateralSymbol,
+        uint256 collateralAmount
     );
-    event Slash(string securitySymbol, uint256 securityAmount);
+    event Slash(string collateralSymbol, uint256 collateralAmount);
 
     /**
      * @dev Modifier to make a function callable only when the contract is not redeemable.
@@ -60,29 +56,29 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     uint256 private constant DECIMAL_OFFSET = 10000;
 
     /*
-     * An isolated count of securities is kept to guard against the edge case of extra securities being transferred
-     * to the contract address inflating redemption amounts.
+     * An isolated count for the collateral that is kept to guard against the edge case of extra collateral tokens being
+     * transferred to the contract address inflating redemption amounts.
      */
-    /// Count of securities currently owed to guarantors.
-    uint256 private _guarantorSecurities;
+    /// Count of collateral currently owed to guarantors.
+    uint256 private _guarantorCollateral;
 
-    IERC20Metadata private immutable _securityToken;
+    IERC20Metadata private immutable _collateralToken;
     address private _treasury;
     bool private _isRedemptionAllowed;
 
     constructor(
         string memory name_,
         string memory symbol_,
-        address securityToken_,
+        address collateralToken_,
         address treasury_
     ) ERC20(name_, symbol_) {
-        _securityToken = IERC20Metadata(securityToken_);
+        _collateralToken = IERC20Metadata(collateralToken_);
         _isRedemptionAllowed = false;
         _treasury = treasury_;
     }
 
     /**
-     * @dev Debt certificates are not allowed to be redeemed before the owner gives their permission.
+     * @dev Debt tokens are not allowed to be redeemed before the owner gives their permission.
      */
     function allowRedemption()
         external
@@ -102,46 +98,26 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Slashing can result in securities remaining after full redemption due to flooring.
-     * After full redemption, the left over securities can be transferred to the treasury using close.
-     */
-    function close() external whenNotPaused whenRedeemable onlyOwner {
-        require(
-            totalSupply() == 0,
-            "Bond::close: debt certificates outstanding"
-        );
-
-        uint256 securities = _securityToken.balanceOf(address(this));
-        require(securities > 0, "Bond::close: no securities remain");
-
-        // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transfer(_treasury, securities);
-        require(transferred, "Bond::close: security transfer failed");
-
-        emit Close(_treasury, _securityToken.symbol(), securities);
-    }
-
-    /**
-     * @dev This contract must have been approved to transfer the given amount from the ERC20 token being used as security.
+     * @dev This contract must have been approved to transfer the given amount from the ERC20 token being used as collateral.
      */
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond::deposit: too small");
         require(amount <= balanceOf(address(this)), "Bond::deposit: too large");
 
         address sender = _msgSender();
-        _guarantorSecurities += amount;
+        _guarantorCollateral += amount;
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transferFrom(
+        bool transferred = _collateralToken.transferFrom(
             sender,
             address(this),
             amount
         );
-        require(transferred, "Bond::deposit: security transfer failed");
-        emit Deposit(sender, _securityToken.symbol(), amount);
+        require(transferred, "Bond::deposit: collateral transfer failed");
+        emit Deposit(sender, _collateralToken.symbol(), amount);
 
         _transfer(address(this), sender, amount);
-        emit DebtCertificateIssue(sender, symbol(), amount);
+        emit DebtIssue(sender, symbol(), amount);
     }
 
     /**
@@ -165,7 +141,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Converts the amount of debt certificates owned by the sender, at the exchange ratio to the security asset.
+     * @dev Converts the amount of debt tokens owned by the sender, at the exchange ratio to the collateral asset.
      */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
         require(amount > 0, "Bond::redeem: too small");
@@ -180,17 +156,17 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         _burn(sender, amount);
 
         uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
-        _guarantorSecurities -= redemptionAmount;
+        _guarantorCollateral -= redemptionAmount;
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transfer(sender, redemptionAmount);
-        require(transferred, "Bond::redeem: security transfer failed");
+        bool transferred = _collateralToken.transfer(sender, redemptionAmount);
+        require(transferred, "Bond::redeem: collateral transfer failed");
 
         emit Redemption(
             sender,
             symbol(),
             amount,
-            _securityToken.symbol(),
+            _collateralToken.symbol(),
             redemptionAmount
         );
     }
@@ -203,8 +179,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * The amount of debt certificates remains the same. Slashing reduces the security tokens, so each debt token
-     * is redeemable for fewer securities.
+     * The amount of debt tokens remains the same. Slashing reduces the collateral tokens, so each debt token
+     * is redeemable for less collateral.
      *
      * @dev Transfers the amount to the Bond owner, reducing the amount available for later redemption (redemption ratio).
      */
@@ -216,24 +192,17 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     {
         require(amount > 0, "Bond::slash: too small");
         require(
-            amount <= _guarantorSecurities,
-            "Bond::slash: greater than available security supply"
+            amount <= _guarantorCollateral,
+            "Bond::slash: greater than available collateral supply"
         );
 
-        _guarantorSecurities -= amount;
+        _guarantorCollateral -= amount;
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _securityToken.transfer(_treasury, amount);
-        require(transferred, "Bond::slash: security transfer failed");
+        bool transferred = _collateralToken.transfer(_treasury, amount);
+        require(transferred, "Bond::slash: collateral transfer failed");
 
-        emit Slash(_securityToken.symbol(), amount);
-    }
-
-    /**
-     * @dev Retrieves the address that receives any slashed funds.
-     */
-    function treasury() external view returns (address) {
-        return _treasury;
+        emit Slash(_collateralToken.symbol(), amount);
     }
 
     /**
@@ -244,17 +213,59 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Securities are deposited at a 1 to 1 ratio, however slashing can change that.
+     * @dev Retrieves the address that receives any slashed funds.
+     */
+    function treasury() external view returns (address) {
+        return _treasury;
+    }
+
+    /**
+     * @dev Slashing can result in collateral remaining after full redemption due to flooring (rounding down).
+     * After full redemption, the left over collateral can be transferred to the treasury using withdrawCollateral.
+     */
+    function withdrawCollateral()
+        external
+        whenNotPaused
+        whenRedeemable
+        onlyOwner
+    {
+        require(
+            totalSupply() == 0,
+            "Bond::withdrawCollateral: debt tokens remain"
+        );
+
+        uint256 collateral = _collateralToken.balanceOf(address(this));
+        require(
+            collateral > 0,
+            "Bond::withdrawCollateral: no collateral remain"
+        );
+
+        // Unknown ERC20 token behaviour, cater for bool usage
+        bool transferred = _collateralToken.transfer(_treasury, collateral);
+        require(
+            transferred,
+            "Bond::withdrawCollateral: collateral transfer failed"
+        );
+
+        emit WithdrawCollateral(
+            _treasury,
+            _collateralToken.symbol(),
+            collateral
+        );
+    }
+
+    /**
+     * @dev Collateral is deposited at a 1 to 1 ratio, however slashing can change that.
      */
     function _redemptionAmount(uint256 amount, uint256 totalSupply)
         internal
         view
         returns (uint256)
     {
-        if (_guarantorSecurities == totalSupply) {
+        if (_guarantorCollateral == totalSupply) {
             return amount;
         } else {
-            uint256 redemptionRatio = (DECIMAL_OFFSET * _guarantorSecurities) /
+            uint256 redemptionRatio = (DECIMAL_OFFSET * _guarantorCollateral) /
                 totalSupply;
             return (redemptionRatio * amount) / DECIMAL_OFFSET;
         }

@@ -3,10 +3,10 @@ import {expect} from 'chai'
 import {BondCreatedEvent} from '../../typechain/BondFactory'
 import {
     AllowRedemptionEvent,
-    CloseEvent,
-    DebtCertificateIssueEvent,
+    DebtIssueEvent,
     RedemptionEvent,
-    SlashEvent
+    SlashEvent,
+    WithdrawCollateralEvent
 } from '../../typechain/Bond'
 import {TransferEvent} from '../../typechain/IERC20'
 
@@ -73,14 +73,14 @@ export function bondCreatedEvent(event: Event): {
 }
 
 /**
- * Shape check and conversion for a CloseEvent.
+ * Shape check and conversion for a WithdrawCollateralEvent.
  */
-export function closeEvent(event: Event): {
+export function withdrawCollateralEvent(event: Event): {
     receiver: string
     symbol: string
     amount: BigNumber
 } {
-    const close = event as CloseEvent
+    const close = event as WithdrawCollateralEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
@@ -92,14 +92,14 @@ export function closeEvent(event: Event): {
 }
 
 /**
- * Shape check and conversion for a DebtCertificateIssueEvent.
+ * Shape check and conversion for a DebtIssueEvent.
  */
-export function debtCertificateIssueEvent(event: Event): {
+export function debtIssueEvent(event: Event): {
     receiver: string
     debSymbol: string
     debtAmount: BigNumber
 } {
-    const debt = event as DebtCertificateIssueEvent
+    const debt = event as DebtIssueEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
@@ -141,8 +141,8 @@ export function redemptionEvent(event: Event): {
     redeemer: string
     debtSymbol: string
     debtAmount: BigNumber
-    securitySymbol: string
-    securityAmount: BigNumber
+    collateralSymbol: string
+    collateralAmount: BigNumber
 } {
     const debt = event as RedemptionEvent
     expect(event.args).is.not.undefined
@@ -151,8 +151,8 @@ export function redemptionEvent(event: Event): {
     expect(args?.redeemer).is.not.undefined
     expect(args?.debtSymbol).is.not.undefined
     expect(args?.debtAmount).is.not.undefined
-    expect(args?.securitySymbol).is.not.undefined
-    expect(args?.securityAmount).is.not.undefined
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.collateralAmount).is.not.undefined
 
     return debt.args
 }
@@ -161,15 +161,15 @@ export function redemptionEvent(event: Event): {
  * Shape check and conversion for a SlashEvent.
  */
 export function slashEvent(event: Event): {
-    securitySymbol: string
-    securityAmount: BigNumber
+    collateralSymbol: string
+    collateralAmount: BigNumber
 } {
     const debt = event as SlashEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
-    expect(args?.securitySymbol).is.not.undefined
-    expect(args?.securityAmount).is.not.undefined
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.collateralAmount).is.not.undefined
 
     return debt.args
 }
@@ -205,30 +205,22 @@ export async function verifyAllowRedemptionEvent(
     )
 }
 
-export async function verifyDebtCertificateIssueEvent(
+export async function verifyDebtIssueEvent(
     receipt: ContractReceipt,
     guarantor: string,
     debt: ExpectTokenBalance
 ): Promise<void> {
-    const depositOneEvent = debtCertificateIssueEvent(
-        event('DebtCertificateIssue', events(receipt))
-    )
-    expect(depositOneEvent.receiver, 'Debt Certificate receiver').equals(
-        guarantor
-    )
-    expect(depositOneEvent.debSymbol, 'Debt Certificate symbol').equals(
-        debt.symbol
-    )
-    expect(depositOneEvent.debtAmount, 'Debt Certificate amount').equals(
-        debt.amount
-    )
+    const depositOneEvent = debtIssueEvent(event('DebtIssue', events(receipt)))
+    expect(depositOneEvent.receiver, 'Debt token receiver').equals(guarantor)
+    expect(depositOneEvent.debSymbol, 'Debt token symbol').equals(debt.symbol)
+    expect(depositOneEvent.debtAmount, 'Debt token amount').equals(debt.amount)
 }
 
 export async function verifyRedemptionEvent(
     receipt: ContractReceipt,
     redeemer: string,
     debt: ExpectTokenBalance,
-    security: ExpectTokenBalance
+    collateral: ExpectTokenBalance
 ): Promise<void> {
     const redemptionTwoEvent = redemptionEvent(
         event('Redemption', events(receipt))
@@ -241,25 +233,25 @@ export async function verifyRedemptionEvent(
         debt.amount
     )
     expect(
-        redemptionTwoEvent.securitySymbol,
-        'Redemption security symbol'
-    ).equals(security.symbol)
+        redemptionTwoEvent.collateralSymbol,
+        'Redemption collateral symbol'
+    ).equals(collateral.symbol)
     expect(
-        redemptionTwoEvent.securityAmount,
-        'Redemption security amount'
-    ).equals(security.amount)
+        redemptionTwoEvent.collateralAmount,
+        'Redemption collateral amount'
+    ).equals(collateral.amount)
 }
 
 export async function verifySlashEvent(
     receipt: ContractReceipt,
-    security: ExpectTokenBalance
+    collateral: ExpectTokenBalance
 ): Promise<void> {
     const onlySlashEvent = slashEvent(event('Slash', events(receipt)))
-    expect(onlySlashEvent.securitySymbol, 'Slash symbol').equals(
-        security.symbol
+    expect(onlySlashEvent.collateralSymbol, 'Slash symbol').equals(
+        collateral.symbol
     )
-    expect(onlySlashEvent.securityAmount, 'Slash amount').equals(
-        security.amount
+    expect(onlySlashEvent.collateralAmount, 'Slash amount').equals(
+        collateral.amount
     )
 }
 
@@ -277,13 +269,15 @@ export async function verifyTransferEvent(
 }
 
 /**
- * Verifies the content for a close (flush of remaining security assets) event.
+ * Verifies the content for withdrawing the left over collateral (flush of remaining collateral assets) event.
  */
-export async function verifyCloseEvent(
+export async function verifyWithdrawCollateralEvent(
     receipt: ContractReceipt,
     transfer: ExpectFlushTransfer
 ): Promise<void> {
-    const onlyTransferEvent = closeEvent(event('Close', events(receipt)))
+    const onlyTransferEvent = withdrawCollateralEvent(
+        event('WithdrawCollateral', events(receipt))
+    )
     expect(onlyTransferEvent.receiver, 'Transfer from').equals(transfer.to)
     expect(onlyTransferEvent.symbol, 'Transfer to').equals(transfer.symbol)
     expect(onlyTransferEvent.amount, 'Transfer amount').equals(transfer.amount)

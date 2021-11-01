@@ -18,8 +18,8 @@ describe('BondFactory contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
-        securityAsset = (await signer(2)).address
-        bonds = await deployBondFactory(securityAsset, treasury)
+        collateral = (await signer(2)).address
+        bonds = await deployBondFactory(collateral, treasury)
     })
 
     it('create bond', async () => {
@@ -46,6 +46,6 @@ describe('BondFactory contract', () => {
 
     let admin: string
     let treasury: string
-    let securityAsset: string
+    let collateral: string
     let bonds: BondFactory
 })
