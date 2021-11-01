@@ -100,12 +100,12 @@ describe('Bond contract', () => {
         })
 
         it('cannot be greater than available Debt Tokens', async () => {
-            const debtCertificates = 500000n
-            bond = await createBond(factory, debtCertificates)
+            const debtTokens = 500000n
+            bond = await createBond(factory, debtTokens)
 
-            await expect(
-                bond.deposit(debtCertificates + 1n)
-            ).to.be.revertedWith('Bond::deposit: too large')
+            await expect(bond.deposit(debtTokens + 1n)).to.be.revertedWith(
+                'Bond::deposit: too large'
+            )
         })
 
         it('only when not paused', async () => {
@@ -279,7 +279,7 @@ describe('Bond contract', () => {
             )
         })
 
-        it('cannot be greater than securities held', async () => {
+        it('cannot be greater than collateral held', async () => {
             const pledge = 500n
             bond = await createBond(factory, 23563377n)
             await setupGuarantorsWithCollateral([
@@ -456,7 +456,7 @@ describe('Bond contract', () => {
             amount: pledge
         })
 
-        // Bond holds all collateral, issued debt certificates
+        // Bond holds all collateral, issued debt tokens
         await verifyBalances([
             {address: bond.address, bond: ZERO, collateral: pledge},
             {address: guarantorOne, bond: debtTokens, collateral: ZERO},
@@ -464,7 +464,7 @@ describe('Bond contract', () => {
         ])
 
         // Slash forty percent of the collateral assets
-        const slashReceipt = await slashSecurities(slashedCollateral)
+        const slashReceipt = await slashCollateral(slashedCollateral)
         await verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral
@@ -495,7 +495,7 @@ describe('Bond contract', () => {
             {symbol: collateralSymbol, amount: ZERO}
         )
 
-        // Slashed securities in Treasury, Guarantors redeemed, no debt remain
+        // Slashed collateral in Treasury, Guarantors redeemed, no debt remain
         await verifyBalances([
             {address: bond.address, bond: ZERO, collateral: ZERO},
             {address: guarantorOne, bond: ZERO, collateral: ZERO},
@@ -536,7 +536,7 @@ describe('Bond contract', () => {
             amount: pledgeTwo
         })
 
-        // Bond holds all collateral, issued debt certificates
+        // Bond holds all collateral, issued debt tokens
         await verifyBalances([
             {address: bond.address, bond: ZERO, collateral: debtTokens},
             {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
@@ -579,18 +579,18 @@ describe('Bond contract', () => {
         const pledge = 12345n
         const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
         const debtTokens = pledge
-        const slashedSecurities = debtTokens - slash(debtTokens, FIFTY_PERCENT)
+        const slashedCollateral = debtTokens - slash(debtTokens, FIFTY_PERCENT)
         bond = await createBond(factory, debtTokens)
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledge}
         ])
         await depositBond(guarantorOne, pledge)
-        await slashSecurities(slashedSecurities)
+        await slashCollateral(slashedCollateral)
         await allowRedemption()
         await redeem(guarantorOne, pledge)
         const pledgeSlashedFloored = pledgeSlashed - ONE
 
-        // Slashed securities in Treasury, Guarantors redeemed, no debt remain
+        // Slashed collateral in Treasury, Guarantors redeemed, no debt remain
         await verifyBalances([
             {address: bond.address, bond: ZERO, collateral: ONE},
             {
@@ -598,7 +598,7 @@ describe('Bond contract', () => {
                 bond: ZERO,
                 collateral: pledgeSlashedFloored
             },
-            {address: treasury, bond: ZERO, collateral: slashedSecurities}
+            {address: treasury, bond: ZERO, collateral: slashedCollateral}
         ])
 
         // Move the rounding error from the Bond contract to the Treasury
@@ -622,7 +622,7 @@ describe('Bond contract', () => {
                 bond: ZERO,
                 collateral: pledgeSlashedFloored
             },
-            {address: treasury, bond: ZERO, collateral: slashedSecurities + ONE}
+            {address: treasury, bond: ZERO, collateral: slashedCollateral + ONE}
         ])
     })
 
@@ -634,8 +634,8 @@ describe('Bond contract', () => {
         const pledgeThree = 667780n
         const pledgeThreeSlashed = slash(pledgeThree, FORTY_PERCENT)
         const debtTokens = pledgeOne + pledgeTwo + pledgeThree
-        const slashedSecurities = debtTokens - slash(debtTokens, FORTY_PERCENT)
-        const remainingSecurities = debtTokens - slashedSecurities
+        const slashedCollateral = debtTokens - slash(debtTokens, FORTY_PERCENT)
+        const remainingCollateral = debtTokens - slashedCollateral
         bond = await createBond(factory, debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
@@ -674,7 +674,7 @@ describe('Bond contract', () => {
             amount: pledgeThree
         })
 
-        // Bond holds all securities, issued debt certificates
+        // Bond holds all collateral, issued debt tokens
         await verifyBalances([
             {address: bond.address, bond: ZERO, collateral: debtTokens},
             {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
@@ -684,28 +684,28 @@ describe('Bond contract', () => {
         ])
 
         // Slash forty percent from the collateral assets
-        const slashReceipt = await slashSecurities(slashedSecurities)
+        const slashReceipt = await slashCollateral(slashedCollateral)
         await verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
-            amount: slashedSecurities
+            amount: slashedCollateral
         })
         await verifyTransferEvent(slashReceipt, {
             from: bond.address,
             to: treasury,
-            amount: slashedSecurities
+            amount: slashedCollateral
         })
 
-        // Debt holdings should remain the same, only securities moved
+        // Debt holdings should remain the same, only collateral moved
         await verifyBalances([
             {
                 address: bond.address,
                 bond: ZERO,
-                collateral: remainingSecurities
+                collateral: remainingCollateral
             },
             {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
             {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
             {address: guarantorThree, bond: pledgeThree, collateral: ZERO},
-            {address: treasury, bond: ZERO, collateral: slashedSecurities}
+            {address: treasury, bond: ZERO, collateral: slashedCollateral}
         ])
 
         // Bond redemption allowed by Owner
@@ -749,7 +749,7 @@ describe('Bond contract', () => {
                 bond: ZERO,
                 collateral: pledgeThreeSlashed
             },
-            {address: treasury, bond: ZERO, collateral: slashedSecurities}
+            {address: treasury, bond: ZERO, collateral: slashedCollateral}
         ])
     })
 
@@ -760,7 +760,7 @@ describe('Bond contract', () => {
         return successfulTransaction(bond.connect(guarantor).redeem(amount))
     }
 
-    async function slashSecurities(amount: bigint): Promise<ContractReceipt> {
+    async function slashCollateral(amount: bigint): Promise<ContractReceipt> {
         return successfulTransaction(bond.slash(amount))
     }
 
