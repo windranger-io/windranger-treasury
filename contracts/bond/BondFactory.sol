@@ -8,7 +8,7 @@ import "./Bond.sol";
 /**
  * @title Creates configured bond contracts.
  *
- * @dev Applies common configuration to bond contract created.
+ * @dev Applies common configuration to bond contracts created.
  */
 contract BondFactory is Context, Ownable {
     event BondCreated(
@@ -19,21 +19,21 @@ contract BondFactory is Context, Ownable {
         address treasury
     );
 
-    address private _securityToken;
+    address private _collateralToken;
     address private _treasury;
 
     constructor(address securityToken_, address treasury_) {
-        _securityToken = securityToken_;
+        _collateralToken = securityToken_;
         _treasury = treasury_;
     }
 
     function createBond(
-        uint256 debtCertificates,
+        uint256 debtTokens,
         string calldata name,
         string calldata symbol
     ) external returns (address) {
-        Bond bond = new Bond(name, symbol, _securityToken, _treasury);
-        bond.mint(debtCertificates);
+        Bond bond = new Bond(name, symbol, _collateralToken, _treasury);
+        bond.mint(debtTokens);
         bond.transferOwnership(owner());
         emit BondCreated(
             address(bond),
@@ -47,30 +47,32 @@ contract BondFactory is Context, Ownable {
     }
 
     /**
-     * @dev Retrieves the address that receives any slashed funds.
+     * @dev Retrieves the address that receives any slashed or remaining funds.
      */
     function treasury() external view returns (address) {
         return _treasury;
     }
 
     /**
-     * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
+     * @dev Permits the owner to update the treasury address.
+     * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
     function setTreasury(address treasury_) external onlyOwner {
         _treasury = treasury_;
     }
 
     /**
-     * @dev Retrieves the address for the security token.
+     * @dev Retrieves the address for the collateral token.
      */
-    function securityToken() external view returns (address) {
-        return _securityToken;
+    function collateralToken() external view returns (address) {
+        return _collateralToken;
     }
 
     /**
-     * @dev Permits the owner to update the security token address.
+     * @dev Permits the owner to update the collateral token address.
+     * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
-    function setSecurityToken(address securityToken_) external onlyOwner {
-        _securityToken = securityToken_;
+    function setCollateralToken(address collateralToken_) external onlyOwner {
+        _collateralToken = collateralToken_;
     }
 }
