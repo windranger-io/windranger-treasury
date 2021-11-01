@@ -8,7 +8,7 @@ import "./Bond.sol";
 /**
  * @title Creates configured bond contracts.
  *
- * @dev Applies common configuration to bond contract created.
+ * @dev Applies common configuration to bond contracts created.
  */
 contract BondFactory is Context, Ownable {
     event BondCreated(
@@ -47,14 +47,15 @@ contract BondFactory is Context, Ownable {
     }
 
     /**
-     * @dev Retrieves the address that receives any slashed funds.
+     * @dev Retrieves the address that receives any slashed or remaining funds.
      */
     function treasury() external view returns (address) {
         return _treasury;
     }
 
     /**
-     * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
+     * @dev Permits the owner to update the treasury address.
+     * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
     function setTreasury(address treasury_) external onlyOwner {
         _treasury = treasury_;
@@ -68,7 +69,8 @@ contract BondFactory is Context, Ownable {
     }
 
     /**
-     * @dev Permits the owner to update the collateral token address. Only applies for newly created bond, previous remain unchanged.
+     * @dev Permits the owner to update the collateral token address.
+     * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
     function setCollateralToken(address collateralToken_) external onlyOwner {
         _collateralToken = collateralToken_;
