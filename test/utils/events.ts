@@ -19,7 +19,7 @@ export type ExpectTokenBalance = {
 }
 
 /**
- * Expected ERC20 transfer event, with sender, receiver and value.
+ * Expected ERC20 token transfer event.
  */
 export type ExpectTokenTransfer = {
     from: string
@@ -28,7 +28,7 @@ export type ExpectTokenTransfer = {
 }
 
 /**
- * Expected transfer event, with receiver, token symbol and value.
+ * Expected transfer event, withdrawing the remaining token amount from a Bond.
  */
 export type ExpectFlushTransfer = {
     to: string
@@ -73,25 +73,6 @@ export function bondCreatedEvent(event: Event): {
 }
 
 /**
- * Shape check and conversion for a WithdrawCollateralEvent.
- */
-export function withdrawCollateralEvent(event: Event): {
-    receiver: string
-    symbol: string
-    amount: BigNumber
-} {
-    const close = event as WithdrawCollateralEvent
-    expect(event.args).is.not.undefined
-
-    const args = event.args
-    expect(args?.receiver).is.not.undefined
-    expect(args?.symbol).is.not.undefined
-    expect(args?.amount).is.not.undefined
-
-    return close.args
-}
-
-/**
  * Shape check and conversion for a DebtIssueEvent.
  */
 export function debtIssueEvent(event: Event): {
@@ -111,10 +92,10 @@ export function debtIssueEvent(event: Event): {
 }
 
 /**
- * Retrieves an event with matching name, otherwise fails the test.
+ * Retrieves an event that matches the given name, otherwise fails the test.
  *
- * @param name exact expected within the events.
- * @param events events that is expected to contain an exact match for the given name.
+ * @param name  name of the event expected within the given events.
+ * @param events events expected to contain an exact match for the given name.
  */
 export function event(name: string, events: Event[]): Event {
     for (let i = 0; i < events.length; i++) {
@@ -193,6 +174,9 @@ export function transferEvent(event: Event): {
     return debt.args
 }
 
+/**
+ * Verifies the content for a Allow Redemption event.
+ */
 export async function verifyAllowRedemptionEvent(
     receipt: ContractReceipt,
     authorizer: string
@@ -205,6 +189,9 @@ export async function verifyAllowRedemptionEvent(
     )
 }
 
+/**
+ * Verifies the content for a Debt Issue event.
+ */
 export async function verifyDebtIssueEvent(
     receipt: ContractReceipt,
     guarantor: string,
@@ -216,6 +203,9 @@ export async function verifyDebtIssueEvent(
     expect(depositOneEvent.debtAmount, 'Debt token amount').equals(debt.amount)
 }
 
+/**
+ * Verifies the content for a Redemption event.
+ */
 export async function verifyRedemptionEvent(
     receipt: ContractReceipt,
     redeemer: string,
@@ -242,6 +232,9 @@ export async function verifyRedemptionEvent(
     ).equals(collateral.amount)
 }
 
+/**
+ * Verifies the content for a Slash event.
+ */
 export async function verifySlashEvent(
     receipt: ContractReceipt,
     collateral: ExpectTokenBalance
@@ -281,4 +274,23 @@ export async function verifyWithdrawCollateralEvent(
     expect(onlyTransferEvent.receiver, 'Transfer from').equals(transfer.to)
     expect(onlyTransferEvent.symbol, 'Transfer to').equals(transfer.symbol)
     expect(onlyTransferEvent.amount, 'Transfer amount').equals(transfer.amount)
+}
+
+/**
+ * Shape check and conversion for a WithdrawCollateralEvent.
+ */
+export function withdrawCollateralEvent(event: Event): {
+    receiver: string
+    symbol: string
+    amount: BigNumber
+} {
+    const close = event as WithdrawCollateralEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.receiver).is.not.undefined
+    expect(args?.symbol).is.not.undefined
+    expect(args?.amount).is.not.undefined
+
+    return close.args
 }
