@@ -25,7 +25,8 @@ import {
     verifySlashEvent,
     verifyTransferEvent,
     verifyAllowRedemptionEvent,
-    verifyWithdrawCollateralEvent
+    verifyWithdrawCollateralEvent,
+    verifyFullCollateralEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -435,6 +436,7 @@ describe('Bond contract', () => {
     it('one guarantor deposit, then is fully slashed', async () => {
         const pledge = 40050n
         const debtTokens = pledge
+        const collateralAmount = debtTokens
         const slashedCollateral = debtTokens
         bond = await createBond(factory, debtTokens)
         const debtSymbol = await bond.symbol()
@@ -454,6 +456,10 @@ describe('Bond contract', () => {
         await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
             symbol: debtSymbol,
             amount: pledge
+        })
+        await verifyFullCollateralEvent(depositOne, {
+            symbol: collateralSymbol,
+            amount: collateralAmount
         })
 
         // Bond holds all collateral, issued debt tokens
@@ -507,6 +513,7 @@ describe('Bond contract', () => {
         const pledgeOne = 240050n
         const pledgeTwo = 99500n
         const debtTokens = pledgeOne + pledgeTwo
+        const collateralAmount = debtTokens
         bond = await createBond(factory, debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
@@ -534,6 +541,10 @@ describe('Bond contract', () => {
         await verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
             symbol: debtSymbol,
             amount: pledgeTwo
+        })
+        await verifyFullCollateralEvent(depositTwo, {
+            symbol: collateralSymbol,
+            amount: collateralAmount
         })
 
         // Bond holds all collateral, issued debt tokens

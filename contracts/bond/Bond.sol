@@ -14,13 +14,13 @@ import "@openzeppelin/contracts/security/Pausable.sol";
  */
 contract Bond is Context, ERC20, Ownable, Pausable {
     event AllowRedemption(address authorizer);
-    event WithdrawCollateral(address receiver, string symbol, uint256 amount);
     event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
     event Deposit(
         address depositor,
         string collateralSymbol,
         uint256 collateralAmount
     );
+    event FullCollateral(string collateralSymbol, uint256 collateralAmount);
     event Redemption(
         address redeemer,
         string debtSymbol,
@@ -29,6 +29,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         uint256 collateralAmount
     );
     event Slash(string collateralSymbol, uint256 collateralAmount);
+    event WithdrawCollateral(address receiver, string symbol, uint256 amount);
 
     /**
      * @dev Modifier to make a function callable only when the contract is not redeemable.
@@ -120,6 +121,13 @@ contract Bond is Context, ERC20, Ownable, Pausable {
 
         _transfer(address(this), sender, amount);
         emit DebtIssue(sender, symbol(), amount);
+
+        if (balanceOf(address(this)) == 0) {
+            emit FullCollateral(
+                _collateralToken.symbol(),
+                _collateralToken.balanceOf(address(this))
+            );
+        }
     }
 
     /**

@@ -4,6 +4,7 @@ import {BondCreatedEvent} from '../../typechain/BondFactory'
 import {
     AllowRedemptionEvent,
     DebtIssueEvent,
+    FullCollateralEvent,
     RedemptionEvent,
     SlashEvent,
     WithdrawCollateralEvent
@@ -116,6 +117,23 @@ export function events(receipt: ContractReceipt): Event[] {
 }
 
 /**
+ * Shape check and conversion for a FullCollateralEvent.
+ */
+export function fullCollateralEvent(event: Event): {
+    collateralSymbol: string
+    collateralAmount: BigNumber
+} {
+    const collateral = event as FullCollateralEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.collateralAmount).is.not.undefined
+
+    return collateral.args
+}
+
+/**
  * Shape check and conversion for a RedemptionEvent.
  */
 export function redemptionEvent(event: Event): {
@@ -186,6 +204,24 @@ export async function verifyAllowRedemptionEvent(
     )
     expect(allowRedemption.authorizer, 'AllowRedemption authorizer').equals(
         authorizer
+    )
+}
+
+/**
+ * Verifies the content for a Full Collateral event.
+ */
+export async function verifyFullCollateralEvent(
+    receipt: ContractReceipt,
+    collateral: ExpectTokenBalance
+): Promise<void> {
+    const fullCollateral = fullCollateralEvent(
+        event('FullCollateral', events(receipt))
+    )
+    expect(fullCollateral.collateralSymbol, 'Debt token symbol').equals(
+        collateral.symbol
+    )
+    expect(fullCollateral.collateralAmount, 'Debt token amount').equals(
+        collateral.amount
     )
 }
 
