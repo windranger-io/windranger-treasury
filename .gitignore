@@ -5,6 +5,9 @@ cache
 # TypeChain
 typechain
 
+# PlantUML images
+docs/specs/images
+
 # Logs
 logs
 *.log
