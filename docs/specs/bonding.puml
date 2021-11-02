@@ -109,7 +109,6 @@ else #Pink Full bond slash
     bitdaoadmin->bond           : slash full bond
     bond->bitdaotreasury        : transfer all tokens
     bitdaotreasury-->bond
-    bond->bond                  : self-destruct
     note left of bitdaotreasury : balance +150K BIT
 else #lightseagreen Partial bond slashed, remaining redeemable
     bitdaoadmin->bond           : slash partial bond
