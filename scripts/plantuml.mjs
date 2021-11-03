@@ -1,17 +1,57 @@
 import plantuml from "node-plantuml";
 import fs from "fs";
-import { readdir, readFile, mkdir } from "fs/promises";
+import { readdir, readFile, mkdir, stat } from "fs/promises";
 import path from "path";
 
 const myArgs = process.argv.slice(2);
 const plantUmlExtension = ".puml";
 
 for (const arg of myArgs) {
-  const targetFile = path.parse(arg);
+  if (await isDirectory(arg)) {
+    const plants = await recursivePlantUmlFileSearch(arg);
+
+    console.log("PlantUml files: " + plants);
+
+    for (const plant of plants) {
+      await generatePlantUmlImage(plant);
+    }
+  } else {
+    await generatePlantUmlImage(arg);
+  }
+}
+
+async function recursivePlantUmlFileSearch(directory) {
+  console.log("Directory " + directory);
+  const files = await readdir(directory);
+  let plants = [];
+
+  for (const file of files) {
+    const subFile = directory + path.sep + file;
+
+    if (await isDirectory(subFile)) {
+      const leaves = await recursivePlantUmlFileSearch(subFile);
+      if (leaves.length > 0) {
+        plants.push(leaves);
+      }
+    } else {
+      if (hasPlantUmlExtension(subFile)) {
+        plants.push(subFile);
+      }
+    }
+  }
+
+  return plants;
+}
+
+/**
+ * Creates a rendering from a Plant UML file.
+ */
+async function generatePlantUmlImage(filepath) {
+  const targetFile = path.parse(filepath);
   validatePlantUmlExtensionType(targetFile.ext);
 
-  const content = await readFile(arg, "utf8");
-  validateNonEmptyContent(content, arg);
+  const content = await readFile(filepath, "utf8");
+  validateNonEmptyContent(content, filepath);
 
   const len = (content.match(/newpage/g) || []).length;
 
@@ -46,8 +86,21 @@ async function createDirectoryStructure(target) {
   }
 }
 
+/**
+ * Determine whether a directory exists at the given `path`.
+ */
+async function isDirectory(path) {
+  const stats = await stat(path);
+
+  return stats.isDirectory();
+}
+
+function hasPlantUmlExtension(extension) {
+  return extension.toLowerCase().endsWith(plantUmlExtension);
+}
+
 function validatePlantUmlExtensionType(extension) {
-  if (plantUmlExtension !== extension.toLowerCase()) {
+  if (!hasPlantUmlExtension(extension)) {
     throw Error("Expecting a .puml extension, instead got: " + extension);
   }
 }

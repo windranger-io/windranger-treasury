@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="1096px" preserveAspectRatio="none" style="width:999px;height:1096px;background:#FFFFFF;" version="1.1" viewBox="0 0 999 1096" width="999px" zoomAndPan="magnify"><defs><filter height="300%" id="f1k7dm12hdi2nx" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="171" x="416.75" y="29.4023">Escrow Token Swap</text><rect fill="#CD853F" height="1049.0508" style="stroke:#A80036;stroke-width:1.0;" width="276.5" x="16" y="41.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="65" x="121.75" y="53.7676">(multisig)</text><rect fill="#E6E6FA" height="1049.0508" style="stroke:#A80036;stroke-width:1.0;" width="296" x="491.5" y="41.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="64" x="607.5" y="53.7676">(onchain)</text><rect fill="#FFC0CB" filter="url(#f1k7dm12hdi2nx)" height="118.2422" style="stroke:#000000;stroke-width:2.0;" width="625.5" x="10" y="415.1719"/><rect fill="#FFC0CB" filter="url(#f1k7dm12hdi2nx)" height="176.8633" style="stroke:#000000;stroke-width:2.0;" width="625.5" x="10" y="619.0352"/><rect fill="#90EE90" filter="url(#f1k7dm12hdi2nx)" height="59.6211" style="stroke:#000000;stroke-width:2.0;" width="150" x="485.5" y="927.1406"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="65" x2="65" y1="143.998" y2="1003.7617"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="246.5" x2="246.5" y1="143.998" y2="1003.7617"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="530.5" x2="530.5" y1="143.998" y2="1003.7617"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="723.5" x2="723.5" y1="143.998" y2="1003.7617"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85" x="20" y="141.0449">Alice_expert</text><ellipse cx="65.5" cy="70.5098" fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M65.5,78.5098 L65.5,105.5098 M52.5,86.5098 L78.5,86.5098 M65.5,105.5098 L52.5,120.5098 M65.5,105.5098 L78.5,120.5098 " fill="none" filter="url(#f1k7dm12hdi2nx)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85" x="20" y="1016.2969">Alice_expert</text><ellipse cx="65.5" cy="1029.25" fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M65.5,1037.25 L65.5,1064.25 M52.5,1045.25 L78.5,1045.25 M65.5,1064.25 L52.5,1079.25 M65.5,1064.25 L78.5,1079.25 " fill="none" filter="url(#f1k7dm12hdi2nx)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78" x="204.5" y="141.0449">Bob_expert</text><ellipse cx="246.5" cy="70.5098" fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M246.5,78.5098 L246.5,105.5098 M233.5,86.5098 L259.5,86.5098 M246.5,105.5098 L233.5,120.5098 M246.5,105.5098 L259.5,120.5098 " fill="none" filter="url(#f1k7dm12hdi2nx)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78" x="204.5" y="1016.2969">Bob_expert</text><ellipse cx="246.5" cy="1029.25" fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M246.5,1037.25 L246.5,1064.25 M233.5,1045.25 L259.5,1045.25 M246.5,1064.25 L233.5,1079.25 M246.5,1064.25 L259.5,1079.25 " fill="none" filter="url(#f1k7dm12hdi2nx)" style="stroke:#A80036;stroke-width:2.0;"/><rect fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="62" x="499.5" y="104.5098"/><rect fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="62" x="495.5" y="108.5098"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="48" x="502.5" y="129.0449">Escrow</text><rect fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="62" x="499.5" y="1002.7617"/><rect fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="62" x="495.5" y="1006.7617"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="48" x="502.5" y="1027.2969">Escrow</text><rect fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="112" x="667.5" y="104.5098"/><rect fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="112" x="663.5" y="108.5098"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="670.5" y="129.0449">EscrowFactory</text><rect fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="112" x="667.5" y="1002.7617"/><rect fill="#FEFECE" filter="url(#f1k7dm12hdi2nx)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="112" x="663.5" y="1006.7617"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="670.5" y="1027.2969">EscrowFactory</text><polygon fill="#A80036" points="711.5,176.3086,721.5,180.3086,711.5,184.3086,715.5,180.3086" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="65.5" x2="717.5" y1="180.3086" y2="180.3086"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="72.5" y="175.5664">create escrow</text><path d="M728,158.998 L728,183.998 L990,183.998 L990,168.998 L980,158.998 L728,158.998 " fill="#FBFB77" filter="url(#f1k7dm12hdi2nx)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M980,158.998 L980,168.998 L990,168.998 L980,158.998 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="241" x="734" y="176.5664">party A reqmt, party B reqmt, timelock</text><line style="stroke:#A80036;stroke-width:1.0;" x1="723.5" x2="765.5" y1="214.6191" y2="214.6191"/><line style="stroke:#A80036;stroke-width:1.0;" x1="765.5" x2="765.5" y1="214.6191" y2="227.6191"/><line style="stroke:#A80036;stroke-width:1.0;" x1="724.5" x2="765.5" y1="227.6191" y2="227.6191"/><polygon fill="#A80036" points="734.5,223.6191,724.5,227.6191,734.5,231.6191,730.5,227.6191" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="129" x="730.5" y="209.877">emit escrow address</text><polygon fill="#A80036" points="76.5,252.9297,66.5,256.9297,76.5,260.9297,72.5,256.9297" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="70.5" x2="722.5" y1="256.9297" y2="256.9297"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="97" x="82.5" y="252.1875">escrow address</text><polygon fill="#A80036" points="518.5,282.2402,528.5,286.2402,518.5,290.2402,522.5,286.2402" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="65.5" x2="524.5" y1="286.2402" y2="286.2402"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="266" x="72.5" y="281.498">deposit eth, erc20, or nfts (party A reqmt))</text><line style="stroke:#A80036;stroke-width:1.0;" x1="530.5" x2="572.5" y1="315.5508" y2="315.5508"/><line style="stroke:#A80036;stroke-width:1.0;" x1="572.5" x2="572.5" y1="315.5508" y2="328.5508"/><line style="stroke:#A80036;stroke-width:1.0;" x1="531.5" x2="572.5" y1="328.5508" y2="328.5508"/><polygon fill="#A80036" points="541.5,324.5508,531.5,328.5508,541.5,332.5508,537.5,328.5508" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="179" x="537.5" y="310.8086">disallow deposits from Alice</text><polygon fill="#A80036" points="234.5,353.8613,244.5,357.8613,234.5,361.8613,238.5,357.8613" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="65.5" x2="240.5" y1="357.8613" y2="357.8613"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="90" x="72.5" y="353.1191">escrow details</text><line style="stroke:#A80036;stroke-width:1.0;" x1="65.5" x2="107.5" y1="387.1719" y2="387.1719"/><line style="stroke:#A80036;stroke-width:1.0;" x1="107.5" x2="107.5" y1="387.1719" y2="400.1719"/><line style="stroke:#A80036;stroke-width:1.0;" x1="66.5" x2="107.5" y1="400.1719" y2="400.1719"/><polygon fill="#A80036" points="76.5,396.1719,66.5,400.1719,76.5,404.1719,72.5,400.1719" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="167" x="72.5" y="382.4297">wait for timelock to expire</text><path d="M10,415.1719 L380,415.1719 L380,422.1719 L370,432.1719 L10,432.1719 L10,415.1719 " fill="#D3D3D3" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="118.2422" style="stroke:#000000;stroke-width:2.0;" width="625.5" x="10" y="415.1719"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="325" x="25" y="428.7402">if timelock expires before counterparty desposit</text><polygon fill="#A80036" points="518.5,449.793,528.5,453.793,518.5,457.793,522.5,453.793" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="65.5" x2="524.5" y1="453.793" y2="453.793"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="130" x="72.5" y="449.0508">claim Alice's deposit</text><polygon fill="#A80036" points="76.5,479.1035,66.5,483.1035,76.5,487.1035,72.5,483.1035" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="70.5" x2="529.5" y1="483.1035" y2="483.1035"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="144" x="82.5" y="478.3613">return deposited funds</text><line style="stroke:#A80036;stroke-width:1.0;" x1="530.5" x2="572.5" y1="512.4141" y2="512.4141"/><line style="stroke:#A80036;stroke-width:1.0;" x1="572.5" x2="572.5" y1="512.4141" y2="525.4141"/><line style="stroke:#A80036;stroke-width:1.0;" x1="531.5" x2="572.5" y1="525.4141" y2="525.4141"/><polygon fill="#A80036" points="541.5,521.4141,531.5,525.4141,541.5,529.4141,537.5,525.4141" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="537.5" y="507.6719">delete escrow</text><polygon fill="#A80036" points="518.5,557.7246,528.5,561.7246,518.5,565.7246,522.5,561.7246" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="246.5" x2="524.5" y1="561.7246" y2="561.7246"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="260" x="253.5" y="556.9824">deposit eth, erc20, or nfts (party B reqmt)</text><line style="stroke:#A80036;stroke-width:1.0;" x1="530.5" x2="572.5" y1="591.0352" y2="591.0352"/><line style="stroke:#A80036;stroke-width:1.0;" x1="572.5" x2="572.5" y1="591.0352" y2="604.0352"/><line style="stroke:#A80036;stroke-width:1.0;" x1="531.5" x2="572.5" y1="604.0352" y2="604.0352"/><polygon fill="#A80036" points="541.5,600.0352,531.5,604.0352,541.5,608.0352,537.5,604.0352" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="171" x="537.5" y="586.293">disallow deposits from Bob</text><path d="M10,619.0352 L483,619.0352 L483,626.0352 L473,636.0352 L10,636.0352 L10,619.0352 " fill="#D3D3D3" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="176.8633" style="stroke:#000000;stroke-width:2.0;" width="625.5" x="10" y="619.0352"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="428" x="25" y="632.6035">if timelock expires and one of alice or bob have not yet claimed</text><polygon fill="#A80036" points="518.5,653.6563,528.5,657.6563,518.5,661.6563,522.5,657.6563" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="65.5" x2="524.5" y1="657.6563" y2="657.6563"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="130" x="72.5" y="652.9141">claim Alice's deposit</text><polygon fill="#A80036" points="76.5,682.9668,66.5,686.9668,76.5,690.9668,72.5,686.9668" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="70.5" x2="529.5" y1="686.9668" y2="686.9668"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="189" x="82.5" y="682.2246">return Alice's deposited funds</text><polygon fill="#A80036" points="518.5,712.2773,528.5,716.2773,518.5,720.2773,522.5,716.2773" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="246.5" x2="524.5" y1="716.2773" y2="716.2773"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="122" x="253.5" y="711.5352">claim Bob's deposit</text><polygon fill="#A80036" points="257.5,741.5879,247.5,745.5879,257.5,749.5879,253.5,745.5879" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="251.5" x2="529.5" y1="745.5879" y2="745.5879"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="181" x="263.5" y="740.8457">return Bob's deposited funds</text><line style="stroke:#A80036;stroke-width:1.0;" x1="530.5" x2="572.5" y1="774.8984" y2="774.8984"/><line style="stroke:#A80036;stroke-width:1.0;" x1="572.5" x2="572.5" y1="774.8984" y2="787.8984"/><line style="stroke:#A80036;stroke-width:1.0;" x1="531.5" x2="572.5" y1="787.8984" y2="787.8984"/><polygon fill="#A80036" points="541.5,783.8984,531.5,787.8984,541.5,791.8984,537.5,787.8984" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="537.5" y="770.1563">delete escrow</text><polygon fill="#A80036" points="518.5,820.209,528.5,824.209,518.5,828.209,522.5,824.209" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="65.5" x2="524.5" y1="824.209" y2="824.209"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="174" x="72.5" y="819.4668">claim Bob's escrowed funds</text><polygon fill="#A80036" points="76.5,849.5195,66.5,853.5195,76.5,857.5195,72.5,853.5195" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="70.5" x2="529.5" y1="853.5195" y2="853.5195"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="137" x="82.5" y="848.7773">transfer Bob's deposit</text><polygon fill="#A80036" points="518.5,878.8301,528.5,882.8301,518.5,886.8301,522.5,882.8301" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="246.5" x2="524.5" y1="882.8301" y2="882.8301"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="182" x="253.5" y="878.0879">claim Alice's escrowed funds</text><polygon fill="#A80036" points="257.5,908.1406,247.5,912.1406,257.5,916.1406,253.5,912.1406" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="251.5" x2="529.5" y1="912.1406" y2="912.1406"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="145" x="263.5" y="907.3984">transfer Alice's deposit</text><path d="M485.5,927.1406 L603.5,927.1406 L603.5,934.1406 L593.5,944.1406 L485.5,944.1406 L485.5,927.1406 " fill="#D3D3D3" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="59.6211" style="stroke:#000000;stroke-width:2.0;" width="150" x="485.5" y="927.1406"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="73" x="500.5" y="940.709">Completed</text><line style="stroke:#A80036;stroke-width:1.0;" x1="530.5" x2="572.5" y1="965.7617" y2="965.7617"/><line style="stroke:#A80036;stroke-width:1.0;" x1="572.5" x2="572.5" y1="965.7617" y2="978.7617"/><line style="stroke:#A80036;stroke-width:1.0;" x1="531.5" x2="572.5" y1="978.7617" y2="978.7617"/><polygon fill="#A80036" points="541.5,974.7617,531.5,978.7617,541.5,982.7617,537.5,978.7617" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="86" x="537.5" y="961.0195">delete escrow</text><!--MD5=[a160fd9e56261eead043182de6429033]
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title Escrow Token Swap
+
+box "(multisig)" #Peru
+actor Alice_expert as alice
+actor Bob_expert as bob
+end box
+
+'box "(offchain)" #Coral
+'database Etherscan as etherscan
+'end box
+
+box "(onchain)" #Lavender
+collections Escrow as escrow
+collections EscrowFactory as escrowfactory
+end box
+
+alice -> escrowfactory: create escrow
+note right: party A reqmt, party B reqmt, timelock
+escrowfactory -> escrowfactory: emit escrow address
+escrowfactory -> alice: escrow address
+
+alice -> escrow: deposit eth, erc20, or nfts (party A reqmt))
+escrow -> escrow: disallow deposits from Alice
+
+alice -> bob: escrow details
+alice -> alice: wait for timelock to expire
+
+group#lightgray #pink if timelock expires before counterparty desposit
+  alice -> escrow: claim Alice's deposit
+  alice <- - escrow: return deposited funds
+  escrow -> escrow: delete escrow
+end
+
+bob -> escrow: deposit eth, erc20, or nfts (party B reqmt)
+escrow -> escrow: disallow deposits from Bob
+
+group#lightgray #pink if timelock expires and one of alice or bob have not yet claimed
+  alice -> escrow: claim Alice's deposit
+  alice <- - escrow: return Alice's deposited funds
+  bob -> escrow: claim Bob's deposit
+  bob <- - escrow: return Bob's deposited funds
+  escrow -> escrow: delete escrow
+end
+
+alice -> escrow: claim Bob's escrowed funds
+alice <- - escrow: transfer Bob's deposit
+bob -> escrow: claim Alice's escrowed funds
+bob <- - escrow: transfer Alice's deposit
+
+group#lightgray #lightgreen Completed
+escrow -> escrow: delete escrow
+end
+
+@enduml
+
+@startuml
+
+title Escrow Token Swap
+
+box "(multisig)" #Peru
+actor Alice_expert as alice
+actor Bob_expert as bob
+end box
+
+
+box "(onchain)" #Lavender
+collections Escrow as escrow
+collections EscrowFactory as escrowfactory
+end box
+
+alice -> escrowfactory: create escrow
+note right: party A reqmt, party B reqmt, timelock
+escrowfactory -> escrowfactory: emit escrow address
+escrowfactory -> alice: escrow address
+
+alice -> escrow: deposit eth, erc20, or nfts (party A reqmt))
+escrow -> escrow: disallow deposits from Alice
+
+alice -> bob: escrow details
+alice -> alice: wait for timelock to expire
+
+group#lightgray #pink if timelock expires before counterparty desposit
+  alice -> escrow: claim Alice's deposit
+  alice <- - escrow: return deposited funds
+  escrow -> escrow: delete escrow
+end
+
+bob -> escrow: deposit eth, erc20, or nfts (party B reqmt)
+escrow -> escrow: disallow deposits from Bob
+
+group#lightgray #pink if timelock expires and one of alice or bob have not yet claimed
+  alice -> escrow: claim Alice's deposit
+  alice <- - escrow: return Alice's deposited funds
+  bob -> escrow: claim Bob's deposit
+  bob <- - escrow: return Bob's deposited funds
+  escrow -> escrow: delete escrow
+end
+
+alice -> escrow: claim Bob's escrowed funds
+alice <- - escrow: transfer Bob's deposit
+bob -> escrow: claim Alice's escrowed funds
+bob <- - escrow: transfer Alice's deposit
+
+group#lightgray #lightgreen Completed
+escrow -> escrow: delete escrow
+end
+
+@enduml
+
+PlantUML version 1.2021.12(Wed Oct 06 02:01:58 AEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: AU
+--></g></svg>
