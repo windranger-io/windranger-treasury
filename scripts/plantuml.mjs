@@ -9,9 +9,6 @@ const plantUmlExtension = ".puml";
 for (const arg of myArgs) {
   if (await isDirectory(arg)) {
     const plants = await recursivePlantUmlFileSearch(arg);
-
-    console.log("PlantUml files: " + plants);
-
     for (const plant of plants) {
       await renderPlantUmlDocument(plant);
     }
@@ -24,7 +21,6 @@ for (const arg of myArgs) {
  * Depth first recursion creating an array of all the file paths for Plant UML documents under the given directory root.
  */
 async function recursivePlantUmlFileSearch(directory) {
-  console.log("Directory " + directory);
   const files = await readdir(directory);
   let plants = [];
 
