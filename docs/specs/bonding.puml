@@ -35,90 +35,154 @@ end box
 == Deciding funds, bond and guarantors ==
 
 alice->forum                : post outlining plan
+activate alice
+activate forum
 note right                  : 100 ETH wanted,\n150K BIT bond
 community->forum            : feedback
 guarantor->forum            : agree to guarantor
 note right                  : May have multiple guarantors
 forum-->alice               : quorum of guarantors
-
+deactivate forum
+deactivate alice
 
 == Bond Funding ==
 
 alice->bondFactory          : request bond creation
+activate alice
+activate bondFactory
 bondFactory->bond           : create
+activate bond
 bondFactory->bondFactory    : emit bond address
 bondFactory-->alice         : bond address
+deactivate bondFactory
 alice->forum                : bond details
+activate forum
 forum->guarantor            : bond address
+deactivate forum
+
 note left of bond           : Bond balance 0 BIT
 
 group#lightgray #white Repeats until bond target satisfied
     guarantor->bond         : deposit bond
+    activate guarantor
+    activate bond
     bond-->guarantor        : receive bond certificates (tokens)
+    deactivate guarantor
+    deactivate bond
 end
 
 note left of bond           : Bond balance 150K BIT
 note left of guarantor      : Guarantors hold 150K debt certificates
 
 bond --> alice              : Bond collateral met
+deactivate bond
+deactivate alice
 
 == Grants Treasury Funding ==
 alice -> snapshot               : submit proposal
+activate snapshot
 snapshot-->community            : new proposal notification
+activate community
 community -> snapshot           : vote on proposal
+deactivate community
 
 group#white #LightBlue Proposal success
+
     note right of grantstreasury    : Grants balance 0 ETH
+
     snapshot -> bitdaoadmin         : proposal success
+    activate bitdaoadmin
     bitdaoadmin -> bitdaotreasury   : perform transfer of 100 ETH to GrantsTreasury
+    activate bitdaotreasury
+    deactivate bitdaoadmin
     bitdaotreasury -> grantstreasury: transfer funds
+    deactivate bitdaotreasury
+
     note right of grantstreasury    : Grants balance 100 ETH
 
 else #Pink Proposal rejected
+
     note left of bond               : Bond balance 150K BIT
+
     snapshot -> bitdaoadmin         : proposal failed
+    activate bitdaoadmin
+    deactivate snapshot
     bitdaoadmin -> bond             : release bond
+    activate bond
+    deactivate bitdaoadmin
     bond -> bond                    : unlock BIT tokens for guarantor redemption
+
     group#lightgray #white Repeat until full redemption
         guarantor->bond             : exchange bond certificate
+        activate guarantor
         bond-->guarantor            : receive bonded BIT tokens
+        deactivate bond
+        deactivate guarantor
     end
+
     note left of bond               : Bond balance 0 BIT
 end
-
 
 == Bond Certification Redemption ==
 
 alice->alice                    : project\ndelivery
+activate alice
 alice->forum                    : temperature gauge\nfor project success
+activate forum
 forum-->alice                   : vote must include full payment,\npartial slashing option\nand full slashing option
+deactivate forum
 alice->snapshot                 : proposal on bond certificate redemption
+activate snapshot
+deactivate alice
 snapshot-->community            : new proposal notification
+activate community
 community -> snapshot           : vote on proposal
+deactivate community
 snapshot -> bitdaoadmin         : proposal outcome
-
+activate bitdaoadmin
+deactivate snapshot
 
 note right of bond              : Bond balance 150K BIT (locked)
 
 group#white #LightBlue Full bond redemption
     bitdaoadmin->bond           : release
+    activate bond
     bond->bond                  : unlock BIT tokens
+
     group#lightgray #white Repeat until full redemption
         guarantor->bond         : exchange bond certificate
+        activate guarantor
         bond-->guarantor        : receive bonded BIT tokens
+        deactivate bond
+        deactivate guarantor
     end
+
 else #Pink Full bond slash
     bitdaoadmin->bond           : slash full bond
+    activate bond
     bond->bitdaotreasury        : transfer all tokens
+    activate bitdaotreasury
     bitdaotreasury-->bond
+    deactivate bitdaotreasury
+    deactivate bond
+
     note left of bitdaotreasury : balance +150K BIT
+
 else #lightseagreen Partial bond slashed, remaining redeemable
     bitdaoadmin->bond           : slash partial bond
+    activate bond
+    deactivate bitdaoadmin
     bond->bitdaotreasury        : transfer tokens
+    activate bitdaotreasury
     bitdaotreasury-->bond
+    deactivate bitdaotreasury
+    
     group#lightgray #white Repeat until full redemption
         guarantor->bond         : exchange bond certificate
+        activate guarantor
         bond-->guarantor        : receive bonded BIT tokens
+        deactivate bond
+        deactivate guarantor
     end
 end
 
