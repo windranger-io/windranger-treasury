@@ -105,8 +105,8 @@ else #Pink Proposal rejected
     note left of bond               : Bond balance 150K BIT
 
     snapshot -> bitdaoadmin         : proposal failed
-    activate bitdaoadmin
     deactivate snapshot
+    activate bitdaoadmin
     bitdaoadmin -> bond             : release bond
     activate bond
     deactivate bitdaoadmin
@@ -139,8 +139,8 @@ activate community
 community -> snapshot           : vote on proposal
 deactivate community
 snapshot -> bitdaoadmin         : proposal outcome
-activate bitdaoadmin
 deactivate snapshot
+activate bitdaoadmin
 
 note right of bond              : Bond balance 150K BIT (locked)
 
@@ -170,8 +170,8 @@ else #Pink Full bond slash
 
 else #lightseagreen Partial bond slashed, remaining redeemable
     bitdaoadmin->bond           : slash partial bond
-    activate bond
     deactivate bitdaoadmin
+    activate bond
     bond->bitdaotreasury        : transfer tokens
     activate bitdaotreasury
     bitdaotreasury-->bond
