@@ -13,13 +13,16 @@ for (const arg of myArgs) {
     console.log("PlantUml files: " + plants);
 
     for (const plant of plants) {
-      await generatePlantUmlImage(plant);
+      await renderPlantUmlDocument(plant);
     }
   } else {
-    await generatePlantUmlImage(arg);
+    await renderPlantUmlDocument(arg);
   }
 }
 
+/**
+ * Depth first recursion creating an array of all the file paths for Plant UML documents under the given directory root.
+ */
 async function recursivePlantUmlFileSearch(directory) {
   console.log("Directory " + directory);
   const files = await readdir(directory);
@@ -46,7 +49,7 @@ async function recursivePlantUmlFileSearch(directory) {
 /**
  * Creates a rendering from a Plant UML file.
  */
-async function generatePlantUmlImage(filepath) {
+async function renderPlantUmlDocument(filepath) {
   const targetFile = path.parse(filepath);
   validatePlantUmlExtensionType(targetFile.ext);
 
@@ -59,11 +62,14 @@ async function generatePlantUmlImage(filepath) {
   const targetDirectory = targetFile.dir + path.sep + "images" + path.sep;
 
   for (let i = 0; i <= len; i++) {
-    await generatePage(content, i, targetDirectory, targetFile.name);
+    await renderPage(content, i, targetDirectory, targetFile.name);
   }
 }
 
-async function generatePage(content, page, targetDirectory, targetNamePrefix) {
+/**
+ * Creates a render of a single page in a potentially multi-page Plant UML document.
+ */
+async function renderPage(content, page, targetDirectory, targetNamePrefix) {
   const generated = plantuml.generate(content, {
     format: "svg",
     pipeimageindex: page,
@@ -78,6 +84,9 @@ async function generatePage(content, page, targetDirectory, targetNamePrefix) {
   });
 }
 
+/**
+ * Recursively creates the given directory structure, quietly.
+ */
 async function createDirectoryStructure(target) {
   try {
     await mkdir(target, { recursive: true });
@@ -95,16 +104,25 @@ async function isDirectory(path) {
   return stats.isDirectory();
 }
 
-function hasPlantUmlExtension(extension) {
-  return extension.toLowerCase().endsWith(plantUmlExtension);
+/**
+ * Whether the file (path, filename or extension) has the extension that matches a Plant UML extension.
+ */
+function hasPlantUmlExtension(file) {
+  return file.toLowerCase().endsWith(plantUmlExtension);
 }
 
+/**
+ * Validates that the extension matches a Plant UML extension.
+ */
 function validatePlantUmlExtensionType(extension) {
   if (!hasPlantUmlExtension(extension)) {
     throw Error("Expecting a .puml extension, instead got: " + extension);
   }
 }
 
+/**
+ * Validates that the content is not empty, using the filepath in the error message.
+ */
 function validateNonEmptyContent(content, filepath) {
   if (content.length === 0) {
     throw Error("Content must not be empty, however not true for " + filepath);
