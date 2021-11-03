@@ -85,3 +85,6 @@ doc/
 
 # Node lock file
 package-lock.json
+
+# MacOS system files
+.DS_Store
