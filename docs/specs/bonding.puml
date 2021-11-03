@@ -60,6 +60,8 @@ end
 note left of bond           : Bond balance 150K BIT
 note left of guarantor      : Guarantors hold 150K debt certificates
 
+bond --> alice              : Bond collateral met
+
 == Grants Treasury Funding ==
 alice -> snapshot               : submit proposal
 snapshot-->community            : new proposal notification
