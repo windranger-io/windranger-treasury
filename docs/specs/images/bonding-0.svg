@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="2433px" preserveAspectRatio="none" style="width:1498px;height:2433px;background:#FFFFFF;" version="1.1" viewBox="0 0 1498 2433" width="1498px" zoomAndPan="magnify"><defs><filter height="300%" id="f1d4shlhj7bai8" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="70" x="710.5" y="29.4023">Bonding</text><rect fill="#FFFFE0" height="2386.6484" style="stroke:#A80036;stroke-width:1.0;" width="92" x="1" y="41.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="86" x="4" y="53.7676">(community)</text><rect fill="#FF7F50" height="2386.6484" style="stroke:#A80036;stroke-width:1.0;" width="71" x="264" y="41.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="65" x="267" y="53.7676">(offchain)</text><rect fill="#D3D3D3" height="2386.6484" style="stroke:#A80036;stroke-width:1.0;" width="179" x="340" y="41.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="86" x="386.5" y="53.7676">(community)</text><rect fill="#FF7F50" height="2386.6484" style="stroke:#A80036;stroke-width:1.0;" width="78" x="532.5" y="41.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="65" x="539" y="53.7676">(offchain)</text><rect fill="#CD853F" height="2386.6484" style="stroke:#A80036;stroke-width:1.0;" width="107" x="656" y="41.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="65" x="677" y="53.7676">(multisig)</text><rect fill="#E6E6FA" height="2386.6484" style="stroke:#A80036;stroke-width:1.0;" width="661" x="814" y="41.1992"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="64" x="1112.5" y="53.7676">(onchain)</text><rect fill="#FFFFFF" filter="url(#f1d4shlhj7bai8)" height="75.9316" style="stroke:#000000;stroke-width:2.0;" width="456" x="429" y="628.3457"/><rect fill="#ADD8E6" filter="url(#f1d4shlhj7bai8)" height="468.3027" style="stroke:#000000;stroke-width:2.0;" width="1062" x="419" y="957.4512"/><rect fill="#FFC0CB" height="284.4395" style="stroke:none;stroke-width:1.0;" width="1062" x="419" y="1141.3145"/><rect fill="#FFFFFF" filter="url(#f1d4shlhj7bai8)" height="75.9316" style="stroke:#000000;stroke-width:2.0;" width="456" x="429" y="1303.5117"/><rect fill="#ADD8E6" filter="url(#f1d4shlhj7bai8)" height="483.2578" style="stroke:#000000;stroke-width:2.0;" width="1062" x="419" y="1801.791"/><rect fill="#FFFFFF" filter="url(#f1d4shlhj7bai8)" height="75.9316" style="stroke:#000000;stroke-width:2.0;" width="456" x="429" y="1897.7227"/><rect fill="#FFC0CB" height="126.8867" style="stroke:none;stroke-width:1.0;" width="1062" x="419" y="1980.6543"/><rect fill="#20B2AA" height="177.5078" style="stroke:none;stroke-width:1.0;" width="1062" x="419" y="2107.541"/><rect fill="#FFFFFF" filter="url(#f1d4shlhj7bai8)" height="75.9316" style="stroke:#000000;stroke-width:2.0;" width="456" x="429" y="2202.1172"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="46.5" x2="46.5" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="299" x2="299" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="386" x2="386" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="477" x2="477" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="571.5" x2="571.5" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="709" x2="709" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="846" x2="846" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="1136" x2="1136" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="1267" x2="1267" y1="143.998" y2="2341.3594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:5.0,5.0;" x1="1406" x2="1406" y1="143.998" y2="2341.3594"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="33" x="27.5" y="141.0449">Alice</text><ellipse cx="47" cy="70.5098" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M47,78.5098 L47,105.5098 M34,86.5098 L60,86.5098 M47,105.5098 L34,120.5098 M47,105.5098 L60,120.5098 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="33" x="27.5" y="2353.8945">Alice</text><ellipse cx="47" cy="2366.8477" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M47,2374.8477 L47,2401.8477 M34,2382.8477 L60,2382.8477 M47,2401.8477 L34,2416.8477 M47,2401.8477 L60,2416.8477 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="45" x="274" y="141.0449">Forum</text><ellipse cx="299.5" cy="70.5098" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M299.5,78.5098 L299.5,105.5098 M286.5,86.5098 L312.5,86.5098 M299.5,105.5098 L286.5,120.5098 M299.5,105.5098 L312.5,120.5098 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="45" x="274" y="2353.8945">Forum</text><ellipse cx="299.5" cy="2366.8477" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M299.5,2374.8477 L299.5,2401.8477 M286.5,2382.8477 L312.5,2382.8477 M299.5,2401.8477 L286.5,2416.8477 M299.5,2401.8477 L312.5,2416.8477 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79" x="344" y="141.0449">Community</text><ellipse cx="386.5" cy="70.5098" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M386.5,78.5098 L386.5,105.5098 M373.5,86.5098 L399.5,86.5098 M386.5,105.5098 L373.5,120.5098 M386.5,105.5098 L399.5,120.5098 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79" x="344" y="2353.8945">Community</text><ellipse cx="386.5" cy="2366.8477" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M386.5,2374.8477 L386.5,2401.8477 M373.5,2382.8477 L399.5,2382.8477 M386.5,2401.8477 L373.5,2416.8477 M386.5,2401.8477 L399.5,2416.8477 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70" x="439" y="141.0449">Guarantor</text><ellipse cx="477" cy="70.5098" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M477,78.5098 L477,105.5098 M464,86.5098 L490,86.5098 M477,105.5098 L464,120.5098 M477,105.5098 L490,120.5098 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70" x="439" y="2353.8945">Guarantor</text><ellipse cx="477" cy="2366.8477" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M477,2374.8477 L477,2401.8477 M464,2382.8477 L490,2382.8477 M477,2401.8477 L464,2416.8477 M477,2401.8477 L490,2416.8477 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="536.5" y="141.0449">Snapshot</text><path d="M553.5,91.5098 C553.5,81.5098 571.5,81.5098 571.5,81.5098 C571.5,81.5098 589.5,81.5098 589.5,91.5098 L589.5,117.5098 C589.5,127.5098 571.5,127.5098 571.5,127.5098 C571.5,127.5098 553.5,127.5098 553.5,117.5098 L553.5,91.5098 " fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" style="stroke:#000000;stroke-width:1.5;"/><path d="M553.5,91.5098 C553.5,101.5098 571.5,101.5098 571.5,101.5098 C571.5,101.5098 589.5,101.5098 589.5,91.5098 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="536.5" y="2353.8945">Snapshot</text><path d="M553.5,2366.8477 C553.5,2356.8477 571.5,2356.8477 571.5,2356.8477 C571.5,2356.8477 589.5,2356.8477 589.5,2366.8477 L589.5,2392.8477 C589.5,2402.8477 571.5,2402.8477 571.5,2402.8477 C571.5,2402.8477 553.5,2402.8477 553.5,2392.8477 L553.5,2366.8477 " fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" style="stroke:#000000;stroke-width:1.5;"/><path d="M553.5,2366.8477 C553.5,2376.8477 571.5,2376.8477 571.5,2376.8477 C571.5,2376.8477 589.5,2376.8477 589.5,2366.8477 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="93" x="660" y="141.0449">BitDAOAdmin</text><ellipse cx="709.5" cy="70.5098" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M709.5,78.5098 L709.5,105.5098 M696.5,86.5098 L722.5,86.5098 M709.5,105.5098 L696.5,120.5098 M709.5,105.5098 L722.5,120.5098 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="93" x="660" y="2353.8945">BitDAOAdmin</text><ellipse cx="709.5" cy="2366.8477" fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" rx="8" ry="8" style="stroke:#A80036;stroke-width:2.0;"/><path d="M709.5,2374.8477 L709.5,2401.8477 M696.5,2382.8477 L722.5,2382.8477 M709.5,2401.8477 L696.5,2416.8477 M709.5,2401.8477 L722.5,2416.8477 " fill="none" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:2.0;"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="49" x="822" y="104.5098"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="49" x="818" y="108.5098"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="825" y="129.0449">Bond</text><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="49" x="822" y="2340.3594"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="49" x="818" y="2344.3594"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="825" y="2364.8945">Bond</text><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="99" x="1087" y="104.5098"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="99" x="1083" y="108.5098"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85" x="1090" y="129.0449">BondFactory</text><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="99" x="1087" y="2340.3594"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="99" x="1083" y="2344.3594"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85" x="1090" y="2364.8945">BondFactory</text><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="119" x="1208" y="104.5098"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="119" x="1204" y="108.5098"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="105" x="1211" y="129.0449">GrantsTreasury</text><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="119" x="1208" y="2340.3594"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="119" x="1204" y="2344.3594"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="105" x="1211" y="2364.8945">GrantsTreasury</text><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="122" x="1345" y="104.5098"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="122" x="1341" y="108.5098"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="108" x="1348" y="129.0449">BitDAOTreasury</text><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="122" x="1345" y="2340.3594"/><rect fill="#FEFECE" filter="url(#f1d4shlhj7bai8)" height="30.4883" style="stroke:#A80036;stroke-width:1.5;" width="122" x="1341" y="2344.3594"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="108" x="1348" y="2364.8945">BitDAOTreasury</text><rect fill="#EEEEEE" filter="url(#f1d4shlhj7bai8)" height="3" style="stroke:#EEEEEE;stroke-width:1.0;" width="1491" x="0" y="174.6533"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="1491" y1="174.6533" y2="174.6533"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="1491" y1="177.6533" y2="177.6533"/><rect fill="#EEEEEE" filter="url(#f1d4shlhj7bai8)" height="23.3105" style="stroke:#000000;stroke-width:2.0;" width="272" x="609.5" y="163.998"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="254" x="615.5" y="180.5664">Deciding funds, bond and guarantors</text><polygon fill="#A80036" points="287.5,227.2744,297.5,231.2744,287.5,235.2744,291.5,231.2744" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="47" x2="293.5" y1="231.2744" y2="231.2744"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="120" x="54" y="226.5322">post outlining plan</text><path d="M304,202.3086 L304,242.3086 L431,242.3086 L431,212.3086 L421,202.3086 L304,202.3086 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M421,202.3086 L421,212.3086 L431,212.3086 L421,202.3086 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="106" x="310" y="219.877">100 ETH wanted,</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="91" x="310" y="235.1875">150K BIT bond</text><polygon fill="#A80036" points="310.5,269.2402,300.5,273.2402,310.5,277.2402,306.5,273.2402" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="304.5" x2="385.5" y1="273.2402" y2="273.2402"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="57" x="316.5" y="268.498">feedback</text><polygon fill="#A80036" points="310.5,303.5508,300.5,307.5508,310.5,311.5508,306.5,307.5508" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="304.5" x2="476" y1="307.5508" y2="307.5508"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="116" x="316.5" y="302.8086">agree to guarantor</text><path d="M482,286.2402 L482,311.2402 L689,311.2402 L689,296.2402 L679,286.2402 L482,286.2402 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M679,286.2402 L679,296.2402 L689,296.2402 L679,286.2402 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="186" x="488" y="303.8086">May have multiple guarantors</text><polygon fill="#A80036" points="58,337.8613,48,341.8613,58,345.8613,54,341.8613" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="52" x2="298.5" y1="341.8613" y2="341.8613"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="138" x="64" y="337.1191">quorum of guarantors</text><rect fill="#EEEEEE" filter="url(#f1d4shlhj7bai8)" height="3" style="stroke:#EEEEEE;stroke-width:1.0;" width="1491" x="0" y="370.5166"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="1491" y1="370.5166" y2="370.5166"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="1491" y1="373.5166" y2="373.5166"/><rect fill="#EEEEEE" filter="url(#f1d4shlhj7bai8)" height="23.3105" style="stroke:#000000;stroke-width:2.0;" width="112" x="689.5" y="359.8613"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="94" x="695.5" y="376.4297">Bond Funding</text><polygon fill="#A80036" points="1124.5,410.4824,1134.5,414.4824,1124.5,418.4824,1128.5,414.4824" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="47" x2="1130.5" y1="414.4824" y2="414.4824"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="138" x="54" y="409.7402">request bond creation</text><polygon fill="#A80036" points="857.5,439.793,847.5,443.793,857.5,447.793,853.5,443.793" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="851.5" x2="1135.5" y1="443.793" y2="443.793"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="38" x="863.5" y="439.0508">create</text><line style="stroke:#A80036;stroke-width:1.0;" x1="1136.5" x2="1178.5" y1="473.1035" y2="473.1035"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1178.5" x2="1178.5" y1="473.1035" y2="486.1035"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1137.5" x2="1178.5" y1="486.1035" y2="486.1035"/><polygon fill="#A80036" points="1147.5,482.1035,1137.5,486.1035,1147.5,490.1035,1143.5,486.1035" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="117" x="1143.5" y="468.3613">emit bond address</text><polygon fill="#A80036" points="58,511.4141,48,515.4141,58,519.4141,54,515.4141" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="52" x2="1135.5" y1="515.4141" y2="515.4141"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="85" x="64" y="510.6719">bond address</text><polygon fill="#A80036" points="287.5,540.7246,297.5,544.7246,287.5,548.7246,291.5,544.7246" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="47" x2="293.5" y1="544.7246" y2="544.7246"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="78" x="54" y="539.9824">bond details</text><polygon fill="#A80036" points="465,570.0352,475,574.0352,465,578.0352,469,574.0352" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="299.5" x2="471" y1="574.0352" y2="574.0352"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="85" x="306.5" y="569.293">bond address</text><path d="M698,587.0352 L698,612.0352 L837,612.0352 L837,597.0352 L827,587.0352 L698,587.0352 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M827,587.0352 L827,597.0352 L837,597.0352 L827,587.0352 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118" x="704" y="604.6035">Bond balance 0 BIT</text><path d="M429,628.3457 L708,628.3457 L708,635.3457 L698,645.3457 L429,645.3457 L429,628.3457 " fill="#D3D3D3" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="75.9316" style="stroke:#000000;stroke-width:2.0;" width="456" x="429" y="628.3457"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="234" x="444" y="641.9141">Repeats until bond target satisfied</text><polygon fill="#A80036" points="834.5,662.9668,844.5,666.9668,834.5,670.9668,838.5,666.9668" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="477" x2="840.5" y1="666.9668" y2="666.9668"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="83" x="484" y="662.2246">deposit bond</text><polygon fill="#A80036" points="488,692.2773,478,696.2773,488,700.2773,484,696.2773" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="482" x2="845.5" y1="696.2773" y2="696.2773"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="209" x="494" y="691.5352">receive bond certificates (tokens)</text><path d="M674,716.2773 L674,741.2773 L837,741.2773 L837,726.2773 L827,716.2773 L674,716.2773 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M827,716.2773 L827,726.2773 L837,726.2773 L827,716.2773 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="142" x="680" y="733.8457">Bond balance 150K BIT</text><path d="M204,755.5879 L204,780.5879 L468,780.5879 L468,765.5879 L458,755.5879 L204,755.5879 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M458,755.5879 L458,765.5879 L468,765.5879 L458,755.5879 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="243" x="210" y="773.1563">Guarantors hold 150K debt certificates</text><polygon fill="#A80036" points="58,807.209,48,811.209,58,815.209,54,811.209" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="52" x2="845.5" y1="811.209" y2="811.209"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="121" x="64" y="806.4668">Bond collateral met</text><rect fill="#EEEEEE" filter="url(#f1d4shlhj7bai8)" height="3" style="stroke:#EEEEEE;stroke-width:1.0;" width="1491" x="0" y="839.8643"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="1491" y1="839.8643" y2="839.8643"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="1491" y1="842.8643" y2="842.8643"/><rect fill="#EEEEEE" filter="url(#f1d4shlhj7bai8)" height="23.3105" style="stroke:#000000;stroke-width:2.0;" width="188" x="651.5" y="829.209"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="170" x="657.5" y="845.7773">Grants Treasury Funding</text><polygon fill="#A80036" points="559.5,879.8301,569.5,883.8301,559.5,887.8301,563.5,883.8301" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="47" x2="565.5" y1="883.8301" y2="883.8301"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="103" x="54" y="879.0879">submit proposal</text><polygon fill="#A80036" points="397.5,909.1406,387.5,913.1406,397.5,917.1406,393.5,913.1406" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="391.5" x2="570.5" y1="913.1406" y2="913.1406"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="161" x="403.5" y="908.3984">new proposal notification</text><polygon fill="#A80036" points="559.5,938.4512,569.5,942.4512,559.5,946.4512,563.5,942.4512" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="386.5" x2="565.5" y1="942.4512" y2="942.4512"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="106" x="393.5" y="937.709">vote on proposal</text><path d="M419,957.4512 L578,957.4512 L578,964.4512 L568,974.4512 L419,974.4512 L419,957.4512 " fill="#FFFFFF" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="468.3027" style="stroke:#000000;stroke-width:2.0;" width="1062" x="419" y="957.4512"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="114" x="434" y="971.0195">Proposal success</text><path d="M1272,979.7617 L1272,1004.7617 L1427,1004.7617 L1427,989.7617 L1417,979.7617 L1272,979.7617 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M1417,979.7617 L1417,989.7617 L1427,989.7617 L1417,979.7617 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="134" x="1278" y="997.3301">Grants balance 0 ETH</text><polygon fill="#A80036" points="697.5,1031.3828,707.5,1035.3828,697.5,1039.3828,701.5,1035.3828" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="571.5" x2="703.5" y1="1035.3828" y2="1035.3828"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="109" x="578.5" y="1030.6406">proposal success</text><polygon fill="#A80036" points="1394,1060.6934,1404,1064.6934,1394,1068.6934,1398,1064.6934" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="709.5" x2="1400" y1="1064.6934" y2="1064.6934"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="293" x="716.5" y="1059.9512">perform transfer of 100 ETH to GrantsTreasury</text><polygon fill="#A80036" points="1278.5,1090.0039,1268.5,1094.0039,1278.5,1098.0039,1274.5,1094.0039" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="1272.5" x2="1405" y1="1094.0039" y2="1094.0039"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="89" x="1284.5" y="1089.2617">transfer funds</text><path d="M1272,1107.0039 L1272,1132.0039 L1443,1132.0039 L1443,1117.0039 L1433,1107.0039 L1272,1107.0039 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M1433,1107.0039 L1433,1117.0039 L1443,1117.0039 L1433,1107.0039 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="150" x="1278" y="1124.5723">Grants balance 100 ETH</text><line style="stroke:#000000;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="419" x2="1481" y1="1142.3145" y2="1142.3145"/><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="105" x="424" y="1152.9492">[Proposal rejected]</text><path d="M674,1161.2695 L674,1186.2695 L837,1186.2695 L837,1171.2695 L827,1161.2695 L674,1161.2695 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M827,1161.2695 L827,1171.2695 L837,1171.2695 L827,1161.2695 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="142" x="680" y="1178.8379">Bond balance 150K BIT</text><polygon fill="#A80036" points="697.5,1212.8906,707.5,1216.8906,697.5,1220.8906,701.5,1216.8906" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="571.5" x2="703.5" y1="1216.8906" y2="1216.8906"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="94" x="578.5" y="1212.1484">proposal failed</text><polygon fill="#A80036" points="834.5,1242.2012,844.5,1246.2012,834.5,1250.2012,838.5,1246.2012" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="709.5" x2="840.5" y1="1246.2012" y2="1246.2012"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="80" x="716.5" y="1241.459">release bond</text><line style="stroke:#A80036;stroke-width:1.0;" x1="846.5" x2="888.5" y1="1275.5117" y2="1275.5117"/><line style="stroke:#A80036;stroke-width:1.0;" x1="888.5" x2="888.5" y1="1275.5117" y2="1288.5117"/><line style="stroke:#A80036;stroke-width:1.0;" x1="847.5" x2="888.5" y1="1288.5117" y2="1288.5117"/><polygon fill="#A80036" points="857.5,1284.5117,847.5,1288.5117,857.5,1292.5117,853.5,1288.5117" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="276" x="853.5" y="1270.7695">unlock BIT tokens for guarantor redemption</text><path d="M429,1303.5117 L665,1303.5117 L665,1310.5117 L655,1320.5117 L429,1320.5117 L429,1303.5117 " fill="#D3D3D3" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="75.9316" style="stroke:#000000;stroke-width:2.0;" width="456" x="429" y="1303.5117"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="191" x="444" y="1317.0801">Repeat until full redemption</text><polygon fill="#A80036" points="834.5,1338.1328,844.5,1342.1328,834.5,1346.1328,838.5,1342.1328" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="477" x2="840.5" y1="1342.1328" y2="1342.1328"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="163" x="484" y="1337.3906">exchange bond certificate</text><polygon fill="#A80036" points="488,1367.4434,478,1371.4434,488,1375.4434,484,1371.4434" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="482" x2="845.5" y1="1371.4434" y2="1371.4434"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="494" y="1366.7012">receive bonded BIT tokens</text><path d="M698,1391.4434 L698,1416.4434 L837,1416.4434 L837,1401.4434 L827,1391.4434 L698,1391.4434 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M827,1391.4434 L827,1401.4434 L837,1401.4434 L827,1391.4434 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118" x="704" y="1409.0117">Bond balance 0 BIT</text><rect fill="#EEEEEE" filter="url(#f1d4shlhj7bai8)" height="3" style="stroke:#EEEEEE;stroke-width:1.0;" width="1491" x="0" y="1453.4092"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="1491" y1="1453.4092" y2="1453.4092"/><line style="stroke:#000000;stroke-width:1.0;" x1="0" x2="1491" y1="1456.4092" y2="1456.4092"/><rect fill="#EEEEEE" filter="url(#f1d4shlhj7bai8)" height="23.3105" style="stroke:#000000;stroke-width:2.0;" width="224" x="633.5" y="1442.7539"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="206" x="639.5" y="1459.3223">Bond Certification Redemption</text><line style="stroke:#A80036;stroke-width:1.0;" x1="47" x2="89" y1="1512.6855" y2="1512.6855"/><line style="stroke:#A80036;stroke-width:1.0;" x1="89" x2="89" y1="1512.6855" y2="1525.6855"/><line style="stroke:#A80036;stroke-width:1.0;" x1="48" x2="89" y1="1525.6855" y2="1525.6855"/><polygon fill="#A80036" points="58,1521.6855,48,1525.6855,58,1529.6855,54,1525.6855" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="44" x="54" y="1492.6328">project</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="49" x="54" y="1507.9434">delivery</text><polygon fill="#A80036" points="287.5,1566.3066,297.5,1570.3066,287.5,1574.3066,291.5,1570.3066" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="47" x2="293.5" y1="1570.3066" y2="1570.3066"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118" x="54" y="1550.2539">temperature gauge</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="120" x="54" y="1565.5645">for project success</text><polygon fill="#A80036" points="58,1626.2383,48,1630.2383,58,1634.2383,54,1630.2383" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="52" x2="298.5" y1="1630.2383" y2="1630.2383"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="200" x="64" y="1594.875">vote must include full payment,</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="142" x="64" y="1610.1855">partial slashing option</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="150" x="64" y="1625.4961">and full slashing option</text><polygon fill="#A80036" points="559.5,1655.5488,569.5,1659.5488,559.5,1663.5488,563.5,1659.5488" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="47" x2="565.5" y1="1659.5488" y2="1659.5488"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="254" x="54" y="1654.8066">proposal on bond certificate redemption</text><polygon fill="#A80036" points="397.5,1684.8594,387.5,1688.8594,397.5,1692.8594,393.5,1688.8594" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="391.5" x2="570.5" y1="1688.8594" y2="1688.8594"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="161" x="403.5" y="1684.1172">new proposal notification</text><polygon fill="#A80036" points="559.5,1714.1699,569.5,1718.1699,559.5,1722.1699,563.5,1718.1699" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="386.5" x2="565.5" y1="1718.1699" y2="1718.1699"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="106" x="393.5" y="1713.4277">vote on proposal</text><polygon fill="#A80036" points="697.5,1743.4805,707.5,1747.4805,697.5,1751.4805,701.5,1747.4805" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="571.5" x2="703.5" y1="1747.4805" y2="1747.4805"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="114" x="578.5" y="1742.7383">proposal outcome</text><path d="M851,1760.4805 L851,1785.4805 L1068,1785.4805 L1068,1770.4805 L1058,1760.4805 L851,1760.4805 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M1058,1760.4805 L1058,1770.4805 L1068,1770.4805 L1058,1760.4805 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="196" x="857" y="1778.0488">Bond balance 150K BIT (locked)</text><path d="M419,1801.791 L610,1801.791 L610,1808.791 L600,1818.791 L419,1818.791 L419,1801.791 " fill="#FFFFFF" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="483.2578" style="stroke:#000000;stroke-width:2.0;" width="1062" x="419" y="1801.791"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="146" x="434" y="1815.3594">Full bond redemption</text><polygon fill="#A80036" points="834.5,1836.4121,844.5,1840.4121,834.5,1844.4121,838.5,1840.4121" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="709.5" x2="840.5" y1="1840.4121" y2="1840.4121"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="44" x="716.5" y="1835.6699">release</text><line style="stroke:#A80036;stroke-width:1.0;" x1="846.5" x2="888.5" y1="1869.7227" y2="1869.7227"/><line style="stroke:#A80036;stroke-width:1.0;" x1="888.5" x2="888.5" y1="1869.7227" y2="1882.7227"/><line style="stroke:#A80036;stroke-width:1.0;" x1="847.5" x2="888.5" y1="1882.7227" y2="1882.7227"/><polygon fill="#A80036" points="857.5,1878.7227,847.5,1882.7227,857.5,1886.7227,853.5,1882.7227" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="113" x="853.5" y="1864.9805">unlock BIT tokens</text><path d="M429,1897.7227 L665,1897.7227 L665,1904.7227 L655,1914.7227 L429,1914.7227 L429,1897.7227 " fill="#D3D3D3" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="75.9316" style="stroke:#000000;stroke-width:2.0;" width="456" x="429" y="1897.7227"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="191" x="444" y="1911.291">Repeat until full redemption</text><polygon fill="#A80036" points="834.5,1932.3438,844.5,1936.3438,834.5,1940.3438,838.5,1936.3438" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="477" x2="840.5" y1="1936.3438" y2="1936.3438"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="163" x="484" y="1931.6016">exchange bond certificate</text><polygon fill="#A80036" points="488,1961.6543,478,1965.6543,488,1969.6543,484,1965.6543" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="482" x2="845.5" y1="1965.6543" y2="1965.6543"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="494" y="1960.9121">receive bonded BIT tokens</text><line style="stroke:#000000;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="419" x2="1481" y1="1981.6543" y2="1981.6543"/><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="94" x="424" y="1992.2891">[Full bond slash]</text><polygon fill="#A80036" points="834.5,2012.9199,844.5,2016.9199,834.5,2020.9199,838.5,2016.9199" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="709.5" x2="840.5" y1="2016.9199" y2="2016.9199"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="94" x="716.5" y="2012.1777">slash full bond</text><polygon fill="#A80036" points="1394,2042.2305,1404,2046.2305,1394,2050.2305,1398,2046.2305" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="846.5" x2="1400" y1="2046.2305" y2="2046.2305"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115" x="853.5" y="2041.4883">transfer all tokens</text><polygon fill="#A80036" points="857.5,2056.2305,847.5,2060.2305,857.5,2064.2305,853.5,2060.2305" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="851.5" x2="1405" y1="2060.2305" y2="2060.2305"/><path d="M1259,2073.2305 L1259,2098.2305 L1397,2098.2305 L1397,2083.2305 L1387,2073.2305 L1259,2073.2305 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M1387,2073.2305 L1387,2083.2305 L1397,2083.2305 L1387,2073.2305 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="117" x="1265" y="2090.7988">balance +150K BIT</text><line style="stroke:#000000;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="419" x2="1481" y1="2108.541" y2="2108.541"/><text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="254" x="424" y="2119.1758">[Partial bond slashed, remaining redeemable]</text><polygon fill="#A80036" points="834.5,2139.8066,844.5,2143.8066,834.5,2147.8066,838.5,2143.8066" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="709.5" x2="840.5" y1="2143.8066" y2="2143.8066"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="113" x="716.5" y="2139.0645">slash partial bond</text><polygon fill="#A80036" points="1394,2169.1172,1404,2173.1172,1394,2177.1172,1398,2173.1172" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="846.5" x2="1400" y1="2173.1172" y2="2173.1172"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="96" x="853.5" y="2168.375">transfer tokens</text><polygon fill="#A80036" points="857.5,2183.1172,847.5,2187.1172,857.5,2191.1172,853.5,2187.1172" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="851.5" x2="1405" y1="2187.1172" y2="2187.1172"/><path d="M429,2202.1172 L665,2202.1172 L665,2209.1172 L655,2219.1172 L429,2219.1172 L429,2202.1172 " fill="#D3D3D3" style="stroke:#000000;stroke-width:1.0;"/><rect fill="none" height="75.9316" style="stroke:#000000;stroke-width:2.0;" width="456" x="429" y="2202.1172"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="191" x="444" y="2215.6855">Repeat until full redemption</text><polygon fill="#A80036" points="834.5,2236.7383,844.5,2240.7383,834.5,2244.7383,838.5,2240.7383" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;" x1="477" x2="840.5" y1="2240.7383" y2="2240.7383"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="163" x="484" y="2235.9961">exchange bond certificate</text><polygon fill="#A80036" points="488,2266.0488,478,2270.0488,488,2274.0488,484,2270.0488" style="stroke:#A80036;stroke-width:1.0;"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="482" x2="845.5" y1="2270.0488" y2="2270.0488"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="494" y="2265.3066">receive bonded BIT tokens</text><path d="M851,2297.0488 L851,2322.0488 L990,2322.0488 L990,2307.0488 L980,2297.0488 L851,2297.0488 " fill="#FBFB77" filter="url(#f1d4shlhj7bai8)" style="stroke:#A80036;stroke-width:1.0;"/><path d="M980,2297.0488 L980,2307.0488 L990,2307.0488 L980,2297.0488 " fill="#FBFB77" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118" x="857" y="2314.6172">Bond balance 0 BIT</text><!--MD5=[0e8cba6204a3deaecc0b6ac17ab9cedb]
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title Bonding
+
+box "(community)" #LightYellow
+actor Alice as alice
+end box
+
+box "(offchain)" #Coral
+actor Forum as forum
+end box
+
+box "(community)" #LightGray
+actor Community as community
+actor Guarantor as guarantor
+end box
+
+box "(offchain)" #Coral
+database Snapshot as snapshot
+end box
+
+box "(multisig)" #Peru
+actor BitDAOAdmin as bitdaoadmin
+end box
+
+box "(onchain)" #Lavender
+collections Bond as bond
+collections BondFactory as bondFactory
+collections GrantsTreasury as grantstreasury
+collections BitDAOTreasury as bitdaotreasury
+end box
+
+
+== Deciding funds, bond and guarantors ==
+
+alice->forum                : post outlining plan
+note right                  : 100 ETH wanted,\n150K BIT bond
+community->forum            : feedback
+guarantor->forum            : agree to guarantor
+note right                  : May have multiple guarantors
+forum- ->alice               : quorum of guarantors
+
+
+== Bond Funding ==
+
+alice->bondFactory          : request bond creation
+bondFactory->bond           : create
+bondFactory->bondFactory    : emit bond address
+bondFactory- ->alice         : bond address
+alice->forum                : bond details
+forum->guarantor            : bond address
+note left of bond           : Bond balance 0 BIT
+
+group#lightgray #white Repeats until bond target satisfied
+    guarantor->bond         : deposit bond
+    bond- ->guarantor        : receive bond certificates (tokens)
+end
+
+note left of bond           : Bond balance 150K BIT
+note left of guarantor      : Guarantors hold 150K debt certificates
+
+bond - -> alice              : Bond collateral met
+
+== Grants Treasury Funding ==
+alice -> snapshot               : submit proposal
+snapshot- ->community            : new proposal notification
+community -> snapshot           : vote on proposal
+
+group#white #LightBlue Proposal success
+    note right of grantstreasury    : Grants balance 0 ETH
+    snapshot -> bitdaoadmin         : proposal success
+    bitdaoadmin -> bitdaotreasury   : perform transfer of 100 ETH to GrantsTreasury
+    bitdaotreasury -> grantstreasury: transfer funds
+    note right of grantstreasury    : Grants balance 100 ETH
+
+else #Pink Proposal rejected
+    note left of bond               : Bond balance 150K BIT
+    snapshot -> bitdaoadmin         : proposal failed
+    bitdaoadmin -> bond             : release bond
+    bond -> bond                    : unlock BIT tokens for guarantor redemption
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond             : exchange bond certificate
+        bond- ->guarantor            : receive bonded BIT tokens
+    end
+    note left of bond               : Bond balance 0 BIT
+end
+
+
+== Bond Certification Redemption ==
+
+alice->alice                    : project\ndelivery
+alice->forum                    : temperature gauge\nfor project success
+forum- ->alice                   : vote must include full payment,\npartial slashing option\nand full slashing option
+alice->snapshot                 : proposal on bond certificate redemption
+snapshot- ->community            : new proposal notification
+community -> snapshot           : vote on proposal
+snapshot -> bitdaoadmin         : proposal outcome
+
+
+note right of bond              : Bond balance 150K BIT (locked)
+
+group#white #LightBlue Full bond redemption
+    bitdaoadmin->bond           : release
+    bond->bond                  : unlock BIT tokens
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond         : exchange bond certificate
+        bond- ->guarantor        : receive bonded BIT tokens
+    end
+else #Pink Full bond slash
+    bitdaoadmin->bond           : slash full bond
+    bond->bitdaotreasury        : transfer all tokens
+    bitdaotreasury- ->bond
+    note left of bitdaotreasury : balance +150K BIT
+else #lightseagreen Partial bond slashed, remaining redeemable
+    bitdaoadmin->bond           : slash partial bond
+    bond->bitdaotreasury        : transfer tokens
+    bitdaotreasury- ->bond
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond         : exchange bond certificate
+        bond- ->guarantor        : receive bonded BIT tokens
+    end
+end
+
+
+note right of bond              : Bond balance 0 BIT
+
+@enduml
+
+@startuml
+
+title Bonding
+
+box "(community)" #LightYellow
+actor Alice as alice
+end box
+
+box "(offchain)" #Coral
+actor Forum as forum
+end box
+
+box "(community)" #LightGray
+actor Community as community
+actor Guarantor as guarantor
+end box
+
+box "(offchain)" #Coral
+database Snapshot as snapshot
+end box
+
+box "(multisig)" #Peru
+actor BitDAOAdmin as bitdaoadmin
+end box
+
+box "(onchain)" #Lavender
+collections Bond as bond
+collections BondFactory as bondFactory
+collections GrantsTreasury as grantstreasury
+collections BitDAOTreasury as bitdaotreasury
+end box
+
+
+== Deciding funds, bond and guarantors ==
+
+alice->forum                : post outlining plan
+note right                  : 100 ETH wanted,\n150K BIT bond
+community->forum            : feedback
+guarantor->forum            : agree to guarantor
+note right                  : May have multiple guarantors
+forum- ->alice               : quorum of guarantors
+
+
+== Bond Funding ==
+
+alice->bondFactory          : request bond creation
+bondFactory->bond           : create
+bondFactory->bondFactory    : emit bond address
+bondFactory- ->alice         : bond address
+alice->forum                : bond details
+forum->guarantor            : bond address
+note left of bond           : Bond balance 0 BIT
+
+group#lightgray #white Repeats until bond target satisfied
+    guarantor->bond         : deposit bond
+    bond- ->guarantor        : receive bond certificates (tokens)
+end
+
+note left of bond           : Bond balance 150K BIT
+note left of guarantor      : Guarantors hold 150K debt certificates
+
+bond - -> alice              : Bond collateral met
+
+== Grants Treasury Funding ==
+alice -> snapshot               : submit proposal
+snapshot- ->community            : new proposal notification
+community -> snapshot           : vote on proposal
+
+group#white #LightBlue Proposal success
+    note right of grantstreasury    : Grants balance 0 ETH
+    snapshot -> bitdaoadmin         : proposal success
+    bitdaoadmin -> bitdaotreasury   : perform transfer of 100 ETH to GrantsTreasury
+    bitdaotreasury -> grantstreasury: transfer funds
+    note right of grantstreasury    : Grants balance 100 ETH
+
+else #Pink Proposal rejected
+    note left of bond               : Bond balance 150K BIT
+    snapshot -> bitdaoadmin         : proposal failed
+    bitdaoadmin -> bond             : release bond
+    bond -> bond                    : unlock BIT tokens for guarantor redemption
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond             : exchange bond certificate
+        bond- ->guarantor            : receive bonded BIT tokens
+    end
+    note left of bond               : Bond balance 0 BIT
+end
+
+
+== Bond Certification Redemption ==
+
+alice->alice                    : project\ndelivery
+alice->forum                    : temperature gauge\nfor project success
+forum- ->alice                   : vote must include full payment,\npartial slashing option\nand full slashing option
+alice->snapshot                 : proposal on bond certificate redemption
+snapshot- ->community            : new proposal notification
+community -> snapshot           : vote on proposal
+snapshot -> bitdaoadmin         : proposal outcome
+
+
+note right of bond              : Bond balance 150K BIT (locked)
+
+group#white #LightBlue Full bond redemption
+    bitdaoadmin->bond           : release
+    bond->bond                  : unlock BIT tokens
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond         : exchange bond certificate
+        bond- ->guarantor        : receive bonded BIT tokens
+    end
+else #Pink Full bond slash
+    bitdaoadmin->bond           : slash full bond
+    bond->bitdaotreasury        : transfer all tokens
+    bitdaotreasury- ->bond
+    note left of bitdaotreasury : balance +150K BIT
+else #lightseagreen Partial bond slashed, remaining redeemable
+    bitdaoadmin->bond           : slash partial bond
+    bond->bitdaotreasury        : transfer tokens
+    bitdaotreasury- ->bond
+    group#lightgray #white Repeat until full redemption
+        guarantor->bond         : exchange bond certificate
+        bond- ->guarantor        : receive bonded BIT tokens
+    end
+end
+
+
+note right of bond              : Bond balance 0 BIT
+
+@enduml
+
+PlantUML version 1.2021.12(Wed Oct 06 02:01:58 AEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: AU
+--></g></svg>

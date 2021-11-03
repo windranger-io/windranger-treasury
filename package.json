@@ -16,10 +16,12 @@
   "scripts": {
     "build": "hardhat compile",
     "clean": "hardhat clean",
-    "format": "npm run format-ts && npm run format-sol",
-    "format-ts": "prettier '**/*.ts' --write",
+    "format": "npm run format-mjs && npm run format-sol && npm run format-ts",
+    "format-mjs": "prettier '**/*.mjs' --write",
     "format-sol": "prettier '**/*.sol' --write",
+    "format-ts": "prettier '**/*.ts' --write",
     "lint": "eslint . --ext .ts",
+    "plant": "node ./scripts/plantuml.mjs ./docs/specs",
     "prepare": "husky install",
     "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register 'test/**/*.test.ts'"
   },
@@ -45,6 +47,7 @@
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
     "mocha": "^9.1.2",
+    "node-plantuml": "github:shahankhatch/node-plantuml",
     "prettier": "^2.4.1",
     "prettier-plugin-solidity": "^1.0.0-beta.18",
     "ts-node": "^10.2.1",
