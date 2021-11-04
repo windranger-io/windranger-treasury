@@ -108,8 +108,8 @@ else #Pink Proposal rejected
     deactivate snapshot
     activate bitdaoadmin
     bitdaoadmin -> bond             : release bond
-    activate bond
     deactivate bitdaoadmin
+    activate bond
     bond -> bond                    : unlock BIT tokens for guarantor redemption
 
     group#lightgray #white Repeat until full redemption
