@@ -85,11 +85,11 @@ snapshot-->community            : new proposal notification
 activate community
 community -> snapshot           : vote on proposal
 deactivate community
+deactivate snapshot
 
 group#white #LightBlue Proposal success
 
     note right of grantstreasury    : Grants balance 0 ETH
-
     snapshot -> bitdaoadmin         : proposal success
     activate bitdaoadmin
     bitdaoadmin -> bitdaotreasury   : perform transfer of 100 ETH to GrantsTreasury
@@ -105,7 +105,6 @@ else #Pink Proposal rejected
     note left of bond               : Bond balance 150K BIT
 
     snapshot -> bitdaoadmin         : proposal failed
-    deactivate snapshot
     activate bitdaoadmin
     bitdaoadmin -> bond             : release bond
     deactivate bitdaoadmin
@@ -140,7 +139,6 @@ community -> snapshot           : vote on proposal
 deactivate community
 snapshot -> bitdaoadmin         : proposal outcome
 deactivate snapshot
-activate bitdaoadmin
 
 note right of bond              : Bond balance 150K BIT (locked)
 
@@ -170,7 +168,6 @@ else #Pink Full bond slash
 
 else #lightseagreen Partial bond slashed, remaining redeemable
     bitdaoadmin->bond           : slash partial bond
-    deactivate bitdaoadmin
     activate bond
     bond->bitdaotreasury        : transfer tokens
     activate bitdaotreasury
