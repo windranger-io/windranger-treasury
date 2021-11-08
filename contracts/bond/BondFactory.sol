@@ -72,12 +72,15 @@ contract BondFactory is Context, Ownable {
      * @dev Permits the owner to update the collateral token address.
      * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
-    function setCollateralTokens(address collateralTokens_) external onlyOwner {
+    function setCollateralTokens(address erc20CollateralTokens_)
+        external
+        onlyOwner
+    {
         require(
-            collateralTokens_ != address(0),
+            erc20CollateralTokens_ != address(0),
             "BondFactory::setCollateralTokens: collateral tokens is zero address"
         );
-        _collateralTokens = collateralTokens_;
+        _collateralTokens = erc20CollateralTokens_;
     }
 
     /**
