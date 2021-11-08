@@ -67,23 +67,27 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /// Collateral currently owed to guarantors.
     uint256 private _guarantorCollateral;
 
-    IERC20Metadata private immutable _collateralToken;
+    IERC20Metadata private immutable _collateralTokens;
     address private _treasury;
     bool private _isRedemptionAllowed;
 
     constructor(
         string memory name_,
         string memory symbol_,
-        address collateralToken_,
-        address treasury_
+        address erc20CollateralTokens_,
+        address erc20CapableTreasury_
     ) ERC20(name_, symbol_) {
         require(
-            treasury_ != address(0),
-            "Bond::constructor: treasury cannot be zero address"
+            erc20CapableTreasury_ != address(0),
+            "Bond::constructor: treasury is zero address"
         );
-        _collateralToken = IERC20Metadata(collateralToken_);
+        require(
+            erc20CollateralTokens_ != address(0),
+            "Bond::constructor: collateral tokens is zero address"
+        );
+        _collateralTokens = IERC20Metadata(erc20CollateralTokens_);
         _isRedemptionAllowed = false;
-        _treasury = treasury_;
+        _treasury = erc20CapableTreasury_;
     }
 
     /**
@@ -117,21 +121,21 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         _guarantorCollateral += amount;
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralToken.transferFrom(
+        bool transferred = _collateralTokens.transferFrom(
             _msgSender(),
             address(this),
             amount
         );
         require(transferred, "Bond::deposit: collateral transfer failed");
-        emit Deposit(_msgSender(), _collateralToken.symbol(), amount);
+        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
 
         _transfer(address(this), _msgSender(), amount);
         emit DebtIssue(_msgSender(), symbol(), amount);
 
         if (_hasFullCollateral()) {
             emit FullCollateral(
-                _collateralToken.symbol(),
-                _collateralToken.balanceOf(address(this))
+                _collateralTokens.symbol(),
+                _collateralTokens.balanceOf(address(this))
             );
         }
     }
@@ -175,7 +179,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         _guarantorCollateral -= redemptionAmount;
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralToken.transfer(
+        bool transferred = _collateralTokens.transfer(
             _msgSender(),
             redemptionAmount
         );
@@ -185,7 +189,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
             _msgSender(),
             symbol(),
             amount,
-            _collateralToken.symbol(),
+            _collateralTokens.symbol(),
             redemptionAmount
         );
     }
@@ -219,10 +223,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         _redemptionRatio = _calculateRedemptionRation();
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralToken.transfer(_treasury, amount);
+        bool transferred = _collateralTokens.transfer(_treasury, amount);
         require(transferred, "Bond::slash: collateral transfer failed");
 
-        emit Slash(_collateralToken.symbol(), amount);
+        emit Slash(_collateralTokens.symbol(), amount);
     }
 
     /**
@@ -258,14 +262,14 @@ contract Bond is Context, ERC20, Ownable, Pausable {
             "Bond::withdrawCollateral: debt tokens remain"
         );
 
-        uint256 collateral = _collateralToken.balanceOf(address(this));
+        uint256 collateral = _collateralTokens.balanceOf(address(this));
         require(
             collateral > 0,
             "Bond::withdrawCollateral: no collateral remain"
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralToken.transfer(_treasury, collateral);
+        bool transferred = _collateralTokens.transfer(_treasury, collateral);
         require(
             transferred,
             "Bond::withdrawCollateral: collateral transfer failed"
@@ -273,7 +277,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
 
         emit WithdrawCollateral(
             _treasury,
-            _collateralToken.symbol(),
+            _collateralTokens.symbol(),
             collateral
         );
     }
