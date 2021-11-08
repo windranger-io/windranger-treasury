@@ -77,6 +77,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         address collateralToken_,
         address treasury_
     ) ERC20(name_, symbol_) {
+        require(
+            treasury_ != address(0),
+            "Bond::constructor: treasury cannot be zero address"
+        );
         _collateralToken = IERC20Metadata(collateralToken_);
         _isRedemptionAllowed = false;
         _treasury = treasury_;
@@ -225,6 +229,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
      */
     function setTreasury(address treasury_) external whenNotPaused onlyOwner {
+        require(
+            treasury_ != address(0),
+            "Bond::setTreasury: treasury cannot be zero address"
+        );
         _treasury = treasury_;
     }
 
