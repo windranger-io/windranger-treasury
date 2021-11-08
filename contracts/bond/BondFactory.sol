@@ -19,20 +19,20 @@ contract BondFactory is Context, Ownable {
         address treasury
     );
 
-    address private _collateralToken;
+    address private _collateralTokens;
     address private _treasury;
 
-    constructor(address collateralToken_, address treasury_) {
+    constructor(address erc20CollateralTokens_, address erc20CapableTreasury_) {
         require(
-            collateralToken_ != address(0),
-            "BondFactory::constructor: treasury cannot be zero address"
+            erc20CollateralTokens_ != address(0),
+            "BondFactory::constructor: collateral tokens is zero address"
         );
         require(
-            treasury_ != address(0),
-            "BondFactory::constructor: collateral token cannot be zero address"
+            erc20CapableTreasury_ != address(0),
+            "BondFactory::constructor: treasury is zero address"
         );
-        _collateralToken = collateralToken_;
-        _treasury = treasury_;
+        _collateralTokens = erc20CollateralTokens_;
+        _treasury = erc20CapableTreasury_;
     }
 
     function createBond(
@@ -40,7 +40,7 @@ contract BondFactory is Context, Ownable {
         string calldata name,
         string calldata symbol
     ) external returns (address) {
-        Bond bond = new Bond(name, symbol, _collateralToken, _treasury);
+        Bond bond = new Bond(name, symbol, _collateralTokens, _treasury);
         bond.mint(debtTokens);
         bond.transferOwnership(owner());
         emit BondCreated(
@@ -57,8 +57,8 @@ contract BondFactory is Context, Ownable {
     /**
      * @dev Retrieves the address for the collateral token.
      */
-    function collateralToken() external view returns (address) {
-        return _collateralToken;
+    function collateralTokens() external view returns (address) {
+        return _collateralTokens;
     }
 
     /**
@@ -72,12 +72,12 @@ contract BondFactory is Context, Ownable {
      * @dev Permits the owner to update the collateral token address.
      * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
-    function setCollateralToken(address collateralToken_) external onlyOwner {
+    function setCollateralTokens(address collateralTokens_) external onlyOwner {
         require(
-            collateralToken_ != address(0),
-            "BondFactory::setCollateralToken: treasury cannot be zero address"
+            collateralTokens_ != address(0),
+            "BondFactory::setCollateralTokens: collateral tokens is zero address"
         );
-        _collateralToken = collateralToken_;
+        _collateralTokens = collateralTokens_;
     }
 
     /**
@@ -87,7 +87,7 @@ contract BondFactory is Context, Ownable {
     function setTreasury(address treasury_) external onlyOwner {
         require(
             treasury_ != address(0),
-            "BondFactory::setTreasury: collateral token cannot be zero address"
+            "BondFactory::setTreasury: treasury is zero address"
         );
         _treasury = treasury_;
     }
