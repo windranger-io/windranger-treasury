@@ -54,7 +54,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /// Multiplier / divider for four decimal places, used in redemption ratio calculation.
-    uint256 private constant DECIMAL_OFFSET = 10000;
+    uint256 private constant REDEMPTION_RATIO_ACCURACY = 10000;
+
+    /// Only used in conjunction with slashing. Accuracy defined by REDEMPTION_RATIO_ACCURACY
+    uint256 private _redemptionRatio;
 
     /*
      * An isolated count for the collateral that currently owed to Guarantors.
@@ -209,6 +212,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         );
 
         _guarantorCollateral -= amount;
+        _redemptionRatio = _calculateRedemptionRation();
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralToken.transfer(_treasury, amount);
@@ -267,6 +271,15 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
+     * @dev Determines the current redemption ratio for any redemption that would occur based on the current
+     * guarantor collateral and total supply.
+     */
+    function _calculateRedemptionRation() private view returns (uint256) {
+        return
+            (REDEMPTION_RATIO_ACCURACY * _guarantorCollateral) / totalSupply();
+    }
+
+    /**
      * @dev The balance of debt token held by the contract; amount of debt token that are awaiting swapping for collateral.
      */
     function _debtTokensRemaining() private view returns (uint256) {
@@ -291,9 +304,18 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         if (_guarantorCollateral == totalSupply) {
             return amount;
         } else {
-            uint256 redemptionRatio = (DECIMAL_OFFSET * _guarantorCollateral) /
-                totalSupply;
-            return (redemptionRatio * amount) / DECIMAL_OFFSET;
+            return _applyRedemptionRation(amount);
         }
+    }
+
+    /**
+     * @dev Applies the redemption ratio calculation to the given amount.
+     */
+    function _applyRedemptionRation(uint256 amount)
+        private
+        view
+        returns (uint256)
+    {
+        return (_redemptionRatio * amount) / REDEMPTION_RATIO_ACCURACY;
     }
 }
