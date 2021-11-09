@@ -8,7 +8,7 @@ import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BondFactory} from '../typechain'
-import {deployBondFactory, execute, signer} from './utils/contracts'
+import {deployContract, execute, signer} from './utils/contracts'
 import {bondCreatedEvent, event, events} from './utils/events'
 
 // Wires up Waffle with Chai
@@ -19,7 +19,11 @@ describe('BondFactory contract', () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
         collateral = (await signer(2)).address
-        bonds = await deployBondFactory(collateral, treasury)
+        bonds = await deployContract<BondFactory>(
+            'BondFactory',
+            collateral,
+            treasury
+        )
     })
 
     it('create bond', async () => {

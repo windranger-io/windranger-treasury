@@ -7,14 +7,8 @@ import chai, {expect} from 'chai'
 import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {Bond, BondFactory, ERC20} from '../typechain'
-import {
-    bondContractAt,
-    deployBitDao,
-    deployBondFactory,
-    execute,
-    signer
-} from './utils/contracts'
+import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
+import {deployContract, execute, signer} from './utils/contracts'
 import {BigNumberish, ContractReceipt} from 'ethers'
 import {
     event,
@@ -49,9 +43,13 @@ describe('Bond contract', () => {
     })
 
     beforeEach(async () => {
-        collateral = await deployBitDao(admin)
+        collateral = await deployContract<BitDAO>('BitDAO', admin.address)
         collateralSymbol = await collateral.symbol()
-        factory = await deployBondFactory(collateral.address, treasury)
+        factory = await deployContract<BondFactory>(
+            'BondFactory',
+            collateral.address,
+            treasury
+        )
     })
 
     describe('allow redemption', () => {
@@ -814,6 +812,11 @@ describe('Bond contract', () => {
     let guarantorThree: SignerWithAddress
     let factory: BondFactory
 })
+
+export async function bondContractAt(address: string): Promise<Bond> {
+    const factory = await ethers.getContractFactory('Bond')
+    return <Bond>factory.attach(address)
+}
 
 async function createBond(
     factory: BondFactory,
