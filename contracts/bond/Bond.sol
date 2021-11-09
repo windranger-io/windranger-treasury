@@ -178,13 +178,6 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
         _guarantorCollateral -= redemptionAmount;
 
-        // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralTokens.transfer(
-            _msgSender(),
-            redemptionAmount
-        );
-        require(transferred, "Bond::redeem: collateral transfer failed");
-
         emit Redemption(
             _msgSender(),
             symbol(),
@@ -192,6 +185,13 @@ contract Bond is Context, ERC20, Ownable, Pausable {
             _collateralTokens.symbol(),
             redemptionAmount
         );
+
+        // Unknown ERC20 token behaviour, cater for bool usage
+        bool transferred = _collateralTokens.transfer(
+            _msgSender(),
+            redemptionAmount
+        );
+        require(transferred, "Bond::redeem: collateral transfer failed");
     }
 
     /**
@@ -222,11 +222,11 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         _guarantorCollateral -= amount;
         _redemptionRatio = _calculateRedemptionRation();
 
+        emit Slash(_collateralTokens.symbol(), amount);
+
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(_treasury, amount);
         require(transferred, "Bond::slash: collateral transfer failed");
-
-        emit Slash(_collateralTokens.symbol(), amount);
     }
 
     /**
@@ -268,17 +268,17 @@ contract Bond is Context, ERC20, Ownable, Pausable {
             "Bond::withdrawCollateral: no collateral remain"
         );
 
+        emit WithdrawCollateral(
+            _treasury,
+            _collateralTokens.symbol(),
+            collateral
+        );
+
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(_treasury, collateral);
         require(
             transferred,
             "Bond::withdrawCollateral: collateral transfer failed"
-        );
-
-        emit WithdrawCollateral(
-            _treasury,
-            _collateralTokens.symbol(),
-            collateral
         );
     }
 
