@@ -8,12 +8,7 @@ import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
-import {
-    bondContractAt,
-    deployContract,
-    execute,
-    signer
-} from './utils/contracts'
+import {deployContract, execute, signer} from './utils/contracts'
 import {BigNumberish, ContractReceipt} from 'ethers'
 import {
     event,
@@ -817,6 +812,11 @@ describe('Bond contract', () => {
     let guarantorThree: SignerWithAddress
     let factory: BondFactory
 })
+
+export async function bondContractAt(address: string): Promise<Bond> {
+    const factory = await ethers.getContractFactory('Bond')
+    return <Bond>factory.attach(address)
+}
 
 async function createBond(
     factory: BondFactory,

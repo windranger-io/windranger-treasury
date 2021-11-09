@@ -1,14 +1,7 @@
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ethers} from 'hardhat'
 import {expect} from 'chai'
-import {Bond} from '../../typechain'
 import {ContractReceipt, ContractTransaction} from 'ethers'
-
-//TODO move & genericise the factory interaction
-export async function bondContractAt(address: string): Promise<Bond> {
-    const factory = await ethers.getContractFactory('Bond')
-    return <Bond>factory.attach(address)
-}
 
 interface DeployableContract<T> {
     deployed(): Promise<T>
