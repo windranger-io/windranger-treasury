@@ -41,15 +41,10 @@ contract BondFactory is Context, Ownable {
         string calldata symbol
     ) external returns (address) {
         Bond bond = new Bond(name, symbol, _collateralTokens, _treasury);
+        emit BondCreated(address(bond), name, symbol, owner(), _treasury);
+
         bond.mint(debtTokens);
         bond.transferOwnership(owner());
-        emit BondCreated(
-            address(bond),
-            name,
-            symbol,
-            bond.owner(),
-            bond.treasury()
-        );
 
         return address(bond);
     }
