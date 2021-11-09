@@ -7,11 +7,10 @@ import chai, {expect} from 'chai'
 import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {Bond, BondFactory, ERC20} from '../typechain'
+import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
 import {
     bondContractAt,
-    deployBitDao,
-    deployBondFactory,
+    deployContract,
     execute,
     signer
 } from './utils/contracts'
@@ -49,9 +48,13 @@ describe('Bond contract', () => {
     })
 
     beforeEach(async () => {
-        collateral = await deployBitDao(admin)
+        collateral = await deployContract<BitDAO>('BitDAO', admin.address)
         collateralSymbol = await collateral.symbol()
-        factory = await deployBondFactory(collateral.address, treasury)
+        factory = await deployContract<BondFactory>(
+            'BondFactory',
+            collateral.address,
+            treasury
+        )
     })
 
     describe('allow redemption', () => {

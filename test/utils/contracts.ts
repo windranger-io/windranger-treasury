@@ -1,35 +1,33 @@
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ethers} from 'hardhat'
 import {expect} from 'chai'
-import {BitDAO, Bond, BondFactory} from '../../typechain'
+import {Bond} from '../../typechain'
 import {ContractReceipt, ContractTransaction} from 'ethers'
 
+//TODO move & genericise the factory interaction
 export async function bondContractAt(address: string): Promise<Bond> {
     const factory = await ethers.getContractFactory('Bond')
     return <Bond>factory.attach(address)
+}
+
+interface DeployableContract<T> {
+    deployed(): Promise<T>
+}
+
+export async function deployContract<T extends DeployableContract<T>>(
+    name: string,
+    ...args: Array<unknown>
+): Promise<T> {
+    const factory = await ethers.getContractFactory(name)
+    const dao = <T>(<unknown>await factory.deploy(...args))
+
+    return dao.deployed()
 }
 
 export async function execute(
     transaction: Promise<ContractTransaction>
 ): Promise<ContractReceipt> {
     return (await transaction).wait()
-}
-
-export async function deployBondFactory(
-    securityAsset: string,
-    treasury: string
-): Promise<BondFactory> {
-    const factory = await ethers.getContractFactory('BondFactory')
-    const dao = <BondFactory>await factory.deploy(securityAsset, treasury)
-    return dao.deployed()
-}
-
-export async function deployBitDao(
-    creatorAccount: SignerWithAddress
-): Promise<BitDAO> {
-    const factory = await ethers.getContractFactory('BitDAO')
-    const dao = <BitDAO>await factory.deploy(creatorAccount.address)
-    return dao.deployed()
 }
 
 export async function signer(index: number): Promise<SignerWithAddress> {
