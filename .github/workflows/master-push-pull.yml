@@ -27,3 +27,15 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  Slither-Analyzer:
+    runs-on: ubuntu-latest
+    name: Solidity Security
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Slither Static Analysis
+        uses: luisfontes19/slither-static-analysis-action@v0.3.4
+        with:
+          slither-params: '--filter-paths "BitDAO.sol|contracts/treasury|node_modules"'
