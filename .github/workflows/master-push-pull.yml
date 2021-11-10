@@ -14,14 +14,21 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - uses: actions/cache@v2
+        name: Setup cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Set up node
         uses: actions/setup-node@v2.4.1
         with:
           node-version: '16'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build application
         run: npm run build
@@ -37,14 +44,21 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - uses: actions/cache@v2
+        name: Setup cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Set up node
         uses: actions/setup-node@v2.4.1
         with:
           node-version: '16'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build application
         run: npm run build
@@ -60,9 +74,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - uses: actions/cache@v2
+        name: Setup cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Slither Static Analysis
         uses: luisfontes19/slither-static-analysis-action@v0.3.4
         with:
           slither-params: '--filter-paths "BitDAO.sol|contracts/treasury|node_modules"'
-          node-version: '16'
-          cache: 'npm'
