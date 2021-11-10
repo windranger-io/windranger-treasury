@@ -9,6 +9,27 @@ on:
 jobs:
   Run-Tests:
     runs-on: ubuntu-latest
+    name: Tests
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up node
+        uses: actions/setup-node@v2.4.1
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+
+  Run-Lint:
+    runs-on: ubuntu-latest
+    name: TypeScript static analysis
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -25,12 +46,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Run tests
-        run: npm test
 
   Slither-Analyzer:
     runs-on: ubuntu-latest
-    name: Solidity Security
+    name: Solidity static analysis
     steps:
       - name: Checkout
         uses: actions/checkout@v2
