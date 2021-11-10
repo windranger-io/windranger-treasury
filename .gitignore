@@ -80,8 +80,5 @@ doc/
 # Jetbrains IDE
 .idea
 
-# Node lock file
-package-lock.json
-
 # MacOS system files
 .DS_Store

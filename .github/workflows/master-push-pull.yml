@@ -16,6 +16,9 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v2.4.1
+        with:
+          node-version: '16'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
@@ -36,6 +39,9 @@ jobs:
 
       - name: Set up node
         uses: actions/setup-node@v2.4.1
+        with:
+          node-version: '16'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
@@ -58,3 +64,5 @@ jobs:
         uses: luisfontes19/slither-static-analysis-action@v0.3.4
         with:
           slither-params: '--filter-paths "BitDAO.sol|contracts/treasury|node_modules"'
+          node-version: '16'
+          cache: 'npm'
