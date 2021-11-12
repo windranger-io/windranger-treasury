@@ -376,19 +376,6 @@ describe('Bond contract', () => {
     })
 
     describe('withdraw collateral', () => {
-        it('cannot have outstanding Debt Tokens', async () => {
-            bond = await createBond(factory, ONE)
-            await setupGuarantorsWithCollateral([
-                {signer: guarantorOne, pledge: ONE}
-            ])
-            await depositBond(guarantorOne, ONE)
-            await allowRedemption()
-
-            await expect(bond.withdrawCollateral()).to.be.revertedWith(
-                'Bond::withdrawCollateral: debt tokens remain'
-            )
-        })
-
         it('needs collateral remaining', async () => {
             bond = await createBond(factory, ONE)
             await setupGuarantorsWithCollateral([
