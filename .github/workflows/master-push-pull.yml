@@ -73,7 +73,7 @@ jobs:
   Solidity-Static-Analysis:
     runs-on: ubuntu-latest
     name: Solidity static analysis
-    needs: TypeScript-Static-Analyisi
+    needs: TypeScript-Static-Analyis
     steps:
       - name: Checkout
         uses: actions/checkout@v2
