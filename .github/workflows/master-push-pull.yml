@@ -6,8 +6,10 @@ on:
     branches:
       - main
 
+
+
 jobs:
-  Run-Tests:
+  Unit-Tests:
     runs-on: ubuntu-latest
     name: Tests
     steps:
@@ -37,9 +39,10 @@ jobs:
         run: npm test
 
 
-  Run-Lint:
+  TypeScript-Static-Analyis:
     runs-on: ubuntu-latest
     name: TypeScript static analysis
+    needs: Unit-Tests
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -67,9 +70,10 @@ jobs:
         run: npm run lint
 
 
-  Slither-Analyzer:
+  Solidity-Static-Analysis:
     runs-on: ubuntu-latest
     name: Solidity static analysis
+    needs: TypeScript-Static-Analyisi
     steps:
       - name: Checkout
         uses: actions/checkout@v2
