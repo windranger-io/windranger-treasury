@@ -19,6 +19,12 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         string collateralSymbol,
         uint256 collateralAmount
     );
+    event PartialCollateral(
+        string collateralSymbol,
+        uint256 collateralAmount,
+        string debtSymbol,
+        uint256 debtRemaining
+    );
     event FullCollateral(string collateralSymbol, uint256 collateralAmount);
     event Redemption(
         address redeemer,
@@ -66,6 +72,9 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     /// Collateral currently owed to guarantors.
     uint256 private _guarantorCollateral;
 
+    /// The outstanding balance of debt tokens when redemptions were allowed, amount now expected after full redemptions.
+    uint256 private _excessDebtTokens;
+
     IERC20MetadataUpgradeable private _collateralTokens;
     address private _treasury;
     bool private _isRedemptionAllowed;
@@ -112,6 +121,17 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     {
         _isRedemptionAllowed = true;
         emit AllowRedemption(_msgSender());
+
+        if (_hasDebtTokensRemaining()) {
+            _excessDebtTokens = _debtTokensRemaining();
+
+            emit PartialCollateral(
+                _collateralTokens.symbol(),
+                _collateralTokens.balanceOf(address(this)),
+                symbol(),
+                _debtTokensRemaining()
+            );
+        }
     }
 
     /**
@@ -154,6 +174,16 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     }
 
     /**
+     * @dev Balance outstanding when redemption was allowed. The amount of collateral not received (deposit 1:1 ratio).
+     *
+     * @return zero if redemption is not yet allowed or full collateral was met, otherwise the number of debt tokens
+     *          remaining without matched deposit when redemption was allowed,
+     */
+    function excessDebtTokens() external view returns (uint256) {
+        return _excessDebtTokens;
+    }
+
+    /**
      * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
      */
     function _mint(uint256 amount) private whenNotPaused whenNotRedeemable {
@@ -179,7 +209,7 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
             "Bond:redeem: too few debt tokens"
         );
 
-        uint256 totalSupply = totalSupply();
+        uint256 totalSupply = totalSupply() - _excessDebtTokens;
         uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
         _guarantorCollateral -= redemptionAmount;
 
@@ -300,6 +330,13 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
      */
     function _debtTokensRemaining() private view returns (uint256) {
         return balanceOf(address(this));
+    }
+
+    /**
+     * @dev Whether or not the Bond contract has debt tokens remaining. Has not reached collateral the target.
+     */
+    function _hasDebtTokensRemaining() private view returns (bool) {
+        return _debtTokensRemaining() > 0;
     }
 
     /**

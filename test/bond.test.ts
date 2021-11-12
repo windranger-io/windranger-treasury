@@ -20,7 +20,8 @@ import {
     verifyTransferEvent,
     verifyAllowRedemptionEvent,
     verifyWithdrawCollateralEvent,
-    verifyFullCollateralEvent
+    verifyFullCollateralEvent,
+    verifyPartialCollateralEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -447,7 +448,7 @@ describe('Bond contract', () => {
         })
     })
 
-    it('one guarantor deposit, then is fully slashed', async () => {
+    it('one guarantor deposit full collateral, then are fully slashed', async () => {
         const pledge = 40050n
         const debtTokens = pledge
         const collateralAmount = debtTokens
@@ -523,7 +524,7 @@ describe('Bond contract', () => {
         ])
     })
 
-    it('two guarantors deposit, then fully redeem', async () => {
+    it('two guarantors deposit full collateral, then fully redeem', async () => {
         const pledgeOne = 240050n
         const pledgeTwo = 99500n
         const debtTokens = pledgeOne + pledgeTwo
@@ -600,7 +601,89 @@ describe('Bond contract', () => {
         ])
     })
 
-    it('one guarantor deposit, are partially slashed, then redeems, leaving a se collateral due to rounding', async () => {
+    it('two guarantors deposit partial collateral, then fully redeem', async () => {
+        const pledgeOne = 30050n
+        const pledgeTwo = 59500n
+        const unmatchedPledge = 500n
+        const debtTokens = pledgeOne + pledgeTwo + unmatchedPledge
+        bond = await createBond(factory, debtTokens)
+        const debtSymbol = await bond.symbol()
+        await setupGuarantorsWithCollateral([
+            {signer: guarantorOne, pledge: pledgeOne},
+            {signer: guarantorTwo, pledge: pledgeTwo}
+        ])
+
+        // Each Guarantor has their full collateral amount (their pledge)
+        await verifyBalances([
+            {address: bond.address, bond: debtTokens, collateral: ZERO},
+            {address: guarantorOne, bond: ZERO, collateral: pledgeOne},
+            {address: guarantorTwo, bond: ZERO, collateral: pledgeTwo},
+            {address: treasury, bond: ZERO, collateral: ZERO}
+        ])
+
+        // Guarantor One deposits their full pledge amount
+        const depositOne = await depositBond(guarantorOne, pledgeOne)
+        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+            symbol: debtSymbol,
+            amount: pledgeOne
+        })
+
+        // Guarantor Two deposits their full pledge amount
+        const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
+        await verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
+            symbol: debtSymbol,
+            amount: pledgeTwo
+        })
+
+        // Bond holds all collateral, with an unmatched pledge of debt tokens
+        await verifyBalances([
+            {
+                address: bond.address,
+                bond: unmatchedPledge,
+                collateral: pledgeOne + pledgeTwo
+            },
+            {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
+            {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
+            {address: treasury, bond: ZERO, collateral: ZERO}
+        ])
+
+        // Bond redemption allowed by Owner
+        const allowRedemptionReceipt = await allowRedemption()
+        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        await verifyPartialCollateralEvent(
+            allowRedemptionReceipt,
+            {symbol: collateralSymbol, amount: pledgeOne + pledgeTwo},
+            {symbol: debtSymbol, amount: unmatchedPledge}
+        )
+
+        // Guarantor One redeem their bond, full conversion
+        const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
+        await verifyRedemptionEvent(
+            redeemOneReceipt,
+            guarantorOne.address,
+            {symbol: debtSymbol, amount: pledgeOne},
+            {symbol: collateralSymbol, amount: pledgeOne}
+        )
+
+        // Guarantor Two redeem their bond, full conversion
+        const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
+        await verifyRedemptionEvent(
+            redeemTwoReceipt,
+            guarantorTwo.address,
+            {symbol: debtSymbol, amount: pledgeTwo},
+            {symbol: collateralSymbol, amount: pledgeTwo}
+        )
+
+        // Guarantors redeemed their full pledge, unmatched debt tokens remain
+        await verifyBalances([
+            {address: bond.address, bond: unmatchedPledge, collateral: ZERO},
+            {address: guarantorOne, bond: ZERO, collateral: pledgeOne},
+            {address: guarantorTwo, bond: ZERO, collateral: pledgeTwo},
+            {address: treasury, bond: ZERO, collateral: ZERO}
+        ])
+    })
+
+    it('one guarantor deposit full collateral, are partially slashed, then fully redeems, with collateral left over due to rounding', async () => {
         const pledge = 12345n
         const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
         const debtTokens = pledge
@@ -651,7 +734,7 @@ describe('Bond contract', () => {
         ])
     })
 
-    it('three guarantors deposit, are partially slashed, then redeems', async () => {
+    it('three guarantors deposit full collateral, are partially slashed, then fully redeems', async () => {
         const pledgeOne = 40050n
         const pledgeOneSlashed = slash(pledgeOne, FORTY_PERCENT)
         const pledgeTwo = 229500n
