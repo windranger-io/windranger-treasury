@@ -36,7 +36,7 @@ jobs:
       - name: Upload artifcates
         uses: actions/upload-artifact@v2
         with:
-          name: build-${{ $GITHUB_SHA }}-${{ ${GITHUB_REF#refs/heads/} }
+          name: build-${{ github.head_ref }}-${{ github.sha }}
           path: |
             ./artifacts
             ./cache
@@ -53,7 +53,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
-          name: build-${{ $GITHUB_SHA }}-${{ ${GITHUB_REF#refs/heads/} }
+          name: build-${{ github.head_ref }}-${{ github.sha }}
 
       - name: Set up node
         uses: actions/setup-node@v2.4.1
