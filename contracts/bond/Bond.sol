@@ -248,8 +248,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     }
 
     /**
-     * @dev Slashing can result in collateral remaining after full redemption due to flooring (rounding down).
-     * After full redemption, the left over collateral can be transferred to the treasury using withdrawCollateral.
+     * Allows the owner to move all the collateral held by the Bond into the Treasury.
+     *
+     * @dev Slashing can result in collateral remaining after full redemption due to flooring.
+     *      Provides an emergency extracting moving of funds out of the Bond.
      */
     function withdrawCollateral()
         external
@@ -257,11 +259,6 @@ contract Bond is Context, ERC20, Ownable, Pausable {
         whenRedeemable
         onlyOwner
     {
-        require(
-            totalSupply() == 0,
-            "Bond::withdrawCollateral: debt tokens remain"
-        );
-
         uint256 collateral = _collateralTokens.balanceOf(address(this));
         require(
             collateral > 0,
