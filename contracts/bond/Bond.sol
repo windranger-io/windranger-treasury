@@ -120,6 +120,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
 
         _guarantorCollateral += amount;
 
+        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
+
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transferFrom(
             _msgSender(),
@@ -127,10 +129,10 @@ contract Bond is Context, ERC20, Ownable, Pausable {
             amount
         );
         require(transferred, "Bond::deposit: collateral transfer failed");
-        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
+
+        emit DebtIssue(_msgSender(), symbol(), amount);
 
         _transfer(address(this), _msgSender(), amount);
-        emit DebtIssue(_msgSender(), symbol(), amount);
 
         if (_hasFullCollateral()) {
             emit FullCollateral(
@@ -166,15 +168,12 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
         require(amount > 0, "Bond::redeem: too small");
-
-        uint256 totalSupply = totalSupply();
-
         require(
             balanceOf(_msgSender()) >= amount,
             "Bond:redeem: too few debt tokens"
         );
-        _burn(_msgSender(), amount);
 
+        uint256 totalSupply = totalSupply();
         uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
         _guarantorCollateral -= redemptionAmount;
 
@@ -185,6 +184,8 @@ contract Bond is Context, ERC20, Ownable, Pausable {
             _collateralTokens.symbol(),
             redemptionAmount
         );
+
+        _burn(_msgSender(), amount);
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(
