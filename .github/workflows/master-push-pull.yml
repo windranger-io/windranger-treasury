@@ -38,7 +38,7 @@ jobs:
       - name: Upload artifcates
         uses: actions/upload-artifact@v2
         with:
-          name: built-code-${{ hashFiles('package-lock.json') }}
+          name: built-${{ hashFiles('package-lock.json') }}
           path: |
             ./artifacts
             ./cache
@@ -52,27 +52,15 @@ jobs:
     name: Test
     needs: Creat-Artefact
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-
-      - uses: actions/cache@v2
-        name: Setup cache
+      - name: Download artifact
+        uses: actions/download-artifact@v2
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          name: built-${{ hashFiles('package-lock.json') }}
 
       - name: Set up node
         uses: actions/setup-node@v2.4.1
         with:
           node-version: '16'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build application
-        run: npm run build
 
       - name: Run tests
         run: npm test
