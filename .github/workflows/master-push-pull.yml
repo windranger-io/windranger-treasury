@@ -40,7 +40,6 @@ jobs:
           path: |
             ./artifacts
             ./cache
-            ./test
             ./typechain
           retention-days: 1
           if-no-files-found: error
@@ -54,6 +53,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build-${{ github.head_ref }}-${{ github.sha }}
+
+      - name: Check out code
+        uses: actions/checkout@v2
 
       - name: Set up node
         uses: actions/setup-node@v2.4.1
