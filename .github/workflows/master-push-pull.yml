@@ -9,10 +9,9 @@ on:
 
 
 jobs:
-  Unit-Tests:
+  Build:
     runs-on: ubuntu-latest
-    name: Tests
-    steps:
+    name: Build
       - name: Check out code
         uses: actions/checkout@v2
 
@@ -35,14 +34,21 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Run tests
-        run: npm test
+      - name: Upload artifcates
+        uses: actions/upload-artifact@v2
+        with:
+          name: built-code-${{ hashFiles('package-lock.json') }}
+          path: |
+            ./artifacts
+            ./cache
+            ./test
+            ./typechain
+          retention-days: 1
+          if-no-files-found: error
 
-
-  TypeScript-Static-Analyis:
+  Tests:
     runs-on: ubuntu-latest
-    name: TypeScript static analysis
-    needs: Unit-Tests
+    name: Test
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -51,7 +57,38 @@ jobs:
         name: Setup cache
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Set up node
+        uses: actions/setup-node@v2.4.1
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+
+  TypeScript-Static-Analyis:
+    runs-on: ubuntu-latest
+    name: TypeScript static analysis
+    needs: Tests
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        name: Setup cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
@@ -82,7 +119,7 @@ jobs:
         name: Setup cache
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
