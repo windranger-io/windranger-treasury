@@ -106,7 +106,7 @@ export function event(name: string, events: Event[]): Event {
         if (events[i]?.event === name) return events[i]
     }
 
-    expect.fail('Failed to find event matching name: %s', name)
+    expect.fail('Failed to find event matching name: ' + name)
 }
 
 /**

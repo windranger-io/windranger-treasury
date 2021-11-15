@@ -132,6 +132,10 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
                 _debtTokensRemaining()
             );
         }
+
+        if (_hasBeenSlashed()) {
+            _redemptionRatio = _calculateRedemptionRation();
+        }
     }
 
     /**
@@ -253,11 +257,10 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         require(amount > 0, "Bond::slash: too small");
         require(
             amount <= _guarantorCollateral,
-            "Bond::slash: greater than available collateral supply"
+            "Bond::slash: greater than available collateral"
         );
 
         _guarantorCollateral -= amount;
-        _redemptionRatio = _calculateRedemptionRation();
 
         emit Slash(_collateralTokens.symbol(), amount);
 
@@ -322,7 +325,8 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
      */
     function _calculateRedemptionRation() private view returns (uint256) {
         return
-            (REDEMPTION_RATIO_ACCURACY * _guarantorCollateral) / totalSupply();
+            (REDEMPTION_RATIO_ACCURACY * _guarantorCollateral) /
+            (totalSupply() - _excessDebtTokens);
     }
 
     /**
@@ -330,6 +334,13 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
      */
     function _debtTokensRemaining() private view returns (uint256) {
         return balanceOf(address(this));
+    }
+
+    /**
+     * @dev Whether the Bond has been slashed, assuming a 1:1 deposit ratio of collateral to debt.
+     */
+    function _hasBeenSlashed() private view returns (bool) {
+        return _guarantorCollateral != (totalSupply() - _excessDebtTokens);
     }
 
     /**

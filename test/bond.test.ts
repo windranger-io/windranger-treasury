@@ -317,7 +317,7 @@ describe('Bond contract', () => {
             await depositBond(guarantorOne, pledge)
 
             await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
-                'Bond::slash: greater than available collateral supply'
+                'Bond::slash: greater than available collateral'
             )
         })
 
@@ -484,7 +484,7 @@ describe('Bond contract', () => {
             {address: treasury, bond: ZERO, collateral: ZERO}
         ])
 
-        // Slash forty percent of the collateral assets
+        // Slash all of the collateral assets
         const slashReceipt = await slashCollateral(slashedCollateral)
         await verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
@@ -520,6 +520,105 @@ describe('Bond contract', () => {
         await verifyBalances([
             {address: bond.address, bond: ZERO, collateral: ZERO},
             {address: guarantorOne, bond: ZERO, collateral: ZERO},
+            {address: treasury, bond: ZERO, collateral: slashedCollateral}
+        ])
+    })
+
+    it('one guarantor deposit partial collateral, partially slashed, then redeem', async () => {
+        const pledge = 40050n
+        const unmatchedDebtTokens = 750n
+        const debtTokens = pledge + unmatchedDebtTokens
+        const slashedCollateral = slash(pledge, FORTY_PERCENT)
+        bond = await createBond(factory, debtTokens)
+        const debtSymbol = await bond.symbol()
+        await setupGuarantorsWithCollateral([
+            {signer: guarantorOne, pledge: pledge}
+        ])
+
+        // Each Guarantor has their full collateral amount (their pledge)
+        await verifyBalances([
+            {address: bond.address, bond: debtTokens, collateral: ZERO},
+            {address: guarantorOne, bond: ZERO, collateral: pledge},
+            {address: treasury, bond: ZERO, collateral: ZERO}
+        ])
+
+        // Guarantor One deposits their full pledge amount
+        const depositOne = await depositBond(guarantorOne, pledge)
+        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+            symbol: debtSymbol,
+            amount: pledge
+        })
+
+        // Bond holds all collateral, with unmatched debt tokens
+        await verifyBalances([
+            {
+                address: bond.address,
+                bond: unmatchedDebtTokens,
+                collateral: pledge
+            },
+            {address: guarantorOne, bond: pledge, collateral: ZERO},
+            {address: treasury, bond: ZERO, collateral: ZERO}
+        ])
+
+        // Slash forty percent of the collateral assets
+        const slashReceipt = await slashCollateral(slashedCollateral)
+        await verifySlashEvent(slashReceipt, {
+            symbol: collateralSymbol,
+            amount: slashedCollateral
+        })
+        await verifyTransferEvent(slashReceipt, {
+            from: bond.address,
+            to: treasury,
+            amount: slashedCollateral
+        })
+
+        // Debt holdings should remain the same, collateral partially moved
+        await verifyBalances([
+            {
+                address: bond.address,
+                bond: unmatchedDebtTokens,
+                collateral: pledge - slashedCollateral
+            },
+            {address: guarantorOne, bond: pledge, collateral: ZERO},
+            {address: treasury, bond: ZERO, collateral: slashedCollateral}
+        ])
+
+        // Bond redemption allowed by Owner
+        const allowRedemptionReceipt = await allowRedemption()
+        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        await verifyPartialCollateralEvent(
+            allowRedemptionReceipt,
+            {
+                symbol: collateralSymbol,
+                amount: pledge - slashedCollateral
+            },
+            {
+                symbol: debtSymbol,
+                amount: unmatchedDebtTokens
+            }
+        )
+
+        // Guarantor One redeem their bond, partial conversion (slashed)
+        const redeemOneReceipt = await redeem(guarantorOne, pledge)
+        await verifyRedemptionEvent(
+            redeemOneReceipt,
+            guarantorOne.address,
+            {symbol: debtSymbol, amount: pledge},
+            {symbol: collateralSymbol, amount: pledge - slashedCollateral}
+        )
+
+        // Slashed collateral in Treasury, Guarantors redeemed, unmatched debt remain
+        await verifyBalances([
+            {
+                address: bond.address,
+                bond: unmatchedDebtTokens,
+                collateral: ZERO
+            },
+            {
+                address: guarantorOne,
+                bond: ZERO,
+                collateral: pledge - slashedCollateral
+            },
             {address: treasury, bond: ZERO, collateral: slashedCollateral}
         ])
     })
