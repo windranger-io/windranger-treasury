@@ -71,6 +71,11 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     address private _treasury;
     bool private _isRedemptionAllowed;
 
+    /**
+     * @param erc20CollateralTokens_ to avoid being able to break the Bond behaviours the reference to the collateral
+     *              tokens cannot be be changed after init,
+     *              To update the tokens address, either follow the proxy convention for tokens, or crete a new bond.
+     */
     constructor(
         string memory name_,
         string memory symbol_,
