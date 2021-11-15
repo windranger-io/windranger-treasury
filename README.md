@@ -13,7 +13,7 @@ Development follows these processes outlined in [development process](docs/devel
 To retrieve the project dependencies and before any further tasks will run correctly
 
 ```shell
-npm install
+npm ci
 ```
 
 #### Husky Git Commit Hooks
@@ -96,4 +96,22 @@ The output will vary depending on OS, however if it fails claiming Java is not f
 
 ```shell
 npm run plant
+```
+
+## Solidity Static Analysis
+
+We use the Trail of Bits Solidity static analyzer (Slither)[https://github.com/crytic/slither].
+
+### Local Setup
+
+After setting up Python3 in your environment, install Slither with:
+
+```shell
+pip3 install slither-analyzer
+```
+
+### Docker Setup
+
+```shell
+
 ```
