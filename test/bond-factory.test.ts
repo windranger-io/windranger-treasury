@@ -29,9 +29,10 @@ describe('BondFactory contract', () => {
     it('create bond', async () => {
         const bondName = 'Special Debt Certificate'
         const bondSymbol = 'SDC001'
+        const debtTokenAmount = 555666777n
 
         const receipt = await execute(
-            bonds.createBond(bondName, bondSymbol, 555666777n)
+            bonds.createBond(bondName, bondSymbol, debtTokenAmount)
         )
 
         const creationEvent = bondCreatedEvent(
@@ -44,6 +45,7 @@ describe('BondFactory contract', () => {
             .undefined
         expect(creationEvent.name).equals(bondName)
         expect(creationEvent.symbol).equals(bondSymbol)
+        expect(creationEvent.amount).equals(debtTokenAmount)
         expect(creationEvent.owner).equals(admin)
         expect(creationEvent.treasury).equals(treasury)
     })
