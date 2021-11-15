@@ -9,7 +9,7 @@ import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
 import {deployContract, execute, signer} from './utils/contracts'
-import {BigNumberish, ContractReceipt} from 'ethers'
+import {BigNumberish, constants, ContractReceipt} from 'ethers'
 import {
     event,
     bondCreatedEvent,
@@ -28,6 +28,7 @@ import {successfulTransaction} from './utils/transaction'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
+const ADDRESS_ZERO = constants.AddressZero
 const ZERO = 0n
 const ONE = 1n
 const FORTY_PERCENT = 40n
@@ -134,37 +135,65 @@ describe('Bond contract', () => {
         })
     })
 
-    describe('mint', () => {
-        it('cannot be zero', async () => {
-            bond = await createBond(factory, 23566337n)
-
-            await expect(bond.mint(ZERO)).to.be.revertedWith(
-                'Bond::mint: too small'
-            )
-        })
-
-        it('only when not paused', async () => {
-            bond = await createBond(factory, ONE)
-            await bond.pause()
-
-            await expect(bond.mint(ONE)).to.be.revertedWith('Pausable: paused')
-        })
-
-        it('only when not redeemable', async () => {
-            bond = await createBond(factory, ONE)
-            await allowRedemption()
-
-            await expect(bond.mint(ONE)).to.be.revertedWith(
-                'Bond::whenNotRedeemable: redeemable'
-            )
-        })
-
-        it('only owner', async () => {
+    describe('init', () => {
+        it('can only call once', async () => {
             bond = await createBond(factory, ONE)
 
             await expect(
-                bond.connect(guarantorOne).mint(ONE)
-            ).to.be.revertedWith('Ownable: caller is not the owner')
+                bond.initialize(
+                    'My Debt Tokens one',
+                    'MDT001',
+                    collateral.address,
+                    treasury,
+                    ONE
+                )
+            ).to.be.revertedWith(
+                'Initializable: contract is already initialized'
+            )
+        })
+
+        it('tokens cannot be zero', async () => {
+            bond = await deployContract('Bond')
+
+            const b = await expect(
+                bond.initialize(
+                    'My Debt Tokens two',
+                    'MDT002',
+                    collateral.address,
+                    treasury,
+                    ZERO
+                )
+            ).to.be.revertedWith('Bond::mint: too small')
+        })
+
+        it('treasury address cannot be zero', async () => {
+            bond = await deployContract('Bond')
+
+            const b = await expect(
+                bond.initialize(
+                    'My Debt Tokens two',
+                    'MDT002',
+                    collateral.address,
+                    ADDRESS_ZERO,
+                    ONE
+                )
+            ).to.be.revertedWith('Bond::init: treasury is zero address')
+        })
+
+        it('collateral tokens address cannot be zero', async () => {
+            bond = await deployContract('Bond')
+
+            const b = await expect(
+                bond.initialize(
+                    'My Debt Tokens two',
+                    'MDT002',
+                    ADDRESS_ZERO,
+                    treasury,
+                    ONE
+                )
+            ).to.be.revertedWith(
+                'Bond::init: collateral tokens is zero address'
+            )
         })
     })
 
@@ -810,7 +839,7 @@ async function createBond(
     debtTokens: BigNumberish
 ): Promise<Bond> {
     const receipt = await execute(
-        factory.createBond(debtTokens, 'Special Debt Certificate', 'SDC001')
+        factory.createBond('Special Debt Certificate', 'SDC001', debtTokens)
     )
     const creationEvent = bondCreatedEvent(
         event('BondCreated', events(receipt))

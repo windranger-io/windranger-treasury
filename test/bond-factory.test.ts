@@ -31,7 +31,7 @@ describe('BondFactory contract', () => {
         const bondSymbol = 'SDC001'
 
         const receipt = await execute(
-            bonds.createBond(555666777n, bondName, bondSymbol)
+            bonds.createBond(bondName, bondSymbol, 555666777n)
         )
 
         const creationEvent = bondCreatedEvent(

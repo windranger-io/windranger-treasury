@@ -11,6 +11,8 @@ import "./Bond.sol";
  * @dev Applies common configuration to bond contracts created.
  */
 contract BondFactory is Context, Ownable {
+    //TODO add debt tokens to event
+
     event BondCreated(
         address bond,
         string name,
@@ -36,14 +38,14 @@ contract BondFactory is Context, Ownable {
     }
 
     function createBond(
-        uint256 debtTokens,
         string calldata name,
-        string calldata symbol
+        string calldata symbol,
+        uint256 debtTokens
     ) external returns (address) {
-        Bond bond = new Bond(name, symbol, _collateralTokens, _treasury);
-        emit BondCreated(address(bond), name, symbol, owner(), _treasury);
+        Bond bond = new Bond();
 
-        bond.mint(debtTokens);
+        emit BondCreated(address(bond), name, symbol, owner(), _treasury);
+        bond.initialize(name, symbol, _collateralTokens, _treasury, debtTokens);
         bond.transferOwnership(owner());
 
         return address(bond);
