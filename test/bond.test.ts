@@ -143,9 +143,9 @@ describe('Bond contract', () => {
                 bond.initialize(
                     'My Debt Tokens one',
                     'MDT001',
+                    ONE,
                     collateral.address,
-                    treasury,
-                    ONE
+                    treasury
                 )
             ).to.be.revertedWith(
                 'Initializable: contract is already initialized'
@@ -159,9 +159,9 @@ describe('Bond contract', () => {
                 bond.initialize(
                     'My Debt Tokens two',
                     'MDT002',
+                    ZERO,
                     collateral.address,
-                    treasury,
-                    ZERO
+                    treasury
                 )
             ).to.be.revertedWith('Bond::mint: too small')
         })
@@ -173,9 +173,9 @@ describe('Bond contract', () => {
                 bond.initialize(
                     'My Debt Tokens two',
                     'MDT002',
+                    ONE,
                     collateral.address,
-                    ADDRESS_ZERO,
-                    ONE
+                    ADDRESS_ZERO
                 )
             ).to.be.revertedWith('Bond::init: treasury is zero address')
         })
@@ -187,9 +187,9 @@ describe('Bond contract', () => {
                 bond.initialize(
                     'My Debt Tokens two',
                     'MDT002',
+                    ONE,
                     ADDRESS_ZERO,
-                    treasury,
-                    ONE
+                    treasury
                 )
             ).to.be.revertedWith(
                 'Bond::init: collateral tokens is zero address'

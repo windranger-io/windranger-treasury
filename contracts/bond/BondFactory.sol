@@ -45,7 +45,7 @@ contract BondFactory is Context, Ownable {
         Bond bond = new Bond();
 
         emit BondCreated(address(bond), name, symbol, owner(), _treasury);
-        bond.initialize(name, symbol, _collateralTokens, _treasury, debtTokens);
+        bond.initialize(name, symbol, debtTokens, _collateralTokens, _treasury);
         bond.transferOwnership(owner());
 
         return address(bond);

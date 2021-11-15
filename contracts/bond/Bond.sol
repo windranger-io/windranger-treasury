@@ -78,9 +78,9 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     function initialize(
         string memory name_,
         string memory symbol_,
+        uint256 debtTokens_,
         address erc20CollateralTokens_,
-        address erc20CapableTreasury_,
-        uint256 debtTokens_
+        address erc20CapableTreasury_
     ) public initializer {
         __ERC20_init(name_, symbol_);
         __Ownable_init();
