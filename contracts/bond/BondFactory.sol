@@ -15,6 +15,7 @@ contract BondFactory is Context, Ownable {
         address bond,
         string name,
         string symbol,
+        uint256 amount,
         address owner,
         address treasury
     );
@@ -36,14 +37,21 @@ contract BondFactory is Context, Ownable {
     }
 
     function createBond(
-        uint256 debtTokens,
         string calldata name,
-        string calldata symbol
+        string calldata symbol,
+        uint256 debtTokens
     ) external returns (address) {
-        Bond bond = new Bond(name, symbol, _collateralTokens, _treasury);
-        emit BondCreated(address(bond), name, symbol, owner(), _treasury);
+        Bond bond = new Bond();
 
-        bond.mint(debtTokens);
+        emit BondCreated(
+            address(bond),
+            name,
+            symbol,
+            debtTokens,
+            owner(),
+            _treasury
+        );
+        bond.initialize(name, symbol, debtTokens, _collateralTokens, _treasury);
         bond.transferOwnership(owner());
 
         return address(bond);

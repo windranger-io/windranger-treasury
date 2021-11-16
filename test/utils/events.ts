@@ -57,6 +57,7 @@ export function bondCreatedEvent(event: Event): {
     bond: string
     name: string
     symbol: string
+    amount: BigNumber
     owner: string
     treasury: string
 } {
@@ -67,6 +68,7 @@ export function bondCreatedEvent(event: Event): {
     expect(args?.bond).is.not.undefined
     expect(args?.name).is.not.undefined
     expect(args?.symbol).is.not.undefined
+    expect(args?.amount).is.not.undefined
     expect(args?.owner).is.not.undefined
     expect(args?.treasury).is.not.undefined
 

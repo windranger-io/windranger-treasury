@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 /**
  * @title Bond contract that issues debt tokens in exchange for a collateral deposited.
  *
  * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
  */
-contract Bond is Context, ERC20, Ownable, Pausable {
+contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     event AllowRedemption(address authorizer);
     event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
     event Deposit(
@@ -67,7 +66,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /// Collateral currently owed to guarantors.
     uint256 private _guarantorCollateral;
 
-    IERC20Metadata private immutable _collateralTokens;
+    IERC20MetadataUpgradeable private _collateralTokens;
     address private _treasury;
     bool private _isRedemptionAllowed;
 
@@ -76,23 +75,30 @@ contract Bond is Context, ERC20, Ownable, Pausable {
      *              tokens cannot be be changed after init,
      *              To update the tokens address, either follow the proxy convention for tokens, or crete a new bond.
      */
-    constructor(
+    function initialize(
         string memory name_,
         string memory symbol_,
+        uint256 debtTokens_,
         address erc20CollateralTokens_,
         address erc20CapableTreasury_
-    ) ERC20(name_, symbol_) {
+    ) external initializer {
+        __ERC20_init(name_, symbol_);
+        __Ownable_init();
+        __Pausable_init();
+
         require(
             erc20CapableTreasury_ != address(0),
-            "Bond::constructor: treasury is zero address"
+            "Bond::init: treasury is zero address"
         );
         require(
             erc20CollateralTokens_ != address(0),
-            "Bond::constructor: collateral tokens is zero address"
+            "Bond::init: collateral tokens is zero address"
         );
-        _collateralTokens = IERC20Metadata(erc20CollateralTokens_);
+        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens_);
         _isRedemptionAllowed = false;
         _treasury = erc20CapableTreasury_;
+
+        _mint(debtTokens_);
     }
 
     /**
@@ -150,12 +156,7 @@ contract Bond is Context, ERC20, Ownable, Pausable {
     /**
      * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
      */
-    function mint(uint256 amount)
-        external
-        whenNotPaused
-        whenNotRedeemable
-        onlyOwner
-    {
+    function _mint(uint256 amount) private whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond::mint: too small");
         _mint(address(this), amount);
     }
