@@ -156,7 +156,7 @@ describe('Bond contract', () => {
         it('tokens cannot be zero', async () => {
             bond = await deployContract('Bond')
 
-            const b = await expect(
+            await expect(
                 bond.initialize(
                     'My Debt Tokens two',
                     'MDT002',
@@ -170,7 +170,7 @@ describe('Bond contract', () => {
         it('treasury address cannot be zero', async () => {
             bond = await deployContract('Bond')
 
-            const b = await expect(
+            await expect(
                 bond.initialize(
                     'My Debt Tokens two',
                     'MDT002',
@@ -184,7 +184,7 @@ describe('Bond contract', () => {
         it('collateral tokens address cannot be zero', async () => {
             bond = await deployContract('Bond')
 
-            const b = await expect(
+            await expect(
                 bond.initialize(
                     'My Debt Tokens two',
                     'MDT002',
