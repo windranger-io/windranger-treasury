@@ -5,6 +5,7 @@ import {
     AllowRedemptionEvent,
     DebtIssueEvent,
     FullCollateralEvent,
+    PartialCollateralEvent,
     RedemptionEvent,
     SlashEvent,
     WithdrawCollateralEvent
@@ -105,7 +106,7 @@ export function event(name: string, events: Event[]): Event {
         if (events[i]?.event === name) return events[i]
     }
 
-    expect.fail('Failed to find event matching name: %s', name)
+    expect.fail('Failed to find event matching name: ' + name)
 }
 
 /**
@@ -131,6 +132,27 @@ export function fullCollateralEvent(event: Event): {
     const args = event.args
     expect(args?.collateralSymbol).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
+
+    return collateral.args
+}
+
+/**
+ * Shape check and conversion for a PartialCollateralEvent.
+ */
+export function partialCollateralEvent(event: Event): {
+    collateralSymbol: string
+    collateralAmount: BigNumber
+    debtSymbol: string
+    debtRemaining: BigNumber
+} {
+    const collateral = event as PartialCollateralEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.collateralAmount).is.not.undefined
+    expect(args?.debtSymbol).is.not.undefined
+    expect(args?.debtRemaining).is.not.undefined
 
     return collateral.args
 }
@@ -239,6 +261,33 @@ export async function verifyDebtIssueEvent(
     expect(depositOneEvent.receiver, 'Debt token receiver').equals(guarantor)
     expect(depositOneEvent.debSymbol, 'Debt token symbol').equals(debt.symbol)
     expect(depositOneEvent.debtAmount, 'Debt token amount').equals(debt.amount)
+}
+
+/**
+ * Verifies the content for a Full Collateral event.
+ */
+export async function verifyPartialCollateralEvent(
+    receipt: ContractReceipt,
+    collateral: ExpectTokenBalance,
+    debt: ExpectTokenBalance
+): Promise<void> {
+    const partialCollateral = partialCollateralEvent(
+        event('PartialCollateral', events(receipt))
+    )
+    expect(
+        partialCollateral.collateralSymbol,
+        'Collateral token symbol'
+    ).equals(collateral.symbol)
+    expect(
+        partialCollateral.collateralAmount,
+        'Collateral token amount'
+    ).equals(collateral.amount)
+    expect(partialCollateral.debtSymbol, 'Debt token symbol').equals(
+        debt.symbol
+    )
+    expect(partialCollateral.debtRemaining, 'Debt tokens remaining').equals(
+        debt.amount
+    )
 }
 
 /**
