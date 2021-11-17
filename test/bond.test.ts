@@ -219,7 +219,7 @@ describe('Bond contract', () => {
             expect(await bond.initialDebtTokens()).equals(debtTokens)
         })
 
-        it('externally managed data field is populated', async () => {
+        it('data filed for external apps is populated', async () => {
             const debtTokens = 554n
             bond = await deployContract('Bond')
             expect(await bond.data()).equals('')
