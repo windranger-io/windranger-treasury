@@ -175,7 +175,7 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
 
         _transfer(address(this), _msgSender(), amount);
 
-        if (_hasFullCollateral()) {
+        if (hasFullCollateral()) {
             emit FullCollateral(
                 _collateralTokens.symbol(),
                 _collateralTokens.balanceOf(address(this))
@@ -191,6 +191,13 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
      */
     function excessDebtTokens() external view returns (uint256) {
         return _excessDebtTokens;
+    }
+
+    /**
+     * @dev Whether or not the Bond contract has achieved full collateral target.
+     */
+    function hasFullCollateral() public view returns (bool) {
+        return _debtTokensRemaining() == 0;
     }
 
     /**
@@ -368,13 +375,6 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
      */
     function _hasDebtTokensRemaining() private view returns (bool) {
         return _debtTokensRemaining() > 0;
-    }
-
-    /**
-     * @dev Whether or not the Bond contract has achieved full collateral target.
-     */
-    function _hasFullCollateral() private view returns (bool) {
-        return _debtTokensRemaining() == 0;
     }
 
     /**

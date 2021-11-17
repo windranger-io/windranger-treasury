@@ -135,6 +135,19 @@ describe('Bond contract', () => {
                 bond.connect(guarantorOne).deposit(pledge)
             ).to.be.revertedWith('Bond::whenNotRedeemable: redeemable')
         })
+
+        it('with full collateral', async () => {
+            const pledge = 60n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            expect(await bond.hasFullCollateral()).equals(false)
+
+            await depositBond(guarantorOne, pledge)
+
+            expect(await bond.hasFullCollateral()).equals(true)
+        })
     })
 
     describe('init', () => {
