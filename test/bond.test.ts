@@ -137,7 +137,7 @@ describe('Bond contract', () => {
         })
 
         it('with full collateral', async () => {
-            const pledge = 60n
+            const pledge = 5040n
             bond = await createBond(factory, pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
