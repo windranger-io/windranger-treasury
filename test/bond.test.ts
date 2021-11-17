@@ -46,11 +46,11 @@ describe('Bond contract', () => {
     })
 
     beforeEach(async () => {
-        collateral = await deployContract<BitDAO>('BitDAO', admin.address)
-        collateralSymbol = await collateral.symbol()
+        collateralTokens = await deployContract<BitDAO>('BitDAO', admin.address)
+        collateralSymbol = await collateralTokens.symbol()
         factory = await deployContract<BondFactory>(
             'BondFactory',
-            collateral.address,
+            collateralTokens.address,
             treasury
         )
     })
@@ -146,7 +146,7 @@ describe('Bond contract', () => {
                     'My Debt Tokens one',
                     'MDT001',
                     ONE,
-                    collateral.address,
+                    collateralTokens.address,
                     treasury,
                     DATA
                 )
@@ -163,7 +163,7 @@ describe('Bond contract', () => {
                     'My Debt Tokens two',
                     'MDT002',
                     ZERO,
-                    collateral.address,
+                    collateralTokens.address,
                     treasury,
                     DATA
                 )
@@ -178,7 +178,7 @@ describe('Bond contract', () => {
                     'My Debt Tokens two',
                     'MDT002',
                     ONE,
-                    collateral.address,
+                    collateralTokens.address,
                     ADDRESS_ZERO,
                     DATA
                 )
@@ -211,7 +211,7 @@ describe('Bond contract', () => {
                 'My Debt Tokens two',
                 'MDT002',
                 debtTokens,
-                collateral.address,
+                collateralTokens.address,
                 treasury,
                 DATA
             )
@@ -228,7 +228,7 @@ describe('Bond contract', () => {
                 'My Debt Tokens two',
                 'MDT002',
                 debtTokens,
-                collateral.address,
+                collateralTokens.address,
                 treasury,
                 DATA
             )
@@ -1027,7 +1027,11 @@ describe('Bond contract', () => {
 
     async function verifyBalances(balances: ExpectedBalance[]): Promise<void> {
         for (let i = 0; i < balances.length; i++) {
-            await verifyBondAndCollateralBalances(balances[i], collateral, bond)
+            await verifyBondAndCollateralBalances(
+                balances[i],
+                collateralTokens,
+                bond
+            )
         }
     }
 
@@ -1035,14 +1039,18 @@ describe('Bond contract', () => {
         guarantors: GuarantorCollateralSetup[]
     ): Promise<void> {
         for (let i = 0; i < guarantors.length; i++) {
-            await setupGuarantorWithCollateral(guarantors[i], bond, collateral)
+            await setupGuarantorWithCollateral(
+                guarantors[i],
+                bond,
+                collateralTokens
+            )
         }
     }
 
     let admin: SignerWithAddress
     let bond: Bond
     let treasury: string
-    let collateral: ERC20
+    let collateralTokens: ERC20
     let collateralSymbol: string
     let guarantorOne: SignerWithAddress
     let guarantorTwo: SignerWithAddress
