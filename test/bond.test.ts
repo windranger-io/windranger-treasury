@@ -34,6 +34,7 @@ const ZERO = 0n
 const ONE = 1n
 const FORTY_PERCENT = 40n
 const FIFTY_PERCENT = 50n
+const DATA = 'performance factors;assessment date;rewards pool'
 
 describe('Bond contract', () => {
     before(async () => {
@@ -146,7 +147,8 @@ describe('Bond contract', () => {
                     'MDT001',
                     ONE,
                     collateral.address,
-                    treasury
+                    treasury,
+                    DATA
                 )
             ).to.be.revertedWith(
                 'Initializable: contract is already initialized'
@@ -162,7 +164,8 @@ describe('Bond contract', () => {
                     'MDT002',
                     ZERO,
                     collateral.address,
-                    treasury
+                    treasury,
+                    DATA
                 )
             ).to.be.revertedWith('Bond::mint: too small')
         })
@@ -176,7 +179,8 @@ describe('Bond contract', () => {
                     'MDT002',
                     ONE,
                     collateral.address,
-                    ADDRESS_ZERO
+                    ADDRESS_ZERO,
+                    DATA
                 )
             ).to.be.revertedWith('Bond::init: treasury is zero address')
         })
@@ -190,7 +194,8 @@ describe('Bond contract', () => {
                     'MDT002',
                     ONE,
                     ADDRESS_ZERO,
-                    treasury
+                    treasury,
+                    DATA
                 )
             ).to.be.revertedWith(
                 'Bond::init: collateral tokens is zero address'
@@ -207,10 +212,28 @@ describe('Bond contract', () => {
                 'MDT002',
                 debtTokens,
                 collateral.address,
-                treasury
+                treasury,
+                DATA
             )
 
             expect(await bond.initialDebtTokens()).equals(debtTokens)
+        })
+
+        it('externally managed data field is populated', async () => {
+            const debtTokens = 554n
+            bond = await deployContract('Bond')
+            expect(await bond.data()).equals('')
+
+            await bond.initialize(
+                'My Debt Tokens two',
+                'MDT002',
+                debtTokens,
+                collateral.address,
+                treasury,
+                DATA
+            )
+
+            expect(await bond.data()).equals(DATA)
         })
     })
 
@@ -1037,7 +1060,12 @@ async function createBond(
     debtTokens: BigNumberish
 ): Promise<Bond> {
     const receipt = await execute(
-        factory.createBond('Special Debt Certificate', 'SDC001', debtTokens)
+        factory.createBond(
+            'Special Debt Certificate',
+            'SDC001',
+            debtTokens,
+            DATA
+        )
     )
     const creationEvent = bondCreatedEvent(
         event('BondCreated', events(receipt))
