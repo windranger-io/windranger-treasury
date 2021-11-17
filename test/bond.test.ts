@@ -196,6 +196,22 @@ describe('Bond contract', () => {
                 'Bond::init: collateral tokens is zero address'
             )
         })
+
+        it('initial debt tokens are recorded', async () => {
+            const debtTokens = 554n
+            bond = await deployContract('Bond')
+            expect(await bond.initialDebtTokens()).equals(ZERO)
+
+            await bond.initialize(
+                'My Debt Tokens two',
+                'MDT002',
+                debtTokens,
+                collateral.address,
+                treasury
+            )
+
+            expect(await bond.initialDebtTokens()).equals(debtTokens)
+        })
     })
 
     describe('pause', () => {
