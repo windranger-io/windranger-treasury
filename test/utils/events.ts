@@ -61,6 +61,7 @@ export function bondCreatedEvent(event: Event): {
     amount: BigNumber
     owner: string
     treasury: string
+    data: string
 } {
     const bondCreated = event as BondCreatedEvent
     expect(event.args).is.not.undefined
@@ -72,6 +73,7 @@ export function bondCreatedEvent(event: Event): {
     expect(args?.amount).is.not.undefined
     expect(args?.owner).is.not.undefined
     expect(args?.treasury).is.not.undefined
+    expect(args?.data).is.not.undefined
 
     return bondCreated.args
 }

@@ -75,11 +75,11 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     /// The outstanding balance of debt tokens when redemptions were allowed, amount now expected after full redemptions.
     uint256 private _excessDebtTokens;
 
-    uint256 private _initialDebtTokens;
-
     IERC20MetadataUpgradeable private _collateralTokens;
-    address private _treasury;
+    string private _data;
+    uint256 private _initialDebtTokens;
     bool private _isRedemptionAllowed;
+    address private _treasury;
 
     /**
      * @param erc20CollateralTokens_ to avoid being able to break the Bond behaviours the reference to the collateral
@@ -87,11 +87,12 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
      *              To update the tokens address, either follow the proxy convention for tokens, or crete a new bond.
      */
     function initialize(
-        string memory name_,
-        string memory symbol_,
+        string calldata name_,
+        string calldata symbol_,
         uint256 debtTokens_,
         address erc20CollateralTokens_,
-        address erc20CapableTreasury_
+        address erc20CapableTreasury_,
+        string calldata data_
     ) external initializer {
         __ERC20_init(name_, symbol_);
         __Ownable_init();
@@ -107,6 +108,7 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         );
 
         _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens_);
+        _data = data_;
         _initialDebtTokens = debtTokens_;
         _isRedemptionAllowed = false;
         _treasury = erc20CapableTreasury_;
@@ -338,6 +340,13 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         return
             (REDEMPTION_RATIO_ACCURACY * _guarantorCollateral) /
             (totalSupply() - _excessDebtTokens);
+    }
+
+    /**
+     * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
+     */
+    function data() external view returns (string memory) {
+        return _data;
     }
 
     /**
