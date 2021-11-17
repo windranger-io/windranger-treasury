@@ -105,7 +105,6 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
             erc20CollateralTokens_ != address(0),
             "Bond::init: collateral tokens is zero address"
         );
-        require(debtTokens_ > 0, "Bond::init: zero debt tokens");
 
         _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens_);
         _initialDebtTokens = debtTokens_;
