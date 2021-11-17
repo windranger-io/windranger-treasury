@@ -75,6 +75,8 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     /// The outstanding balance of debt tokens when redemptions were allowed, amount now expected after full redemptions.
     uint256 private _excessDebtTokens;
 
+    uint256 private _initialDebtTokens;
+
     IERC20MetadataUpgradeable private _collateralTokens;
     address private _treasury;
     bool private _isRedemptionAllowed;
@@ -103,7 +105,9 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
             erc20CollateralTokens_ != address(0),
             "Bond::init: collateral tokens is zero address"
         );
+
         _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens_);
+        _initialDebtTokens = debtTokens_;
         _isRedemptionAllowed = false;
         _treasury = erc20CapableTreasury_;
 
@@ -185,6 +189,13 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
      */
     function excessDebtTokens() external view returns (uint256) {
         return _excessDebtTokens;
+    }
+
+    /**
+     * @dev Number of debt tokens created on the Bond init. The total supply of debt tokens will decrease, as redeem burns them.
+     */
+    function initialDebtTokens() external view returns (uint256) {
+        return _initialDebtTokens;
     }
 
     /**
