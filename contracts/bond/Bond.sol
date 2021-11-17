@@ -345,7 +345,7 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     /**
      * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
      */
-    function data() public view returns (string memory) {
+    function data() external view returns (string memory) {
         return _data;
     }
 
