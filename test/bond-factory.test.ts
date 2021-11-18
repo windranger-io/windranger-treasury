@@ -7,21 +7,23 @@ import chai, {expect} from 'chai'
 import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BondFactory} from '../typechain'
+import {BitDAO, BondFactory, ERC20} from '../typechain'
 import {deployContract, execute, signer} from './utils/contracts'
 import {bondCreatedEvent, event, events} from './utils/events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
 
+//TODO extra tests for added code
+
 describe('BondFactory contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
-        collateral = (await signer(2)).address
+        collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         bonds = await deployContract<BondFactory>(
             'BondFactory',
-            collateral,
+            collateralTokens.address,
             treasury
         )
     })
@@ -30,10 +32,17 @@ describe('BondFactory contract', () => {
         const bondName = 'Special Debt Certificate'
         const bondSymbol = 'SDC001'
         const debtTokenAmount = 555666777n
+        const collateralSymbol = 'BIT'
         const data = 'a random;delimiter;separated string'
 
         const receipt = await execute(
-            bonds.createBond(bondName, bondSymbol, debtTokenAmount, data)
+            bonds.createBond(
+                bondName,
+                bondSymbol,
+                debtTokenAmount,
+                collateralSymbol,
+                data
+            )
         )
 
         const creationEvent = bondCreatedEvent(
@@ -45,8 +54,9 @@ describe('BondFactory contract', () => {
         expect(await ethers.provider.getCode(creationEvent.bond)).is.not
             .undefined
         expect(creationEvent.name).equals(bondName)
-        expect(creationEvent.symbol).equals(bondSymbol)
-        expect(creationEvent.amount).equals(debtTokenAmount)
+        expect(creationEvent.debtSymbol).equals(bondSymbol)
+        expect(creationEvent.debtAmount).equals(debtTokenAmount)
+        expect(creationEvent.collateralSymbol).equals(collateralSymbol)
         expect(creationEvent.owner).equals(admin)
         expect(creationEvent.treasury).equals(treasury)
         expect(creationEvent.data).equals(data)
@@ -54,6 +64,6 @@ describe('BondFactory contract', () => {
 
     let admin: string
     let treasury: string
-    let collateral: string
+    let collateralTokens: ERC20
     let bonds: BondFactory
 })

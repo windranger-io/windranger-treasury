@@ -1060,6 +1060,28 @@ describe('Bond contract', () => {
         }
     }
 
+    async function createBond(
+        factory: BondFactory,
+        debtTokens: BigNumberish
+    ): Promise<Bond> {
+        const receipt = await execute(
+            factory.createBond(
+                'Special Debt Certificate',
+                'SDC001',
+                debtTokens,
+                collateralSymbol,
+                DATA
+            )
+        )
+        const creationEvent = bondCreatedEvent(
+            event('BondCreated', events(receipt))
+        )
+        const bondAddress = creationEvent.bond
+        expect(ethers.utils.isAddress(bondAddress)).is.true
+
+        return bondContractAt(bondAddress)
+    }
+
     let admin: SignerWithAddress
     let bond: Bond
     let treasury: string
@@ -1074,27 +1096,6 @@ describe('Bond contract', () => {
 export async function bondContractAt(address: string): Promise<Bond> {
     const factory = await ethers.getContractFactory('Bond')
     return <Bond>factory.attach(address)
-}
-
-async function createBond(
-    factory: BondFactory,
-    debtTokens: BigNumberish
-): Promise<Bond> {
-    const receipt = await execute(
-        factory.createBond(
-            'Special Debt Certificate',
-            'SDC001',
-            debtTokens,
-            DATA
-        )
-    )
-    const creationEvent = bondCreatedEvent(
-        event('BondCreated', events(receipt))
-    )
-    const bondAddress = creationEvent.bond
-    expect(ethers.utils.isAddress(bondAddress)).is.true
-
-    return bondContractAt(bondAddress)
 }
 
 function slash(amount: bigint, percent: bigint): bigint {
