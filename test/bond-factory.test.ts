@@ -11,6 +11,7 @@ import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
 import {deployContract, execute, signer} from './utils/contracts'
 import {bondCreatedEvent, event, events} from './utils/events'
 import {constants} from 'ethers'
+import exp from 'constants'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -116,13 +117,34 @@ describe('BondFactory contract', () => {
             )
         })
 
-        //TODO add new tokens
+        it('add new token', async () => {
+            const symbol = 'EEK'
+            const tokens = await deployContract<ERC20>(
+                'ERC20',
+                'Another erc20 Token',
+                symbol
+            )
+            expect(await tokens.symbol()).equals(symbol)
 
-        //TODO add existing tokens
+            await bonds.whitelistCollateralToken(tokens.address)
+
+            expect(await bonds.isCollateralTokenWhitelisted(symbol)).is.true
+            expect(await bonds.collateralTokenAddress(symbol)).equals(
+                tokens.address
+            )
+        })
+
+        it('cannot add existing token', async () => {
+            await expect(
+                bonds.whitelistCollateralToken(collateralTokens.address)
+            ).to.be.revertedWith('BondFactory::whitelist: already present')
+        })
 
         //TODO add address zero
 
         //TODO add non-erc20
+
+        //TODO update to the same address - revert
     })
 
     let admin: string
