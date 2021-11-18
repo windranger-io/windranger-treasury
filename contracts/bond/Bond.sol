@@ -5,13 +5,19 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "./ExpiryTimestamp.sol";
 
 /**
  * @title Bond contract that issues debt tokens in exchange for a collateral deposited.
  *
  * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
  */
-contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
+contract Bond is
+    ERC20Upgradeable,
+    ExpiryTimestamp,
+    OwnableUpgradeable,
+    PausableUpgradeable
+{
     event AllowRedemption(address authorizer);
     event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
     event Deposit(
@@ -92,11 +98,13 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         uint256 debtTokens_,
         address erc20CollateralTokens_,
         address erc20CapableTreasury_,
+        uint256 expiryTimestamp_,
         string calldata data_
     ) external initializer {
         __ERC20_init(name_, symbol_);
         __Ownable_init();
         __Pausable_init();
+        __ExpiryTimestamp_init(expiryTimestamp_);
 
         require(
             erc20CapableTreasury_ != address(0),

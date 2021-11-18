@@ -20,6 +20,7 @@ contract BondFactory is Context, Ownable {
         string collateralSymbol,
         address owner,
         address treasury,
+        uint256 expiryTimestamp,
         string data
     );
 
@@ -52,6 +53,7 @@ contract BondFactory is Context, Ownable {
         string calldata symbol_,
         uint256 debtTokens_,
         string calldata collateralTokenSymbol_,
+        uint256 expiryTimestamp_,
         string calldata data_
     ) external returns (address) {
         require(
@@ -69,6 +71,7 @@ contract BondFactory is Context, Ownable {
             collateralTokenSymbol_,
             owner(),
             _treasury,
+            expiryTimestamp_,
             data_
         );
 
@@ -78,6 +81,7 @@ contract BondFactory is Context, Ownable {
             debtTokens_,
             _collateralTokensWhitelist[collateralTokenSymbol_],
             _treasury,
+            expiryTimestamp_,
             data_
         );
         bond.transferOwnership(owner());
