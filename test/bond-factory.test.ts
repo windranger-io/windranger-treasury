@@ -11,7 +11,6 @@ import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
 import {deployContract, execute, signer} from './utils/contracts'
 import {bondCreatedEvent, event, events} from './utils/events'
 import {constants} from 'ethers'
-import exp from 'constants'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -93,6 +92,14 @@ describe('BondFactory contract', () => {
             expect(updatedAddress).not.equals(startingAddress)
         })
 
+        it('cannot update address with identical value', async () => {
+            await expect(
+                bonds.updateCollateralTokenAddress(collateralTokens.address)
+            ).to.be.revertedWith(
+                'BondFactory::updateCollateralTokenAddress: same address'
+            )
+        })
+
         it('cannot update address to zero', async () => {
             await expect(
                 bonds.updateCollateralTokenAddress(ADDRESS_ZERO)
@@ -140,9 +147,21 @@ describe('BondFactory contract', () => {
             ).to.be.revertedWith('BondFactory::whitelist: already present')
         })
 
-        //TODO add address zero
+        it('cannot add address zero', async () => {
+            await expect(
+                bonds.whitelistCollateralToken(ADDRESS_ZERO)
+            ).to.be.revertedWith('BondFactory::whitelist: address zero')
+        })
 
-        //TODO add non-erc20
+        it('cannot add non-erc20 contract (without fallback)', async () => {
+            const box = await deployContract<Box>('Box')
+
+            await expect(
+                bonds.whitelistCollateralToken(box.address)
+            ).to.be.revertedWith(
+                "function selector was not recognized and there's no fallback function"
+            )
+        })
 
         //TODO update to the same address - revert
     })

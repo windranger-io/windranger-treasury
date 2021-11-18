@@ -115,6 +115,18 @@ contract BondFactory is Context, Ownable {
     }
 
     /**
+     * @dev Permits the owner to update the treasury address.
+     * Only applies for bonds created after the update, previously created bonds remain unchanged.
+     */
+    function setTreasury(address treasury_) external onlyOwner {
+        require(
+            treasury_ != address(0),
+            "BondFactory::setTreasury: treasury is zero address"
+        );
+        _treasury = treasury_;
+    }
+
+    /**
      * @dev Permits the owner to update the collateral token address of an already whitelisted token.
      * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
@@ -132,19 +144,11 @@ contract BondFactory is Context, Ownable {
             isCollateralTokenWhitelisted(symbol),
             "BondFactory::updateCollateralTokenAddress: not whitelisted"
         );
-        _collateralTokensWhitelist[symbol] = erc20CollateralTokens_;
-    }
-
-    /**
-     * @dev Permits the owner to update the treasury address.
-     * Only applies for bonds created after the update, previously created bonds remain unchanged.
-     */
-    function setTreasury(address treasury_) external onlyOwner {
         require(
-            treasury_ != address(0),
-            "BondFactory::setTreasury: treasury is zero address"
+            _collateralTokensWhitelist[symbol] != erc20CollateralTokens_,
+            "BondFactory::updateCollateralTokenAddress: same address"
         );
-        _treasury = treasury_;
+        _collateralTokensWhitelist[symbol] = erc20CollateralTokens_;
     }
 
     /**
@@ -157,6 +161,11 @@ contract BondFactory is Context, Ownable {
         external
         onlyOwner
     {
+        require(
+            erc20CollateralTokens_ != address(0),
+            "BondFactory::whitelist: address zero"
+        );
+
         string memory symbol = IERC20Metadata(erc20CollateralTokens_).symbol();
         require(
             _collateralTokensWhitelist[symbol] == address(0),
