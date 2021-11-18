@@ -57,8 +57,9 @@ export function allowRedemptionEvent(event: Event): {authorizer: string} {
 export function bondCreatedEvent(event: Event): {
     bond: string
     name: string
-    symbol: string
-    amount: BigNumber
+    debtSymbol: string
+    debtAmount: BigNumber
+    collateralSymbol: string
     owner: string
     treasury: string
     data: string
@@ -69,8 +70,9 @@ export function bondCreatedEvent(event: Event): {
     const args = event.args
     expect(args?.bond).is.not.undefined
     expect(args?.name).is.not.undefined
-    expect(args?.symbol).is.not.undefined
-    expect(args?.amount).is.not.undefined
+    expect(args?.debtSymbol).is.not.undefined
+    expect(args?.debtAmount).is.not.undefined
+    expect(args?.collateralSymbol).is.not.undefined
     expect(args?.owner).is.not.undefined
     expect(args?.treasury).is.not.undefined
     expect(args?.data).is.not.undefined
