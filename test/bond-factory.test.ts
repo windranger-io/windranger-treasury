@@ -7,7 +7,7 @@ import chai, {expect} from 'chai'
 import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondFactory, ERC20} from '../typechain'
+import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
 import {deployContract, execute, signer} from './utils/contracts'
 import {bondCreatedEvent, event, events} from './utils/events'
 import {constants} from 'ethers'
@@ -100,7 +100,21 @@ describe('BondFactory contract', () => {
             )
         })
 
-        //TODO update a non-erc20
+        it('cannot update address to non-contract address', async () => {
+            await expect(
+                bonds.updateCollateralTokenAddress(admin)
+            ).to.be.revertedWith('function call to a non-contract account')
+        })
+
+        it('cannot update address to non-erc20 contract (without fallback)', async () => {
+            const box = await deployContract<Box>('Box')
+
+            await expect(
+                bonds.updateCollateralTokenAddress(box.address)
+            ).to.be.revertedWith(
+                "function selector was not recognized and there's no fallback function"
+            )
+        })
 
         //TODO add new tokens
 
