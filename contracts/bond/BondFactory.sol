@@ -150,17 +150,18 @@ contract BondFactory is Context, Ownable {
     /**
      * @notice When a bond is created, the tokens used as collateral must have been whitelisted.
      *
-     * @dev Whitelists the symbol for the collateral token.
-     *      On bond creation the symbol returned by the Collateral tokens address must be present in the whitelist.
+     * @dev Whitelists the erc20 symbol as a Bond collateral token from now onwards.
+     *      On bond creation the tokens address used is retrieved by symbol from the whitelist.
      */
-    function whitelistCollateralToken(string calldata symbol)
+    function whitelistCollateralToken(address erc20CollateralTokens_)
         external
-        view
         onlyOwner
     {
+        string memory symbol = IERC20Metadata(erc20CollateralTokens_).symbol();
         require(
             _collateralTokensWhitelist[symbol] == address(0),
             "BondFactory::whitelist: already present"
         );
+        _collateralTokensWhitelist[symbol] = erc20CollateralTokens_;
     }
 }
