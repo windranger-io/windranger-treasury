@@ -67,12 +67,12 @@ jobs:
         run: npm run build
 
       - name: Lint
-        run: npm run ts-lint
+        run: npm run lint-ts
 
 
   Solidity-Static-Analysis-Solhint:
     runs-on: ubuntu-latest
-    name: TypeScript static analysis
+    name: Solidity static analysis (Solhint)
     needs: Unit-Tests
     steps:
       - name: Check out code
@@ -98,12 +98,12 @@ jobs:
         run: npm run build
 
       - name: Lint
-        run: npm run sol-lint
+        run: npm run lint-sol
 
 
   Solidity-Static-Analysis-Slither:
     runs-on: ubuntu-latest
-    name: Solidity static analysis
+    name: Solidity static analysis (Slither)
     needs: Unit-Tests
     steps:
       - name: Checkout
