@@ -12,7 +12,7 @@ import {deployContract, execute, signer} from './utils/contracts'
 import {BigNumberish, constants, ContractReceipt} from 'ethers'
 import {
     event,
-    bondCreatedEvent,
+    createBondEvent,
     events,
     verifyRedemptionEvent,
     verifyDebtIssueEvent,
@@ -35,6 +35,7 @@ const ONE = 1n
 const FORTY_PERCENT = 40n
 const FIFTY_PERCENT = 50n
 const DATA = 'performance factors;assessment date;rewards pool'
+const BOND_EXPIRY = 750000n
 
 describe('Bond contract', () => {
     before(async () => {
@@ -161,6 +162,7 @@ describe('Bond contract', () => {
                     ONE,
                     collateralTokens.address,
                     treasury,
+                    BOND_EXPIRY,
                     DATA
                 )
             ).to.be.revertedWith(
@@ -178,6 +180,7 @@ describe('Bond contract', () => {
                     ZERO,
                     collateralTokens.address,
                     treasury,
+                    BOND_EXPIRY,
                     DATA
                 )
             ).to.be.revertedWith('Bond::mint: too small')
@@ -193,6 +196,7 @@ describe('Bond contract', () => {
                     ONE,
                     collateralTokens.address,
                     ADDRESS_ZERO,
+                    BOND_EXPIRY,
                     DATA
                 )
             ).to.be.revertedWith('Bond::init: treasury is zero address')
@@ -208,6 +212,7 @@ describe('Bond contract', () => {
                     ONE,
                     ADDRESS_ZERO,
                     treasury,
+                    BOND_EXPIRY,
                     DATA
                 )
             ).to.be.revertedWith(
@@ -226,6 +231,7 @@ describe('Bond contract', () => {
                 debtTokens,
                 collateralTokens.address,
                 treasury,
+                BOND_EXPIRY,
                 DATA
             )
 
@@ -243,6 +249,7 @@ describe('Bond contract', () => {
                 debtTokens,
                 collateralTokens.address,
                 treasury,
+                BOND_EXPIRY,
                 DATA
             )
 
@@ -1070,11 +1077,12 @@ describe('Bond contract', () => {
                 'SDC001',
                 debtTokens,
                 collateralSymbol,
+                BOND_EXPIRY,
                 DATA
             )
         )
-        const creationEvent = bondCreatedEvent(
-            event('BondCreated', events(receipt))
+        const creationEvent = createBondEvent(
+            event('CreateBond', events(receipt))
         )
         const bondAddress = creationEvent.bond
         expect(ethers.utils.isAddress(bondAddress)).is.true

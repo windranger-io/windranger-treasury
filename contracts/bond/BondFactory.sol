@@ -12,12 +12,11 @@ import "./Bond.sol";
  * @dev Applies common configuration to bond contracts created.
  */
 contract BondFactory is Context, Ownable {
-    event BondCreated(
+    event CreateBond(
         address bond,
         string name,
         string debtSymbol,
         uint256 debtAmount,
-        string collateralSymbol,
         address owner,
         address treasury,
         uint256 expiryTimestamp,
@@ -63,12 +62,11 @@ contract BondFactory is Context, Ownable {
 
         Bond bond = new Bond();
 
-        emit BondCreated(
+        emit CreateBond(
             address(bond),
             name_,
             symbol_,
             debtTokens_,
-            collateralTokenSymbol_,
             owner(),
             _treasury,
             expiryTimestamp_,

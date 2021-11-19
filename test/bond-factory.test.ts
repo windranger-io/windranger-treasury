@@ -9,7 +9,7 @@ import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
 import {deployContract, execute, signer} from './utils/contracts'
-import {bondCreatedEvent, event, events} from './utils/events'
+import {createBondEvent, event, events} from './utils/events'
 import {constants} from 'ethers'
 
 // Wires up Waffle with Chai
@@ -33,7 +33,7 @@ describe('BondFactory contract', () => {
     describe('create bond', () => {
         it('non-whitelisted collateral', async () => {
             await expect(
-                bonds.createBond('Named bond', 'AA00AA', 101n, 'BEEP', '')
+                bonds.createBond('Named bond', 'AA00AA', 101n, 'BEEP', 0n, '')
             ).to.be.revertedWith(
                 'BondFactory::bond: collateral not whitelisted'
             )
@@ -44,6 +44,7 @@ describe('BondFactory contract', () => {
             const bondSymbol = 'SDC001'
             const debtTokenAmount = 555666777n
             const collateralSymbol = 'BIT'
+            const expiryTimestamp = 560000n
             const data = 'a random;delimiter;separated string'
 
             const receipt = await execute(
@@ -52,12 +53,13 @@ describe('BondFactory contract', () => {
                     bondSymbol,
                     debtTokenAmount,
                     collateralSymbol,
+                    expiryTimestamp,
                     data
                 )
             )
 
-            const creationEvent = bondCreatedEvent(
-                event('BondCreated', events(receipt))
+            const creationEvent = createBondEvent(
+                event('CreateBond', events(receipt))
             )
             expect(ethers.utils.isAddress(creationEvent.bond)).is.true
             expect(creationEvent.bond).is.not.equal(admin)
@@ -67,7 +69,7 @@ describe('BondFactory contract', () => {
             expect(creationEvent.name).equals(bondName)
             expect(creationEvent.debtSymbol).equals(bondSymbol)
             expect(creationEvent.debtAmount).equals(debtTokenAmount)
-            expect(creationEvent.collateralSymbol).equals(collateralSymbol)
+            expect(creationEvent.expiryTimestamp).equals(expiryTimestamp)
             expect(creationEvent.owner).equals(admin)
             expect(creationEvent.treasury).equals(treasury)
             expect(creationEvent.data).equals(data)

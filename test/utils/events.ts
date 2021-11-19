@@ -1,6 +1,6 @@
 import {BigNumber, ContractReceipt, Event} from 'ethers'
 import {expect} from 'chai'
-import {BondCreatedEvent} from '../../typechain/BondFactory'
+import {CreateBondEvent} from '../../typechain/BondFactory'
 import {
     AllowRedemptionEvent,
     DebtIssueEvent,
@@ -52,19 +52,19 @@ export function allowRedemptionEvent(event: Event): {authorizer: string} {
 }
 
 /**
- * Shape check and conversion for a BondCreatedEvent.
+ * Shape check and conversion for a CreateBondEvent.
  */
-export function bondCreatedEvent(event: Event): {
+export function createBondEvent(event: Event): {
     bond: string
     name: string
     debtSymbol: string
     debtAmount: BigNumber
-    collateralSymbol: string
     owner: string
     treasury: string
+    expiryTimestamp: BigNumber
     data: string
 } {
-    const bondCreated = event as BondCreatedEvent
+    const create = event as CreateBondEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
@@ -72,12 +72,12 @@ export function bondCreatedEvent(event: Event): {
     expect(args?.name).is.not.undefined
     expect(args?.debtSymbol).is.not.undefined
     expect(args?.debtAmount).is.not.undefined
-    expect(args?.collateralSymbol).is.not.undefined
     expect(args?.owner).is.not.undefined
     expect(args?.treasury).is.not.undefined
+    expect(args?.expiryTimestamp).is.not.undefined
     expect(args?.data).is.not.undefined
 
-    return bondCreated.args
+    return create.args
 }
 
 /**
