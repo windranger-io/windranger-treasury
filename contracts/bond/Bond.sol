@@ -215,12 +215,12 @@ contract Bond is
     }
 
     /**
-     *  @notice Moves any remaining collateral to the Treasury and pause the bond.
+     *  @notice Moves any remaining collateral to the Treasury and pauses the bond.
      *  @dev A fail safe, callable by anyone after the Bond has expired.
      *       If Ownership is lost, this can be used to move all remaining collateral to the Treasury,
      *       after which petitions for redemption can be made.
-     *  @dev Expiry operates separately to pause, so a paused contract can be expired, again as fail safe for loss of
-     *       Ownership.
+     *  @dev Expiry operates separately to pause, so a paused contract can be expired (fail safe for loss of
+     *       Ownership).
      */
     function expire() external whenBeyondExpiry {
         uint256 collateral = _collateralTokens.balanceOf(address(this));
@@ -236,6 +236,8 @@ contract Bond is
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(_treasury, collateral);
         require(transferred, "Bond::expire: collateral transfer failed");
+
+        _pauseSafely();
     }
 
     /**
@@ -424,6 +426,16 @@ contract Bond is
     function _mint(uint256 amount) private whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond::mint: too small");
         _mint(address(this), amount);
+    }
+
+    /**
+     *  @notice Ensure the Bond is paused.
+     *  @dev Pauses the Bond if not already paused. If already paused, does nothing (not revert).
+     */
+    function _pauseSafely() private {
+        if (!paused()) {
+            _pause();
+        }
     }
 
     /**
