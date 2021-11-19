@@ -7,8 +7,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
     @title Expiry date, with assessment against the block timestamp.
     @dev Expiry date using block current timestamp, following the upgradable approach of using init over constructor.
           This module is used through inheritance.
-          It provides the modifier `hasExpired`, which can be applied to your functions to restrict their
-          use until after the expiry date.
+          Provides the modifier `hasExpired` that can be applied to your functions to restrict use until the time
+          is after  the expiry timestamp.
  */
 abstract contract ExpiryTimestamp is Initializable {
     /**
