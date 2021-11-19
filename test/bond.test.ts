@@ -153,13 +153,30 @@ describe('Bond contract', () => {
     })
 
     describe('expire', () => {
-        //TODO expiry after allow redemption
+        it('when called by non-owner', async () => {
+            const pledge = 445n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            expect(await bond.paused()).is.false
 
-        it('even when called by non-owner', async () => {
+            await bond.connect(guarantorOne).expire()
+
+            await verifyBalances([
+                {address: bond.address, bond: ZERO, collateral: ZERO},
+                {address: guarantorOne, bond: pledge, collateral: ZERO},
+                {address: treasury, bond: ZERO, collateral: pledge}
+            ])
+            expect(await bond.paused()).is.true
+        })
+
+        it('during redemption', async () => {
             //TODO code
         })
 
-        it('even when paused', async () => {
+        it('when paused', async () => {
             //TODO code
         })
 
@@ -948,7 +965,7 @@ describe('Bond contract', () => {
             amount: pledgeTwo
         })
 
-        // Bond holds all collateral, with an unmatched pledge of debt tokens
+        // Bond holds all collateral
         await verifyBalances([
             {
                 address: bond.address,
@@ -972,7 +989,8 @@ describe('Bond contract', () => {
             amount: slashedCollateral
         })
 
-        // Owner expires the bond
+        // Owner expires the un-paused bond
+        expect(await bond.paused()).is.false
         const expireReceipt = await expire()
         await verifyExpireEvent(expireReceipt, admin.address, treasury, {
             symbol: collateralSymbol,
@@ -983,6 +1001,21 @@ describe('Bond contract', () => {
             to: treasury,
             amount: collateral - slashedCollateral
         })
+
+        // Treasury holds all collateral, with an unredeemed debt tokens still held
+        await verifyBalances([
+            {
+                address: bond.address,
+                bond: ZERO,
+                collateral: ZERO
+            },
+            {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
+            {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
+            {address: treasury, bond: ZERO, collateral: collateral}
+        ])
+
+        // The Bond must now be paused
+        expect(await bond.paused()).is.true
     })
 
     it('three guarantors deposit full collateral, are partially slashed, then fully redeems', async () => {
