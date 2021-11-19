@@ -1,9 +1,10 @@
 import {BigNumber, ContractReceipt, Event} from 'ethers'
 import {expect} from 'chai'
-import {BondCreatedEvent} from '../../typechain/BondFactory'
+import {CreateBondEvent} from '../../typechain/BondFactory'
 import {
     AllowRedemptionEvent,
     DebtIssueEvent,
+    ExpireEvent,
     FullCollateralEvent,
     PartialCollateralEvent,
     RedemptionEvent,
@@ -52,19 +53,19 @@ export function allowRedemptionEvent(event: Event): {authorizer: string} {
 }
 
 /**
- * Shape check and conversion for a BondCreatedEvent.
+ * Shape check and conversion for a CreateBondEvent.
  */
-export function bondCreatedEvent(event: Event): {
+export function createBondEvent(event: Event): {
     bond: string
     name: string
     debtSymbol: string
     debtAmount: BigNumber
-    collateralSymbol: string
     owner: string
     treasury: string
+    expiryTimestamp: BigNumber
     data: string
 } {
-    const bondCreated = event as BondCreatedEvent
+    const create = event as CreateBondEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
@@ -72,12 +73,12 @@ export function bondCreatedEvent(event: Event): {
     expect(args?.name).is.not.undefined
     expect(args?.debtSymbol).is.not.undefined
     expect(args?.debtAmount).is.not.undefined
-    expect(args?.collateralSymbol).is.not.undefined
     expect(args?.owner).is.not.undefined
     expect(args?.treasury).is.not.undefined
+    expect(args?.expiryTimestamp).is.not.undefined
     expect(args?.data).is.not.undefined
 
-    return bondCreated.args
+    return create.args
 }
 
 /**
@@ -121,6 +122,27 @@ export function events(receipt: ContractReceipt): Event[] {
     const events = receipt.events
     expect(events).is.not.undefined
     return events ? events : []
+}
+
+/**
+ * Shape check and conversion for a ExpireEvent.
+ */
+export function expireEvent(event: Event): {
+    sender: string
+    treasury: string
+    collateralSymbol: string
+    collateralAmount: BigNumber
+} {
+    const expire = event as ExpireEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.sender).is.not.undefined
+    expect(args?.treasury).is.not.undefined
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.collateralAmount).is.not.undefined
+
+    return expire.args
 }
 
 /**
@@ -268,6 +290,26 @@ export async function verifyDebtIssueEvent(
 }
 
 /**
+ * Verifies the content for a Expire event.
+ */
+export async function verifyExpireEvent(
+    receipt: ContractReceipt,
+    sender: string,
+    treasury: string,
+    collateral: ExpectTokenBalance
+): Promise<void> {
+    const depositOneEvent = expireEvent(event('Expire', events(receipt)))
+    expect(depositOneEvent.sender, 'Debt token receiver').equals(sender)
+    expect(depositOneEvent.treasury, 'Debt token receiver').equals(treasury)
+    expect(depositOneEvent.collateralSymbol, 'Debt token symbol').equals(
+        collateral.symbol
+    )
+    expect(depositOneEvent.collateralAmount, 'Debt token amount').equals(
+        collateral.amount
+    )
+}
+
+/**
  * Verifies the content for a Full Collateral event.
  */
 export async function verifyPartialCollateralEvent(
@@ -362,26 +404,30 @@ export async function verifyWithdrawCollateralEvent(
     const onlyTransferEvent = withdrawCollateralEvent(
         event('WithdrawCollateral', events(receipt))
     )
-    expect(onlyTransferEvent.receiver, 'Transfer from').equals(transfer.to)
-    expect(onlyTransferEvent.symbol, 'Transfer to').equals(transfer.symbol)
-    expect(onlyTransferEvent.amount, 'Transfer amount').equals(transfer.amount)
+    expect(onlyTransferEvent.treasury, 'Transfer from').equals(transfer.to)
+    expect(onlyTransferEvent.collateralSymbol, 'Transfer to').equals(
+        transfer.symbol
+    )
+    expect(onlyTransferEvent.collateralAmount, 'Transfer amount').equals(
+        transfer.amount
+    )
 }
 
 /**
  * Shape check and conversion for a WithdrawCollateralEvent.
  */
 export function withdrawCollateralEvent(event: Event): {
-    receiver: string
-    symbol: string
-    amount: BigNumber
+    treasury: string
+    collateralSymbol: string
+    collateralAmount: BigNumber
 } {
     const close = event as WithdrawCollateralEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
-    expect(args?.receiver).is.not.undefined
-    expect(args?.symbol).is.not.undefined
-    expect(args?.amount).is.not.undefined
+    expect(args?.treasury).is.not.undefined
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.collateralAmount).is.not.undefined
 
     return close.args
 }

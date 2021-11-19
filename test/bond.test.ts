@@ -12,7 +12,7 @@ import {deployContract, execute, signer} from './utils/contracts'
 import {BigNumberish, constants, ContractReceipt} from 'ethers'
 import {
     event,
-    bondCreatedEvent,
+    createBondEvent,
     events,
     verifyRedemptionEvent,
     verifyDebtIssueEvent,
@@ -21,7 +21,8 @@ import {
     verifyAllowRedemptionEvent,
     verifyWithdrawCollateralEvent,
     verifyFullCollateralEvent,
-    verifyPartialCollateralEvent
+    verifyPartialCollateralEvent,
+    verifyExpireEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -32,9 +33,11 @@ chai.use(solidity)
 const ADDRESS_ZERO = constants.AddressZero
 const ZERO = 0n
 const ONE = 1n
+const ONE_DAY_MS = 1000 * 60 * 60 * 24
 const FORTY_PERCENT = 40n
 const FIFTY_PERCENT = 50n
 const DATA = 'performance factors;assessment date;rewards pool'
+const BOND_EXPIRY = 750000n
 
 describe('Bond contract', () => {
     before(async () => {
@@ -150,6 +153,97 @@ describe('Bond contract', () => {
         })
     })
 
+    describe('expire', () => {
+        it('when called by non-owner', async () => {
+            const pledge = 445n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            expect(await bond.paused()).is.false
+
+            await bond.connect(guarantorOne).expire()
+
+            await verifyBalances([
+                {address: bond.address, bond: ZERO, collateral: ZERO},
+                {address: guarantorOne, bond: pledge, collateral: ZERO},
+                {address: treasury, bond: ZERO, collateral: pledge}
+            ])
+            expect(await bond.paused()).is.true
+        })
+
+        it('during redemption', async () => {
+            const pledge = 9899n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.allowRedemption()
+            expect(await bond.paused()).is.false
+            expect(await bond.redeemable()).is.true
+
+            await bond.expire()
+
+            await verifyBalances([
+                {address: bond.address, bond: ZERO, collateral: ZERO},
+                {address: guarantorOne, bond: pledge, collateral: ZERO},
+                {address: treasury, bond: ZERO, collateral: pledge}
+            ])
+            expect(await bond.paused()).is.true
+            expect(await bond.redeemable()).is.true
+        })
+
+        it('when paused', async () => {
+            const pledge = 667777n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.pause()
+            expect(await bond.paused()).is.true
+
+            await bond.connect(guarantorOne).expire()
+
+            await verifyBalances([
+                {address: bond.address, bond: ZERO, collateral: ZERO},
+                {address: guarantorOne, bond: pledge, collateral: ZERO},
+                {address: treasury, bond: ZERO, collateral: pledge}
+            ])
+            expect(await bond.paused()).is.true
+        })
+
+        it('only when there is collateral to move', async () => {
+            bond = await createBond(factory, 500n)
+
+            await expect(
+                bond.connect(guarantorOne).expire()
+            ).to.be.revertedWith('Bond::expire: no collateral remains')
+        })
+
+        it('only after expiry', async () => {
+            const receipt = await execute(
+                factory.createBond(
+                    'Special Debt Certificate',
+                    'SDC001',
+                    500n,
+                    collateralSymbol,
+                    Date.now() + ONE_DAY_MS,
+                    DATA
+                )
+            )
+            bond = await bondContractAt(
+                createBondEvent(event('CreateBond', events(receipt))).bond
+            )
+
+            await expect(bond.expire()).to.be.revertedWith(
+                'ExpiryTimestamp: not yet expired'
+            )
+        })
+    })
+
     describe('init', () => {
         it('can only call once', async () => {
             bond = await createBond(factory, ONE)
@@ -161,6 +255,7 @@ describe('Bond contract', () => {
                     ONE,
                     collateralTokens.address,
                     treasury,
+                    BOND_EXPIRY,
                     DATA
                 )
             ).to.be.revertedWith(
@@ -178,6 +273,7 @@ describe('Bond contract', () => {
                     ZERO,
                     collateralTokens.address,
                     treasury,
+                    BOND_EXPIRY,
                     DATA
                 )
             ).to.be.revertedWith('Bond::mint: too small')
@@ -193,6 +289,7 @@ describe('Bond contract', () => {
                     ONE,
                     collateralTokens.address,
                     ADDRESS_ZERO,
+                    BOND_EXPIRY,
                     DATA
                 )
             ).to.be.revertedWith('Bond::init: treasury is zero address')
@@ -208,6 +305,7 @@ describe('Bond contract', () => {
                     ONE,
                     ADDRESS_ZERO,
                     treasury,
+                    BOND_EXPIRY,
                     DATA
                 )
             ).to.be.revertedWith(
@@ -226,6 +324,7 @@ describe('Bond contract', () => {
                 debtTokens,
                 collateralTokens.address,
                 treasury,
+                BOND_EXPIRY,
                 DATA
             )
 
@@ -243,6 +342,7 @@ describe('Bond contract', () => {
                 debtTokens,
                 collateralTokens.address,
                 treasury,
+                BOND_EXPIRY,
                 DATA
             )
 
@@ -752,6 +852,57 @@ describe('Bond contract', () => {
         ])
     })
 
+    it('one guarantor deposit full collateral, are partially slashed, then fully redeems, with collateral left over due to rounding', async () => {
+        const pledge = 12345n
+        const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
+        const debtTokens = pledge
+        const slashedCollateral = debtTokens - slash(debtTokens, FIFTY_PERCENT)
+        bond = await createBond(factory, debtTokens)
+        await setupGuarantorsWithCollateral([
+            {signer: guarantorOne, pledge: pledge}
+        ])
+        await depositBond(guarantorOne, pledge)
+        await slashCollateral(slashedCollateral)
+        await allowRedemption()
+        await redeem(guarantorOne, pledge)
+        const pledgeSlashedFloored = pledgeSlashed - ONE
+
+        // Slashed collateral in Treasury, Guarantors redeemed, no debt remain
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, collateral: ONE},
+            {
+                address: guarantorOne,
+                bond: ZERO,
+                collateral: pledgeSlashedFloored
+            },
+            {address: treasury, bond: ZERO, collateral: slashedCollateral}
+        ])
+
+        // Move the rounding error from the Bond contract to the Treasury
+        const withdrawReceipt = await withdrawCollateral()
+        await verifyWithdrawCollateralEvent(withdrawReceipt, {
+            to: treasury,
+            symbol: collateralSymbol,
+            amount: ONE
+        })
+        await verifyTransferEvent(withdrawReceipt, {
+            from: bond.address,
+            to: treasury,
+            amount: ONE
+        })
+
+        // Nothing in bond, with the rounding error now in the Treasury
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, collateral: ZERO},
+            {
+                address: guarantorOne,
+                bond: ZERO,
+                collateral: pledgeSlashedFloored
+            },
+            {address: treasury, bond: ZERO, collateral: slashedCollateral + ONE}
+        ])
+    })
+
     it('two guarantors deposit partial collateral, then fully redeem', async () => {
         const pledgeOne = 30050n
         const pledgeTwo = 59500n
@@ -834,55 +985,92 @@ describe('Bond contract', () => {
         ])
     })
 
-    it('one guarantor deposit full collateral, are partially slashed, then fully redeems, with collateral left over due to rounding', async () => {
-        const pledge = 12345n
-        const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
-        const debtTokens = pledge
-        const slashedCollateral = debtTokens - slash(debtTokens, FIFTY_PERCENT)
+    it('two guarantors deposit full collateral, partially slashed, then expiry by owner', async () => {
+        const pledgeOne = 30050n
+        const pledgeTwo = 59500n
+        const debtTokens = pledgeOne + pledgeTwo
+        const collateral = debtTokens
+        const slashedCollateral = slash(collateral, FORTY_PERCENT)
         bond = await createBond(factory, debtTokens)
+        const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
-            {signer: guarantorOne, pledge: pledge}
+            {signer: guarantorOne, pledge: pledgeOne},
+            {signer: guarantorTwo, pledge: pledgeTwo}
         ])
-        await depositBond(guarantorOne, pledge)
-        await slashCollateral(slashedCollateral)
-        await allowRedemption()
-        await redeem(guarantorOne, pledge)
-        const pledgeSlashedFloored = pledgeSlashed - ONE
 
-        // Slashed collateral in Treasury, Guarantors redeemed, no debt remain
+        // Each Guarantor has their full collateral amount (their pledge)
         await verifyBalances([
-            {address: bond.address, bond: ZERO, collateral: ONE},
-            {
-                address: guarantorOne,
-                bond: ZERO,
-                collateral: pledgeSlashedFloored
-            },
-            {address: treasury, bond: ZERO, collateral: slashedCollateral}
+            {address: bond.address, bond: debtTokens, collateral: ZERO},
+            {address: guarantorOne, bond: ZERO, collateral: pledgeOne},
+            {address: guarantorTwo, bond: ZERO, collateral: pledgeTwo},
+            {address: treasury, bond: ZERO, collateral: ZERO}
         ])
 
-        // Move the rounding error from the Bond contract to the Treasury
-        const withdrawReceipt = await withdrawCollateral()
-        await verifyWithdrawCollateralEvent(withdrawReceipt, {
-            to: treasury,
-            symbol: collateralSymbol,
-            amount: ONE
+        // Guarantor One deposits their full pledge amount
+        const depositOne = await depositBond(guarantorOne, pledgeOne)
+        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+            symbol: debtSymbol,
+            amount: pledgeOne
         })
-        await verifyTransferEvent(withdrawReceipt, {
+
+        // Guarantor Two deposits their full pledge amount
+        const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
+        await verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
+            symbol: debtSymbol,
+            amount: pledgeTwo
+        })
+
+        // Bond holds all collateral
+        await verifyBalances([
+            {
+                address: bond.address,
+                bond: ZERO,
+                collateral: pledgeOne + pledgeTwo
+            },
+            {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
+            {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
+            {address: treasury, bond: ZERO, collateral: ZERO}
+        ])
+
+        // Slash forty percent of the collateral assets
+        const slashReceipt = await slashCollateral(slashedCollateral)
+        await verifySlashEvent(slashReceipt, {
+            symbol: collateralSymbol,
+            amount: slashedCollateral
+        })
+        await verifyTransferEvent(slashReceipt, {
             from: bond.address,
             to: treasury,
-            amount: ONE
+            amount: slashedCollateral
         })
 
-        // Nothing in bond, with the rounding error now in the Treasury
+        // Owner expires the un-paused bond
+        expect(await bond.paused()).is.false
+        const expireReceipt = await expire()
+        await verifyExpireEvent(expireReceipt, admin.address, treasury, {
+            symbol: collateralSymbol,
+            amount: collateral - slashedCollateral
+        })
+        await verifyTransferEvent(expireReceipt, {
+            from: bond.address,
+            to: treasury,
+            amount: collateral - slashedCollateral
+        })
+
+        // Treasury holds all collateral, with an unredeemed debt tokens still held
         await verifyBalances([
-            {address: bond.address, bond: ZERO, collateral: ZERO},
             {
-                address: guarantorOne,
+                address: bond.address,
                 bond: ZERO,
-                collateral: pledgeSlashedFloored
+                collateral: ZERO
             },
-            {address: treasury, bond: ZERO, collateral: slashedCollateral + ONE}
+            {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
+            {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
+            {address: treasury, bond: ZERO, collateral: collateral}
         ])
+
+        // The Bond must now be paused
+        expect(await bond.paused()).is.true
     })
 
     it('three guarantors deposit full collateral, are partially slashed, then fully redeems', async () => {
@@ -1012,6 +1200,10 @@ describe('Bond contract', () => {
         ])
     })
 
+    async function expire(): Promise<ContractReceipt> {
+        return successfulTransaction(bond.expire())
+    }
+
     async function redeem(
         guarantor: SignerWithAddress,
         amount: bigint
@@ -1070,11 +1262,12 @@ describe('Bond contract', () => {
                 'SDC001',
                 debtTokens,
                 collateralSymbol,
+                BOND_EXPIRY,
                 DATA
             )
         )
-        const creationEvent = bondCreatedEvent(
-            event('BondCreated', events(receipt))
+        const creationEvent = createBondEvent(
+            event('CreateBond', events(receipt))
         )
         const bondAddress = creationEvent.bond
         expect(ethers.utils.isAddress(bondAddress)).is.true

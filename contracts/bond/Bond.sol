@@ -5,17 +5,29 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "./ExpiryTimestamp.sol";
 
 /**
  * @title Bond contract that issues debt tokens in exchange for a collateral deposited.
  *
  * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
  */
-contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
+contract Bond is
+    ERC20Upgradeable,
+    ExpiryTimestamp,
+    OwnableUpgradeable,
+    PausableUpgradeable
+{
     event AllowRedemption(address authorizer);
     event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
     event Deposit(
         address depositor,
+        string collateralSymbol,
+        uint256 collateralAmount
+    );
+    event Expire(
+        address sender,
+        address treasury,
         string collateralSymbol,
         uint256 collateralAmount
     );
@@ -34,7 +46,11 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         uint256 collateralAmount
     );
     event Slash(string collateralSymbol, uint256 collateralAmount);
-    event WithdrawCollateral(address receiver, string symbol, uint256 amount);
+    event WithdrawCollateral(
+        address treasury,
+        string collateralSymbol,
+        uint256 collateralAmount
+    );
 
     /**
      * @dev Modifier to make a function callable only when the contract is not redeemable.
@@ -92,11 +108,13 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         uint256 debtTokens_,
         address erc20CollateralTokens_,
         address erc20CapableTreasury_,
+        uint256 expiryTimestamp_,
         string calldata data_
     ) external initializer {
         __ERC20_init(name_, symbol_);
         __Ownable_init();
         __Pausable_init();
+        __ExpiryTimestamp_init(expiryTimestamp_);
 
         require(
             erc20CapableTreasury_ != address(0),
@@ -152,6 +170,13 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     }
 
     /**
+     * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
+     */
+    function data() external view returns (string memory) {
+        return _data;
+    }
+
+    /**
      * @dev Before the deposit can be made, this contract must have been approved to transfer the given amount
      * from the ERC20 token being used as collateral.
      */
@@ -194,6 +219,32 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     }
 
     /**
+     *  @notice Moves any remaining collateral to the Treasury and pauses the bond.
+     *  @dev A fail safe, callable by anyone after the Bond has expired.
+     *       If Ownership is lost, this can be used to move all remaining collateral to the Treasury,
+     *       after which petitions for redemption can be made.
+     *  @dev Expiry operates separately to pause, so a paused contract can be expired (fail safe for loss of
+     *       Ownership).
+     */
+    function expire() external whenBeyondExpiry {
+        uint256 collateral = _collateralTokens.balanceOf(address(this));
+        require(collateral > 0, "Bond::expire: no collateral remains");
+
+        emit Expire(
+            _msgSender(),
+            _treasury,
+            _collateralTokens.symbol(),
+            collateral
+        );
+
+        // Unknown ERC20 token behaviour, cater for bool usage
+        bool transferred = _collateralTokens.transfer(_treasury, collateral);
+        require(transferred, "Bond::expire: collateral transfer failed");
+
+        _pauseSafely();
+    }
+
+    /**
      * @dev Whether or not the Bond contract has achieved full collateral target.
      */
     function hasFullCollateral() public view returns (bool) {
@@ -205,14 +256,6 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
      */
     function initialDebtTokens() external view returns (uint256) {
         return _initialDebtTokens;
-    }
-
-    /**
-     * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
-     */
-    function _mint(uint256 amount) private whenNotPaused whenNotRedeemable {
-        require(amount > 0, "Bond::mint: too small");
-        _mint(address(this), amount);
     }
 
     /**
@@ -322,7 +365,7 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         uint256 collateral = _collateralTokens.balanceOf(address(this));
         require(
             collateral > 0,
-            "Bond::withdrawCollateral: no collateral remain"
+            "Bond::withdrawCollateral: no collateral remains"
         );
 
         emit WithdrawCollateral(
@@ -340,6 +383,17 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     }
 
     /**
+     * @dev Applies the redemption ratio calculation to the given amount.
+     */
+    function _applyRedemptionRation(uint256 amount)
+        private
+        view
+        returns (uint256)
+    {
+        return (_redemptionRatio * amount) / REDEMPTION_RATIO_ACCURACY;
+    }
+
+    /**
      * @dev Determines the current redemption ratio for any redemption that would occur based on the current
      * guarantor collateral and total supply.
      */
@@ -347,13 +401,6 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         return
             (REDEMPTION_RATIO_ACCURACY * _guarantorCollateral) /
             (totalSupply() - _excessDebtTokens);
-    }
-
-    /**
-     * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
-     */
-    function data() external view returns (string memory) {
-        return _data;
     }
 
     /**
@@ -378,6 +425,24 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
     }
 
     /**
+     * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
+     */
+    function _mint(uint256 amount) private whenNotPaused whenNotRedeemable {
+        require(amount > 0, "Bond::mint: too small");
+        _mint(address(this), amount);
+    }
+
+    /**
+     *  @notice Ensure the Bond is paused.
+     *  @dev Pauses the Bond if not already paused. If already paused, does nothing (not revert).
+     */
+    function _pauseSafely() private {
+        if (!paused()) {
+            _pause();
+        }
+    }
+
+    /**
      * @dev Collateral is deposited at a 1 to 1 ratio, however slashing can change that lower.
      */
     function _redemptionAmount(uint256 amount, uint256 totalSupply)
@@ -390,16 +455,5 @@ contract Bond is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable {
         } else {
             return _applyRedemptionRation(amount);
         }
-    }
-
-    /**
-     * @dev Applies the redemption ratio calculation to the given amount.
-     */
-    function _applyRedemptionRation(uint256 amount)
-        private
-        view
-        returns (uint256)
-    {
-        return (_redemptionRatio * amount) / REDEMPTION_RATIO_ACCURACY;
     }
 }
