@@ -160,6 +160,13 @@ contract Bond is
     }
 
     /**
+     * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
+     */
+    function data() external view returns (string memory) {
+        return _data;
+    }
+
+    /**
      * @dev Before the deposit can be made, this contract must have been approved to transfer the given amount
      * from the ERC20 token being used as collateral.
      */
@@ -202,6 +209,16 @@ contract Bond is
     }
 
     /**
+     *  @notice Moves any remaining collateral to the Treasury and pause the bond.
+     *  @dev A fail safe, callable by anyone after the Bond has expired.
+     *       If Ownership is lost, this can be used to move all remaining collateral to the Treasury,
+     *       after which petitions for redemption can be made.
+     */
+    function expire() external whenBeyondExpiry {
+        //TODO code
+    }
+
+    /**
      * @dev Whether or not the Bond contract has achieved full collateral target.
      */
     function hasFullCollateral() public view returns (bool) {
@@ -213,14 +230,6 @@ contract Bond is
      */
     function initialDebtTokens() external view returns (uint256) {
         return _initialDebtTokens;
-    }
-
-    /**
-     * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
-     */
-    function _mint(uint256 amount) private whenNotPaused whenNotRedeemable {
-        require(amount > 0, "Bond::mint: too small");
-        _mint(address(this), amount);
     }
 
     /**
@@ -348,6 +357,17 @@ contract Bond is
     }
 
     /**
+     * @dev Applies the redemption ratio calculation to the given amount.
+     */
+    function _applyRedemptionRation(uint256 amount)
+        private
+        view
+        returns (uint256)
+    {
+        return (_redemptionRatio * amount) / REDEMPTION_RATIO_ACCURACY;
+    }
+
+    /**
      * @dev Determines the current redemption ratio for any redemption that would occur based on the current
      * guarantor collateral and total supply.
      */
@@ -355,13 +375,6 @@ contract Bond is
         return
             (REDEMPTION_RATIO_ACCURACY * _guarantorCollateral) /
             (totalSupply() - _excessDebtTokens);
-    }
-
-    /**
-     * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
-     */
-    function data() external view returns (string memory) {
-        return _data;
     }
 
     /**
@@ -386,6 +399,14 @@ contract Bond is
     }
 
     /**
+     * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
+     */
+    function _mint(uint256 amount) private whenNotPaused whenNotRedeemable {
+        require(amount > 0, "Bond::mint: too small");
+        _mint(address(this), amount);
+    }
+
+    /**
      * @dev Collateral is deposited at a 1 to 1 ratio, however slashing can change that lower.
      */
     function _redemptionAmount(uint256 amount, uint256 totalSupply)
@@ -398,16 +419,5 @@ contract Bond is
         } else {
             return _applyRedemptionRation(amount);
         }
-    }
-
-    /**
-     * @dev Applies the redemption ratio calculation to the given amount.
-     */
-    function _applyRedemptionRation(uint256 amount)
-        private
-        view
-        returns (uint256)
-    {
-        return (_redemptionRatio * amount) / REDEMPTION_RATIO_ACCURACY;
     }
 }

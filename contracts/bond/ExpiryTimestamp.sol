@@ -14,7 +14,7 @@ abstract contract ExpiryTimestamp is Initializable {
     /**
         @notice Reverts when the time has not met or passed the expiry timestamp.
      */
-    modifier hasExpired() {
+    modifier whenBeyondExpiry() {
         require(block.timestamp >= _expiry, "ExpiryTimestamp: not yet expired");
         _;
     }
