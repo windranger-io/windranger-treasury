@@ -120,4 +120,4 @@ jobs:
       - name: Slither Static Analysis
         uses: luisfontes19/slither-static-analysis-action@v0.3.4
         with:
-          slither-params: '--filter-paths "BitDAO.sol|contracts/treasury|node_modules" --exclude solc-version'
+          slither-params: '--filter-paths "contracts/test|contracts/treasury|node_modules" --exclude solc-version'

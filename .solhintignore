@@ -19,5 +19,4 @@ coverage
 dist
 
 # Underdevelopment - ignore for now
-/contracts/BitDAO.sol
 /contracts/treasury
