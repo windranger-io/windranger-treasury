@@ -131,7 +131,7 @@ describe('BondFactory contract', () => {
 
             await bonds.whitelistCollateralToken(tokens.address)
 
-            expect(await bonds.isCollateralTokenWhitelisted(symbol)).is.true
+            expect(await bonds.isCollateralWhitelisted(symbol)).is.true
             expect(await bonds.collateralTokenAddress(symbol)).equals(
                 tokens.address
             )

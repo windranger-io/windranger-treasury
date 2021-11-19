@@ -28,6 +28,8 @@ contract BondFactory is CollateralWhitelist, Ownable {
      * @dev Creates the factory with the given collateral tokens automatically being whitelisted.
      */
     constructor(address erc20CollateralTokens_, address erc20CapableTreasury_) {
+        __CollateralWhitelist_init();
+
         require(
             erc20CapableTreasury_ != address(0),
             "BF: treasury is zero address"
@@ -47,7 +49,7 @@ contract BondFactory is CollateralWhitelist, Ownable {
         string calldata data_
     ) external returns (address) {
         require(
-            isCollateralTokenWhitelisted(collateralTokenSymbol_),
+            isCollateralWhitelisted(collateralTokenSymbol_),
             "BF: collateral not whitelisted"
         );
 
@@ -95,7 +97,7 @@ contract BondFactory is CollateralWhitelist, Ownable {
         external
         onlyOwner
     {
-        _updateCollateralToken(erc20CollateralTokens_);
+        _updateWhitelistedAddress(erc20CollateralTokens_);
     }
 
     /**
