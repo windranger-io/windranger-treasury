@@ -164,8 +164,6 @@ describe('BondFactory contract', () => {
                 "function selector was not recognized and there's no fallback function"
             )
         })
-
-        //TODO update to the same address - revert
     })
 
     let admin: string
