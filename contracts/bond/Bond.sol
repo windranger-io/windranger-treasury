@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./ExpiryTimestamp.sol";
+import "./Redeemable.sol";
 
 /**
  * @title Bond contract that issues debt tokens in exchange for a collateral deposited.
@@ -16,7 +17,8 @@ contract Bond is
     ERC20Upgradeable,
     ExpiryTimestamp,
     OwnableUpgradeable,
-    PausableUpgradeable
+    PausableUpgradeable,
+    Redeemable
 {
     /// Multiplier / divider for four decimal places, used in redemption ratio calculation.
     uint256 private constant _REDEMPTION_RATIO_ACCURACY = 10000;
@@ -38,7 +40,6 @@ contract Bond is
     IERC20MetadataUpgradeable private _collateralTokens;
     string private _data;
     uint256 private _initialDebtTokens;
-    bool private _isRedemptionAllowed;
     address private _treasury;
 
     event AllowRedemption(address authorizer);
@@ -76,28 +77,6 @@ contract Bond is
     );
 
     /**
-     * @dev Modifier to make a function callable only when the contract is not redeemable.
-     *
-     * Requirements:
-     * - The contract must not be redeemable.
-     */
-    modifier whenNotRedeemable() {
-        require(!_isRedemptionAllowed, "whenNotRedeemable: redeemable");
-        _;
-    }
-
-    /**
-     * @dev Modifier to make a function callable only when the contract is redeemable.
-     *
-     * Requirements:
-     * - The contract must be redeemable.
-     */
-    modifier whenRedeemable() {
-        require(_isRedemptionAllowed, "whenRedeemable: not redeemable");
-        _;
-    }
-
-    /**
      * @param erc20CollateralTokens_ to avoid being able to break the Bond behaviours the reference to the collateral
      *              tokens cannot be be changed after init,
      *              To update the tokens address, either follow the proxy convention for tokens, or crete a new bond.
@@ -115,6 +94,7 @@ contract Bond is
         __Ownable_init();
         __Pausable_init();
         __ExpiryTimestamp_init(expiryTimestamp_);
+        __Redeemable_init();
 
         require(
             erc20CapableTreasury_ != address(0),
@@ -128,7 +108,6 @@ contract Bond is
         _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens_);
         _data = data_;
         _initialDebtTokens = debtTokens_;
-        _isRedemptionAllowed = false;
         _treasury = erc20CapableTreasury_;
 
         _mint(debtTokens_);
@@ -143,7 +122,7 @@ contract Bond is
         whenNotRedeemable
         onlyOwner
     {
-        _isRedemptionAllowed = true;
+        _allowRedemption();
         emit AllowRedemption(_msgSender());
 
         if (_hasDebtTokensRemaining()) {
@@ -320,13 +299,6 @@ contract Bond is
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(_treasury, collateral);
         require(transferred, "Bond: collateral transfer failed");
-    }
-
-    /**
-     * @dev whether the Bond is in the redemption state (allows redeem operation, but denies deposit, mint and slash).
-     */
-    function redeemable() external view returns (bool) {
-        return _isRedemptionAllowed;
     }
 
     /**
