@@ -67,10 +67,41 @@ jobs:
         run: npm run build
 
       - name: Lint
-        run: npm run lint
+        run: npm run ts-lint
 
 
-  Solidity-Static-Analysis:
+  Solidity-Static-Analysis-Solhint:
+    runs-on: ubuntu-latest
+    name: TypeScript static analysis
+    needs: Unit-Tests
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        name: Set up cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Set up node
+        uses: actions/setup-node@v2.4.1
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Lint
+        run: npm run sol-lint
+
+
+  Solidity-Static-Analysis-Slither:
     runs-on: ubuntu-latest
     name: Solidity static analysis
     needs: Unit-Tests
