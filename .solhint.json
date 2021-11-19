@@ -8,7 +8,7 @@
     "constructor-syntax": "warn",
     "func-param-name-mixedcase": "warn",
     "modifier-name-mixedcase": "warn",
-    "private-vars-leading-underscore": "error",
+    "private-vars-leading-underscore": "warn",
     "compiler-version": "off"
   }
 }
