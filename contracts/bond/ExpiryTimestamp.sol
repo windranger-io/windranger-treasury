@@ -11,6 +11,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
           is after  the expiry timestamp.
  */
 abstract contract ExpiryTimestamp is Initializable {
+    uint256 private _expiry;
+
     /**
         @notice Reverts when the time has not met or passed the expiry timestamp.
      */
@@ -18,8 +20,6 @@ abstract contract ExpiryTimestamp is Initializable {
         require(block.timestamp >= _expiry, "ExpiryTimestamp: not yet expired");
         _;
     }
-
-    uint256 private _expiry;
 
     /**
         @notice Initialisation of the expiry timestamp to enable the 'hasExpired' modifier.
