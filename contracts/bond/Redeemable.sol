@@ -11,7 +11,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
          This module is used through inheritance.
  */
 abstract contract Redeemable is Initializable {
-
     /// Whether the state is redeemable (or not redeemable)
     bool private _redeemable;
 
