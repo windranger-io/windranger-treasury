@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "./CollateralWhitelist.sol";
 import "./Bond.sol";
 
 /**
@@ -10,10 +10,8 @@ import "./Bond.sol";
  *
  * @dev Applies common configuration to bond contracts created.
  */
-contract BondFactory is Ownable {
+contract BondFactory is CollateralWhitelist, Ownable {
     address private _treasury;
-
-    mapping(string => address) private _collateralTokensWhitelist;
 
     event CreateBond(
         address bond,
@@ -30,10 +28,8 @@ contract BondFactory is Ownable {
      * @dev Creates the factory with the given collateral tokens automatically being whitelisted.
      */
     constructor(address erc20CollateralTokens_, address erc20CapableTreasury_) {
-        require(
-            erc20CollateralTokens_ != address(0),
-            "BF: collateral is zero address"
-        );
+        __CollateralWhitelist_init();
+
         require(
             erc20CapableTreasury_ != address(0),
             "BF: treasury is zero address"
@@ -41,9 +37,7 @@ contract BondFactory is Ownable {
 
         _treasury = erc20CapableTreasury_;
 
-        _collateralTokensWhitelist[
-            IERC20Metadata(erc20CollateralTokens_).symbol()
-        ] = erc20CollateralTokens_;
+        _whitelistCollateral(erc20CollateralTokens_);
     }
 
     function createBond(
@@ -55,7 +49,7 @@ contract BondFactory is Ownable {
         string calldata data_
     ) external returns (address) {
         require(
-            isCollateralTokenWhitelisted(collateralTokenSymbol_),
+            isCollateralWhitelisted(collateralTokenSymbol_),
             "BF: collateral not whitelisted"
         );
 
@@ -76,7 +70,7 @@ contract BondFactory is Ownable {
             name_,
             symbol_,
             debtTokens_,
-            _collateralTokensWhitelist[collateralTokenSymbol_],
+            whitelistedCollateralAddress(collateralTokenSymbol_),
             _treasury,
             expiryTimestamp_,
             data_
@@ -99,25 +93,11 @@ contract BondFactory is Ownable {
      * @dev Permits the owner to update the collateral token address of an already whitelisted token.
      * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
-    function updateCollateralTokenAddress(address erc20CollateralTokens_)
+    function updateWhitelistedCollateral(address erc20CollateralTokens_)
         external
         onlyOwner
     {
-        require(
-            erc20CollateralTokens_ != address(0),
-            "BF: collateral is zero address"
-        );
-
-        string memory symbol = IERC20Metadata(erc20CollateralTokens_).symbol();
-        require(
-            isCollateralTokenWhitelisted(symbol),
-            "BF: collateral not whitelisted"
-        );
-        require(
-            _collateralTokensWhitelist[symbol] != erc20CollateralTokens_,
-            "BF: collateral identical address"
-        );
-        _collateralTokensWhitelist[symbol] = erc20CollateralTokens_;
+        _updateWhitelistedCollateral(erc20CollateralTokens_);
     }
 
     /**
@@ -126,32 +106,11 @@ contract BondFactory is Ownable {
      * @dev Whitelists the erc20 symbol as a Bond collateral token from now onwards.
      *      On bond creation the tokens address used is retrieved by symbol from the whitelist.
      */
-    function whitelistCollateralToken(address erc20CollateralTokens_)
+    function whitelistCollateral(address erc20CollateralTokens_)
         external
         onlyOwner
     {
-        require(
-            erc20CollateralTokens_ != address(0),
-            "BF: whitelist is zero address"
-        );
-
-        string memory symbol = IERC20Metadata(erc20CollateralTokens_).symbol();
-        require(
-            _collateralTokensWhitelist[symbol] == address(0),
-            "BF: whitelist already present"
-        );
-        _collateralTokensWhitelist[symbol] = erc20CollateralTokens_;
-    }
-
-    /**
-     * @dev Retrieves the address for the collateral token address, if known (whitelisted).
-     */
-    function collateralTokenAddress(string calldata symbol)
-        external
-        view
-        returns (address)
-    {
-        return _collateralTokensWhitelist[symbol];
+        _whitelistCollateral(erc20CollateralTokens_);
     }
 
     /**
@@ -159,16 +118,5 @@ contract BondFactory is Ownable {
      */
     function treasury() external view returns (address) {
         return _treasury;
-    }
-
-    /**
-     * @dev Whether the token symbol has been whitelisted for use as collateral in a Bond.
-     */
-    function isCollateralTokenWhitelisted(string memory symbol)
-        public
-        view
-        returns (bool)
-    {
-        return _collateralTokensWhitelist[symbol] != address(0);
     }
 }
