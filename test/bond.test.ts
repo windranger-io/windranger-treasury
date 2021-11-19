@@ -151,6 +151,28 @@ describe('Bond contract', () => {
         })
     })
 
+    describe('expire', () => {
+        it('move collateral to treasury', async () => {
+            //TODO code
+        })
+
+        it('even when called by non-owner', async () => {
+            //TODO code
+        })
+
+        it('even when paused', async () => {
+            //TODO code
+        })
+
+        it('only when there is collateral to move', async () => {
+            //TODO code
+        })
+
+        it('only after expiry', async () => {
+            //TODO code
+        })
+    })
+
     describe('init', () => {
         it('can only call once', async () => {
             bond = await createBond(factory, ONE)
