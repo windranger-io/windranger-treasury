@@ -17,7 +17,7 @@ abstract contract CollateralWhitelist is Initializable {
         @notice Whitelisted ERC20 token address for the symbol.
         @dev Retrieves the address for the collateral token address, if it has been whitelisted, otherwise address zero.
      */
-    function collateralTokenAddress(string calldata symbol)
+    function whitelistedCollateralAddress(string calldata symbol)
         public
         view
         returns (address)
@@ -28,7 +28,11 @@ abstract contract CollateralWhitelist is Initializable {
     /**
         @notice Whether a whitelisted ERC20 token contract address exists for the symbol.
      */
-    function isCollateralWhitelisted(string memory symbol) public view returns (bool) {
+    function isCollateralWhitelisted(string memory symbol)
+        public
+        view
+        returns (bool)
+    {
         return _whitelist[symbol] != address(0);
     }
 
@@ -39,9 +43,7 @@ abstract contract CollateralWhitelist is Initializable {
         @dev Whitelists the collateral token, expecting the symbol to not have been previously whitelisted.
              Will revert if address is zero or the symbol already has a mapped address, or does not implement get symbol.
      */
-    function _whitelistCollateralToken(address erc20CollateralTokens_)
-        internal
-    {
+    function _whitelistCollateral(address erc20CollateralTokens_) internal {
         _requireNonZeroAddress(erc20CollateralTokens_);
 
         string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens_)
@@ -55,7 +57,7 @@ abstract contract CollateralWhitelist is Initializable {
         @dev Updates a previously whitelisted address to the given.
              Will revert if the address is zero, is identical to the current address, or does not implement get symbol.
      */
-    function _updateWhitelistedAddress(address erc20CollateralTokens_)
+    function _updateWhitelistedCollateral(address erc20CollateralTokens_)
         internal
     {
         _requireNonZeroAddress(erc20CollateralTokens_);

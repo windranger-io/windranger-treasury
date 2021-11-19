@@ -76,7 +76,7 @@ describe('BondFactory contract', () => {
 
     describe('collateral whitelist', () => {
         it('update address', async () => {
-            const startingAddress = await bonds.collateralTokenAddress(
+            const startingAddress = await bonds.whitelistedCollateralAddress(
                 collateralSymbol
             )
             expect(startingAddress).equals(collateralTokens.address)
@@ -84,9 +84,9 @@ describe('BondFactory contract', () => {
             expect(await collateralTokens.symbol()).equals(collateralSymbol)
             expect(collateralTokens.address).not.equals(startingAddress)
 
-            await bonds.updateCollateralTokenAddress(collateralTokens.address)
+            await bonds.updateWhitelistedCollateral(collateralTokens.address)
 
-            const updatedAddress = await bonds.collateralTokenAddress(
+            const updatedAddress = await bonds.whitelistedCollateralAddress(
                 collateralSymbol
             )
             expect(updatedAddress).not.equals(startingAddress)
@@ -94,19 +94,19 @@ describe('BondFactory contract', () => {
 
         it('cannot update address with identical value', async () => {
             await expect(
-                bonds.updateCollateralTokenAddress(collateralTokens.address)
+                bonds.updateWhitelistedCollateral(collateralTokens.address)
             ).to.be.revertedWith('Whitelist: identical address')
         })
 
         it('cannot update address to zero', async () => {
             await expect(
-                bonds.updateCollateralTokenAddress(ADDRESS_ZERO)
+                bonds.updateWhitelistedCollateral(ADDRESS_ZERO)
             ).to.be.revertedWith('Whitelist: zero address')
         })
 
         it('cannot update address to non-contract address', async () => {
             await expect(
-                bonds.updateCollateralTokenAddress(admin)
+                bonds.updateWhitelistedCollateral(admin)
             ).to.be.revertedWith('function call to a non-contract account')
         })
 
@@ -114,7 +114,7 @@ describe('BondFactory contract', () => {
             const box = await deployContract<Box>('Box')
 
             await expect(
-                bonds.updateCollateralTokenAddress(box.address)
+                bonds.updateWhitelistedCollateral(box.address)
             ).to.be.revertedWith(
                 "function selector was not recognized and there's no fallback function"
             )
@@ -129,23 +129,23 @@ describe('BondFactory contract', () => {
             )
             expect(await tokens.symbol()).equals(symbol)
 
-            await bonds.whitelistCollateralToken(tokens.address)
+            await bonds.whitelistCollateral(tokens.address)
 
             expect(await bonds.isCollateralWhitelisted(symbol)).is.true
-            expect(await bonds.collateralTokenAddress(symbol)).equals(
+            expect(await bonds.whitelistedCollateralAddress(symbol)).equals(
                 tokens.address
             )
         })
 
         it('cannot add existing token', async () => {
             await expect(
-                bonds.whitelistCollateralToken(collateralTokens.address)
+                bonds.whitelistCollateral(collateralTokens.address)
             ).to.be.revertedWith('Whitelist: already present')
         })
 
         it('cannot add address zero', async () => {
             await expect(
-                bonds.whitelistCollateralToken(ADDRESS_ZERO)
+                bonds.whitelistCollateral(ADDRESS_ZERO)
             ).to.be.revertedWith('Whitelist: zero address')
         })
 
@@ -153,7 +153,7 @@ describe('BondFactory contract', () => {
             const box = await deployContract<Box>('Box')
 
             await expect(
-                bonds.whitelistCollateralToken(box.address)
+                bonds.whitelistCollateral(box.address)
             ).to.be.revertedWith(
                 "function selector was not recognized and there's no fallback function"
             )

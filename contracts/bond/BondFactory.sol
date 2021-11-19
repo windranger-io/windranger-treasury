@@ -37,7 +37,7 @@ contract BondFactory is CollateralWhitelist, Ownable {
 
         _treasury = erc20CapableTreasury_;
 
-        _whitelistCollateralToken(erc20CollateralTokens_);
+        _whitelistCollateral(erc20CollateralTokens_);
     }
 
     function createBond(
@@ -70,7 +70,7 @@ contract BondFactory is CollateralWhitelist, Ownable {
             name_,
             symbol_,
             debtTokens_,
-            collateralTokenAddress(collateralTokenSymbol_),
+            whitelistedCollateralAddress(collateralTokenSymbol_),
             _treasury,
             expiryTimestamp_,
             data_
@@ -93,11 +93,11 @@ contract BondFactory is CollateralWhitelist, Ownable {
      * @dev Permits the owner to update the collateral token address of an already whitelisted token.
      * Only applies for bonds created after the update, previously created bonds remain unchanged.
      */
-    function updateCollateralTokenAddress(address erc20CollateralTokens_)
+    function updateWhitelistedCollateral(address erc20CollateralTokens_)
         external
         onlyOwner
     {
-        _updateWhitelistedAddress(erc20CollateralTokens_);
+        _updateWhitelistedCollateral(erc20CollateralTokens_);
     }
 
     /**
@@ -106,11 +106,11 @@ contract BondFactory is CollateralWhitelist, Ownable {
      * @dev Whitelists the erc20 symbol as a Bond collateral token from now onwards.
      *      On bond creation the tokens address used is retrieved by symbol from the whitelist.
      */
-    function whitelistCollateralToken(address erc20CollateralTokens_)
+    function whitelistCollateral(address erc20CollateralTokens_)
         external
         onlyOwner
     {
-        _whitelistCollateralToken(erc20CollateralTokens_);
+        _whitelistCollateral(erc20CollateralTokens_);
     }
 
     /**
