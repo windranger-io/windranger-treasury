@@ -25,6 +25,12 @@ contract Bond is
         string collateralSymbol,
         uint256 collateralAmount
     );
+    event Expire(
+        address sender,
+        address treasury,
+        string symbol,
+        uint256 amount
+    );
     event PartialCollateral(
         string collateralSymbol,
         uint256 collateralAmount,
@@ -40,7 +46,7 @@ contract Bond is
         uint256 collateralAmount
     );
     event Slash(string collateralSymbol, uint256 collateralAmount);
-    event WithdrawCollateral(address receiver, string symbol, uint256 amount);
+    event WithdrawCollateral(address treasury, string symbol, uint256 amount);
 
     /**
      * @dev Modifier to make a function callable only when the contract is not redeemable.
@@ -213,9 +219,23 @@ contract Bond is
      *  @dev A fail safe, callable by anyone after the Bond has expired.
      *       If Ownership is lost, this can be used to move all remaining collateral to the Treasury,
      *       after which petitions for redemption can be made.
+     *  @dev Expiry operates separately to pause, so a paused contract can be expired, again as fail safe for loss of
+     *       Ownership.
      */
     function expire() external whenBeyondExpiry {
-        //TODO code
+        uint256 collateral = _collateralTokens.balanceOf(address(this));
+        require(collateral > 0, "Bond::expire: no collateral remains");
+
+        emit Expire(
+            _msgSender(),
+            _treasury,
+            _collateralTokens.symbol(),
+            collateral
+        );
+
+        // Unknown ERC20 token behaviour, cater for bool usage
+        bool transferred = _collateralTokens.transfer(_treasury, collateral);
+        require(transferred, "Bond::expire: collateral transfer failed");
     }
 
     /**
@@ -339,7 +359,7 @@ contract Bond is
         uint256 collateral = _collateralTokens.balanceOf(address(this));
         require(
             collateral > 0,
-            "Bond::withdrawCollateral: no collateral remain"
+            "Bond::withdrawCollateral: no collateral remains"
         );
 
         emit WithdrawCollateral(
