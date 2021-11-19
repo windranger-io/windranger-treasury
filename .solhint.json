@@ -5,9 +5,9 @@
     "avoid-suicide": "error",
     "avoid-sha3": "warn",
     "not-rely-on-time": "off",
-    "constructor-syntax": "error",
-    "func-param-name-mixedcase": "error",
-    "modifier-name-mixedcase": "error",
+    "constructor-syntax": "warn",
+    "func-param-name-mixedcase": "warn",
+    "modifier-name-mixedcase": "warn",
     "private-vars-leading-underscore": "error",
     "compiler-version": "off"
   }
