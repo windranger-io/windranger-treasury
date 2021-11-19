@@ -7,9 +7,9 @@ pragma solidity ^0.8.0;
     @dev Event emitted on storing the value.
  */
 contract Box {
-    event Store(string value);
-
     string private _value;
+
+    event Store(string value);
 
     /**
         @notice store the given value.

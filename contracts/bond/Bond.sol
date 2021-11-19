@@ -18,6 +18,29 @@ contract Bond is
     OwnableUpgradeable,
     PausableUpgradeable
 {
+    /// Multiplier / divider for four decimal places, used in redemption ratio calculation.
+    uint256 private constant _REDEMPTION_RATIO_ACCURACY = 10000;
+
+    /// Only used in conjunction with slashing. Accuracy defined by REDEMPTION_RATIO_ACCURACY
+    uint256 private _redemptionRatio;
+
+    /*
+     * An isolated count for the collateral that currently owed to Guarantors.
+     * Kept to guard against the edge case of collateral tokens being directly transferred
+     * (i.e. transfer in the collateral contract, not via deposit) to the contract address inflating redemption amounts.
+     */
+    /// Collateral currently owed to guarantors.
+    uint256 private _guarantorCollateral;
+
+    /// The outstanding balance of debt tokens when redemptions were allowed, amount now expected after full redemptions.
+    uint256 private _excessDebtTokens;
+
+    IERC20MetadataUpgradeable private _collateralTokens;
+    string private _data;
+    uint256 private _initialDebtTokens;
+    bool private _isRedemptionAllowed;
+    address private _treasury;
+
     event AllowRedemption(address authorizer);
     event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
     event Deposit(
@@ -59,7 +82,7 @@ contract Bond is
      * - The contract must not be redeemable.
      */
     modifier whenNotRedeemable() {
-        require(!_isRedemptionAllowed, "Bond::whenNotRedeemable: redeemable");
+        require(!_isRedemptionAllowed, "whenNotRedeemable: redeemable");
         _;
     }
 
@@ -70,32 +93,9 @@ contract Bond is
      * - The contract must be redeemable.
      */
     modifier whenRedeemable() {
-        require(_isRedemptionAllowed, "Bond::whenRedeemable: not redeemable");
+        require(_isRedemptionAllowed, "whenRedeemable: not redeemable");
         _;
     }
-
-    /// Multiplier / divider for four decimal places, used in redemption ratio calculation.
-    uint256 private constant REDEMPTION_RATIO_ACCURACY = 10000;
-
-    /// Only used in conjunction with slashing. Accuracy defined by REDEMPTION_RATIO_ACCURACY
-    uint256 private _redemptionRatio;
-
-    /*
-     * An isolated count for the collateral that currently owed to Guarantors.
-     * Kept to guard against the edge case of collateral tokens being directly transferred
-     * (i.e. transfer in the collateral contract, not via deposit) to the contract address inflating redemption amounts.
-     */
-    /// Collateral currently owed to guarantors.
-    uint256 private _guarantorCollateral;
-
-    /// The outstanding balance of debt tokens when redemptions were allowed, amount now expected after full redemptions.
-    uint256 private _excessDebtTokens;
-
-    IERC20MetadataUpgradeable private _collateralTokens;
-    string private _data;
-    uint256 private _initialDebtTokens;
-    bool private _isRedemptionAllowed;
-    address private _treasury;
 
     /**
      * @param erc20CollateralTokens_ to avoid being able to break the Bond behaviours the reference to the collateral
@@ -118,11 +118,11 @@ contract Bond is
 
         require(
             erc20CapableTreasury_ != address(0),
-            "Bond::init: treasury is zero address"
+            "Bond: treasury is zero address"
         );
         require(
             erc20CollateralTokens_ != address(0),
-            "Bond::init: collateral tokens is zero address"
+            "Bond: collateral is zero address"
         );
 
         _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens_);
@@ -163,26 +163,12 @@ contract Bond is
     }
 
     /**
-     * @dev whether the Bond is in the redemption state (allows redeem operation, but denies deposit, mint and slash).
-     */
-    function redeemable() external view returns (bool) {
-        return _isRedemptionAllowed;
-    }
-
-    /**
-     * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
-     */
-    function data() external view returns (string memory) {
-        return _data;
-    }
-
-    /**
      * @dev Before the deposit can be made, this contract must have been approved to transfer the given amount
      * from the ERC20 token being used as collateral.
      */
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
-        require(amount > 0, "Bond::deposit: too small");
-        require(amount <= _debtTokensRemaining(), "Bond::deposit: too large");
+        require(amount > 0, "Bond: too small");
+        require(amount <= _debtTokensRemaining(), "Bond: too large");
 
         _guarantorCollateral += amount;
 
@@ -194,7 +180,7 @@ contract Bond is
             address(this),
             amount
         );
-        require(transferred, "Bond::deposit: collateral transfer failed");
+        require(transferred, "Bond: collateral transfer failed");
 
         emit DebtIssue(_msgSender(), symbol(), amount);
 
@@ -209,16 +195,6 @@ contract Bond is
     }
 
     /**
-     * @dev Balance outstanding when redemption was allowed. The amount of collateral not received (deposit 1:1 ratio).
-     *
-     * @return zero if redemption is not yet allowed or full collateral was met, otherwise the number of debt tokens
-     *          remaining without matched deposit when redemption was allowed,
-     */
-    function excessDebtTokens() external view returns (uint256) {
-        return _excessDebtTokens;
-    }
-
-    /**
      *  @notice Moves any remaining collateral to the Treasury and pauses the bond.
      *  @dev A fail safe, callable by anyone after the Bond has expired.
      *       If Ownership is lost, this can be used to move all remaining collateral to the Treasury,
@@ -228,7 +204,7 @@ contract Bond is
      */
     function expire() external whenBeyondExpiry {
         uint256 collateral = _collateralTokens.balanceOf(address(this));
-        require(collateral > 0, "Bond::expire: no collateral remains");
+        require(collateral > 0, "Bond: no collateral remains");
 
         emit Expire(
             _msgSender(),
@@ -239,23 +215,9 @@ contract Bond is
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(_treasury, collateral);
-        require(transferred, "Bond::expire: collateral transfer failed");
+        require(transferred, "Bond: collateral transfer failed");
 
         _pauseSafely();
-    }
-
-    /**
-     * @dev Whether or not the Bond contract has achieved full collateral target.
-     */
-    function hasFullCollateral() public view returns (bool) {
-        return _debtTokensRemaining() == 0;
-    }
-
-    /**
-     * @dev Number of debt tokens created on the Bond init. The total supply of debt tokens will decrease, as redeem burns them.
-     */
-    function initialDebtTokens() external view returns (uint256) {
-        return _initialDebtTokens;
     }
 
     /**
@@ -270,11 +232,8 @@ contract Bond is
      * amount of collateral against the remaining amount of debt.
      */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
-        require(amount > 0, "Bond::redeem: too small");
-        require(
-            balanceOf(_msgSender()) >= amount,
-            "Bond:redeem: too few debt tokens"
-        );
+        require(amount > 0, "Bond: too small");
+        require(balanceOf(_msgSender()) >= amount, "Bond: too few debt tokens");
 
         uint256 totalSupply = totalSupply() - _excessDebtTokens;
         uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
@@ -295,7 +254,7 @@ contract Bond is
             _msgSender(),
             redemptionAmount
         );
-        require(transferred, "Bond::redeem: collateral transfer failed");
+        require(transferred, "Bond: collateral transfer failed");
     }
 
     /**
@@ -317,11 +276,8 @@ contract Bond is
         whenNotRedeemable
         onlyOwner
     {
-        require(amount > 0, "Bond::slash: too small");
-        require(
-            amount <= _guarantorCollateral,
-            "Bond::slash: greater than available collateral"
-        );
+        require(amount > 0, "Bond: too small");
+        require(amount <= _guarantorCollateral, "Bond: too large");
 
         _guarantorCollateral -= amount;
 
@@ -329,25 +285,15 @@ contract Bond is
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(_treasury, amount);
-        require(transferred, "Bond::slash: collateral transfer failed");
+        require(transferred, "Bond: collateral transfer failed");
     }
 
     /**
      * @dev Permits the owner to update the treasury address, recipient of any slashed funds.
      */
     function setTreasury(address treasury_) external whenNotPaused onlyOwner {
-        require(
-            treasury_ != address(0),
-            "Bond::setTreasury: treasury cannot be zero address"
-        );
+        require(treasury_ != address(0), "Bond: treasury is zero address");
         _treasury = treasury_;
-    }
-
-    /**
-     * @dev Retrieves the address that receives any slashed funds.
-     */
-    function treasury() external view returns (address) {
-        return _treasury;
     }
 
     /**
@@ -363,10 +309,7 @@ contract Bond is
         onlyOwner
     {
         uint256 collateral = _collateralTokens.balanceOf(address(this));
-        require(
-            collateral > 0,
-            "Bond::withdrawCollateral: no collateral remains"
-        );
+        require(collateral > 0, "Bond: no collateral remains");
 
         emit WithdrawCollateral(
             _treasury,
@@ -376,52 +319,52 @@ contract Bond is
 
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(_treasury, collateral);
-        require(
-            transferred,
-            "Bond::withdrawCollateral: collateral transfer failed"
-        );
+        require(transferred, "Bond: collateral transfer failed");
     }
 
     /**
-     * @dev Applies the redemption ratio calculation to the given amount.
+     * @dev whether the Bond is in the redemption state (allows redeem operation, but denies deposit, mint and slash).
      */
-    function _applyRedemptionRation(uint256 amount)
-        private
-        view
-        returns (uint256)
-    {
-        return (_redemptionRatio * amount) / REDEMPTION_RATIO_ACCURACY;
+    function redeemable() external view returns (bool) {
+        return _isRedemptionAllowed;
     }
 
     /**
-     * @dev Determines the current redemption ratio for any redemption that would occur based on the current
-     * guarantor collateral and total supply.
+     * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
      */
-    function _calculateRedemptionRation() private view returns (uint256) {
-        return
-            (REDEMPTION_RATIO_ACCURACY * _guarantorCollateral) /
-            (totalSupply() - _excessDebtTokens);
+    function data() external view returns (string memory) {
+        return _data;
     }
 
     /**
-     * @dev The balance of debt token held by the contract; amount of debt token that are awaiting swapping for collateral.
+     * @dev Balance outstanding when redemption was allowed. The amount of collateral not received (deposit 1:1 ratio).
+     *
+     * @return zero if redemption is not yet allowed or full collateral was met, otherwise the number of debt tokens
+     *          remaining without matched deposit when redemption was allowed,
      */
-    function _debtTokensRemaining() private view returns (uint256) {
-        return balanceOf(address(this));
+    function excessDebtTokens() external view returns (uint256) {
+        return _excessDebtTokens;
     }
 
     /**
-     * @dev Whether the Bond has been slashed, assuming a 1:1 deposit ratio of collateral to debt.
+     * @dev Number of debt tokens created on the Bond init. The total supply of debt tokens will decrease, as redeem burns them.
      */
-    function _hasBeenSlashed() private view returns (bool) {
-        return _guarantorCollateral != (totalSupply() - _excessDebtTokens);
+    function initialDebtTokens() external view returns (uint256) {
+        return _initialDebtTokens;
     }
 
     /**
-     * @dev Whether or not the Bond contract has debt tokens remaining. Has not reached collateral the target.
+     * @dev Retrieves the address that receives any slashed funds.
      */
-    function _hasDebtTokensRemaining() private view returns (bool) {
-        return _debtTokensRemaining() > 0;
+    function treasury() external view returns (address) {
+        return _treasury;
+    }
+
+    /**
+     * @dev Whether or not the Bond contract has achieved full collateral target.
+     */
+    function hasFullCollateral() public view returns (bool) {
+        return _debtTokensRemaining() == 0;
     }
 
     /**
@@ -455,5 +398,47 @@ contract Bond is
         } else {
             return _applyRedemptionRation(amount);
         }
+    }
+
+    /**
+     * @dev Applies the redemption ratio calculation to the given amount.
+     */
+    function _applyRedemptionRation(uint256 amount)
+        private
+        view
+        returns (uint256)
+    {
+        return (_redemptionRatio * amount) / _REDEMPTION_RATIO_ACCURACY;
+    }
+
+    /**
+     * @dev Determines the current redemption ratio for any redemption that would occur based on the current
+     * guarantor collateral and total supply.
+     */
+    function _calculateRedemptionRation() private view returns (uint256) {
+        return
+            (_REDEMPTION_RATIO_ACCURACY * _guarantorCollateral) /
+            (totalSupply() - _excessDebtTokens);
+    }
+
+    /**
+     * @dev The balance of debt token held by the contract; amount of debt token that are awaiting swapping for collateral.
+     */
+    function _debtTokensRemaining() private view returns (uint256) {
+        return balanceOf(address(this));
+    }
+
+    /**
+     * @dev Whether the Bond has been slashed, assuming a 1:1 deposit ratio of collateral to debt.
+     */
+    function _hasBeenSlashed() private view returns (bool) {
+        return _guarantorCollateral != (totalSupply() - _excessDebtTokens);
+    }
+
+    /**
+     * @dev Whether or not the Bond contract has debt tokens remaining. Has not reached collateral the target.
+     */
+    function _hasDebtTokensRemaining() private view returns (bool) {
+        return _debtTokensRemaining() > 0;
     }
 }

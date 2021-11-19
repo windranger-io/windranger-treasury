@@ -82,7 +82,7 @@ describe('Bond contract', () => {
             await bond.allowRedemption()
 
             await expect(bond.allowRedemption()).to.be.revertedWith(
-                'Bond::whenNotRedeemable: redeemable'
+                'whenNotRedeemable: redeemable'
             )
         })
 
@@ -100,7 +100,7 @@ describe('Bond contract', () => {
             bond = await createBond(factory, 5566777n)
 
             await expect(bond.deposit(ZERO)).to.be.revertedWith(
-                'Bond::deposit: too small'
+                'Bond: too small'
             )
         })
 
@@ -109,7 +109,7 @@ describe('Bond contract', () => {
             bond = await createBond(factory, debtTokens)
 
             await expect(bond.deposit(debtTokens + 1n)).to.be.revertedWith(
-                'Bond::deposit: too large'
+                'Bond: too large'
             )
         })
 
@@ -136,7 +136,7 @@ describe('Bond contract', () => {
 
             await expect(
                 bond.connect(guarantorOne).deposit(pledge)
-            ).to.be.revertedWith('Bond::whenNotRedeemable: redeemable')
+            ).to.be.revertedWith('whenNotRedeemable: redeemable')
         })
 
         it('with full collateral', async () => {
@@ -220,7 +220,7 @@ describe('Bond contract', () => {
 
             await expect(
                 bond.connect(guarantorOne).expire()
-            ).to.be.revertedWith('Bond::expire: no collateral remains')
+            ).to.be.revertedWith('Bond: no collateral remains')
         })
 
         it('only after expiry', async () => {
@@ -292,7 +292,7 @@ describe('Bond contract', () => {
                     BOND_EXPIRY,
                     DATA
                 )
-            ).to.be.revertedWith('Bond::init: treasury is zero address')
+            ).to.be.revertedWith('Bond: treasury is zero address')
         })
 
         it('collateral tokens address cannot be zero', async () => {
@@ -308,9 +308,7 @@ describe('Bond contract', () => {
                     BOND_EXPIRY,
                     DATA
                 )
-            ).to.be.revertedWith(
-                'Bond::init: collateral tokens is zero address'
-            )
+            ).to.be.revertedWith('Bond: collateral is zero address')
         })
 
         it('initial debt tokens are recorded', async () => {
@@ -387,7 +385,7 @@ describe('Bond contract', () => {
             await allowRedemption()
 
             await expect(redeem(guarantorOne, ZERO)).to.be.revertedWith(
-                'Bond::redeem: too small'
+                'Bond: too small'
             )
         })
 
@@ -401,7 +399,7 @@ describe('Bond contract', () => {
 
             await expect(
                 bond.connect(guarantorOne).redeem(pledge)
-            ).to.be.revertedWith('Bond::whenRedeemable: not redeemable')
+            ).to.be.revertedWith('whenRedeemable: not redeemable')
         })
 
         it('only when not paused', async () => {
@@ -455,9 +453,7 @@ describe('Bond contract', () => {
             ])
             await depositBond(guarantorOne, pledge)
 
-            await expect(bond.slash(ZERO)).to.be.revertedWith(
-                'Bond::slash: too small'
-            )
+            await expect(bond.slash(ZERO)).to.be.revertedWith('Bond: too small')
         })
 
         it('cannot be greater than collateral held', async () => {
@@ -469,7 +465,7 @@ describe('Bond contract', () => {
             await depositBond(guarantorOne, pledge)
 
             await expect(bond.slash(pledge + 1n)).to.be.revertedWith(
-                'Bond::slash: greater than available collateral'
+                'Bond: too large'
             )
         })
 
@@ -483,7 +479,7 @@ describe('Bond contract', () => {
             await allowRedemption()
 
             await expect(bond.slash(pledge)).to.be.revertedWith(
-                'Bond::whenNotRedeemable: redeemable'
+                'whenNotRedeemable: redeemable'
             )
         })
 
@@ -568,7 +564,7 @@ describe('Bond contract', () => {
             await redeem(guarantorOne, ONE)
 
             await expect(bond.withdrawCollateral()).to.be.revertedWith(
-                'Bond::withdrawCollateral: no collateral remain'
+                'Bond: no collateral remains'
             )
         })
 
@@ -586,7 +582,7 @@ describe('Bond contract', () => {
             bond = await createBond(factory, ONE)
 
             await expect(bond.withdrawCollateral()).to.be.revertedWith(
-                'Bond::whenRedeemable: not redeemable'
+                'whenRedeemable: not redeemable'
             )
         })
 

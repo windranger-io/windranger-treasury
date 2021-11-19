@@ -34,9 +34,7 @@ describe('BondFactory contract', () => {
         it('non-whitelisted collateral', async () => {
             await expect(
                 bonds.createBond('Named bond', 'AA00AA', 101n, 'BEEP', 0n, '')
-            ).to.be.revertedWith(
-                'BondFactory::bond: collateral not whitelisted'
-            )
+            ).to.be.revertedWith('BF: collateral not whitelisted')
         })
 
         it('whitelisted (BIT) collateral', async () => {
@@ -97,17 +95,13 @@ describe('BondFactory contract', () => {
         it('cannot update address with identical value', async () => {
             await expect(
                 bonds.updateCollateralTokenAddress(collateralTokens.address)
-            ).to.be.revertedWith(
-                'BondFactory::updateCollateralTokenAddress: same address'
-            )
+            ).to.be.revertedWith('BF: collateral identical address')
         })
 
         it('cannot update address to zero', async () => {
             await expect(
                 bonds.updateCollateralTokenAddress(ADDRESS_ZERO)
-            ).to.be.revertedWith(
-                'BondFactory::updateCollateralTokenAddress: collateral tokens is zero address'
-            )
+            ).to.be.revertedWith('BF: collateral is zero address')
         })
 
         it('cannot update address to non-contract address', async () => {
@@ -146,13 +140,13 @@ describe('BondFactory contract', () => {
         it('cannot add existing token', async () => {
             await expect(
                 bonds.whitelistCollateralToken(collateralTokens.address)
-            ).to.be.revertedWith('BondFactory::whitelist: already present')
+            ).to.be.revertedWith('BF: whitelist already present')
         })
 
         it('cannot add address zero', async () => {
             await expect(
                 bonds.whitelistCollateralToken(ADDRESS_ZERO)
-            ).to.be.revertedWith('BondFactory::whitelist: address zero')
+            ).to.be.revertedWith('BF: whitelist is zero address')
         })
 
         it('cannot add non-erc20 contract (without fallback)', async () => {
