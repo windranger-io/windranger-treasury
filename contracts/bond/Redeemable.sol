@@ -4,11 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
-    @title Abstraction for whether a contract is the state of being redeemable.
-    @dev Provides the modifiers `onlyWhenRedeemable` and `onlyWhenNotRedeemable` that can be applied to your functions
+    @title Abstraction for whether a contract has the state of being redeemable.
+    @dev A state machine of two states, not redeemable and redeemable.
+         Provides the modifiers `onlyWhenRedeemable` and `onlyWhenNotRedeemable` that can be applied to your functions
          to restrict use until the appropriate state is attained.
          This module is used through inheritance.
-         A state machine of two states, not redeemable and redeemable.
  */
 abstract contract Redeemable is Initializable {
 
