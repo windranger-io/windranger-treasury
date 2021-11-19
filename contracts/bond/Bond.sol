@@ -28,8 +28,8 @@ contract Bond is
     event Expire(
         address sender,
         address treasury,
-        string symbol,
-        uint256 amount
+        string collateralSymbol,
+        uint256 collateralAmount
     );
     event PartialCollateral(
         string collateralSymbol,
@@ -46,7 +46,11 @@ contract Bond is
         uint256 collateralAmount
     );
     event Slash(string collateralSymbol, uint256 collateralAmount);
-    event WithdrawCollateral(address treasury, string symbol, uint256 amount);
+    event WithdrawCollateral(
+        address treasury,
+        string collateralSymbol,
+        uint256 collateralAmount
+    );
 
     /**
      * @dev Modifier to make a function callable only when the contract is not redeemable.

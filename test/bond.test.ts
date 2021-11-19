@@ -21,7 +21,8 @@ import {
     verifyAllowRedemptionEvent,
     verifyWithdrawCollateralEvent,
     verifyFullCollateralEvent,
-    verifyPartialCollateralEvent
+    verifyPartialCollateralEvent,
+    verifyExpireEvent
 } from './utils/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './utils/transaction'
@@ -152,9 +153,7 @@ describe('Bond contract', () => {
     })
 
     describe('expire', () => {
-        it('move collateral to treasury', async () => {
-            //TODO code
-        })
+        //TODO expiry after allow redemption
 
         it('even when called by non-owner', async () => {
             //TODO code
@@ -781,6 +780,57 @@ describe('Bond contract', () => {
         ])
     })
 
+    it('one guarantor deposit full collateral, are partially slashed, then fully redeems, with collateral left over due to rounding', async () => {
+        const pledge = 12345n
+        const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
+        const debtTokens = pledge
+        const slashedCollateral = debtTokens - slash(debtTokens, FIFTY_PERCENT)
+        bond = await createBond(factory, debtTokens)
+        await setupGuarantorsWithCollateral([
+            {signer: guarantorOne, pledge: pledge}
+        ])
+        await depositBond(guarantorOne, pledge)
+        await slashCollateral(slashedCollateral)
+        await allowRedemption()
+        await redeem(guarantorOne, pledge)
+        const pledgeSlashedFloored = pledgeSlashed - ONE
+
+        // Slashed collateral in Treasury, Guarantors redeemed, no debt remain
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, collateral: ONE},
+            {
+                address: guarantorOne,
+                bond: ZERO,
+                collateral: pledgeSlashedFloored
+            },
+            {address: treasury, bond: ZERO, collateral: slashedCollateral}
+        ])
+
+        // Move the rounding error from the Bond contract to the Treasury
+        const withdrawReceipt = await withdrawCollateral()
+        await verifyWithdrawCollateralEvent(withdrawReceipt, {
+            to: treasury,
+            symbol: collateralSymbol,
+            amount: ONE
+        })
+        await verifyTransferEvent(withdrawReceipt, {
+            from: bond.address,
+            to: treasury,
+            amount: ONE
+        })
+
+        // Nothing in bond, with the rounding error now in the Treasury
+        await verifyBalances([
+            {address: bond.address, bond: ZERO, collateral: ZERO},
+            {
+                address: guarantorOne,
+                bond: ZERO,
+                collateral: pledgeSlashedFloored
+            },
+            {address: treasury, bond: ZERO, collateral: slashedCollateral + ONE}
+        ])
+    })
+
     it('two guarantors deposit partial collateral, then fully redeem', async () => {
         const pledgeOne = 30050n
         const pledgeTwo = 59500n
@@ -863,55 +913,76 @@ describe('Bond contract', () => {
         ])
     })
 
-    it('one guarantor deposit full collateral, are partially slashed, then fully redeems, with collateral left over due to rounding', async () => {
-        const pledge = 12345n
-        const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
-        const debtTokens = pledge
-        const slashedCollateral = debtTokens - slash(debtTokens, FIFTY_PERCENT)
+    it('two guarantors deposit full collateral, partially slashed, then expiry by owner', async () => {
+        const pledgeOne = 30050n
+        const pledgeTwo = 59500n
+        const debtTokens = pledgeOne + pledgeTwo
+        const collateral = debtTokens
+        const slashedCollateral = slash(collateral, FORTY_PERCENT)
         bond = await createBond(factory, debtTokens)
+        const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
-            {signer: guarantorOne, pledge: pledge}
+            {signer: guarantorOne, pledge: pledgeOne},
+            {signer: guarantorTwo, pledge: pledgeTwo}
         ])
-        await depositBond(guarantorOne, pledge)
-        await slashCollateral(slashedCollateral)
-        await allowRedemption()
-        await redeem(guarantorOne, pledge)
-        const pledgeSlashedFloored = pledgeSlashed - ONE
 
-        // Slashed collateral in Treasury, Guarantors redeemed, no debt remain
+        // Each Guarantor has their full collateral amount (their pledge)
         await verifyBalances([
-            {address: bond.address, bond: ZERO, collateral: ONE},
-            {
-                address: guarantorOne,
-                bond: ZERO,
-                collateral: pledgeSlashedFloored
-            },
-            {address: treasury, bond: ZERO, collateral: slashedCollateral}
+            {address: bond.address, bond: debtTokens, collateral: ZERO},
+            {address: guarantorOne, bond: ZERO, collateral: pledgeOne},
+            {address: guarantorTwo, bond: ZERO, collateral: pledgeTwo},
+            {address: treasury, bond: ZERO, collateral: ZERO}
         ])
 
-        // Move the rounding error from the Bond contract to the Treasury
-        const withdrawReceipt = await withdrawCollateral()
-        await verifyWithdrawCollateralEvent(withdrawReceipt, {
-            to: treasury,
-            symbol: collateralSymbol,
-            amount: ONE
+        // Guarantor One deposits their full pledge amount
+        const depositOne = await depositBond(guarantorOne, pledgeOne)
+        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+            symbol: debtSymbol,
+            amount: pledgeOne
         })
-        await verifyTransferEvent(withdrawReceipt, {
+
+        // Guarantor Two deposits their full pledge amount
+        const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
+        await verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
+            symbol: debtSymbol,
+            amount: pledgeTwo
+        })
+
+        // Bond holds all collateral, with an unmatched pledge of debt tokens
+        await verifyBalances([
+            {
+                address: bond.address,
+                bond: ZERO,
+                collateral: pledgeOne + pledgeTwo
+            },
+            {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
+            {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
+            {address: treasury, bond: ZERO, collateral: ZERO}
+        ])
+
+        // Slash forty percent of the collateral assets
+        const slashReceipt = await slashCollateral(slashedCollateral)
+        await verifySlashEvent(slashReceipt, {
+            symbol: collateralSymbol,
+            amount: slashedCollateral
+        })
+        await verifyTransferEvent(slashReceipt, {
             from: bond.address,
             to: treasury,
-            amount: ONE
+            amount: slashedCollateral
         })
 
-        // Nothing in bond, with the rounding error now in the Treasury
-        await verifyBalances([
-            {address: bond.address, bond: ZERO, collateral: ZERO},
-            {
-                address: guarantorOne,
-                bond: ZERO,
-                collateral: pledgeSlashedFloored
-            },
-            {address: treasury, bond: ZERO, collateral: slashedCollateral + ONE}
-        ])
+        // Owner expires the bond
+        const expireReceipt = await expire()
+        await verifyExpireEvent(expireReceipt, admin.address, treasury, {
+            symbol: collateralSymbol,
+            amount: collateral - slashedCollateral
+        })
+        await verifyTransferEvent(expireReceipt, {
+            from: bond.address,
+            to: treasury,
+            amount: collateral - slashedCollateral
+        })
     })
 
     it('three guarantors deposit full collateral, are partially slashed, then fully redeems', async () => {
@@ -1040,6 +1111,10 @@ describe('Bond contract', () => {
             {address: treasury, bond: ZERO, collateral: slashedCollateral}
         ])
     })
+
+    async function expire(): Promise<ContractReceipt> {
+        return successfulTransaction(bond.expire())
+    }
 
     async function redeem(
         guarantor: SignerWithAddress,
