@@ -33,6 +33,7 @@ chai.use(solidity)
 const ADDRESS_ZERO = constants.AddressZero
 const ZERO = 0n
 const ONE = 1n
+const ONE_DAY_MS = 1000 * 60 * 60 * 24
 const FORTY_PERCENT = 40n
 const FIFTY_PERCENT = 50n
 const DATA = 'performance factors;assessment date;rewards pool'
@@ -173,19 +174,73 @@ describe('Bond contract', () => {
         })
 
         it('during redemption', async () => {
-            //TODO code
+            const pledge = 9899n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.allowRedemption()
+            expect(await bond.paused()).is.false
+            expect(await bond.redeemable()).is.true
+
+            await bond.expire()
+
+            await verifyBalances([
+                {address: bond.address, bond: ZERO, collateral: ZERO},
+                {address: guarantorOne, bond: pledge, collateral: ZERO},
+                {address: treasury, bond: ZERO, collateral: pledge}
+            ])
+            expect(await bond.paused()).is.true
+            expect(await bond.redeemable()).is.true
         })
 
         it('when paused', async () => {
-            //TODO code
+            const pledge = 667777n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.pause()
+            expect(await bond.paused()).is.true
+
+            await bond.connect(guarantorOne).expire()
+
+            await verifyBalances([
+                {address: bond.address, bond: ZERO, collateral: ZERO},
+                {address: guarantorOne, bond: pledge, collateral: ZERO},
+                {address: treasury, bond: ZERO, collateral: pledge}
+            ])
+            expect(await bond.paused()).is.true
         })
 
         it('only when there is collateral to move', async () => {
-            //TODO code
+            bond = await createBond(factory, 500n)
+
+            await expect(
+                bond.connect(guarantorOne).expire()
+            ).to.be.revertedWith('Bond::expire: no collateral remains')
         })
 
         it('only after expiry', async () => {
-            //TODO code
+            const receipt = await execute(
+                factory.createBond(
+                    'Special Debt Certificate',
+                    'SDC001',
+                    500n,
+                    collateralSymbol,
+                    Date.now() + ONE_DAY_MS,
+                    DATA
+                )
+            )
+            bond = await bondContractAt(
+                createBondEvent(event('CreateBond', events(receipt))).bond
+            )
+
+            await expect(bond.expire()).to.be.revertedWith(
+                'ExpiryTimestamp: not yet expired'
+            )
         })
     })
 
