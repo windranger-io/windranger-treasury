@@ -116,6 +116,14 @@ describe('BondFactory contract', () => {
                     "function selector was not recognized and there's no fallback function"
                 )
             })
+
+            it('only owner', async () => {
+                await expect(
+                    bonds
+                        .connect(nonAdmin)
+                        .whitelistCollateral(collateralTokens.address)
+                ).to.be.revertedWith('Ownable: caller is not the owner')
+            })
         })
 
         describe('update', () => {
@@ -163,6 +171,14 @@ describe('BondFactory contract', () => {
                 ).to.be.revertedWith(
                     "function selector was not recognized and there's no fallback function"
                 )
+            })
+
+            it('only owner', async () => {
+                await expect(
+                    bonds
+                        .connect(nonAdmin)
+                        .updateWhitelistedCollateral(collateralTokens.address)
+                ).to.be.revertedWith('Ownable: caller is not the owner')
             })
         })
 
