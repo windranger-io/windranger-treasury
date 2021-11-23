@@ -101,6 +101,17 @@ contract BondFactory is CollateralWhitelist, Ownable {
     }
 
     /**
+     * @notice Permits the owner to remove a collateral token from being accepted in future bonds.
+     * Only applies for bonds created after the removal, previously created bonds remain unchanged.
+     */
+    function removeWhitelistedCollateral(string calldata symbol)
+        external
+        onlyOwner
+    {
+        _removeWhitelistedCollateral(symbol);
+    }
+
+    /**
      * @notice When a bond is created, the tokens used as collateral must have been whitelisted.
      *
      * @dev Whitelists the erc20 symbol as a Bond collateral token from now onwards.

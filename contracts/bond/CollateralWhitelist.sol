@@ -73,10 +73,19 @@ abstract contract CollateralWhitelist is Initializable {
     }
 
     /**
+        @notice Deletes a collateral token from the whitelist.
+        @dev Expects the symbol to be an existing entry, reverting otherwise.
+     */
+    function _removeWhitelistedCollateral(string memory symbol) internal {
+        require(isCollateralWhitelisted(symbol), "Whitelist: not whitelisted");
+        delete _whitelist[symbol];
+    }
+
+    /**
         @notice Ensures the address is not the zero address.
         @dev Reverts when the address is the zero address.
      */
-    function _requireNonZeroAddress(address examine_) private {
+    function _requireNonZeroAddress(address examine_) private pure {
         require(examine_ != address(0), "Whitelist: zero address");
     }
 }
