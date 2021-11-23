@@ -86,6 +86,7 @@ contract BondFactory is CollateralWhitelist, Ownable {
      */
     function setTreasury(address treasury_) external onlyOwner {
         require(treasury_ != address(0), "BF: treasury is zero address");
+        require(_treasury != treasury_, "BF: treasury address identical");
         _treasury = treasury_;
     }
 
