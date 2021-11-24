@@ -8,24 +8,23 @@ import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
-import {deployContract, execute, signer} from './utils/contracts'
+import {deployContract, execute, signer} from './framework/contracts'
 import {BigNumberish, constants, ContractReceipt} from 'ethers'
+import {event, events} from './framework/events'
+import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {successfulTransaction} from './framework/transaction'
 import {
-    event,
-    createBondEvent,
-    events,
-    verifyRedemptionEvent,
-    verifyDebtIssueEvent,
-    verifySlashEvent,
-    verifyTransferEvent,
     verifyAllowRedemptionEvent,
-    verifyWithdrawCollateralEvent,
+    verifyDebtIssueEvent,
+    verifyExpireEvent,
     verifyFullCollateralEvent,
     verifyPartialCollateralEvent,
-    verifyExpireEvent
-} from './utils/events'
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {successfulTransaction} from './utils/transaction'
+    verifyRedemptionEvent,
+    verifySlashEvent,
+    verifyTransferEvent,
+    verifyWithdrawCollateralEvent
+} from './contracts/bond/verify-bond-events'
+import {createBondEvent} from './contracts/bond/bond-factory-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
