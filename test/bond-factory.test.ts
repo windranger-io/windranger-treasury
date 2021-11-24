@@ -8,10 +8,11 @@ import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
-import {deployContract, execute, signer} from './utils/contracts'
-import {createBondEvent, event, events} from './utils/events'
+import {deployContract, execute, signer} from './framework/contracts'
+import {event, events} from './framework/events'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {createBondEvent} from './contracts/bond/bond-factory-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
