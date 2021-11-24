@@ -27,19 +27,22 @@ contract Bond is
     uint256 private _redemptionRatio;
 
     /*
-     * An isolated count for the collateral that currently owed to Guarantors.
+     * Collateral that is held by the bond, owed to the Guarantors (unless slashed).
      * Kept to guard against the edge case of collateral tokens being directly transferred
      * (i.e. transfer in the collateral contract, not via deposit) to the contract address inflating redemption amounts.
      */
-    /// Collateral currently owed to guarantors.
     uint256 private _guarantorCollateral;
 
-    /// The outstanding balance of debt tokens when redemptions were allowed, amount now expected after full redemptions.
+    /// Balance of debts tokens held by guarantors, double accounting avoids potential affects of any minting/burning
+    uint256 private _debtTokensOutstanding;
+
+    /// Balance of debt tokens held by the Bond when redemptions were allowed.
     uint256 private _excessDebtTokens;
 
     IERC20MetadataUpgradeable private _collateralTokens;
     string private _data;
     uint256 private _initialDebtTokens;
+    uint256 private _collateralSlashed;
     address private _treasury;
 
     event AllowRedemption(address authorizer);
@@ -150,6 +153,7 @@ contract Bond is
         require(amount <= _debtTokensRemaining(), "Bond: too large");
 
         _guarantorCollateral += amount;
+        _debtTokensOutstanding += amount;
 
         emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
 
@@ -182,18 +186,21 @@ contract Bond is
      *       Ownership).
      */
     function expire() external whenBeyondExpiry {
-        uint256 collateral = _collateralTokens.balanceOf(address(this));
-        require(collateral > 0, "Bond: no collateral remains");
+        uint256 collateralBalance = _collateralTokens.balanceOf(address(this));
+        require(collateralBalance > 0, "Bond: no collateral remains");
 
         emit Expire(
             _msgSender(),
             _treasury,
             _collateralTokens.symbol(),
-            collateral
+            collateralBalance
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralTokens.transfer(_treasury, collateral);
+        bool transferred = _collateralTokens.transfer(
+            _treasury,
+            collateralBalance
+        );
         require(transferred, "Bond: collateral transfer failed");
 
         _pauseSafely();
@@ -217,6 +224,7 @@ contract Bond is
         uint256 totalSupply = totalSupply() - _excessDebtTokens;
         uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
         _guarantorCollateral -= redemptionAmount;
+        _debtTokensOutstanding -= redemptionAmount;
 
         emit Redemption(
             _msgSender(),
@@ -259,6 +267,7 @@ contract Bond is
         require(amount <= _guarantorCollateral, "Bond: too large");
 
         _guarantorCollateral -= amount;
+        _collateralSlashed += amount;
 
         emit Slash(_collateralTokens.symbol(), amount);
 
@@ -287,18 +296,38 @@ contract Bond is
         whenRedeemable
         onlyOwner
     {
-        uint256 collateral = _collateralTokens.balanceOf(address(this));
-        require(collateral > 0, "Bond: no collateral remains");
+        uint256 collateralBalance = _collateralTokens.balanceOf(address(this));
+        require(collateralBalance > 0, "Bond: no collateral remains");
 
         emit WithdrawCollateral(
             _treasury,
             _collateralTokens.symbol(),
-            collateral
+            collateralBalance
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralTokens.transfer(_treasury, collateral);
+        bool transferred = _collateralTokens.transfer(
+            _treasury,
+            collateralBalance
+        );
         require(transferred, "Bond: collateral transfer failed");
+    }
+
+    /**
+     *  @dev Balance of collateral owned to Guarantors currently held by the Bond.
+     *       As collateral has come from guarantors, the balance changes on deposit, redeems, slashing and flushing.
+     *      This may be different to the balanceOf(this), if collateral tokens have been directly transferred
+     *      i.e. direct transfer interaction with the token contract, rather then using the Bond operations.
+     */
+    function collateral() external view returns (uint256) {
+        return _guarantorCollateral;
+    }
+
+    /**
+     * @dev Sum of the collateral that has been slashed from the Bond, to date.
+     */
+    function collateralSlashed() external view returns (uint256) {
+        return _collateralSlashed;
     }
 
     /**
@@ -306,6 +335,21 @@ contract Bond is
      */
     function data() external view returns (string memory) {
         return _data;
+    }
+
+    /**
+     *  @dev Balance of debt tokens held by the bond.
+     */
+    function debtTokens() external view returns (uint256) {
+        return _debtTokensRemaining();
+    }
+
+    /**
+     * @dev Sum of debt tokens currently held by Guarantors.
+     *      Unaffected by minting or burning of the Bond's held debt tokens.
+     */
+    function debtTokensOutstanding() external view returns (uint256) {
+        return _debtTokensOutstanding;
     }
 
     /**
@@ -408,7 +452,7 @@ contract Bond is
     }
 
     /**
-     * @dev Whether or not the Bond contract has debt tokens remaining. Has not reached collateral the target.
+     * @dev Whether or not the Bond contract has debt tokens remaining. Has not reached the collateral target.
      */
     function _hasDebtTokensRemaining() private view returns (bool) {
         return _debtTokensRemaining() > 0;

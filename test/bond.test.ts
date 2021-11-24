@@ -95,6 +95,167 @@ describe('Bond contract', () => {
         })
     })
 
+    describe('collateral', () => {
+        it('increases on deposit', async () => {
+            const pledgeOne = 998877n
+            const pledgeTwo = 99n
+            const totalPledge = pledgeOne + pledgeTwo
+            bond = await createBond(factory, totalPledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: totalPledge}
+            ])
+            expect(await bond.collateral()).equals(ZERO)
+
+            await depositBond(guarantorOne, pledgeOne)
+
+            expect(await bond.collateral()).equals(pledgeOne)
+
+            await depositBond(guarantorOne, pledgeTwo)
+
+            expect(await bond.collateral()).equals(totalPledge)
+            expect(await bond.collateralSlashed()).equals(ZERO)
+        })
+
+        it('decreases on redemption', async () => {
+            const redemptionOne = 400n
+            const redemptionTwo = 5000n
+            const pledge = redemptionOne + redemptionTwo + 50n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.allowRedemption()
+            expect(await bond.collateral()).equals(pledge)
+
+            await redeem(guarantorOne, redemptionOne)
+
+            expect(await bond.collateral()).equals(pledge - redemptionOne)
+
+            await redeem(guarantorOne, redemptionTwo)
+
+            expect(await bond.collateral()).equals(
+                pledge - redemptionOne - redemptionTwo
+            )
+            expect(await bond.collateralSlashed()).equals(ZERO)
+        })
+    })
+
+    describe('collateral slashed', () => {
+        it('increases', async () => {
+            const slashOne = 9000n
+            const slashTwo = 44300n
+            const pledge = slashOne + slashTwo + 675n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            expect(await bond.collateralSlashed()).equals(ZERO)
+
+            await slashCollateral(slashOne)
+
+            expect(await bond.collateralSlashed()).equals(slashOne)
+
+            await slashCollateral(slashTwo)
+
+            expect(await bond.collateralSlashed()).equals(slashOne + slashTwo)
+            expect(await bond.collateral()).equals(pledge - slashOne - slashTwo)
+        })
+    })
+
+    describe('debt tokens', () => {
+        it('initial supply', async () => {
+            const initialSupply = 97500n
+            bond = await createBond(factory, initialSupply)
+
+            expect(await bond.debtTokens()).equals(initialSupply)
+        })
+
+        it('decreases on deposit', async () => {
+            const initialSupply = 97500n
+            const pledgeOne = 500n
+            const pledgeTwo = 7500n
+            const pledgeTotal = pledgeOne + pledgeTwo
+            bond = await createBond(factory, initialSupply)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledgeTotal}
+            ])
+            expect(await bond.debtTokens()).equals(initialSupply)
+
+            await depositBond(guarantorOne, pledgeOne)
+
+            expect(await bond.debtTokens()).equals(initialSupply - pledgeOne)
+
+            await depositBond(guarantorOne, pledgeTwo)
+
+            expect(await bond.debtTokens()).equals(initialSupply - pledgeTotal)
+        })
+
+        it('unaffected by redemption', async () => {
+            const initialSupply = 9500n
+            const pledge = 300n
+            bond = await createBond(factory, initialSupply)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.allowRedemption()
+            expect(await bond.debtTokens()).equals(initialSupply - pledge)
+
+            await redeem(guarantorOne, pledge)
+
+            expect(await bond.debtTokens()).equals(initialSupply - pledge)
+        })
+    })
+
+    describe('debt tokens outstanding', () => {
+        it('increases on deposit', async () => {
+            const initialSupply = 97500n
+            const pledgeOne = 500n
+            const pledgeTwo = 7500n
+            const pledgeTotal = pledgeOne + pledgeTwo
+            bond = await createBond(factory, initialSupply)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledgeTotal}
+            ])
+            expect(await bond.debtTokensOutstanding()).equals(ZERO)
+
+            await depositBond(guarantorOne, pledgeOne)
+
+            expect(await bond.debtTokensOutstanding()).equals(pledgeOne)
+
+            await depositBond(guarantorOne, pledgeTwo)
+
+            expect(await bond.debtTokensOutstanding()).equals(pledgeTotal)
+        })
+
+        it('decreases on redemption', async () => {
+            const initialSupply = 97500n
+            const pledgeOne = 500n
+            const pledgeTwo = 7500n
+            const pledgeTotal = pledgeOne + pledgeTwo
+            bond = await createBond(factory, initialSupply)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledgeTotal}
+            ])
+            await depositBond(guarantorOne, pledgeOne)
+            await depositBond(guarantorOne, pledgeTwo)
+            await allowRedemption()
+            expect(await bond.debtTokensOutstanding()).equals(pledgeTotal)
+
+            await redeem(guarantorOne, pledgeOne)
+
+            expect(await bond.debtTokensOutstanding()).equals(
+                pledgeTotal - pledgeOne
+            )
+
+            await redeem(guarantorOne, pledgeTwo)
+
+            expect(await bond.debtTokensOutstanding()).equals(ZERO)
+        })
+    })
+
     describe('deposit', () => {
         it('cannot be zero', async () => {
             bond = await createBond(factory, 5566777n)
