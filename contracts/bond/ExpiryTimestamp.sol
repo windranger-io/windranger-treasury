@@ -15,7 +15,7 @@ abstract contract ExpiryTimestamp is Initializable {
 
     /**
         @notice Reverts when the time has not met or passed the expiry timestamp.
-                Warning: with block timestamp is being used, risk of miner time manipulation.
+                Warning: use of block timestamp introduces risk of miner time manipulation.
      */
     modifier whenBeyondExpiry() {
         require(block.timestamp >= _expiry, "ExpiryTimestamp: not yet expired");
