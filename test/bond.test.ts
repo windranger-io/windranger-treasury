@@ -10,7 +10,7 @@ import {solidity} from 'ethereum-waffle'
 import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
 import {deployContract, execute, signer} from './framework/contracts'
 import {BigNumberish, constants, ContractReceipt} from 'ethers'
-import {event, events} from './framework/events'
+import {event} from './framework/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
 import {
@@ -395,7 +395,7 @@ describe('Bond contract', () => {
                 )
             )
             bond = await bondContractAt(
-                createBondEvent(event('CreateBond', events(receipt))).bond
+                createBondEvent(event('CreateBond', receipt)).bond
             )
 
             await expect(bond.expire()).to.be.revertedWith(
@@ -1422,9 +1422,7 @@ describe('Bond contract', () => {
                 DATA
             )
         )
-        const creationEvent = createBondEvent(
-            event('CreateBond', events(receipt))
-        )
+        const creationEvent = createBondEvent(event('CreateBond', receipt))
         const bondAddress = creationEvent.bond
         expect(ethers.utils.isAddress(bondAddress)).is.true
 
