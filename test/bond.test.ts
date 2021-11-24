@@ -95,6 +95,75 @@ describe('Bond contract', () => {
         })
     })
 
+    describe('collateral', () => {
+        it('increases on deposit', async () => {
+            const pledgeOne = 998877n
+            const pledgeTwo = 99n
+            const totalPledge = pledgeOne + pledgeTwo
+            bond = await createBond(factory, totalPledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: totalPledge}
+            ])
+            expect(await bond.collateral()).equals(ZERO)
+
+            await depositBond(guarantorOne, pledgeOne)
+
+            expect(await bond.collateral()).equals(pledgeOne)
+
+            await depositBond(guarantorOne, pledgeTwo)
+
+            expect(await bond.collateral()).equals(totalPledge)
+            expect(await bond.collateralSlashed()).equals(ZERO)
+        })
+
+        it('decreases on redemption', async () => {
+            const redemptionOne = 400n
+            const redemptionTwo = 5000n
+            const pledge = redemptionOne + redemptionTwo + 50n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.allowRedemption()
+            expect(await bond.collateral()).equals(pledge)
+
+            await redeem(guarantorOne, redemptionOne)
+
+            expect(await bond.collateral()).equals(pledge - redemptionOne)
+
+            await redeem(guarantorOne, redemptionTwo)
+
+            expect(await bond.collateral()).equals(
+                pledge - redemptionOne - redemptionTwo
+            )
+            expect(await bond.collateralSlashed()).equals(ZERO)
+        })
+    })
+
+    describe('collateral slashed', () => {
+        it('increases', async () => {
+            const slashOne = 9000n
+            const slashTwo = 44300n
+            const pledge = slashOne + slashTwo + 675n
+            bond = await createBond(factory, pledge)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            expect(await bond.collateralSlashed()).equals(ZERO)
+
+            await slashCollateral(slashOne)
+
+            expect(await bond.collateralSlashed()).equals(slashOne)
+
+            await slashCollateral(slashTwo)
+
+            expect(await bond.collateralSlashed()).equals(slashOne + slashTwo)
+            expect(await bond.collateral()).equals(pledge - slashOne - slashTwo)
+        })
+    })
+
     describe('deposit', () => {
         it('cannot be zero', async () => {
             bond = await createBond(factory, 5566777n)

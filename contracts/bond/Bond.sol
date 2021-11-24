@@ -197,7 +197,10 @@ contract Bond is
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralTokens.transfer(_treasury, collateralBalance);
+        bool transferred = _collateralTokens.transfer(
+            _treasury,
+            collateralBalance
+        );
         require(transferred, "Bond: collateral transfer failed");
 
         _pauseSafely();
@@ -303,7 +306,10 @@ contract Bond is
         );
 
         // Unknown ERC20 token behaviour, cater for bool usage
-        bool transferred = _collateralTokens.transfer(_treasury, collateralBalance);
+        bool transferred = _collateralTokens.transfer(
+            _treasury,
+            collateralBalance
+        );
         require(transferred, "Bond: collateral transfer failed");
     }
 
