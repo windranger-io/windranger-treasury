@@ -164,6 +164,98 @@ describe('Bond contract', () => {
         })
     })
 
+    describe('debt tokens', () => {
+        it('initial supply', async () => {
+            const initialSupply = 97500n
+            bond = await createBond(factory, initialSupply)
+
+            expect(await bond.debtTokens()).equals(initialSupply)
+        })
+
+        it('decreases on deposit', async () => {
+            const initialSupply = 97500n
+            const pledgeOne = 500n
+            const pledgeTwo = 7500n
+            const pledgeTotal = pledgeOne + pledgeTwo
+            bond = await createBond(factory, initialSupply)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledgeTotal}
+            ])
+            expect(await bond.debtTokens()).equals(initialSupply)
+
+            await depositBond(guarantorOne, pledgeOne)
+
+            expect(await bond.debtTokens()).equals(initialSupply - pledgeOne)
+
+            await depositBond(guarantorOne, pledgeTwo)
+
+            expect(await bond.debtTokens()).equals(initialSupply - pledgeTotal)
+        })
+
+        it('unaffected by redemption', async () => {
+            const initialSupply = 9500n
+            const pledge = 300n
+            bond = await createBond(factory, initialSupply)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledge}
+            ])
+            await depositBond(guarantorOne, pledge)
+            await bond.allowRedemption()
+            expect(await bond.debtTokens()).equals(initialSupply - pledge)
+
+            await redeem(guarantorOne, pledge)
+
+            expect(await bond.debtTokens()).equals(initialSupply - pledge)
+        })
+    })
+
+    describe('debt tokens outstanding', () => {
+        it('increases on deposit', async () => {
+            const initialSupply = 97500n
+            const pledgeOne = 500n
+            const pledgeTwo = 7500n
+            const pledgeTotal = pledgeOne + pledgeTwo
+            bond = await createBond(factory, initialSupply)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledgeTotal}
+            ])
+            expect(await bond.debtTokensOutstanding()).equals(ZERO)
+
+            await depositBond(guarantorOne, pledgeOne)
+
+            expect(await bond.debtTokensOutstanding()).equals(pledgeOne)
+
+            await depositBond(guarantorOne, pledgeTwo)
+
+            expect(await bond.debtTokensOutstanding()).equals(pledgeTotal)
+        })
+
+        it('decreases on redemption', async () => {
+            const initialSupply = 97500n
+            const pledgeOne = 500n
+            const pledgeTwo = 7500n
+            const pledgeTotal = pledgeOne + pledgeTwo
+            bond = await createBond(factory, initialSupply)
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledgeTotal}
+            ])
+            await depositBond(guarantorOne, pledgeOne)
+            await depositBond(guarantorOne, pledgeTwo)
+            await allowRedemption()
+            expect(await bond.debtTokensOutstanding()).equals(pledgeTotal)
+
+            await redeem(guarantorOne, pledgeOne)
+
+            expect(await bond.debtTokensOutstanding()).equals(
+                pledgeTotal - pledgeOne
+            )
+
+            await redeem(guarantorOne, pledgeTwo)
+
+            expect(await bond.debtTokensOutstanding()).equals(ZERO)
+        })
+    })
+
     describe('deposit', () => {
         it('cannot be zero', async () => {
             bond = await createBond(factory, 5566777n)
