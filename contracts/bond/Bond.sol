@@ -241,12 +241,15 @@ contract Bond is
 
         _burn(_msgSender(), amount);
 
+        // Slashing can reduce redemption amount to zero
+        if(redemptionAmount > 0){
         // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(
             _msgSender(),
             redemptionAmount
         );
         require(transferred, "Bond: collateral transfer failed");
+        }
     }
 
     /**
