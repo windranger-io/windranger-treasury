@@ -21,7 +21,7 @@ import {
     verifyPartialCollateralEvent,
     verifyRedemptionEvent,
     verifySlashEvent,
-    verifyTransferEvent,
+    verifyTransferEvents,
     verifyWithdrawCollateralEvent
 } from './contracts/bond/verify-bond-events'
 import {createBondEvent} from './contracts/bond/bond-factory-events'
@@ -785,13 +785,20 @@ describe('Bond contract', () => {
             amount: collateralAmount
         })
 
-        //TODO transfer events
+        //TODO mark
 
-        await verifyTransferEvent(depositOne, {
-            amount: pledge,
-            from: guarantorOne.address,
-            to: bond.address
-        })
+        await verifyTransferEvents(depositOne, [
+            {
+                from: guarantorOne.address,
+                to: bond.address,
+                amount: pledge
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledge
+            }
+        ])
 
         // Bond holds all collateral, issued debt tokens
         await verifyBalances([
@@ -806,11 +813,13 @@ describe('Bond contract', () => {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        await verifyTransferEvent(slashReceipt, {
-            from: bond.address,
-            to: treasury,
-            amount: slashedCollateral
-        })
+        await verifyTransferEvents(slashReceipt, [
+            {
+                from: bond.address,
+                to: treasury,
+                amount: slashedCollateral
+            }
+        ])
 
         // Debt holdings should remain the same, collateral moved
         await verifyBalances([
@@ -882,11 +891,13 @@ describe('Bond contract', () => {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        await verifyTransferEvent(slashReceipt, {
-            from: bond.address,
-            to: treasury,
-            amount: slashedCollateral
-        })
+        await verifyTransferEvents(slashReceipt, [
+            {
+                from: bond.address,
+                to: treasury,
+                amount: slashedCollateral
+            }
+        ])
 
         // Debt holdings should remain the same, collateral partially moved
         await verifyBalances([
@@ -1049,11 +1060,13 @@ describe('Bond contract', () => {
             symbol: collateralSymbol,
             amount: ONE
         })
-        await verifyTransferEvent(withdrawReceipt, {
-            from: bond.address,
-            to: treasury,
-            amount: ONE
-        })
+        await verifyTransferEvents(withdrawReceipt, [
+            {
+                from: bond.address,
+                to: treasury,
+                amount: ONE
+            }
+        ])
 
         // Nothing in bond, with the rounding error now in the Treasury
         await verifyBalances([
@@ -1202,11 +1215,13 @@ describe('Bond contract', () => {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        await verifyTransferEvent(slashReceipt, {
-            from: bond.address,
-            to: treasury,
-            amount: slashedCollateral
-        })
+        await verifyTransferEvents(slashReceipt, [
+            {
+                from: bond.address,
+                to: treasury,
+                amount: slashedCollateral
+            }
+        ])
 
         // Owner expires the un-paused bond
         expect(await bond.paused()).is.false
@@ -1215,11 +1230,13 @@ describe('Bond contract', () => {
             symbol: collateralSymbol,
             amount: collateral - slashedCollateral
         })
-        await verifyTransferEvent(expireReceipt, {
-            from: bond.address,
-            to: treasury,
-            amount: collateral - slashedCollateral
-        })
+        await verifyTransferEvents(expireReceipt, [
+            {
+                from: bond.address,
+                to: treasury,
+                amount: collateral - slashedCollateral
+            }
+        ])
 
         // Treasury holds all collateral, with an unredeemed debt tokens still held
         await verifyBalances([
@@ -1300,11 +1317,13 @@ describe('Bond contract', () => {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        await verifyTransferEvent(slashReceipt, {
-            from: bond.address,
-            to: treasury,
-            amount: slashedCollateral
-        })
+        await verifyTransferEvents(slashReceipt, [
+            {
+                from: bond.address,
+                to: treasury,
+                amount: slashedCollateral
+            }
+        ])
 
         // Debt holdings should remain the same, only collateral moved
         await verifyBalances([

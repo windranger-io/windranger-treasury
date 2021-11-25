@@ -1,4 +1,4 @@
-import {ContractReceipt} from 'ethers'
+import {BigNumber, ContractReceipt} from 'ethers'
 import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
@@ -151,30 +151,53 @@ export async function verifySlashEvent(
     )
 }
 
-//TODO refactor - pass on the receipt?
-
-//TODO full match - all expect transfers, no extras allowed
+//TODO transfer events - enforce ordering
 
 /**
  * Verifies the content matches at least one of the Transfer events.
  */
-export async function verifyTransferEvent(
+export async function verifyTransferEvents(
     receipt: ContractReceipt,
-    transfer: ExpectTokenTransfer
+    transfers: ExpectTokenTransfer[]
 ): Promise<void> {
-    const transfers = transferEvents(events('Transfer', receipt))
-    let match
-    let i = 0
+    const actualTransfers = transferEvents(events('Transfer', receipt))
+    let matches = 0
 
-    while (!match && i < transfers.length) {
-        match =
-            transfers[i].from === transfer.from &&
-            transfers[i].to === transfer.to &&
-            transfers[i].value.toBigInt() == transfer.amount
-        i++
+    /*
+     * Matching entries are removed from actualTransfers before the next loop.
+     * Avoids the same event being matched twice.
+     */
+    for (const expectedTransfer of transfers) {
+        let matchIndex = -1
+        for (let i = 0; i < actualTransfers.length; i++) {
+            if (equalTokenTransfer(expectedTransfer, actualTransfers[i])) {
+                matchIndex = i
+            }
+        }
+        if (matchIndex >= 0) {
+            matches++
+            delete actualTransfers[matchIndex]
+        }
     }
 
-    expect(match, 'No TransferEvent match found').is.true
+    expect(matches, 'Not all expected TransferEvent matches found').equals(
+        transfers.length
+    )
+}
+
+function equalTokenTransfer(
+    expected: ExpectTokenTransfer,
+    transfer: {
+        from: string
+        to: string
+        value: BigNumber
+    }
+) {
+    return (
+        expected.from === transfer.from &&
+        expected.to === transfer.to &&
+        expected.amount == transfer.value.toBigInt()
+    )
 }
 
 /**
