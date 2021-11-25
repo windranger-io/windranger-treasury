@@ -2,7 +2,7 @@ import {createBondEvent} from './bond-factory-events'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {ethers} from 'hardhat'
-import {BigNumber, ContractReceipt} from 'ethers'
+import {ContractReceipt} from 'ethers'
 
 /**
  * Verifies the content for a Create Bond event.
