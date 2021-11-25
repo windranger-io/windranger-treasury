@@ -785,6 +785,14 @@ describe('Bond contract', () => {
             amount: collateralAmount
         })
 
+        //TODO transfer events
+
+        await verifyTransferEvent(depositOne, {
+            amount: pledge,
+            from: guarantorOne.address,
+            to: bond.address
+        })
+
         // Bond holds all collateral, issued debt tokens
         await verifyBalances([
             {address: bond.address, bond: ZERO, collateral: pledge},

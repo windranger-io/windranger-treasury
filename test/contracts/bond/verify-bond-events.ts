@@ -1,5 +1,5 @@
 import {ContractReceipt} from 'ethers'
-import {event} from '../../framework/events'
+import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
     allowRedemptionEvent,
@@ -12,7 +12,7 @@ import {
     partialCollateralEvent,
     redemptionEvent,
     slashEvent,
-    transferEvent,
+    transferEvents,
     withdrawCollateralEvent
 } from './bond-events'
 
@@ -151,17 +151,30 @@ export async function verifySlashEvent(
     )
 }
 
+//TODO refactor - pass on the receipt?
+
+//TODO full match - all expect transfers, no extras allowed
+
 /**
- * Verifies the content for a ERC20 Transfer event.
+ * Verifies the content matches at least one of the Transfer events.
  */
 export async function verifyTransferEvent(
     receipt: ContractReceipt,
     transfer: ExpectTokenTransfer
 ): Promise<void> {
-    const onlyTransferEvent = transferEvent(event('Transfer', receipt))
-    expect(onlyTransferEvent.from, 'Transfer from').equals(transfer.from)
-    expect(onlyTransferEvent.to, 'Transfer to').equals(transfer.to)
-    expect(onlyTransferEvent.value, 'Transfer amount').equals(transfer.amount)
+    const transfers = transferEvents(events('Transfer', receipt))
+    let match
+    let i = 0
+
+    while (!match && i < transfers.length) {
+        match =
+            transfers[i].from === transfer.from &&
+            transfers[i].to === transfer.to &&
+            transfers[i].value.toBigInt() == transfer.amount
+        i++
+    }
+
+    expect(match, 'No TransferEvent match found').is.true
 }
 
 /**
