@@ -1,4 +1,4 @@
-import {ContractReceipt} from 'ethers'
+import {BigNumber, ContractReceipt} from 'ethers'
 import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
@@ -12,7 +12,7 @@ import {
     partialCollateralEvent,
     redemptionEvent,
     slashEvent,
-    transferEvent,
+    transferEvents,
     withdrawCollateralEvent
 } from './bond-events'
 
@@ -24,7 +24,7 @@ export async function verifyAllowRedemptionEvent(
     authorizer: string
 ): Promise<void> {
     const allowRedemption = allowRedemptionEvent(
-        event('AllowRedemption', events(receipt))
+        event('AllowRedemption', receipt)
     )
     expect(allowRedemption.authorizer, 'AllowRedemption authorizer').equals(
         authorizer
@@ -38,9 +38,7 @@ export async function verifyFullCollateralEvent(
     receipt: ContractReceipt,
     collateral: ExpectTokenBalance
 ): Promise<void> {
-    const fullCollateral = fullCollateralEvent(
-        event('FullCollateral', events(receipt))
-    )
+    const fullCollateral = fullCollateralEvent(event('FullCollateral', receipt))
     expect(fullCollateral.collateralSymbol, 'Debt token symbol').equals(
         collateral.symbol
     )
@@ -57,7 +55,7 @@ export async function verifyDebtIssueEvent(
     guarantor: string,
     debt: ExpectTokenBalance
 ): Promise<void> {
-    const depositOneEvent = debtIssueEvent(event('DebtIssue', events(receipt)))
+    const depositOneEvent = debtIssueEvent(event('DebtIssue', receipt))
     expect(depositOneEvent.receiver, 'Debt token receiver').equals(guarantor)
     expect(depositOneEvent.debSymbol, 'Debt token symbol').equals(debt.symbol)
     expect(depositOneEvent.debtAmount, 'Debt token amount').equals(debt.amount)
@@ -72,7 +70,7 @@ export async function verifyExpireEvent(
     treasury: string,
     collateral: ExpectTokenBalance
 ): Promise<void> {
-    const depositOneEvent = expireEvent(event('Expire', events(receipt)))
+    const depositOneEvent = expireEvent(event('Expire', receipt))
     expect(depositOneEvent.sender, 'Debt token receiver').equals(sender)
     expect(depositOneEvent.treasury, 'Debt token receiver').equals(treasury)
     expect(depositOneEvent.collateralSymbol, 'Debt token symbol').equals(
@@ -92,7 +90,7 @@ export async function verifyPartialCollateralEvent(
     debt: ExpectTokenBalance
 ): Promise<void> {
     const partialCollateral = partialCollateralEvent(
-        event('PartialCollateral', events(receipt))
+        event('PartialCollateral', receipt)
     )
     expect(
         partialCollateral.collateralSymbol,
@@ -119,9 +117,7 @@ export async function verifyRedemptionEvent(
     debt: ExpectTokenBalance,
     collateral: ExpectTokenBalance
 ): Promise<void> {
-    const redemptionTwoEvent = redemptionEvent(
-        event('Redemption', events(receipt))
-    )
+    const redemptionTwoEvent = redemptionEvent(event('Redemption', receipt))
     expect(redemptionTwoEvent.redeemer, 'Redemption redeemer').equals(redeemer)
     expect(redemptionTwoEvent.debtSymbol, 'Redemption debt symbol').equals(
         debt.symbol
@@ -146,7 +142,7 @@ export async function verifySlashEvent(
     receipt: ContractReceipt,
     collateral: ExpectTokenBalance
 ): Promise<void> {
-    const onlySlashEvent = slashEvent(event('Slash', events(receipt)))
+    const onlySlashEvent = slashEvent(event('Slash', receipt))
     expect(onlySlashEvent.collateralSymbol, 'Slash symbol').equals(
         collateral.symbol
     )
@@ -156,16 +152,58 @@ export async function verifySlashEvent(
 }
 
 /**
- * Verifies the content for a ERC20 Transfer event.
+ * Verifies the content matches at least one of the Transfer events.
  */
-export async function verifyTransferEvent(
+export async function verifyTransferEvents(
     receipt: ContractReceipt,
-    transfer: ExpectTokenTransfer
+    transfers: ExpectTokenTransfer[]
 ): Promise<void> {
-    const onlyTransferEvent = transferEvent(event('Transfer', events(receipt)))
-    expect(onlyTransferEvent.from, 'Transfer from').equals(transfer.from)
-    expect(onlyTransferEvent.to, 'Transfer to').equals(transfer.to)
-    expect(onlyTransferEvent.value, 'Transfer amount').equals(transfer.amount)
+    const actualTransfers = transferEvents(events('Transfer', receipt))
+    let matches = 0
+    let lastMatchIndex = -1
+
+    /*
+     * Matching entries are removed from actualTransfers before the next loop.
+     * Avoids the same event being matched twice.
+     */
+    for (const expectedTransfer of transfers) {
+        let matchIndex = -1
+        for (let i = 0; i < actualTransfers.length; i++) {
+            if (equalTokenTransfer(expectedTransfer, actualTransfers[i])) {
+                matchIndex = i
+            }
+        }
+        if (matchIndex >= 0) {
+            // Size of array reduces on match, hence >= and not >
+            expect(
+                matchIndex,
+                'TransferEvent in wrong order'
+            ).is.greaterThanOrEqual(lastMatchIndex)
+
+            matches++
+            actualTransfers.splice(matchIndex, 1)
+            lastMatchIndex = matchIndex
+        }
+    }
+
+    expect(matches, 'Not all expected TransferEvent matches found').equals(
+        transfers.length
+    )
+}
+
+function equalTokenTransfer(
+    expected: ExpectTokenTransfer,
+    transfer: {
+        from: string
+        to: string
+        value: BigNumber
+    }
+) {
+    return (
+        expected.from === transfer.from &&
+        expected.to === transfer.to &&
+        expected.amount == transfer.value.toBigInt()
+    )
 }
 
 /**
@@ -176,7 +214,7 @@ export async function verifyWithdrawCollateralEvent(
     transfer: ExpectFlushTransfer
 ): Promise<void> {
     const onlyTransferEvent = withdrawCollateralEvent(
-        event('WithdrawCollateral', events(receipt))
+        event('WithdrawCollateral', receipt)
     )
     expect(onlyTransferEvent.treasury, 'Transfer from').equals(transfer.to)
     expect(onlyTransferEvent.collateralSymbol, 'Transfer to').equals(

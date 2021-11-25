@@ -42,13 +42,13 @@ export type ExpectFlushTransfer = {
  * Shape check and conversion for a AllowRedemptionEvent.
  */
 export function allowRedemptionEvent(event: Event): {authorizer: string} {
-    const debt = event as AllowRedemptionEvent
-    expect(event.args).is.not.undefined
+    const redemption = event as AllowRedemptionEvent
+    expect(redemption.args).is.not.undefined
 
-    const args = event.args
+    const args = redemption.args
     expect(args?.authorizer).is.not.undefined
 
-    return debt.args
+    return redemption.args
 }
 
 /**
@@ -60,9 +60,9 @@ export function debtIssueEvent(event: Event): {
     debtAmount: BigNumber
 } {
     const debt = event as DebtIssueEvent
-    expect(event.args).is.not.undefined
+    expect(debt.args).is.not.undefined
 
-    const args = event.args
+    const args = debt.args
     expect(args?.receiver).is.not.undefined
     expect(args?.debSymbol).is.not.undefined
     expect(args?.debtAmount).is.not.undefined
@@ -80,9 +80,9 @@ export function expireEvent(event: Event): {
     collateralAmount: BigNumber
 } {
     const expire = event as ExpireEvent
-    expect(event.args).is.not.undefined
+    expect(expire.args).is.not.undefined
 
-    const args = event.args
+    const args = expire.args
     expect(args?.sender).is.not.undefined
     expect(args?.treasury).is.not.undefined
     expect(args?.collateralSymbol).is.not.undefined
@@ -99,9 +99,9 @@ export function fullCollateralEvent(event: Event): {
     collateralAmount: BigNumber
 } {
     const collateral = event as FullCollateralEvent
-    expect(event.args).is.not.undefined
+    expect(collateral.args).is.not.undefined
 
-    const args = event.args
+    const args = collateral.args
     expect(args?.collateralSymbol).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
 
@@ -118,9 +118,9 @@ export function partialCollateralEvent(event: Event): {
     debtRemaining: BigNumber
 } {
     const collateral = event as PartialCollateralEvent
-    expect(event.args).is.not.undefined
+    expect(collateral.args).is.not.undefined
 
-    const args = event.args
+    const args = collateral.args
     expect(args?.collateralSymbol).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
     expect(args?.debtSymbol).is.not.undefined
@@ -140,9 +140,9 @@ export function redemptionEvent(event: Event): {
     collateralAmount: BigNumber
 } {
     const debt = event as RedemptionEvent
-    expect(event.args).is.not.undefined
+    expect(debt.args).is.not.undefined
 
-    const args = event.args
+    const args = debt.args
     expect(args?.redeemer).is.not.undefined
     expect(args?.debtSymbol).is.not.undefined
     expect(args?.debtAmount).is.not.undefined
@@ -159,33 +159,43 @@ export function slashEvent(event: Event): {
     collateralSymbol: string
     collateralAmount: BigNumber
 } {
-    const debt = event as SlashEvent
-    expect(event.args).is.not.undefined
+    const slash = event as SlashEvent
+    expect(slash.args).is.not.undefined
 
-    const args = event.args
+    const args = slash.args
     expect(args?.collateralSymbol).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
 
-    return debt.args
+    return slash.args
 }
 
 /**
- * Shape check and conversion for a SlashEvent.
+ * Shape check and conversion for a TransferEvents.
  */
-export function transferEvent(event: Event): {
+export function transferEvents(events: Event[]): {
     from: string
     to: string
     value: BigNumber
-} {
-    const debt = event as TransferEvent
-    expect(event.args).is.not.undefined
+}[] {
+    const converted: {
+        from: string
+        to: string
+        value: BigNumber
+    }[] = []
 
-    const args = event.args
-    expect(args?.from).is.not.undefined
-    expect(args?.to).is.not.undefined
-    expect(args?.value).is.not.undefined
+    for (let i = 0; i < events.length; i++) {
+        const transfer = events[i] as TransferEvent
+        expect(transfer.args).is.not.undefined
 
-    return debt.args
+        const args = events[i].args
+        expect(args?.from).is.not.undefined
+        expect(args?.to).is.not.undefined
+        expect(args?.value).is.not.undefined
+
+        converted.push(transfer.args)
+    }
+
+    return converted
 }
 
 /**
@@ -196,13 +206,13 @@ export function withdrawCollateralEvent(event: Event): {
     collateralSymbol: string
     collateralAmount: BigNumber
 } {
-    const close = event as WithdrawCollateralEvent
-    expect(event.args).is.not.undefined
+    const withdraw = event as WithdrawCollateralEvent
+    expect(withdraw.args).is.not.undefined
 
-    const args = event.args
+    const args = withdraw.args
     expect(args?.treasury).is.not.undefined
     expect(args?.collateralSymbol).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
 
-    return close.args
+    return withdraw.args
 }

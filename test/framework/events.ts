@@ -2,25 +2,47 @@ import {ContractReceipt, Event} from 'ethers'
 import {expect} from 'chai'
 
 /**
- * Retrieves an event that matches the given name, failing if not present.
+ * Retrieves a single events that matches the given name, failing if not present.
  *
  * @param name  name of the event expected within the given contracts.
- * @param events contracts expected to contain an exact match for the given name.
+ * @param receipt expected to contain the events matching the given name.
  */
-export function event(name: string, events: Event[]): Event {
+export function event(name: string, receipt: ContractReceipt): Event {
+    const found = events(name, receipt)
+    expect(found.length, 'Expecting a single Event').equals(1)
+    return found[0]
+}
+
+/**
+ * Retrieves any events that matches the given name, failing if not present.
+ *
+ * @param name  name of the event(s) expected within the given contracts.
+ * @param receipt expected to contain the events matching the given name.
+ */
+export function events(name: string, receipt: ContractReceipt): Event[] {
+    const events = receiptEvents(receipt)
+    const found = []
+
     for (let i = 0; i < events.length; i++) {
-        if (events[i]?.event === name) return events[i]
+        if (events[i]?.event === name) {
+            found.push(events[i])
+        }
     }
 
-    expect.fail('Failed to find event matching name: ' + name)
+    expect(
+        found.length,
+        'Failed to find any event matching name: ' + name
+    ).is.greaterThan(0)
+
+    return found
 }
 
 /**
  * Checks the shape of the event array, failing when expectation are not met.
  */
-export function events(receipt: ContractReceipt): Event[] {
-    expect(receipt.events).is.not.undefined
+function receiptEvents(receipt: ContractReceipt): Event[] {
+    expect(receipt.events, 'No receipt events').is.not.undefined
     const events = receipt.events
-    expect(events).is.not.undefined
+    expect(events, 'Receipt events are undefined').is.not.undefined
     return events ? events : []
 }
