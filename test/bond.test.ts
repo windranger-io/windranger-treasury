@@ -784,9 +784,6 @@ describe('Bond contract', () => {
             symbol: collateralSymbol,
             amount: collateralAmount
         })
-
-        //TODO mark
-
         await verifyTransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
@@ -840,6 +837,13 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledge},
             {symbol: collateralSymbol, amount: ZERO}
         )
+        await verifyTransferEvents(redeemOneReceipt, [
+            {
+                from: guarantorOne.address,
+                to: ADDRESS_ZERO,
+                amount: pledge
+            }
+        ])
 
         // Slashed collateral in Treasury, Guarantors redeemed, no debt remain
         await verifyBalances([
@@ -873,6 +877,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledge
         })
+        await verifyTransferEvents(depositOne, [
+            {
+                from: guarantorOne.address,
+                to: bond.address,
+                amount: pledge
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledge
+            }
+        ])
 
         // Bond holds all collateral, with unmatched debt tokens
         await verifyBalances([
@@ -933,6 +949,18 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledge},
             {symbol: collateralSymbol, amount: pledge - slashedCollateral}
         )
+        await verifyTransferEvents(redeemOneReceipt, [
+            {
+                from: guarantorOne.address,
+                to: ADDRESS_ZERO,
+                amount: pledge
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledge - slashedCollateral
+            }
+        ])
 
         // Slashed collateral in Treasury, Guarantors redeemed, unmatched debt remain
         await verifyBalances([
@@ -976,6 +1004,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeOne
         })
+        await verifyTransferEvents(depositOne, [
+            {
+                from: guarantorOne.address,
+                to: bond.address,
+                amount: pledgeOne
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledgeOne
+            }
+        ])
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
@@ -987,6 +1027,18 @@ describe('Bond contract', () => {
             symbol: collateralSymbol,
             amount: collateralAmount
         })
+        await verifyTransferEvents(depositTwo, [
+            {
+                from: guarantorTwo.address,
+                to: bond.address,
+                amount: pledgeTwo
+            },
+            {
+                from: bond.address,
+                to: guarantorTwo.address,
+                amount: pledgeTwo
+            }
+        ])
 
         // Bond holds all collateral, issued debt tokens
         await verifyBalances([
@@ -1008,6 +1060,18 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOne}
         )
+        await verifyTransferEvents(redeemOneReceipt, [
+            {
+                from: guarantorOne.address,
+                to: ADDRESS_ZERO,
+                amount: pledgeOne
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledgeOne
+            }
+        ])
 
         // Guarantor Two redeem their bond, full conversion
         const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
@@ -1017,6 +1081,18 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwo}
         )
+        await verifyTransferEvents(redeemTwoReceipt, [
+            {
+                from: guarantorTwo.address,
+                to: ADDRESS_ZERO,
+                amount: pledgeTwo
+            },
+            {
+                from: bond.address,
+                to: guarantorTwo.address,
+                amount: pledgeTwo
+            }
+        ])
 
         // Guarantors redeemed their full pledge, no debt tokens remain
         await verifyBalances([
@@ -1106,6 +1182,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeOne
         })
+        await verifyTransferEvents(depositOne, [
+            {
+                from: guarantorOne.address,
+                to: bond.address,
+                amount: pledgeOne
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledgeOne
+            }
+        ])
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
@@ -1113,6 +1201,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
+        await verifyTransferEvents(depositTwo, [
+            {
+                from: guarantorTwo.address,
+                to: bond.address,
+                amount: pledgeTwo
+            },
+            {
+                from: bond.address,
+                to: guarantorTwo.address,
+                amount: pledgeTwo
+            }
+        ])
 
         // Bond holds all collateral, with an unmatched pledge of debt tokens
         await verifyBalances([
@@ -1143,6 +1243,18 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOne}
         )
+        await verifyTransferEvents(redeemOneReceipt, [
+            {
+                from: guarantorOne.address,
+                to: ADDRESS_ZERO,
+                amount: pledgeOne
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledgeOne
+            }
+        ])
 
         // Guarantor Two redeem their bond, full conversion
         const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
@@ -1152,6 +1264,18 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwo}
         )
+        await verifyTransferEvents(redeemTwoReceipt, [
+            {
+                from: guarantorTwo.address,
+                to: ADDRESS_ZERO,
+                amount: pledgeTwo
+            },
+            {
+                from: bond.address,
+                to: guarantorTwo.address,
+                amount: pledgeTwo
+            }
+        ])
 
         // Guarantors redeemed their full pledge, unmatched debt tokens remain
         await verifyBalances([
@@ -1189,6 +1313,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeOne
         })
+        await verifyTransferEvents(depositOne, [
+            {
+                from: guarantorOne.address,
+                to: bond.address,
+                amount: pledgeOne
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledgeOne
+            }
+        ])
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
@@ -1196,6 +1332,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
+        await verifyTransferEvents(depositTwo, [
+            {
+                from: guarantorTwo.address,
+                to: bond.address,
+                amount: pledgeTwo
+            },
+            {
+                from: bond.address,
+                to: guarantorTwo.address,
+                amount: pledgeTwo
+            }
+        ])
 
         // Bond holds all collateral
         await verifyBalances([
@@ -1287,6 +1435,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeOne
         })
+        await verifyTransferEvents(depositOne, [
+            {
+                from: guarantorOne.address,
+                to: bond.address,
+                amount: pledgeOne
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledgeOne
+            }
+        ])
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
@@ -1294,6 +1454,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
+        await verifyTransferEvents(depositTwo, [
+            {
+                from: guarantorTwo.address,
+                to: bond.address,
+                amount: pledgeTwo
+            },
+            {
+                from: bond.address,
+                to: guarantorTwo.address,
+                amount: pledgeTwo
+            }
+        ])
 
         // Guarantor Three deposits their full pledge amount
         const depositThree = await depositBond(guarantorThree, pledgeThree)
@@ -1301,6 +1473,18 @@ describe('Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeThree
         })
+        await verifyTransferEvents(depositThree, [
+            {
+                from: guarantorThree.address,
+                to: bond.address,
+                amount: pledgeThree
+            },
+            {
+                from: bond.address,
+                to: guarantorThree.address,
+                amount: pledgeThree
+            }
+        ])
 
         // Bond holds all collateral, issued debt tokens
         await verifyBalances([
@@ -1350,6 +1534,18 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOneSlashed}
         )
+        await verifyTransferEvents(redeemOneReceipt, [
+            {
+                from: guarantorOne.address,
+                to: ADDRESS_ZERO,
+                amount: pledgeOne
+            },
+            {
+                from: bond.address,
+                to: guarantorOne.address,
+                amount: pledgeOneSlashed
+            }
+        ])
 
         // Guarantor Two redeem their bond, partial conversion (slashed)
         const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
@@ -1359,6 +1555,18 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwoSlashed}
         )
+        await verifyTransferEvents(redeemTwoReceipt, [
+            {
+                from: guarantorTwo.address,
+                to: ADDRESS_ZERO,
+                amount: pledgeTwo
+            },
+            {
+                from: bond.address,
+                to: guarantorTwo.address,
+                amount: pledgeTwoSlashed
+            }
+        ])
 
         // Guarantor Three redeem their bond, partial conversion (slashed)
         const redeemThreeReceipt = await redeem(guarantorThree, pledgeThree)
@@ -1368,6 +1576,18 @@ describe('Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeThree},
             {symbol: collateralSymbol, amount: pledgeThreeSlashed}
         )
+        await verifyTransferEvents(redeemThreeReceipt, [
+            {
+                from: guarantorThree.address,
+                to: ADDRESS_ZERO,
+                amount: pledgeThree
+            },
+            {
+                from: bond.address,
+                to: guarantorThree.address,
+                amount: pledgeThreeSlashed
+            }
+        ])
 
         // Slashed collateral in Treasury, Guarantors redeemed, no debt remain
         await verifyBalances([

@@ -151,8 +151,6 @@ export async function verifySlashEvent(
     )
 }
 
-//TODO transfer events - enforce ordering
-
 /**
  * Verifies the content matches at least one of the Transfer events.
  */
@@ -162,6 +160,7 @@ export async function verifyTransferEvents(
 ): Promise<void> {
     const actualTransfers = transferEvents(events('Transfer', receipt))
     let matches = 0
+    let lastMatchIndex = -1
 
     /*
      * Matching entries are removed from actualTransfers before the next loop.
@@ -175,8 +174,15 @@ export async function verifyTransferEvents(
             }
         }
         if (matchIndex >= 0) {
+            // Size of array reduces on match, hence >= and not >
+            expect(
+                matchIndex,
+                'TransferEvent in wrong order'
+            ).is.greaterThanOrEqual(lastMatchIndex)
+
             matches++
-            delete actualTransfers[matchIndex]
+            actualTransfers.splice(matchIndex, 1)
+            lastMatchIndex = matchIndex
         }
     }
 
