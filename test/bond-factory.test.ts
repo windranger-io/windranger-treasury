@@ -4,15 +4,13 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import chai, {expect} from 'chai'
-import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
 import {deployContract, execute, signer} from './framework/contracts'
-import {event} from './framework/events'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {createBondEvent} from './contracts/bond/bond-factory-events'
+import {verifyCreateBondEvent} from './contracts/bond/verify-bond-factory-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -59,19 +57,18 @@ describe('BondFactory contract', () => {
                 )
             )
 
-            const creationEvent = createBondEvent(event('CreateBond', receipt))
-            expect(ethers.utils.isAddress(creationEvent.bond)).is.true
-            expect(creationEvent.bond).is.not.equal(admin)
-            expect(creationEvent.bond).is.not.equal(treasury)
-            expect(await ethers.provider.getCode(creationEvent.bond)).is.not
-                .undefined
-            expect(creationEvent.name).equals(bondName)
-            expect(creationEvent.debtSymbol).equals(bondSymbol)
-            expect(creationEvent.debtAmount).equals(debtTokenAmount)
-            expect(creationEvent.expiryTimestamp).equals(expiryTimestamp)
-            expect(creationEvent.owner).equals(admin)
-            expect(creationEvent.treasury).equals(treasury)
-            expect(creationEvent.data).equals(data)
+            await verifyCreateBondEvent(
+                {
+                    name: bondName,
+                    debtSymbol: bondSymbol,
+                    debtAmount: debtTokenAmount,
+                    owner: admin,
+                    treasury: treasury,
+                    expiryTimestamp: expiryTimestamp,
+                    data: data
+                },
+                receipt
+            )
         })
     })
 
