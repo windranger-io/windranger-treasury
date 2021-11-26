@@ -19,10 +19,10 @@ import {
 /**
  * Verifies the content for a Allow Redemption event.
  */
-export async function verifyAllowRedemptionEvent(
+export function verifyAllowRedemptionEvent(
     receipt: ContractReceipt,
     authorizer: string
-): Promise<void> {
+): void {
     const allowRedemption = allowRedemptionEvent(
         event('AllowRedemption', receipt)
     )
@@ -34,10 +34,10 @@ export async function verifyAllowRedemptionEvent(
 /**
  * Verifies the content for a Full Collateral event.
  */
-export async function verifyFullCollateralEvent(
+export function verifyFullCollateralEvent(
     receipt: ContractReceipt,
     collateral: ExpectTokenBalance
-): Promise<void> {
+): void {
     const fullCollateral = fullCollateralEvent(event('FullCollateral', receipt))
     expect(fullCollateral.collateralSymbol, 'Debt token symbol').equals(
         collateral.symbol
@@ -50,11 +50,11 @@ export async function verifyFullCollateralEvent(
 /**
  * Verifies the content for a Debt Issue event.
  */
-export async function verifyDebtIssueEvent(
+export function verifyDebtIssueEvent(
     receipt: ContractReceipt,
     guarantor: string,
     debt: ExpectTokenBalance
-): Promise<void> {
+): void {
     const depositOneEvent = debtIssueEvent(event('DebtIssue', receipt))
     expect(depositOneEvent.receiver, 'Debt token receiver').equals(guarantor)
     expect(depositOneEvent.debSymbol, 'Debt token symbol').equals(debt.symbol)
@@ -64,12 +64,12 @@ export async function verifyDebtIssueEvent(
 /**
  * Verifies the content for a Expire event.
  */
-export async function verifyExpireEvent(
+export function verifyExpireEvent(
     receipt: ContractReceipt,
     sender: string,
     treasury: string,
     collateral: ExpectTokenBalance
-): Promise<void> {
+): void {
     const depositOneEvent = expireEvent(event('Expire', receipt))
     expect(depositOneEvent.sender, 'Debt token receiver').equals(sender)
     expect(depositOneEvent.treasury, 'Debt token receiver').equals(treasury)
@@ -84,11 +84,11 @@ export async function verifyExpireEvent(
 /**
  * Verifies the content for a Full Collateral event.
  */
-export async function verifyPartialCollateralEvent(
+export function verifyPartialCollateralEvent(
     receipt: ContractReceipt,
     collateral: ExpectTokenBalance,
     debt: ExpectTokenBalance
-): Promise<void> {
+): void {
     const partialCollateral = partialCollateralEvent(
         event('PartialCollateral', receipt)
     )
@@ -111,12 +111,12 @@ export async function verifyPartialCollateralEvent(
 /**
  * Verifies the content for a Redemption event.
  */
-export async function verifyRedemptionEvent(
+export function verifyRedemptionEvent(
     receipt: ContractReceipt,
     redeemer: string,
     debt: ExpectTokenBalance,
     collateral: ExpectTokenBalance
-): Promise<void> {
+): void {
     const redemptionTwoEvent = redemptionEvent(event('Redemption', receipt))
     expect(redemptionTwoEvent.redeemer, 'Redemption redeemer').equals(redeemer)
     expect(redemptionTwoEvent.debtSymbol, 'Redemption debt symbol').equals(
@@ -138,10 +138,10 @@ export async function verifyRedemptionEvent(
 /**
  * Verifies the content for a Slash event.
  */
-export async function verifySlashEvent(
+export function verifySlashEvent(
     receipt: ContractReceipt,
     collateral: ExpectTokenBalance
-): Promise<void> {
+): void {
     const onlySlashEvent = slashEvent(event('Slash', receipt))
     expect(onlySlashEvent.collateralSymbol, 'Slash symbol').equals(
         collateral.symbol
@@ -154,10 +154,10 @@ export async function verifySlashEvent(
 /**
  * Verifies the content matches at least one of the Transfer events.
  */
-export async function verifyTransferEvents(
+export function verifyTransferEvents(
     receipt: ContractReceipt,
     transfers: ExpectTokenTransfer[]
-): Promise<void> {
+): void {
     const actualTransfers = transferEvents(events('Transfer', receipt))
     let matches = 0
     let lastMatchIndex = -1
@@ -209,10 +209,10 @@ function equalTokenTransfer(
 /**
  * Verifies the content for withdrawing the left over collateral (flush of remaining collateral assets) event.
  */
-export async function verifyWithdrawCollateralEvent(
+export function verifyWithdrawCollateralEvent(
     receipt: ContractReceipt,
     transfer: ExpectFlushTransfer
-): Promise<void> {
+): void {
     const onlyTransferEvent = withdrawCollateralEvent(
         event('WithdrawCollateral', receipt)
     )
