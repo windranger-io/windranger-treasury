@@ -35,7 +35,14 @@ contract BondFactory is
     function initialize(
         address erc20CollateralTokens_,
         address erc20CapableTreasury_
-    ) external initializer {
+    ) external virtual initializer {
+        __BondFactory_init(erc20CollateralTokens_, erc20CapableTreasury_);
+    }
+
+    function __BondFactory_init(
+        address erc20CollateralTokens_,
+        address erc20CapableTreasury_
+    ) internal initializer {
         __Ownable_init();
         __CollateralWhitelist_init();
 

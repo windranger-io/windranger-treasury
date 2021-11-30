@@ -3,14 +3,14 @@
   "proxies": [
     {
       "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "txHash": "0x1711580153fd710b05b1b6722e5b768ce8be03bf560c2998646c7bd5836517a5",
+      "txHash": "0xae0b35a879309cc1eeb051173df822c7f9891c029afa54f3f9309a6e7f89ea19",
       "kind": "uups"
     }
   ],
   "impls": {
-    "4b8a8014e82c52b0e5cf6d050ec46f3cc7217fc51c81a4480009e60176aca6c8": {
+    "6f0633248bff18a0379592e59124dc7b5584bcdbc29138439f12d80f77962d08": {
       "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-      "txHash": "0x848351eb1d9d37a16ace4fe8912522f8f7b6cd70be60130e7adcf78e31ee4cf4",
+      "txHash": "0x87b79946ee264b2b33de284d3253dbc51c949797dc92923b5de9cfe3ab95f84e",
       "layout": {
         "storage": [
           {
@@ -77,6 +77,97 @@
           },
           "t_uint256": {
             "label": "uint256"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_mapping(t_string_memory_ptr,t_address)": {
+            "label": "mapping(string => address)"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "2c102f96f07634b8c9a929b0435f102846d93078bc05f0ad03fe43dcc0d68625": {
+      "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      "txHash": "0xdaac0c273da5f77ec28e2aaa43d1fcae98a3d8c886c7e70d3801dec033d3dd72",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:26"
+          },
+          {
+            "contract": "CollateralWhitelist",
+            "label": "_whitelist",
+            "type": "t_mapping(t_string_memory_ptr,t_address)",
+            "src": "contracts/bond/CollateralWhitelist.sol:14"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:77"
+          },
+          {
+            "contract": "ERC1967UpgradeUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:214"
+          },
+          {
+            "contract": "UUPSUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:80"
+          },
+          {
+            "contract": "BondFactory",
+            "label": "_treasury",
+            "type": "t_address",
+            "src": "contracts/bond/BondFactory.sol:19"
+          },
+          {
+            "contract": "BondFactoryTwo",
+            "label": "difference",
+            "type": "t_uint256",
+            "src": "contracts/test/BondFactoryTwo.sol:8"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
