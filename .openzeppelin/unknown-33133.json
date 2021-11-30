@@ -95,7 +95,7 @@
     },
     "2c102f96f07634b8c9a929b0435f102846d93078bc05f0ad03fe43dcc0d68625": {
       "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-      "txHash": "0xdaac0c273da5f77ec28e2aaa43d1fcae98a3d8c886c7e70d3801dec033d3dd72",
+      "txHash": "0x9231087ad486e0a0a04145ac63451f25fcb93f44f0bef039df4477035c56efed",
       "layout": {
         "storage": [
           {
@@ -156,7 +156,7 @@
             "contract": "BondFactoryTwo",
             "label": "difference",
             "type": "t_uint256",
-            "src": "contracts/test/BondFactoryTwo.sol:8"
+            "src": "contracts/test/BondFactoryTwo.sol:11"
           }
         ],
         "types": {

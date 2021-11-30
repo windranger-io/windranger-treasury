@@ -74,7 +74,7 @@ describe('BondFactory contract', () => {
             const beforeUpgrade = bonds
             const startingTreasury = await bonds.treasury()
             const upgradedEvents: {implementation: string}[] = []
-            captureUpgradedEvents(bonds, beforeBlockNumber, (event) => {
+            captureEvents(bonds, 'Upgraded', beforeBlockNumber, (event) => {
                 upgradedEvents.push(upgradedEvent(event))
             })
             expect(startingTreasury).equals(treasury)
@@ -100,9 +100,13 @@ describe('BondFactory contract', () => {
             await delay(4000)
 
             expect(upgradedEvents.length).equals(2)
-
-            // console.log(upgradedEvents[0])
-            // console.log(upgradedEvents[1])
+            expect(ethers.utils.isAddress(upgradedEvents[0].implementation)).is
+                .true
+            expect(ethers.utils.isAddress(upgradedEvents[1].implementation)).is
+                .true
+            expect(upgradedEvents[0].implementation).does.not.equal(
+                upgradedEvents[1].implementation
+            )
         })
     })
 
@@ -134,18 +138,27 @@ interface EventReceived {
     (parameters: Event): void
 }
 
-function captureUpgradedEvents(
+function captureEvents(
     contract: Contract,
+    eventName: string,
     exclusiveStartBlock: number,
     react: EventReceived
 ): void {
-    contract.on('Upgraded', (...args: Array<unknown>) => {
+    contract.on(eventName, (...args: Array<unknown>) => {
+        expect(
+            args.length,
+            'The event details are missing'
+        ).is.greaterThanOrEqual(1)
+
         /*
          * Array is organised with each parameter being an entry,
          * last entry being the entire transaction receipt.
          */
         const lastEntry = args.length - 1
         const event = args[lastEntry] as Event
+
+        expect(event.blockNumber, 'The event should have a block number').is.not
+            .undefined
 
         /*
          * Events stream from the beginning of time.
