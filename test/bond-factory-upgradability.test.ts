@@ -4,7 +4,7 @@ import '@nomiclabs/hardhat-ethers'
 import '@openzeppelin/hardhat-upgrades'
 // End - Support direct Mocha run & debug
 
-import chai, {assert, expect} from 'chai'
+import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory, ERC20} from '../typechain'
@@ -108,17 +108,6 @@ describe('BondFactory contract', () => {
         })
     })
 
-    //TODO use block number?
-    async function bockNumber(): Promise<number> {
-        if (admin.provider == undefined) {
-            assert.fail(
-                'No provider found to retrieve block number from on admin'
-            )
-        } else {
-            return admin.provider.getBlockNumber()
-        }
-    }
-
     let admin: SignerWithAddress
     let treasury: string
     let nonAdmin: SignerWithAddress
@@ -126,5 +115,4 @@ describe('BondFactory contract', () => {
     let collateralSymbol: string
     let bonds: BondFactory
     let upgradedListener: EventListener<UpgradedEventArgs>
-    //TODO add a named type for {implementation: string}
 })
