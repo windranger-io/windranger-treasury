@@ -16,12 +16,14 @@ import {
 } from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ethers, upgrades} from 'hardhat'
-import {Contract, Event} from 'ethers'
 import {upgradedEvent} from './contracts/upgradable/upgradable-events'
-import {delayUntil} from './framework/time'
+import {occurrenceAtMost} from './framework/time'
+import {EventListener} from './framework/event-listener'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
+
+const MAXIMUM_WAIT_MS = 5000
 
 describe('BondFactory contract', () => {
     before(async () => {
@@ -34,6 +36,15 @@ describe('BondFactory contract', () => {
             'BondFactory',
             collateralTokens.address,
             treasury
+        )
+        upgradedListener = new EventListener<{implementation: string}>(
+            bonds,
+            'Upgraded',
+            (event) => upgradedEvent(event)
+        )
+        await occurrenceAtMost(
+            () => upgradedListener.events().length == 1,
+            MAXIMUM_WAIT_MS
         )
     })
 
@@ -65,47 +76,36 @@ describe('BondFactory contract', () => {
         //TODO test only owner upgradable
 
         it('to an extending contract', async () => {
-            const beforeBlockNumber = await bockNumber()
-            const beforeUpgrade = bonds
+            const beforeUpgradeAddress = bonds.address
             const startingTreasury = await bonds.treasury()
-            const upgradedEvents: {implementation: string}[] = []
-            captureEvents(bonds, 'Upgraded', beforeBlockNumber, (event) => {
-                upgradedEvents.push(upgradedEvent(event))
-            })
             expect(startingTreasury).equals(treasury)
 
-            //TODO use the initial deploy event & save 4s
+            expect(upgradedListener.events().length).equals(1)
 
-            const afterUpgrade = await upgradeContract<BondFactory>(
-                'BondFactory',
-                bonds.address
-            )
-
-            expect(beforeUpgrade.address).equals(afterUpgrade.address)
-            expect(await afterUpgrade.treasury()).equals(treasury)
-
-            await delayUntil(() => upgradedEvents.length == 1, 4000)
-
-            expect(upgradedEvents.length).equals(1)
-
-            await upgradeContract<BondFactory>(
+            const upgradedBonds = await upgradeContract<BondFactory>(
                 'BondFactoryExtension',
                 bonds.address
             )
 
-            await delayUntil(() => upgradedEvents.length == 2, 4000)
+            await occurrenceAtMost(
+                () => upgradedListener.events().length == 2,
+                MAXIMUM_WAIT_MS
+            )
 
-            expect(upgradedEvents.length).equals(2)
-            expect(ethers.utils.isAddress(upgradedEvents[0].implementation)).is
+            const upgradeEvents = upgradedListener.events()
+            expect(upgradeEvents.length).equals(2)
+            expect(upgradedBonds.address).equals(beforeUpgradeAddress)
+            expect(ethers.utils.isAddress(upgradeEvents[0].implementation)).is
                 .true
-            expect(ethers.utils.isAddress(upgradedEvents[1].implementation)).is
+            expect(ethers.utils.isAddress(upgradeEvents[1].implementation)).is
                 .true
-            expect(upgradedEvents[0].implementation).does.not.equal(
-                upgradedEvents[1].implementation
+            expect(upgradeEvents[0].implementation).does.not.equal(
+                upgradeEvents[1].implementation
             )
         })
     })
 
+    //TODO use block number?
     async function bockNumber(): Promise<number> {
         if (admin.provider == undefined) {
             assert.fail(
@@ -122,41 +122,6 @@ describe('BondFactory contract', () => {
     let collateralTokens: ERC20
     let collateralSymbol: string
     let bonds: BondFactory
+    let upgradedListener: EventListener<{implementation: string}>
+    //TODO add a named type for {implementation: string}
 })
-
-//TODO move elsewhere - generic helpers
-interface EventReceived {
-    (parameters: Event): void
-}
-
-function captureEvents(
-    contract: Contract,
-    eventName: string,
-    exclusiveStartBlock: number,
-    react: EventReceived
-): void {
-    contract.on(eventName, (...args: Array<unknown>) => {
-        expect(
-            args.length,
-            'The event details are missing'
-        ).is.greaterThanOrEqual(1)
-
-        /*
-         * Array is organised with each parameter being an entry,
-         * last entry being the entire transaction receipt.
-         */
-        const lastEntry = args.length - 1
-        const event = args[lastEntry] as Event
-
-        expect(event.blockNumber, 'The event should have a block number').is.not
-            .undefined
-
-        /*
-         * Events stream from the beginning of time.
-         * Ignore those before the block we begin being interested.
-         */
-        if (event.blockNumber > exclusiveStartBlock) {
-            react(event)
-        }
-    })
-}

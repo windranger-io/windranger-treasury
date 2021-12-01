@@ -1,3 +1,5 @@
+const PAUSE_TIME_INCREMENT_MS = 100
+
 /**
  * Whether the side effects being awaited have occurred.
  */
@@ -11,20 +13,18 @@ export interface SideEffectOccurrence {
  * @param earlyStop awaiting the side effect.
  * @param maximumDelayMs most amount of time to await side effect.
  */
-export async function delayUntil(
+export async function occurrenceAtMost(
     earlyStop: SideEffectOccurrence,
     maximumDelayMs: number
-): Promise<unknown> {
-    const timeIncrementMs = 100
+): Promise<void> {
     let passedMs = 0
 
-    while (!earlyStop() && maximumDelayMs < passedMs) {
-        await delay(timeIncrementMs)
-        passedMs += timeIncrementMs
+    while (!earlyStop() && passedMs < maximumDelayMs) {
+        await sleep(PAUSE_TIME_INCREMENT_MS)
+        passedMs += PAUSE_TIME_INCREMENT_MS
     }
-    return new Promise((resolve) => setTimeout(resolve, maximumDelayMs))
 }
 
-function delay(ms: number): Promise<unknown> {
+function sleep(ms: number): Promise<unknown> {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
