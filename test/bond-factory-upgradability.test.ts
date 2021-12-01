@@ -22,6 +22,7 @@ import {
 } from './contracts/upgradable/upgradable-events'
 import {occurrenceAtMost} from './framework/time'
 import {EventListener} from './framework/event-listener'
+import {successfulTransaction} from './framework/transaction'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -68,14 +69,11 @@ describe('BondFactory contract', () => {
     // Upgraded(implementation)
     //
     // AdminChanged(previousAdmin, newAdmin)
-    //
-    // BeaconUpgraded(beacon)
 
     describe('upgrades', () => {
         //TODO test - happy path, upgrade
         //TODO test - invalid upgrade, no public upgradeTo
         //TODO test - invalid upgrade, no init
-        //TODO transfer proxy admin ownership
         //TODO test only owner upgradable
 
         it('to an extending contract', async () => {
@@ -106,7 +104,27 @@ describe('BondFactory contract', () => {
                 upgradeEvents[1].implementation
             )
         })
+
+        it('only owner', async () => {
+            expect(await bonds.owner()).equals(admin.address)
+            await bonds.transferOwnership(nonAdmin.address)
+            expect(await bonds.owner()).equals(nonAdmin.address)
+
+            // upgrades are fixed to use the first signer (owner) account
+            await expect(
+                upgradeContract<BondFactory>(
+                    'BondFactoryExtension',
+                    bonds.address
+                )
+            ).to.be.revertedWith(
+                "reverted with reason string 'Ownable: caller is not the owner"
+            )
+        })
     })
+
+    //TODO trial using prepare (to get the impl address)
+    //returns a string? the new address, or a deployed address
+    //            await upgrades.prepareUpgrade(proxyAddress, BoxV2);
 
     let admin: SignerWithAddress
     let treasury: string
