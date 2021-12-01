@@ -7,7 +7,12 @@ import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
-import {deployContract, execute, signer} from './framework/contracts'
+import {
+    deployContract,
+    deployProxyContract,
+    execute,
+    signer
+} from './framework/contracts'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-factory-events'
@@ -24,7 +29,7 @@ describe('BondFactory contract', () => {
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
-        bonds = await deployContract<BondFactory>(
+        bonds = await deployProxyContract<BondFactory>(
             'BondFactory',
             collateralTokens.address,
             treasury

@@ -8,11 +8,16 @@ import chai, {assert, expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory, ERC20} from '../typechain'
-import {deployContract, signer} from './framework/contracts'
+import {
+    deployContract,
+    deployProxyContract,
+    signer
+} from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ethers, upgrades} from 'hardhat'
-import {Contract, ContractFactory, Event} from 'ethers'
+import {Contract, Event} from 'ethers'
 import {upgradedEvent} from './contracts/upgradable/upgradable-events'
+import {delayUntil} from './framework/time'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -25,21 +30,11 @@ describe('BondFactory contract', () => {
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin.address)
         collateralSymbol = await collateralTokens.symbol()
 
-        //TODO abstract - deployed proxy, pass in upgrades
-        bondsContractFactory = await ethers.getContractFactory('BondFactory')
-        bonds = <BondFactory>(
-            await upgrades.deployProxy(
-                bondsContractFactory,
-                [collateralTokens.address, treasury],
-                {kind: 'uups'}
-            )
+        bonds = await deployProxyContract<BondFactory>(
+            'BondFactory',
+            collateralTokens.address,
+            treasury
         )
-        bonds = await bonds.deployed()
-
-        // bonds = await deployContract<BondFactory>(
-        //     'BondFactory',
-        //     collateralTokens.address,
-        //     treasury
     })
 
     /*
@@ -80,15 +75,16 @@ describe('BondFactory contract', () => {
             expect(startingTreasury).equals(treasury)
 
             const afterUpgrade = <BondFactory>(
-                await upgrades.upgradeProxy(bonds.address, bondsContractFactory)
+                await upgrades.upgradeProxy(
+                    bonds.address,
+                    await ethers.getContractFactory('BondFactory')
+                )
             )
 
             expect(beforeUpgrade.address).equals(afterUpgrade.address)
             expect(await afterUpgrade.treasury()).equals(treasury)
 
-            // TODO wait until
-
-            await delay(4000)
+            await delayUntil(() => upgradedEvents.length == 1, 4000)
 
             expect(upgradedEvents.length).equals(1)
 
@@ -97,7 +93,7 @@ describe('BondFactory contract', () => {
                 await ethers.getContractFactory('BondFactoryTwo')
             )
 
-            await delay(4000)
+            await delayUntil(() => upgradedEvents.length == 2, 4000)
 
             expect(upgradedEvents.length).equals(2)
             expect(ethers.utils.isAddress(upgradedEvents[0].implementation)).is
@@ -126,14 +122,9 @@ describe('BondFactory contract', () => {
     let collateralTokens: ERC20
     let collateralSymbol: string
     let bonds: BondFactory
-    let bondsContractFactory: ContractFactory
 })
 
 //TODO move elsewhere - generic helpers
-function delay(ms: number): Promise<unknown> {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 interface EventReceived {
     (parameters: Event): void
 }

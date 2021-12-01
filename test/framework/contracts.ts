@@ -1,5 +1,5 @@
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {ethers} from 'hardhat'
+import {ethers, upgrades} from 'hardhat'
 import {expect} from 'chai'
 import {ContractReceipt, ContractTransaction} from 'ethers'
 
@@ -11,7 +11,6 @@ interface DeployableContract<T> {
  * Deploys a contract, that may or may not have constructor parameters.
  *
  * @param name the name of the contract in the Solidity file.
- * @param args constract constructor arguments.
  */
 export async function deployContract<T extends DeployableContract<T>>(
     name: string,
@@ -19,6 +18,26 @@ export async function deployContract<T extends DeployableContract<T>>(
 ): Promise<T> {
     const factory = await ethers.getContractFactory(name)
     const dao = <T>(<unknown>await factory.deploy(...args))
+
+    return dao.deployed()
+}
+
+/**
+ * Deploys a contract with a admin proxy.
+ * The contract may or may not have constructor parameters.
+ *
+ * @param name the name of the contract in the Solidity file.
+ */
+export async function deployProxyContract<T extends DeployableContract<T>>(
+    name: string,
+    ...args: Array<unknown>
+): Promise<T> {
+    const factory = await ethers.getContractFactory(name)
+    const dao = <T>(
+        (<unknown>(
+            await upgrades.deployProxy(factory, [...args], {kind: 'uups'})
+        ))
+    )
 
     return dao.deployed()
 }
