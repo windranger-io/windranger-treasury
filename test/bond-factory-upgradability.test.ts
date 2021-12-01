@@ -16,7 +16,10 @@ import {
 } from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ethers, upgrades} from 'hardhat'
-import {upgradedEvent} from './contracts/upgradable/upgradable-events'
+import {
+    upgradedEvent,
+    UpgradedEventArgs
+} from './contracts/upgradable/upgradable-events'
 import {occurrenceAtMost} from './framework/time'
 import {EventListener} from './framework/event-listener'
 
@@ -37,7 +40,7 @@ describe('BondFactory contract', () => {
             collateralTokens.address,
             treasury
         )
-        upgradedListener = new EventListener<{implementation: string}>(
+        upgradedListener = new EventListener<UpgradedEventArgs>(
             bonds,
             'Upgraded',
             (event) => upgradedEvent(event)
@@ -122,6 +125,6 @@ describe('BondFactory contract', () => {
     let collateralTokens: ERC20
     let collateralSymbol: string
     let bonds: BondFactory
-    let upgradedListener: EventListener<{implementation: string}>
+    let upgradedListener: EventListener<UpgradedEventArgs>
     //TODO add a named type for {implementation: string}
 })

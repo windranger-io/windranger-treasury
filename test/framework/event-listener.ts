@@ -1,6 +1,5 @@
 import {BaseContract, Contract, Event} from 'ethers'
 import {expect} from 'chai'
-import {upgradedEvent} from '../contracts/upgradable/upgradable-events'
 
 /**
  * Converts the unvalidated event, into a typed version, verifying the shape.
