@@ -17,29 +17,45 @@ export async function deployContract<T extends DeployableContract<T>>(
     ...args: Array<unknown>
 ): Promise<T> {
     const factory = await ethers.getContractFactory(name)
-    const dao = <T>(<unknown>await factory.deploy(...args))
+    const contract = <T>(<unknown>await factory.deploy(...args))
 
-    return dao.deployed()
+    return contract.deployed()
 }
 
 /**
- * Deploys a contract with a admin proxy.
+ * Deploys an admin proxy with the contract as the implementation behind.
  * The contract may or may not have constructor parameters.
  *
  * @param name the case sensitive name of the contract in the Solidity file.
  */
-export async function deployProxyContract<T extends DeployableContract<T>>(
+export async function deployContractWithProxy<T extends DeployableContract<T>>(
     name: string,
     ...args: Array<unknown>
 ): Promise<T> {
     const factory = await ethers.getContractFactory(name)
-    const dao = <T>(
+    const contract = <T>(
         (<unknown>(
             await upgrades.deployProxy(factory, [...args], {kind: 'uups'})
         ))
     )
 
-    return dao.deployed()
+    return contract.deployed()
+}
+
+/**
+ * Upgrades an implementation contract that has a proxy contract in front.
+ *
+ * @param name the case sensitive name of the contract in the Solidity file.
+ * @param upgrading existing address of a proxy with the implementation behind.
+ */
+export async function upgradeContract<T extends DeployableContract<T>>(
+    name: string,
+    address: string
+): Promise<T> {
+    const factory = await ethers.getContractFactory(name)
+    const contract = <T>(<unknown>await upgrades.upgradeProxy(address, factory))
+
+    return contract.deployed()
 }
 
 /**

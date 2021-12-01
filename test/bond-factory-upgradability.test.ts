@@ -10,8 +10,9 @@ import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory, ERC20} from '../typechain'
 import {
     deployContract,
-    deployProxyContract,
-    signer
+    deployContractWithProxy,
+    signer,
+    upgradeContract
 } from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ethers, upgrades} from 'hardhat'
@@ -29,8 +30,7 @@ describe('BondFactory contract', () => {
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin.address)
         collateralSymbol = await collateralTokens.symbol()
-
-        bonds = await deployProxyContract<BondFactory>(
+        bonds = await deployContractWithProxy<BondFactory>(
             'BondFactory',
             collateralTokens.address,
             treasury
@@ -57,14 +57,14 @@ describe('BondFactory contract', () => {
     //
     // BeaconUpgraded(beacon)
 
-    describe('upgrade', () => {
+    describe('upgrades', () => {
         //TODO test - happy path, upgrade
         //TODO test - invalid upgrade, no public upgradeTo
         //TODO test - invalid upgrade, no init
         //TODO transfer proxy admin ownership
         //TODO test only owner upgradable
 
-        it('carries storage across', async () => {
+        it('to an extending contract', async () => {
             const beforeBlockNumber = await bockNumber()
             const beforeUpgrade = bonds
             const startingTreasury = await bonds.treasury()
@@ -74,11 +74,11 @@ describe('BondFactory contract', () => {
             })
             expect(startingTreasury).equals(treasury)
 
-            const afterUpgrade = <BondFactory>(
-                await upgrades.upgradeProxy(
-                    bonds.address,
-                    await ethers.getContractFactory('BondFactory')
-                )
+            //TODO use the initial deploy event & save 4s
+
+            const afterUpgrade = await upgradeContract<BondFactory>(
+                'BondFactory',
+                bonds.address
             )
 
             expect(beforeUpgrade.address).equals(afterUpgrade.address)
@@ -88,10 +88,7 @@ describe('BondFactory contract', () => {
 
             expect(upgradedEvents.length).equals(1)
 
-            await upgrades.upgradeProxy(
-                bonds.address,
-                await ethers.getContractFactory('BondFactoryTwo')
-            )
+            await upgradeContract<BondFactory>('BondFactoryTwo', bonds.address)
 
             await delayUntil(() => upgradedEvents.length == 2, 4000)
 

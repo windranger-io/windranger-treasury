@@ -9,7 +9,7 @@ import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
 import {
     deployContract,
-    deployProxyContract,
+    deployContractWithProxy,
     execute,
     signer
 } from './framework/contracts'
@@ -29,7 +29,7 @@ describe('BondFactory contract', () => {
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
-        bonds = await deployProxyContract<BondFactory>(
+        bonds = await deployContractWithProxy<BondFactory>(
             'BondFactory',
             collateralTokens.address,
             treasury
