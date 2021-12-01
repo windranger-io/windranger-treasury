@@ -22,7 +22,6 @@ import {
 } from './contracts/upgradable/upgradable-events'
 import {occurrenceAtMost} from './framework/time'
 import {EventListener} from './framework/event-listener'
-import {successfulTransaction} from './framework/transaction'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
