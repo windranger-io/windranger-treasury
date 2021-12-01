@@ -39,23 +39,6 @@ contract BondFactory is
         __BondFactory_init(erc20CollateralTokens_, erc20CapableTreasury_);
     }
 
-    function __BondFactory_init(
-        address erc20CollateralTokens_,
-        address erc20CapableTreasury_
-    ) internal initializer {
-        __Ownable_init();
-        __CollateralWhitelist_init();
-
-        require(
-            erc20CapableTreasury_ != address(0),
-            "BF: treasury is zero address"
-        );
-
-        _treasury = erc20CapableTreasury_;
-
-        _whitelistCollateral(erc20CollateralTokens_);
-    }
-
     function createBond(
         string calldata name_,
         string calldata symbol_,
@@ -146,6 +129,23 @@ contract BondFactory is
      */
     function treasury() external view returns (address) {
         return _treasury;
+    }
+
+    function __BondFactory_init(
+        address erc20CollateralTokens_,
+        address erc20CapableTreasury_
+    ) internal initializer {
+        __Ownable_init();
+        __CollateralWhitelist_init();
+
+        require(
+            erc20CapableTreasury_ != address(0),
+            "BF: treasury is zero address"
+        );
+
+        _treasury = erc20CapableTreasury_;
+
+        _whitelistCollateral(erc20CollateralTokens_);
     }
 
     /**

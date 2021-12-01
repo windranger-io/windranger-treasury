@@ -7,7 +7,7 @@ import "../bond/BondFactory.sol";
  * Contract adding a variable create a unique contract, that a BondFactory may be upgraded as.
  */
 contract BondFactoryTwo is BondFactory {
-    uint256 private difference;
+    uint256 private _difference;
 
     function initialize(
         address erc20CollateralTokens_,
@@ -15,6 +15,6 @@ contract BondFactoryTwo is BondFactory {
     ) external override initializer {
         __BondFactory_init(erc20CollateralTokens_, erc20CapableTreasury_);
 
-        difference = 7;
+        _difference = 7;
     }
 }
