@@ -10,7 +10,7 @@ interface DeployableContract<T> {
 /**
  * Deploys a contract, that may or may not have constructor parameters.
  *
- * @param name the name of the contract in the Solidity file.
+ * @param name the case sensitive name of the contract in the Solidity file.
  */
 export async function deployContract<T extends DeployableContract<T>>(
     name: string,
@@ -26,7 +26,7 @@ export async function deployContract<T extends DeployableContract<T>>(
  * Deploys a contract with a admin proxy.
  * The contract may or may not have constructor parameters.
  *
- * @param name the name of the contract in the Solidity file.
+ * @param name the case sensitive name of the contract in the Solidity file.
  */
 export async function deployProxyContract<T extends DeployableContract<T>>(
     name: string,
