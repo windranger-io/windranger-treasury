@@ -232,6 +232,11 @@
       "kind": "uups"
     },
     {
+      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "txHash": "0xae0b35a879309cc1eeb051173df822c7f9891c029afa54f3f9309a6e7f89ea19",
+      "kind": "uups"
+    },
+    {
       "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
       "txHash": "0xa962e58e5a6bcc96c84991d6e6326ea693dbea6b6d2deee11d5974e77081f846",
       "kind": "uups"
@@ -510,17 +515,12 @@
       "address": "0xB22C255250d74B0ADD1bfB936676D2a299BF48Bd",
       "txHash": "0x4d3414fa4892b95175833a75c78933719388aa8a77091b5ce8a4205951501a74",
       "kind": "uups"
-    },
-    {
-      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "txHash": "0xae0b35a879309cc1eeb051173df822c7f9891c029afa54f3f9309a6e7f89ea19",
-      "kind": "uups"
     }
   ],
   "impls": {
     "6f0633248bff18a0379592e59124dc7b5584bcdbc29138439f12d80f77962d08": {
       "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-      "txHash": "0x87b79946ee264b2b33de284d3253dbc51c949797dc92923b5de9cfe3ab95f84e",
+      "txHash": "0xcd280108173524eb0196701ed0160186080f3aef720a9676388976a23fe2ad01",
       "layout": {
         "storage": [
           {
@@ -605,7 +605,7 @@
     },
     "2c102f96f07634b8c9a929b0435f102846d93078bc05f0ad03fe43dcc0d68625": {
       "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-      "txHash": "0x91f224a29dcb8c9047702ebce036bd67c9d547f437d5fb5315019008030bfdf8",
+      "txHash": "0x2a07e3b128e9617e9b6ecee66eb9e480dab5d0d7c6e37d32ad5f4462adf99274",
       "layout": {
         "storage": [
           {
@@ -663,10 +663,10 @@
             "src": "contracts/bond/BondFactory.sol:19"
           },
           {
-            "contract": "BondFactoryTwo",
-            "label": "difference",
+            "contract": "BondFactoryExtension",
+            "label": "_difference",
             "type": "t_uint256",
-            "src": "contracts/test/BondFactoryTwo.sol:10"
+            "src": "contracts/test/upgradable/BondFactoryExtension.sol:10"
           }
         ],
         "types": {

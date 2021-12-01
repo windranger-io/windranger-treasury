@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../bond/BondFactory.sol";
+import "../../bond/BondFactory.sol";
 
 /**
  * Contract adding a variable create a unique contract, that a BondFactory may be upgraded as.
  */
-contract BondFactoryTwo is BondFactory {
+contract BondFactoryExtension is BondFactory {
     uint256 private _difference;
 
     function initialize(

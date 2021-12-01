@@ -88,7 +88,10 @@ describe('BondFactory contract', () => {
 
             expect(upgradedEvents.length).equals(1)
 
-            await upgradeContract<BondFactory>('BondFactoryTwo', bonds.address)
+            await upgradeContract<BondFactory>(
+                'BondFactoryExtension',
+                bonds.address
+            )
 
             await delayUntil(() => upgradedEvents.length == 2, 4000)
 
