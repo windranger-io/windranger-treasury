@@ -7,13 +7,13 @@ import {ownershipTransferredEvent} from './ownable-events'
 /**
  * Verifies the content for a Ownership Transferred event.
  */
-export async function verifyOwnershipTransferredEvent(
+export function verifyOwnershipTransferredEvent(
     expected: {
         previousOwner: string
         newOwner: string
     },
     receipt: ContractReceipt
-): Promise<void> {
+): void {
     const ownership = ownershipTransferredEvent(
         event('OwnershipTransferred', receipt)
     )
