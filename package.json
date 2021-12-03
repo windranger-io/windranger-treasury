@@ -36,7 +36,7 @@
     "@types/bunyan": "^1.8.7",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.11.7",
+    "@types/node": "^16.11.11",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.3.1",
     "bitdao-token-contract": "windranger-io/bit-token-contract#v1.0.0",
