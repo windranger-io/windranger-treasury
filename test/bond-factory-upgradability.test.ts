@@ -11,13 +11,13 @@ import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
     BondFactory,
-    BondFactoryWithInitialValueField,
     BondFactoryWithConstructor,
-    BondFactoryWithImmutableField,
-    ERC20,
     BondFactoryWithEnum,
+    BondFactoryWithImmutableField,
+    BondFactoryWithInitialValueField,
+    BondFactoryWithSelfDestruct,
     BondFactoryWithStruct,
-    BondFactoryWithSelfDestruct
+    ERC20
 } from '../typechain'
 import {
     deployContract,
@@ -27,8 +27,8 @@ import {
 } from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {
-    upgradedEvent,
-    UpgradedEventArgs
+    UpgradedEventArgs,
+    upgradedEvent
 } from './contracts/upgradable/upgradable-events'
 import {occurrenceAtMost} from './framework/time'
 import {EventListener} from './framework/event-listener'

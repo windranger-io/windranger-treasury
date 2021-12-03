@@ -2,11 +2,11 @@ import {BigNumber, ContractReceipt} from 'ethers'
 import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
-    allowRedemptionEvent,
-    debtIssueEvent,
     ExpectFlushTransfer,
     ExpectTokenBalance,
     ExpectTokenTransfer,
+    allowRedemptionEvent,
+    debtIssueEvent,
     expireEvent,
     fullCollateralEvent,
     partialCollateralEvent,

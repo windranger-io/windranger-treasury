@@ -20,12 +20,12 @@ export function event(name: string, receipt: ContractReceipt): Event {
  * @param receipt expected to contain the events matching the given name.
  */
 export function events(name: string, receipt: ContractReceipt): Event[] {
-    const events = receiptEvents(receipt)
+    const availableEvents = receiptEvents(receipt)
     const found = []
 
-    for (let i = 0; i < events.length; i++) {
-        if (events[i]?.event === name) {
-            found.push(events[i])
+    for (let i = 0; i < availableEvents.length; i++) {
+        if (availableEvents[i]?.event === name) {
+            found.push(availableEvents[i])
         }
     }
 
@@ -42,7 +42,7 @@ export function events(name: string, receipt: ContractReceipt): Event[] {
  */
 function receiptEvents(receipt: ContractReceipt): Event[] {
     expect(receipt.events, 'No receipt events').is.not.undefined
-    const events = receipt.events
-    expect(events, 'Receipt events are undefined').is.not.undefined
-    return events ? events : []
+    const availableEvents = receipt.events
+    expect(availableEvents, 'Receipt events are undefined').is.not.undefined
+    return availableEvents ? availableEvents : []
 }

@@ -1,4 +1,4 @@
-import {run, ethers} from 'hardhat'
+import {ethers, run} from 'hardhat'
 import {log} from '../config/logging'
 
 async function main() {

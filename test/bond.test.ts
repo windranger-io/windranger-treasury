@@ -13,7 +13,7 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {BigNumberish, constants, ContractReceipt, ethers} from 'ethers'
+import {BigNumberish, ContractReceipt, constants, ethers} from 'ethers'
 import {event} from './framework/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
