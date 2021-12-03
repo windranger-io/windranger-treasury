@@ -48,7 +48,7 @@
     "ethers": "^5.5.2",
     "hardhat": "^2.7.0",
     "husky": "^7.0.2",
-    "lint-staged": "^11.1.2",
+    "lint-staged": "^12.1.2",
     "mocha": "^9.1.2",
     "node-plantuml": "windranger-io/node-plantuml#fcfc730",
     "prettier": "^2.5.0",
