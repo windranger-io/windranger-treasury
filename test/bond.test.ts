@@ -4,7 +4,6 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import chai, {expect} from 'chai'
-import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
@@ -14,7 +13,7 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {BigNumberish, constants, ContractReceipt} from 'ethers'
+import {BigNumberish, ContractReceipt, constants, ethers} from 'ethers'
 import {event} from './framework/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
@@ -30,6 +29,7 @@ import {
     verifyWithdrawCollateralEvent
 } from './contracts/bond/verify-bond-events'
 import {createBondEvent} from './contracts/bond/bond-factory-events'
+import {bondContractAt} from './contracts/bond/bond-contract'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -781,15 +781,15 @@ describe('Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOne = await depositBond(guarantorOne, pledge)
-        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+        verifyDebtIssueEvent(depositOne, guarantorOne.address, {
             symbol: debtSymbol,
             amount: pledge
         })
-        await verifyFullCollateralEvent(depositOne, {
+        verifyFullCollateralEvent(depositOne, {
             symbol: collateralSymbol,
             amount: collateralAmount
         })
-        await verifyTransferEvents(depositOne, [
+        verifyTransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -811,11 +811,11 @@ describe('Bond contract', () => {
 
         // Slash all of the collateral assets
         const slashReceipt = await slashCollateral(slashedCollateral)
-        await verifySlashEvent(slashReceipt, {
+        verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        await verifyTransferEvents(slashReceipt, [
+        verifyTransferEvents(slashReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -832,17 +832,17 @@ describe('Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, partial conversion (slashed)
         const redeemOneReceipt = await redeem(guarantorOne, pledge)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
             {symbol: debtSymbol, amount: pledge},
             {symbol: collateralSymbol, amount: ZERO}
         )
-        await verifyTransferEvents(redeemOneReceipt, [
+        verifyTransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -878,11 +878,11 @@ describe('Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOne = await depositBond(guarantorOne, pledge)
-        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+        verifyDebtIssueEvent(depositOne, guarantorOne.address, {
             symbol: debtSymbol,
             amount: pledge
         })
-        await verifyTransferEvents(depositOne, [
+        verifyTransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -908,11 +908,11 @@ describe('Bond contract', () => {
 
         // Slash forty percent of the collateral assets
         const slashReceipt = await slashCollateral(slashedCollateral)
-        await verifySlashEvent(slashReceipt, {
+        verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        await verifyTransferEvents(slashReceipt, [
+        verifyTransferEvents(slashReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -933,8 +933,8 @@ describe('Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
-        await verifyPartialCollateralEvent(
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyPartialCollateralEvent(
             allowRedemptionReceipt,
             {
                 symbol: collateralSymbol,
@@ -948,13 +948,13 @@ describe('Bond contract', () => {
 
         // Guarantor One redeem their bond, partial conversion (slashed)
         const redeemOneReceipt = await redeem(guarantorOne, pledge)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
             {symbol: debtSymbol, amount: pledge},
             {symbol: collateralSymbol, amount: pledge - slashedCollateral}
         )
-        await verifyTransferEvents(redeemOneReceipt, [
+        verifyTransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -1005,11 +1005,11 @@ describe('Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOne = await depositBond(guarantorOne, pledgeOne)
-        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+        verifyDebtIssueEvent(depositOne, guarantorOne.address, {
             symbol: debtSymbol,
             amount: pledgeOne
         })
-        await verifyTransferEvents(depositOne, [
+        verifyTransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -1024,15 +1024,15 @@ describe('Bond contract', () => {
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
-        await verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
+        verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
-        await verifyFullCollateralEvent(depositTwo, {
+        verifyFullCollateralEvent(depositTwo, {
             symbol: collateralSymbol,
             amount: collateralAmount
         })
-        await verifyTransferEvents(depositTwo, [
+        verifyTransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
                 to: bond.address,
@@ -1055,17 +1055,17 @@ describe('Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, full conversion
         const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOne}
         )
-        await verifyTransferEvents(redeemOneReceipt, [
+        verifyTransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -1080,13 +1080,13 @@ describe('Bond contract', () => {
 
         // Guarantor Two redeem their bond, full conversion
         const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemTwoReceipt,
             guarantorTwo.address,
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwo}
         )
-        await verifyTransferEvents(redeemTwoReceipt, [
+        verifyTransferEvents(redeemTwoReceipt, [
             {
                 from: guarantorTwo.address,
                 to: ADDRESS_ZERO,
@@ -1136,12 +1136,12 @@ describe('Bond contract', () => {
 
         // Move the rounding error from the Bond contract to the Treasury
         const withdrawReceipt = await withdrawCollateral()
-        await verifyWithdrawCollateralEvent(withdrawReceipt, {
+        verifyWithdrawCollateralEvent(withdrawReceipt, {
             to: treasury,
             symbol: collateralSymbol,
             amount: ONE
         })
-        await verifyTransferEvents(withdrawReceipt, [
+        verifyTransferEvents(withdrawReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1183,11 +1183,11 @@ describe('Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOne = await depositBond(guarantorOne, pledgeOne)
-        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+        verifyDebtIssueEvent(depositOne, guarantorOne.address, {
             symbol: debtSymbol,
             amount: pledgeOne
         })
-        await verifyTransferEvents(depositOne, [
+        verifyTransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -1202,11 +1202,11 @@ describe('Bond contract', () => {
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
-        await verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
+        verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
-        await verifyTransferEvents(depositTwo, [
+        verifyTransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
                 to: bond.address,
@@ -1233,8 +1233,8 @@ describe('Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
-        await verifyPartialCollateralEvent(
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyPartialCollateralEvent(
             allowRedemptionReceipt,
             {symbol: collateralSymbol, amount: pledgeOne + pledgeTwo},
             {symbol: debtSymbol, amount: unmatchedPledge}
@@ -1242,13 +1242,13 @@ describe('Bond contract', () => {
 
         // Guarantor One redeem their bond, full conversion
         const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOne}
         )
-        await verifyTransferEvents(redeemOneReceipt, [
+        verifyTransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -1263,13 +1263,13 @@ describe('Bond contract', () => {
 
         // Guarantor Two redeem their bond, full conversion
         const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemTwoReceipt,
             guarantorTwo.address,
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwo}
         )
-        await verifyTransferEvents(redeemTwoReceipt, [
+        verifyTransferEvents(redeemTwoReceipt, [
             {
                 from: guarantorTwo.address,
                 to: ADDRESS_ZERO,
@@ -1314,11 +1314,11 @@ describe('Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOne = await depositBond(guarantorOne, pledgeOne)
-        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+        verifyDebtIssueEvent(depositOne, guarantorOne.address, {
             symbol: debtSymbol,
             amount: pledgeOne
         })
-        await verifyTransferEvents(depositOne, [
+        verifyTransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -1333,11 +1333,11 @@ describe('Bond contract', () => {
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
-        await verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
+        verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
-        await verifyTransferEvents(depositTwo, [
+        verifyTransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
                 to: bond.address,
@@ -1364,11 +1364,11 @@ describe('Bond contract', () => {
 
         // Slash forty percent of the collateral assets
         const slashReceipt = await slashCollateral(slashedCollateral)
-        await verifySlashEvent(slashReceipt, {
+        verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        await verifyTransferEvents(slashReceipt, [
+        verifyTransferEvents(slashReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1379,11 +1379,11 @@ describe('Bond contract', () => {
         // Owner expires the un-paused bond
         expect(await bond.paused()).is.false
         const expireReceipt = await expire()
-        await verifyExpireEvent(expireReceipt, admin.address, treasury, {
+        verifyExpireEvent(expireReceipt, admin.address, treasury, {
             symbol: collateralSymbol,
             amount: collateral - slashedCollateral
         })
-        await verifyTransferEvents(expireReceipt, [
+        verifyTransferEvents(expireReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1436,11 +1436,11 @@ describe('Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOne = await depositBond(guarantorOne, pledgeOne)
-        await verifyDebtIssueEvent(depositOne, guarantorOne.address, {
+        verifyDebtIssueEvent(depositOne, guarantorOne.address, {
             symbol: debtSymbol,
             amount: pledgeOne
         })
-        await verifyTransferEvents(depositOne, [
+        verifyTransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -1455,11 +1455,11 @@ describe('Bond contract', () => {
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
-        await verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
+        verifyDebtIssueEvent(depositTwo, guarantorTwo.address, {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
-        await verifyTransferEvents(depositTwo, [
+        verifyTransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
                 to: bond.address,
@@ -1474,11 +1474,11 @@ describe('Bond contract', () => {
 
         // Guarantor Three deposits their full pledge amount
         const depositThree = await depositBond(guarantorThree, pledgeThree)
-        await verifyDebtIssueEvent(depositThree, guarantorThree.address, {
+        verifyDebtIssueEvent(depositThree, guarantorThree.address, {
             symbol: debtSymbol,
             amount: pledgeThree
         })
-        await verifyTransferEvents(depositThree, [
+        verifyTransferEvents(depositThree, [
             {
                 from: guarantorThree.address,
                 to: bond.address,
@@ -1502,11 +1502,11 @@ describe('Bond contract', () => {
 
         // Slash forty percent from the collateral assets
         const slashReceipt = await slashCollateral(slashedCollateral)
-        await verifySlashEvent(slashReceipt, {
+        verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        await verifyTransferEvents(slashReceipt, [
+        verifyTransferEvents(slashReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1529,17 +1529,17 @@ describe('Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        await verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
 
         // Guarantor One redeem their bond, partial conversion (slashed)
         const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemOneReceipt,
             guarantorOne.address,
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOneSlashed}
         )
-        await verifyTransferEvents(redeemOneReceipt, [
+        verifyTransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -1554,13 +1554,13 @@ describe('Bond contract', () => {
 
         // Guarantor Two redeem their bond, partial conversion (slashed)
         const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemTwoReceipt,
             guarantorTwo.address,
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwoSlashed}
         )
-        await verifyTransferEvents(redeemTwoReceipt, [
+        verifyTransferEvents(redeemTwoReceipt, [
             {
                 from: guarantorTwo.address,
                 to: ADDRESS_ZERO,
@@ -1575,13 +1575,13 @@ describe('Bond contract', () => {
 
         // Guarantor Three redeem their bond, partial conversion (slashed)
         const redeemThreeReceipt = await redeem(guarantorThree, pledgeThree)
-        await verifyRedemptionEvent(
+        verifyRedemptionEvent(
             redeemThreeReceipt,
             guarantorThree.address,
             {symbol: debtSymbol, amount: pledgeThree},
             {symbol: collateralSymbol, amount: pledgeThreeSlashed}
         )
-        await verifyTransferEvents(redeemThreeReceipt, [
+        verifyTransferEvents(redeemThreeReceipt, [
             {
                 from: guarantorThree.address,
                 to: ADDRESS_ZERO,
@@ -1691,11 +1691,6 @@ describe('Bond contract', () => {
     let guarantorThree: SignerWithAddress
     let bonds: BondFactory
 })
-
-export async function bondContractAt(address: string): Promise<Bond> {
-    const factory = await ethers.getContractFactory('Bond')
-    return <Bond>factory.attach(address)
-}
 
 function slash(amount: bigint, percent: bigint): bigint {
     return ((100n - percent) * amount) / 100n

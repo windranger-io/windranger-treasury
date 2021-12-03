@@ -7,12 +7,12 @@ import {adminChangedEvent, upgradedEvent} from './upgradable-events'
 /**
  * Verifies the content for a Upgraded event.
  */
-export async function verifyUpgradedEvent(
+export function verifyUpgradedEvent(
     expected: {
         implementation: string
     },
     receipt: ContractReceipt
-): Promise<void> {
+): void {
     const upgrade = upgradedEvent(event('Upgraded', receipt))
     expect(ethers.utils.isAddress(upgrade.implementation)).is.true
 
@@ -22,13 +22,13 @@ export async function verifyUpgradedEvent(
 /**
  * Verifies the content for a Admin Changed event.
  */
-export async function verifyAdminChangedEvent(
+export function verifyAdminChangedEvent(
     expected: {
         previousAdmin: string
         newAdmin: string
     },
     receipt: ContractReceipt
-): Promise<void> {
+): void {
     const creationEvent = adminChangedEvent(event('AdminChanged', receipt))
     expect(ethers.utils.isAddress(creationEvent.previousAdmin)).is.true
     expect(ethers.utils.isAddress(creationEvent.newAdmin)).is.true

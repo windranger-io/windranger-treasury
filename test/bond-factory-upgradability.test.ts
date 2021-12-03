@@ -11,13 +11,13 @@ import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
     BondFactory,
-    BondFactoryWithInitialValueField,
     BondFactoryWithConstructor,
-    BondFactoryWithImmutableField,
-    ERC20,
     BondFactoryWithEnum,
+    BondFactoryWithImmutableField,
+    BondFactoryWithInitialValueField,
+    BondFactoryWithSelfDestruct,
     BondFactoryWithStruct,
-    BondFactoryWithSelfDestruct
+    ERC20
 } from '../typechain'
 import {
     deployContract,
@@ -26,13 +26,13 @@ import {
     upgradeContract
 } from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {ethers} from 'hardhat'
 import {
-    upgradedEvent,
-    UpgradedEventArgs
+    UpgradedEventArgs,
+    upgradedEvent
 } from './contracts/upgradable/upgradable-events'
 import {occurrenceAtMost} from './framework/time'
 import {EventListener} from './framework/event-listener'
+import {ethers} from 'ethers'
 
 // Wires Chai with Waffle and Promises
 chai.use(solidity)
@@ -73,7 +73,7 @@ describe('BondFactory contract', () => {
             )
 
             await occurrenceAtMost(
-                () => upgradedListener.events().length == 2,
+                () => upgradedListener.events().length === 2,
                 MAXIMUM_WAIT_MS
             )
 
@@ -89,19 +89,17 @@ describe('BondFactory contract', () => {
             )
         })
 
-        it('new struct is fine', async () => {
-            return upgradeContract<BondFactoryWithStruct>(
+        it('new struct is fine', async () =>
+            upgradeContract<BondFactoryWithStruct>(
                 'BondFactoryWithStruct',
                 bonds.address
-            )
-        })
+            ))
 
-        it('new enum is fine', async () => {
-            return upgradeContract<BondFactoryWithEnum>(
+        it('new enum is fine', async () =>
+            upgradeContract<BondFactoryWithEnum>(
                 'BondFactoryWithEnum',
                 bonds.address
-            )
-        })
+            ))
 
         it('no constructor', async () => {
             await expect(
