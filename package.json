@@ -33,7 +33,7 @@
     "@openzeppelin/contracts-upgradeable": "^4.4.0",
     "@typechain/ethers-v5": "^7.0.1",
     "@typechain/hardhat": "^2.3.0",
-    "@types/bunyan": "^1.8.7",
+    "@types/bunyan": "^1.8.8",
     "@types/chai": "^4.2.21",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.11",
