@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./Bond.sol";
 
@@ -10,7 +11,11 @@ import "./Bond.sol";
  *
  * @dev Applies common configuration to bond contracts created.
  */
-contract BondFactory is CollateralWhitelist, Ownable {
+contract BondFactory is
+    CollateralWhitelist,
+    OwnableUpgradeable,
+    UUPSUpgradeable
+{
     address private _treasury;
 
     event CreateBond(
@@ -25,19 +30,13 @@ contract BondFactory is CollateralWhitelist, Ownable {
     );
 
     /**
-     * @dev Creates the factory with the given collateral tokens automatically being whitelisted.
+     * @dev Initialises the factory with the given collateral tokens automatically being whitelisted.
      */
-    constructor(address erc20CollateralTokens_, address erc20CapableTreasury_) {
-        __CollateralWhitelist_init();
-
-        require(
-            erc20CapableTreasury_ != address(0),
-            "BF: treasury is zero address"
-        );
-
-        _treasury = erc20CapableTreasury_;
-
-        _whitelistCollateral(erc20CollateralTokens_);
+    function initialize(
+        address erc20CollateralTokens_,
+        address erc20CapableTreasury_
+    ) external virtual initializer {
+        __BondFactory_init(erc20CollateralTokens_, erc20CapableTreasury_);
     }
 
     function createBond(
@@ -131,4 +130,30 @@ contract BondFactory is CollateralWhitelist, Ownable {
     function treasury() external view returns (address) {
         return _treasury;
     }
+
+    function __BondFactory_init(
+        address erc20CollateralTokens_,
+        address erc20CapableTreasury_
+    ) internal initializer {
+        __Ownable_init();
+        __CollateralWhitelist_init();
+
+        require(
+            erc20CapableTreasury_ != address(0),
+            "BF: treasury is zero address"
+        );
+
+        _treasury = erc20CapableTreasury_;
+
+        _whitelistCollateral(erc20CollateralTokens_);
+    }
+
+    /**
+     * Permits only the owner to perform upgrades.
+     */
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        override
+        onlyOwner
+    {}
 }

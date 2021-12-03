@@ -8,7 +8,12 @@ import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
-import {deployContract, execute, signer} from './framework/contracts'
+import {
+    deployContract,
+    deployContractWithProxy,
+    execute,
+    signer
+} from './framework/contracts'
 import {BigNumberish, constants, ContractReceipt} from 'ethers'
 import {event} from './framework/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
@@ -50,7 +55,7 @@ describe('Bond contract', () => {
     beforeEach(async () => {
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin.address)
         collateralSymbol = await collateralTokens.symbol()
-        factory = await deployContract<BondFactory>(
+        bonds = await deployContractWithProxy<BondFactory>(
             'BondFactory',
             collateralTokens.address,
             treasury
@@ -59,7 +64,7 @@ describe('Bond contract', () => {
 
     describe('allow redemption', () => {
         it('changes state', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             expect(await bond.redeemable()).is.false
 
             await bond.allowRedemption()
@@ -68,7 +73,7 @@ describe('Bond contract', () => {
         })
 
         it('only when not paused', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             await bond.pause()
 
             await expect(bond.allowRedemption()).to.be.revertedWith(
@@ -77,7 +82,7 @@ describe('Bond contract', () => {
         })
 
         it('only when not redeemable', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             await bond.allowRedemption()
 
             await expect(bond.allowRedemption()).to.be.revertedWith(
@@ -86,7 +91,7 @@ describe('Bond contract', () => {
         })
 
         it('only owner', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
 
             await expect(
                 bond.connect(guarantorOne).allowRedemption()
@@ -99,7 +104,7 @@ describe('Bond contract', () => {
             const pledgeOne = 998877n
             const pledgeTwo = 99n
             const totalPledge = pledgeOne + pledgeTwo
-            bond = await createBond(factory, totalPledge)
+            bond = await createBond(bonds, totalPledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: totalPledge}
             ])
@@ -119,7 +124,7 @@ describe('Bond contract', () => {
             const redemptionOne = 400n
             const redemptionTwo = 5000n
             const pledge = redemptionOne + redemptionTwo + 50n
-            bond = await createBond(factory, pledge)
+            bond = await createBond(bonds, pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -145,7 +150,7 @@ describe('Bond contract', () => {
             const slashOne = 9000n
             const slashTwo = 44300n
             const pledge = slashOne + slashTwo + 675n
-            bond = await createBond(factory, pledge)
+            bond = await createBond(bonds, pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -166,7 +171,7 @@ describe('Bond contract', () => {
     describe('debt tokens', () => {
         it('initial supply', async () => {
             const initialSupply = 97500n
-            bond = await createBond(factory, initialSupply)
+            bond = await createBond(bonds, initialSupply)
 
             expect(await bond.debtTokens()).equals(initialSupply)
         })
@@ -176,7 +181,7 @@ describe('Bond contract', () => {
             const pledgeOne = 500n
             const pledgeTwo = 7500n
             const pledgeTotal = pledgeOne + pledgeTwo
-            bond = await createBond(factory, initialSupply)
+            bond = await createBond(bonds, initialSupply)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledgeTotal}
             ])
@@ -194,7 +199,7 @@ describe('Bond contract', () => {
         it('unaffected by redemption', async () => {
             const initialSupply = 9500n
             const pledge = 300n
-            bond = await createBond(factory, initialSupply)
+            bond = await createBond(bonds, initialSupply)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -214,7 +219,7 @@ describe('Bond contract', () => {
             const pledgeOne = 500n
             const pledgeTwo = 7500n
             const pledgeTotal = pledgeOne + pledgeTwo
-            bond = await createBond(factory, initialSupply)
+            bond = await createBond(bonds, initialSupply)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledgeTotal}
             ])
@@ -234,7 +239,7 @@ describe('Bond contract', () => {
             const pledgeOne = 500n
             const pledgeTwo = 7500n
             const pledgeTotal = pledgeOne + pledgeTwo
-            bond = await createBond(factory, initialSupply)
+            bond = await createBond(bonds, initialSupply)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledgeTotal}
             ])
@@ -257,7 +262,7 @@ describe('Bond contract', () => {
 
     describe('deposit', () => {
         it('cannot be zero', async () => {
-            bond = await createBond(factory, 5566777n)
+            bond = await createBond(bonds, 5566777n)
 
             await expect(bond.deposit(ZERO)).to.be.revertedWith(
                 'Bond: too small'
@@ -266,7 +271,7 @@ describe('Bond contract', () => {
 
         it('cannot be greater than available Debt Tokens', async () => {
             const debtTokens = 500000n
-            bond = await createBond(factory, debtTokens)
+            bond = await createBond(bonds, debtTokens)
 
             await expect(bond.deposit(debtTokens + 1n)).to.be.revertedWith(
                 'Bond: too large'
@@ -275,7 +280,7 @@ describe('Bond contract', () => {
 
         it('only when not paused', async () => {
             const pledge = 60n
-            bond = await createBond(factory, pledge)
+            bond = await createBond(bonds, pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -288,7 +293,7 @@ describe('Bond contract', () => {
 
         it('only when not redeemable', async () => {
             const pledge = 60n
-            bond = await createBond(factory, 235666777n)
+            bond = await createBond(bonds, 235666777n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -301,7 +306,7 @@ describe('Bond contract', () => {
 
         it('with full collateral', async () => {
             const pledge = 5040n
-            bond = await createBond(factory, pledge)
+            bond = await createBond(bonds, pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -316,7 +321,7 @@ describe('Bond contract', () => {
     describe('expire', () => {
         it('when called by non-owner', async () => {
             const pledge = 445n
-            bond = await createBond(factory, pledge)
+            bond = await createBond(bonds, pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -335,7 +340,7 @@ describe('Bond contract', () => {
 
         it('during redemption', async () => {
             const pledge = 9899n
-            bond = await createBond(factory, pledge)
+            bond = await createBond(bonds, pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -357,7 +362,7 @@ describe('Bond contract', () => {
 
         it('when paused', async () => {
             const pledge = 667777n
-            bond = await createBond(factory, pledge)
+            bond = await createBond(bonds, pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -376,7 +381,7 @@ describe('Bond contract', () => {
         })
 
         it('only when there is collateral to move', async () => {
-            bond = await createBond(factory, 500n)
+            bond = await createBond(bonds, 500n)
 
             await expect(
                 bond.connect(guarantorOne).expire()
@@ -385,7 +390,7 @@ describe('Bond contract', () => {
 
         it('only after expiry', async () => {
             const receipt = await execute(
-                factory.createBond(
+                bonds.createBond(
                     'Special Debt Certificate',
                     'SDC001',
                     500n,
@@ -406,7 +411,7 @@ describe('Bond contract', () => {
 
     describe('init', () => {
         it('can only call once', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
 
             await expect(
                 bond.initialize(
@@ -510,7 +515,7 @@ describe('Bond contract', () => {
 
     describe('pause', () => {
         it('changes state', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             expect(await bond.paused()).is.false
 
             await bond.pause()
@@ -519,14 +524,14 @@ describe('Bond contract', () => {
         })
 
         it('only when not paused', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             await bond.pause()
 
             await expect(bond.pause()).to.be.revertedWith('Pausable: paused')
         })
 
         it('only owner', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
 
             await expect(bond.connect(guarantorTwo).pause()).to.be.revertedWith(
                 'Ownable: caller is not the owner'
@@ -537,7 +542,7 @@ describe('Bond contract', () => {
     describe('redeem', () => {
         it('cannot be zero', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 23336777n)
+            bond = await createBond(bonds, 23336777n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -551,7 +556,7 @@ describe('Bond contract', () => {
 
         it('only when redeemable', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 238877n)
+            bond = await createBond(bonds, 238877n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -564,7 +569,7 @@ describe('Bond contract', () => {
 
         it('only when not paused', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 238877n)
+            bond = await createBond(bonds, 238877n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -584,7 +589,7 @@ describe('Bond contract', () => {
             const oneThirdOfSlash = 100n
             const slashAmount = 3n * oneThirdOfSlash
             const remainingCollateral = pledge - slashAmount
-            bond = await createBond(factory, debtTokens)
+            bond = await createBond(bonds, debtTokens)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -607,7 +612,7 @@ describe('Bond contract', () => {
 
         it('cannot be zero', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 2356666n)
+            bond = await createBond(bonds, 2356666n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -618,7 +623,7 @@ describe('Bond contract', () => {
 
         it('cannot be greater than collateral held', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 23563377n)
+            bond = await createBond(bonds, 23563377n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -631,7 +636,7 @@ describe('Bond contract', () => {
 
         it('ony when not redeemable', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 2356677n)
+            bond = await createBond(bonds, 2356677n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -645,7 +650,7 @@ describe('Bond contract', () => {
 
         it('ony when not paused', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 2356677n)
+            bond = await createBond(bonds, 2356677n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -659,7 +664,7 @@ describe('Bond contract', () => {
 
         it('ony owner', async () => {
             const pledge = 500n
-            bond = await createBond(factory, 2356677n)
+            bond = await createBond(bonds, 2356677n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -673,7 +678,7 @@ describe('Bond contract', () => {
 
     describe('treasury', () => {
         it('update address', async () => {
-            bond = await createBond(factory, 555666777n)
+            bond = await createBond(bonds, 555666777n)
 
             const treasuryBefore = await bond.treasury()
             expect(treasuryBefore).equals(treasury)
@@ -686,7 +691,7 @@ describe('Bond contract', () => {
 
     describe('unpause', () => {
         it('changes state', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             await bond.pause()
             expect(await bond.paused()).is.true
 
@@ -696,7 +701,7 @@ describe('Bond contract', () => {
         })
 
         it('only when paused', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
 
             await expect(bond.unpause()).to.be.revertedWith(
                 'Pausable: not paused'
@@ -704,7 +709,7 @@ describe('Bond contract', () => {
         })
 
         it('only owner', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             await bond.pause()
 
             await expect(
@@ -715,7 +720,7 @@ describe('Bond contract', () => {
 
     describe('withdraw collateral', () => {
         it('needs collateral remaining', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: ONE}
             ])
@@ -729,7 +734,7 @@ describe('Bond contract', () => {
         })
 
         it('only when not paused', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             await allowRedemption()
             await bond.pause()
 
@@ -739,7 +744,7 @@ describe('Bond contract', () => {
         })
 
         it('only when redeemable', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
 
             await expect(bond.withdrawCollateral()).to.be.revertedWith(
                 'whenRedeemable: not redeemable'
@@ -747,7 +752,7 @@ describe('Bond contract', () => {
         })
 
         it('only owner', async () => {
-            bond = await createBond(factory, ONE)
+            bond = await createBond(bonds, ONE)
             await allowRedemption()
 
             await expect(
@@ -761,7 +766,7 @@ describe('Bond contract', () => {
         const debtTokens = pledge
         const collateralAmount = debtTokens
         const slashedCollateral = debtTokens
-        bond = await createBond(factory, debtTokens)
+        bond = await createBond(bonds, debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledge}
@@ -858,7 +863,7 @@ describe('Bond contract', () => {
         const unmatchedDebtTokens = 750n
         const debtTokens = pledge + unmatchedDebtTokens
         const slashedCollateral = slash(pledge, FORTY_PERCENT)
-        bond = await createBond(factory, debtTokens)
+        bond = await createBond(bonds, debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledge}
@@ -983,7 +988,7 @@ describe('Bond contract', () => {
         const pledgeTwo = 99500n
         const debtTokens = pledgeOne + pledgeTwo
         const collateralAmount = debtTokens
-        bond = await createBond(factory, debtTokens)
+        bond = await createBond(bonds, debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledgeOne},
@@ -1108,7 +1113,7 @@ describe('Bond contract', () => {
         const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
         const debtTokens = pledge
         const slashedCollateral = debtTokens - slash(debtTokens, FIFTY_PERCENT)
-        bond = await createBond(factory, debtTokens)
+        bond = await createBond(bonds, debtTokens)
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledge}
         ])
@@ -1161,7 +1166,7 @@ describe('Bond contract', () => {
         const pledgeTwo = 59500n
         const unmatchedPledge = 500n
         const debtTokens = pledgeOne + pledgeTwo + unmatchedPledge
-        bond = await createBond(factory, debtTokens)
+        bond = await createBond(bonds, debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledgeOne},
@@ -1292,7 +1297,7 @@ describe('Bond contract', () => {
         const debtTokens = pledgeOne + pledgeTwo
         const collateral = debtTokens
         const slashedCollateral = slash(collateral, FORTY_PERCENT)
-        bond = await createBond(factory, debtTokens)
+        bond = await createBond(bonds, debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledgeOne},
@@ -1412,7 +1417,7 @@ describe('Bond contract', () => {
         const debtTokens = pledgeOne + pledgeTwo + pledgeThree
         const slashedCollateral = debtTokens - slash(debtTokens, FORTY_PERCENT)
         const remainingCollateral = debtTokens - slashedCollateral
-        bond = await createBond(factory, debtTokens)
+        bond = await createBond(bonds, debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledgeOne},
@@ -1684,7 +1689,7 @@ describe('Bond contract', () => {
     let guarantorOne: SignerWithAddress
     let guarantorTwo: SignerWithAddress
     let guarantorThree: SignerWithAddress
-    let factory: BondFactory
+    let bonds: BondFactory
 })
 
 export async function bondContractAt(address: string): Promise<Bond> {
