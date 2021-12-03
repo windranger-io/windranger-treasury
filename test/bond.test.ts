@@ -4,7 +4,6 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import chai, {expect} from 'chai'
-import {ethers} from 'hardhat'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, Bond, BondFactory, ERC20} from '../typechain'
@@ -14,7 +13,7 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {BigNumberish, constants, ContractReceipt} from 'ethers'
+import {BigNumberish, constants, ContractReceipt, ethers} from 'ethers'
 import {event} from './framework/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
@@ -30,6 +29,7 @@ import {
     verifyWithdrawCollateralEvent
 } from './contracts/bond/verify-bond-events'
 import {createBondEvent} from './contracts/bond/bond-factory-events'
+import {bondContractAt} from './contracts/bond/bond-contract'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -1691,11 +1691,6 @@ describe('Bond contract', () => {
     let guarantorThree: SignerWithAddress
     let bonds: BondFactory
 })
-
-export async function bondContractAt(address: string): Promise<Bond> {
-    const factory = await ethers.getContractFactory('Bond')
-    return <Bond>factory.attach(address)
-}
 
 function slash(amount: bigint, percent: bigint): bigint {
     return ((100n - percent) * amount) / 100n

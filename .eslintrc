@@ -21,5 +21,16 @@
     "prettier"
   ],
   "rules": {
+    "no-constructor-return": "error",
+    "no-duplicate-imports": "error",
+    "no-promise-executor-return": "error",
+    "no-self-compare": "error",
+    "no-unmodified-loop-condition": "error",
+    "no-unreachable-loop": "error",
+    "no-unused-private-class-members": "error",
+    "require-atomic-updates": "error",
+    "arrow-body-style": ["error", "as-needed"],
+    "block-scoped-var": "error",
+    "camelcase": ["error",{ "properties": "always" }]
   }
 }

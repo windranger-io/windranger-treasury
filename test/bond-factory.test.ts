@@ -128,24 +128,6 @@ describe('BondFactory contract', () => {
         })
 
         describe('update', () => {
-            it('existing address', async () => {
-                const startingAddress =
-                    await bonds.whitelistedCollateralAddress(collateralSymbol)
-                expect(startingAddress).equals(collateralTokens.address)
-                collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-                expect(await collateralTokens.symbol()).equals(collateralSymbol)
-                expect(collateralTokens.address).not.equals(startingAddress)
-
-                await bonds.updateWhitelistedCollateral(
-                    collateralTokens.address
-                )
-
-                const updatedAddress = await bonds.whitelistedCollateralAddress(
-                    collateralSymbol
-                )
-                expect(updatedAddress).not.equals(startingAddress)
-            })
-
             it('cannot have identical value', async () => {
                 await expect(
                     bonds.updateWhitelistedCollateral(collateralTokens.address)
@@ -180,6 +162,29 @@ describe('BondFactory contract', () => {
                         .connect(nonAdmin)
                         .updateWhitelistedCollateral(collateralTokens.address)
                 ).to.be.revertedWith('Ownable: caller is not the owner')
+            })
+
+            it('existing address', async () => {
+                const startingAddress =
+                    await bonds.whitelistedCollateralAddress(collateralSymbol)
+                expect(startingAddress).equals(collateralTokens.address)
+                const altCollateralTokens = await deployContract<BitDAO>(
+                    'BitDAO',
+                    admin
+                )
+                expect(await altCollateralTokens.symbol()).equals(
+                    collateralSymbol
+                )
+                expect(altCollateralTokens.address).not.equals(startingAddress)
+
+                await bonds.updateWhitelistedCollateral(
+                    altCollateralTokens.address
+                )
+
+                const updatedAddress = await bonds.whitelistedCollateralAddress(
+                    collateralSymbol
+                )
+                expect(updatedAddress).not.equals(startingAddress)
             })
         })
 
