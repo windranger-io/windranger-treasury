@@ -202,7 +202,7 @@ function equalTokenTransfer(
     return (
         expected.from === transfer.from &&
         expected.to === transfer.to &&
-        expected.amount == transfer.value.toBigInt()
+        expected.amount === transfer.value.toBigInt()
     )
 }
 

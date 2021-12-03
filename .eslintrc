@@ -31,6 +31,23 @@
     "require-atomic-updates": "error",
     "arrow-body-style": ["error", "as-needed"],
     "block-scoped-var": "error",
-    "camelcase": ["error",{ "properties": "always" }]
+    "camelcase": ["error",{ "properties": "always" }],
+    "curly": ["error","all"],
+    "default-case": "error",
+    "default-case-last": "error",
+    "default-param-last": "error",
+    "dot-notation": "error",
+    "eqeqeq": "error",
+    "max-depth": ["error", { "max": 4 }],
+    "multiline-comment-style": ["error", "starred-block"],
+    "no-array-constructor": "error",
+    "no-bitwise": "error",
+    "no-console": "error",
+    "no-continue": "error",
+    "no-else-return": "error",
+    "no-eq-null": "error",
+    "no-extra-label": "error",
+
+    "prettier/prettier": "error"
   }
 }

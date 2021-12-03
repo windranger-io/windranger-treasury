@@ -73,7 +73,7 @@ describe('BondFactory contract', () => {
             )
 
             await occurrenceAtMost(
-                () => upgradedListener.events().length == 2,
+                () => upgradedListener.events().length === 2,
                 MAXIMUM_WAIT_MS
             )
 
