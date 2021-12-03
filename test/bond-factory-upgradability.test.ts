@@ -4,10 +4,21 @@ import '@nomiclabs/hardhat-ethers'
 import '@openzeppelin/hardhat-upgrades'
 // End - Support direct Mocha run & debug
 
+import chaiAsPromised from 'chai-as-promised'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondFactory, ERC20} from '../typechain'
+import {
+    BitDAO,
+    BondFactory,
+    BondFactoryWithInitialValueField,
+    BondFactoryWithConstructor,
+    BondFactoryWithImmutableField,
+    ERC20,
+    BondFactoryWithEnum,
+    BondFactoryWithStruct,
+    BondFactoryWithSelfDestruct
+} from '../typechain'
 import {
     deployContract,
     deployContractWithProxy,
@@ -15,7 +26,7 @@ import {
     upgradeContract
 } from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {ethers, upgrades} from 'hardhat'
+import {ethers} from 'hardhat'
 import {
     upgradedEvent,
     UpgradedEventArgs
@@ -23,8 +34,9 @@ import {
 import {occurrenceAtMost} from './framework/time'
 import {EventListener} from './framework/event-listener'
 
-// Wires up Waffle with Chai
+// Wires Chai with Waffle and Promises
 chai.use(solidity)
+chai.use(chaiAsPromised)
 
 const MAXIMUM_WAIT_MS = 5000
 
@@ -34,7 +46,9 @@ describe('BondFactory contract', () => {
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin.address)
-        collateralSymbol = await collateralTokens.symbol()
+    })
+
+    beforeEach(async () => {
         bonds = await deployContractWithProxy<BondFactory>(
             'BondFactory',
             collateralTokens.address,
@@ -45,42 +59,13 @@ describe('BondFactory contract', () => {
             'Upgraded',
             (event) => upgradedEvent(event)
         )
-        await occurrenceAtMost(
-            () => upgradedListener.events().length == 1,
-            MAXIMUM_WAIT_MS
-        )
     })
 
-    /*
-    state-variable-assignment
-    state-variable-immutable
-    external-library-linking
-    struct-definition
-    enum-definition
-    constructor
-    delegatecall
-    selfdestruct
-    missing-public-upgradeto
-*/
-
-    //TODO events emitted for upgraded & admin changed
-
-    // Upgraded(implementation)
-    //
-    // AdminChanged(previousAdmin, newAdmin)
-
-    describe('upgrades', () => {
-        //TODO test - happy path, upgrade
-        //TODO test - invalid upgrade, no public upgradeTo
-        //TODO test - invalid upgrade, no init
-        //TODO test only owner upgradable
-
-        it('to an extending contract', async () => {
+    describe('upgrade', () => {
+        it('extension contract', async () => {
             const beforeUpgradeAddress = bonds.address
             const startingTreasury = await bonds.treasury()
             expect(startingTreasury).equals(treasury)
-
-            expect(upgradedListener.events().length).equals(1)
 
             const upgradedBonds = await upgradeContract<BondFactory>(
                 'BondFactoryExtension',
@@ -104,6 +89,64 @@ describe('BondFactory contract', () => {
             )
         })
 
+        it('new struct is fine', async () => {
+            return upgradeContract<BondFactoryWithStruct>(
+                'BondFactoryWithStruct',
+                bonds.address
+            )
+        })
+
+        it('new enum is fine', async () => {
+            return upgradeContract<BondFactoryWithEnum>(
+                'BondFactoryWithEnum',
+                bonds.address
+            )
+        })
+
+        it('no constructor', async () => {
+            await expect(
+                upgradeContract<BondFactoryWithConstructor>(
+                    'BondFactoryWithConstructor',
+                    bonds.address
+                )
+            ).to.be.eventually.rejectedWith(
+                'Contract `BondFactoryWithConstructor` has a constructor'
+            )
+        })
+
+        it('no field with initial value', async () => {
+            await expect(
+                upgradeContract<BondFactoryWithInitialValueField>(
+                    'BondFactoryWithInitialValueField',
+                    bonds.address
+                )
+            ).to.be.eventually.rejectedWith(
+                'Variable `_initiallyPopulated` is assigned an initial value'
+            )
+        })
+
+        it('no immutable field', async () => {
+            await expect(
+                upgradeContract<BondFactoryWithImmutableField>(
+                    'BondFactoryWithImmutableField',
+                    bonds.address
+                )
+            ).to.be.eventually.rejectedWith(
+                'Variable `_neverGoingToChange` is immutable'
+            )
+        })
+
+        it('no self destruct', async () => {
+            await expect(
+                upgradeContract<BondFactoryWithSelfDestruct>(
+                    'BondFactoryWithSelfDestruct',
+                    bonds.address
+                )
+            ).to.be.eventually.rejectedWith(
+                'Use of selfdestruct is not allowed'
+            )
+        })
+
         it('only owner', async () => {
             expect(await bonds.owner()).equals(admin.address)
             await bonds.transferOwnership(nonAdmin.address)
@@ -121,15 +164,10 @@ describe('BondFactory contract', () => {
         })
     })
 
-    //TODO trial using prepare (to get the impl address)
-    //returns a string? the new address, or a deployed address
-    //            await upgrades.prepareUpgrade(proxyAddress, BoxV2);
-
     let admin: SignerWithAddress
     let treasury: string
     let nonAdmin: SignerWithAddress
     let collateralTokens: ERC20
-    let collateralSymbol: string
     let bonds: BondFactory
     let upgradedListener: EventListener<UpgradedEventArgs>
 })
