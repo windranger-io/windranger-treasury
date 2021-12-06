@@ -23,9 +23,10 @@ contract Bond is
     /// Multiplier / divider for four decimal places, used in redemption ratio calculation.
     uint256 private constant _REDEMPTION_RATIO_ACCURACY = 10000;
 
-    /*
+    /**
      * Collateral that is held by the bond, owed to the Guarantors (unless slashed).
-     * Kept to guard against the edge case of collateral tokens being directly transferred
+
+     * @dev Kept to guard against the edge case of collateral tokens being directly transferred
      * (i.e. transfer in the collateral contract, not via deposit) to the contract address inflating redemption amounts.
      */
     uint256 private _collateral;
@@ -45,7 +46,11 @@ contract Bond is
     /// Balance of debt tokens held by the Bond when redemptions were allowed.
     uint256 private _debtTokensRedemptionExcess;
 
-    /// Only used in conjunction with slashing. Accuracy defined by REDEMPTION_RATIO_ACCURACY
+    /**
+     * Ratio value between one (100% bond redeem) and zero (0% redeem), accuracy defined by _REDEMPTION_RATIO_ACCURACY.
+     
+     * @dev Calculated only once, when the redemption is allowed. Ratio will be one, unless slashing has occurred.
+     */
     uint256 private _redemptionRatio;
 
     address private _treasury;
