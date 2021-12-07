@@ -99,15 +99,16 @@ contract Bond is
      *              tokens cannot be be changed after init.
      *              To update the tokens address, either follow the proxy convention for the collateral,
      *              or migrate to a new bond.
+     * @param externalData Data not pertinent to the operation of the Bond, but required by external actors.
      */
     function initialize(
         string calldata name,
         string calldata symbol,
-        uint256 debtTokens,
+        uint256 debtAmount,
         address erc20CollateralTokens,
         address erc20CapableTreasury,
         uint256 expiryTimestamp,
-        string calldata data
+        string calldata externalData
     ) external initializer {
         __ERC20_init(name, symbol);
         __Ownable_init();
@@ -125,11 +126,11 @@ contract Bond is
         );
 
         _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
-        _data = data;
-        _debtTokensInitialSupply = debtTokens;
+        _data = externalData;
+        _debtTokensInitialSupply = debtAmount;
         _treasury = erc20CapableTreasury;
 
-        _mint(debtTokens);
+        _mint(debtAmount);
     }
 
     /**
@@ -319,12 +320,14 @@ contract Bond is
     /**
      * Permits the owner to update the Treasury address.
      *
-     * @dev treasury Recipient of slashed, expired or withdrawn collateral.
+     * @dev treasury is the recipient of slashed, expired or withdrawn collateral.
      *          Must be a non-zero address.
+     *
+     * @param replacement Treasury recipient for future operations. Must not be zero address.
      */
-    function setTreasury(address treasury) external whenNotPaused onlyOwner {
-        require(treasury != address(0), "Bond: treasury is zero address");
-        _treasury = treasury;
+    function setTreasury(address replacement) external whenNotPaused onlyOwner {
+        require(replacement != address(0), "Bond: treasury is zero address");
+        _treasury = replacement;
     }
 
     /**

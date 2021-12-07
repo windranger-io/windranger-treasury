@@ -87,10 +87,10 @@ contract BondFactory is
      *
      * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
      */
-    function setTreasury(address treasury) external onlyOwner {
-        require(treasury != address(0), "BF: treasury is zero address");
-        require(_treasury != treasury, "BF: treasury address identical");
-        _treasury = treasury;
+    function setTreasury(address replacement) external onlyOwner {
+        require(replacement != address(0), "BF: treasury is zero address");
+        require(_treasury != replacement, "BF: treasury address identical");
+        _treasury = replacement;
     }
 
     /**
