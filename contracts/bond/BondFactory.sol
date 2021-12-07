@@ -7,9 +7,9 @@ import "./CollateralWhitelist.sol";
 import "./Bond.sol";
 
 /**
- * @title Creates configured bond contracts.
+ * @title Creates bond contracts.
  *
- * @dev Applies common configuration to bond contracts created.
+ * @dev Uses common configuration when creating bond contracts.
  */
 contract BondFactory is
     CollateralWhitelist,
@@ -30,7 +30,10 @@ contract BondFactory is
     );
 
     /**
-     * @dev Initialises the factory with the given collateral tokens automatically being whitelisted.
+     * @notice Initialises the factory with the given collateral tokens automatically being whitelisted.
+     *
+     * @param erc20CollateralTokens_ Collateral token contract. Must not be address zero.
+     * @param erc20CapableTreasury_ Treasury that receives forfeited collateral. Must not be address zero.
      */
     function initialize(
         address erc20CollateralTokens_,
@@ -80,8 +83,9 @@ contract BondFactory is
     }
 
     /**
-     * @dev Permits the owner to update the treasury address.
-     * Only applies for bonds created after the update, previously created bonds remain unchanged.
+     * @notice Permits the owner to update the treasury address.
+     *
+     * @dec Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
      */
     function setTreasury(address treasury_) external onlyOwner {
         require(treasury_ != address(0), "BF: treasury is zero address");
@@ -90,8 +94,11 @@ contract BondFactory is
     }
 
     /**
-     * @dev Permits the owner to update the collateral token address of an already whitelisted token.
-     * Only applies for bonds created after the update, previously created bonds remain unchanged.
+     * @notice Permits the owner to update the address of already whitelisted collateral token.
+     *
+     * @dev Only applies for bonds created after the update, previously created bonds remain unchanged.
+     *
+     * @param erc20CollateralTokens_ Must already be whitelisted and must not be address zero.
      */
     function updateWhitelistedCollateral(address erc20CollateralTokens_)
         external
@@ -102,19 +109,24 @@ contract BondFactory is
 
     /**
      * @notice Permits the owner to remove a collateral token from being accepted in future bonds.
-     * Only applies for bonds created after the removal, previously created bonds remain unchanged.
+     *
+     * @dev Only applies for bonds created after the removal, previously created bonds remain unchanged.
+     *
+     * @param symbol_ Symbol must exist in the collateral whitelist.
      */
-    function removeWhitelistedCollateral(string calldata symbol)
+    function removeWhitelistedCollateral(string calldata symbol_)
         external
         onlyOwner
     {
-        _removeWhitelistedCollateral(symbol);
+        _removeWhitelistedCollateral(symbol_);
     }
 
     /**
-     * @notice When a bond is created, the tokens used as collateral must have been whitelisted.
+     * @notice Adds an ERC20 token to the collateral whitelist.
      *
-     * @dev Whitelists the erc20 symbol as a Bond collateral token from now onwards.
+     * @dev When a bond is created, the tokens used as collateral must have been whitelisted.
+     *
+     * @param erc20CollateralTokens_ Whitelists the token from now onwards.
      *      On bond creation the tokens address used is retrieved by symbol from the whitelist.
      */
     function whitelistCollateral(address erc20CollateralTokens_)
@@ -124,9 +136,6 @@ contract BondFactory is
         _whitelistCollateral(erc20CollateralTokens_);
     }
 
-    /**
-     * @dev Retrieves the address that receives any slashed or remaining funds.
-     */
     function treasury() external view returns (address) {
         return _treasury;
     }
@@ -149,9 +158,11 @@ contract BondFactory is
     }
 
     /**
-     * Permits only the owner to perform upgrades.
+     * @notice Permits only the owner to perform proxy upgrades.
+     *
+     * @dev Only applicable when deployed as implementation to a UUPS proxy.
      */
-    function _authorizeUpgrade(address newImplementation)
+    function _authorizeUpgrade(address toImplementation_)
         internal
         override
         onlyOwner
