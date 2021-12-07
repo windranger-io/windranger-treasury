@@ -5,17 +5,20 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
-    @title Whitelist for collateral tokens.
-    @dev Provides encapsulation of the ERC20 collateral tokens whitelist.
-         This module is used through inheritance.
+ * @title Whitelist for collateral tokens.
+ *
+ * @notice Encapsulation of a ERC20 collateral tokens whitelist, indexed by their symbol.
+ *
+ * @dev This module is used through inheritance.
  */
 abstract contract CollateralWhitelist is Initializable {
-    /// Token symbols to ERC20 Token contract addresses
+    // Token symbols to ERC20 Token contract addresses
     mapping(string => address) private _whitelist;
 
     /**
-        @notice Whitelisted ERC20 token address for the symbol.
-        @dev Retrieves the address for the collateral token address, if it has been whitelisted, otherwise address zero.
+     * @notice The whitelisted ERC20 token address associated for a symbol.
+     *
+     * @return When present in the whitelist, the token address, otherwise address zero.
      */
     function whitelistedCollateralAddress(string calldata symbol)
         public
@@ -26,7 +29,7 @@ abstract contract CollateralWhitelist is Initializable {
     }
 
     /**
-        @notice Whether a whitelisted ERC20 token contract address exists for the symbol.
+     * @notice Whether the symbol has been whitelisted.
      */
     function isCollateralWhitelisted(string memory symbol)
         public
@@ -39,42 +42,45 @@ abstract contract CollateralWhitelist is Initializable {
     function __CollateralWhitelist_init() internal initializer {}
 
     /**
-        @notice Performs whitelisting of the ERC20 collateral token.
-        @dev Whitelists the collateral token, expecting the symbol to not have been previously whitelisted.
-             Will revert if address is zero or the symbol already has a mapped address, or does not implement get symbol.
+     * @notice Performs whitelisting of the ERC20 collateral token.
+     *
+     * @dev Whitelists the collateral token, expecting the symbol is not already whitelisted.
+     *
+     * Reverts if address is zero or the symbol already has a mapped address, or does not implement `symbol()`.
      */
-    function _whitelistCollateral(address erc20CollateralTokens_) internal {
-        _requireNonZeroAddress(erc20CollateralTokens_);
+    function _whitelistCollateral(address erc20CollateralTokens) internal {
+        _requireNonZeroAddress(erc20CollateralTokens);
 
-        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens_)
+        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
             .symbol();
         require(_whitelist[symbol] == address(0), "Whitelist: already present");
-        _whitelist[symbol] = erc20CollateralTokens_;
+        _whitelist[symbol] = erc20CollateralTokens;
     }
 
     /**
-        @notice Updates an already whitelisted address.
-        @dev Updates a previously whitelisted address to the given.
-             Will revert if the address is zero, is identical to the current address, or does not implement get symbol.
+     * @notice Updates an already whitelisted address.
+     *
+     * @dev Reverts if the address is zero, is identical to the current address, or does not implement `symbol()`.
      */
-    function _updateWhitelistedCollateral(address erc20CollateralTokens_)
+    function _updateWhitelistedCollateral(address erc20CollateralTokens)
         internal
     {
-        _requireNonZeroAddress(erc20CollateralTokens_);
+        _requireNonZeroAddress(erc20CollateralTokens);
 
-        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens_)
+        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
             .symbol();
         require(isCollateralWhitelisted(symbol), "Whitelist: not whitelisted");
         require(
-            _whitelist[symbol] != erc20CollateralTokens_,
+            _whitelist[symbol] != erc20CollateralTokens,
             "Whitelist: identical address"
         );
-        _whitelist[symbol] = erc20CollateralTokens_;
+        _whitelist[symbol] = erc20CollateralTokens;
     }
 
     /**
-        @notice Deletes a collateral token from the whitelist.
-        @dev Expects the symbol to be an existing entry, reverting otherwise.
+     * @notice Deletes a collateral token entry from the whitelist.
+     *
+     * @dev Expects the symbol to be an existing entry, otherwise reverts.
      */
     function _removeWhitelistedCollateral(string memory symbol) internal {
         require(isCollateralWhitelisted(symbol), "Whitelist: not whitelisted");
@@ -82,10 +88,9 @@ abstract contract CollateralWhitelist is Initializable {
     }
 
     /**
-        @notice Ensures the address is not the zero address.
-        @dev Reverts when the address is the zero address.
+     * @dev Reverts when the address is the zero address.
      */
-    function _requireNonZeroAddress(address examine_) private pure {
-        require(examine_ != address(0), "Whitelist: zero address");
+    function _requireNonZeroAddress(address examine) private pure {
+        require(examine != address(0), "Whitelist: zero address");
     }
 }
