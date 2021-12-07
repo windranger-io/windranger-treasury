@@ -9,7 +9,12 @@ import "./ExpiryTimestamp.sol";
 import "./Redeemable.sol";
 
 /**
- * @title Bond contract that issues debt tokens in exchange for a collateral deposited.
+ * @title A Bond is an issuance of debt tokens, which are exchange for deposit of collateral.
+ *
+ * @notice A single type of ERC20 token is accepted as collateral.
+ *
+ * The Bond uses a single redemption model. Before redemption, receiving and slashing collateral is permitted,
+ * while after redemption, redeem (by guarantors) or complete withdrawal (by owner) is allowed.
  *
  * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
  */
@@ -20,13 +25,13 @@ contract Bond is
     PausableUpgradeable,
     Redeemable
 {
-    /// Multiplier / divider for four decimal places, used in redemption ratio calculation.
+    // Multiplier / divider for four decimal places, used in redemption ratio calculation.
     uint256 private constant _REDEMPTION_RATIO_ACCURACY = 10000;
 
-    /**
+    /*
      * Collateral that is held by the bond, owed to the Guarantors (unless slashed).
-
-     * @dev Kept to guard against the edge case of collateral tokens being directly transferred
+     *
+     * Kept to guard against the edge case of collateral tokens being directly transferred
      * (i.e. transfer in the collateral contract, not via deposit) to the contract address inflating redemption amounts.
      */
     uint256 private _collateral;
@@ -35,21 +40,21 @@ contract Bond is
 
     IERC20MetadataUpgradeable private _collateralTokens;
 
-    /// General storage box for Bond details not managed on-chain
+    // General storage box for Bond details not managed on-chain
     string private _data;
 
     uint256 private _debtTokensInitialSupply;
 
-    /// Balance of debts tokens held by guarantors, double accounting avoids potential affects of any minting/burning
+    // Balance of debts tokens held by guarantors, double accounting avoids potential affects of any minting/burning
     uint256 private _debtTokensOutstanding;
 
-    /// Balance of debt tokens held by the Bond when redemptions were allowed.
+    // Balance of debt tokens held by the Bond when redemptions were allowed.
     uint256 private _debtTokensRedemptionExcess;
 
-    /**
+    /*
      * Ratio value between one (100% bond redeem) and zero (0% redeem), accuracy defined by _REDEMPTION_RATIO_ACCURACY.
-     
-     * @dev Calculated only once, when the redemption is allowed. Ratio will be one, unless slashing has occurred.
+     *
+     * Calculated only once, when the redemption is allowed. Ratio will be one, unless slashing has occurred.
      */
     uint256 private _redemptionRatio;
 
@@ -90,43 +95,48 @@ contract Bond is
     );
 
     /**
-     * @param erc20CollateralTokens_ to avoid being able to break the Bond behaviours the reference to the collateral
-     *              tokens cannot be be changed after init,
-     *              To update the tokens address, either follow the proxy convention for tokens, or crete a new bond.
+     * @param erc20CollateralTokens To avoid being able to break the Bond behaviour, the reference to the collateral
+     *              tokens cannot be be changed after init.
+     *              To update the tokens address, either follow the proxy convention for the collateral,
+     *              or migrate to a new bond.
+     * @param externalData Data not pertinent to the operation of the Bond, but required by external actors.
      */
     function initialize(
-        string calldata name_,
-        string calldata symbol_,
-        uint256 debtTokens_,
-        address erc20CollateralTokens_,
-        address erc20CapableTreasury_,
-        uint256 expiryTimestamp_,
-        string calldata data_
+        string calldata name,
+        string calldata symbol,
+        uint256 debtAmount,
+        address erc20CollateralTokens,
+        address erc20CapableTreasury,
+        uint256 expiryTimestamp,
+        string calldata externalData
     ) external initializer {
-        __ERC20_init(name_, symbol_);
+        __ERC20_init(name, symbol);
         __Ownable_init();
         __Pausable_init();
-        __ExpiryTimestamp_init(expiryTimestamp_);
+        __ExpiryTimestamp_init(expiryTimestamp);
         __Redeemable_init();
 
         require(
-            erc20CapableTreasury_ != address(0),
+            erc20CapableTreasury != address(0),
             "Bond: treasury is zero address"
         );
         require(
-            erc20CollateralTokens_ != address(0),
+            erc20CollateralTokens != address(0),
             "Bond: collateral is zero address"
         );
 
-        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens_);
-        _data = data_;
-        _debtTokensInitialSupply = debtTokens_;
-        _treasury = erc20CapableTreasury_;
+        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
+        _data = externalData;
+        _debtTokensInitialSupply = debtAmount;
+        _treasury = erc20CapableTreasury;
 
-        _mint(debtTokens_);
+        _mint(debtAmount);
     }
 
     /**
+     * @notice Transitions the Bond state, from being non-redeemable (accepting deposits and slashing) to
+     *          redeemable (accepting redeem and withdraw collateral).
+     *
      * @dev Debt tokens are not allowed to be redeemed before the owner grants permission.
      */
     function allowRedemption()
@@ -150,13 +160,19 @@ contract Bond is
         }
 
         if (_hasBeenSlashed()) {
-            _redemptionRatio = _calculateRedemptionRation();
+            _redemptionRatio = _calculateRedemptionRatio();
         }
     }
 
     /**
+     * @notice Deposit swaps collateral tokens for an equal amount of debt tokens.
+     *
      * @dev Before the deposit can be made, this contract must have been approved to transfer the given amount
      * from the ERC20 token being used as collateral.
+     *
+     * @param amount The number of collateral token to transfer from the _msgSender().
+     *          Must be in the range of one to the number of debt tokens available for swapping.
+     *          The _msgSender() receives the debt tokens.
      */
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond: too small");
@@ -167,7 +183,6 @@ contract Bond is
 
         emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
 
-        // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transferFrom(
             _msgSender(),
             address(this),
@@ -188,12 +203,13 @@ contract Bond is
     }
 
     /**
-     *  @notice Moves any remaining collateral to the Treasury and pauses the bond.
+     *  @notice Moves all remaining collateral to the Treasury and pauses the bond.
+     *
      *  @dev A fail safe, callable by anyone after the Bond has expired.
-     *       If Ownership is lost, this can be used to move all remaining collateral to the Treasury,
+     *       If control is lost, this can be used to move all remaining collateral to the Treasury,
      *       after which petitions for redemption can be made.
-     *  @dev Expiry operates separately to pause, so a paused contract can be expired (fail safe for loss of
-     *       Ownership).
+     *
+     *  Expiry operates separately to pause, so a paused contract can be expired (fail safe for loss of control).
      */
     function expire() external whenBeyondExpiry {
         uint256 collateralBalance = _collateralTokens.balanceOf(address(this));
@@ -206,7 +222,6 @@ contract Bond is
             collateralBalance
         );
 
-        // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(
             _treasury,
             collateralBalance
@@ -217,15 +232,24 @@ contract Bond is
     }
 
     /**
-     * @dev Pauses contract, preventing operation of all external Bond functions that are not simple accessors.
+     * @notice Pauses most side affecting functions.
+     *
+     * @dev The ony side effecting (non view or pure function) function exempt from pausing is expire().
      */
     function pause() external whenNotPaused onlyOwner {
         _pause();
     }
 
     /**
+     * @notice Redeem swaps debt tokens for collateral tokens.
+     *
      * @dev Converts the amount of debt tokens owned by the sender, at the exchange ratio determined by the remaining
-     * amount of collateral against the remaining amount of debt.
+     *  amount of collateral against the remaining amount of debt.
+     *  There are operations that reduce the held collateral, while the debt remains constant.
+     *
+     * @param amount The number of debt token to transfer from the _msgSender().
+     *          Must be in the range of one to the number of debt tokens available for swapping.
+     *          The _msgSender() receives the redeemed collateral tokens.
      */
     function redeem(uint256 amount) external whenNotPaused whenRedeemable {
         require(amount > 0, "Bond: too small");
@@ -248,7 +272,6 @@ contract Bond is
 
         // Slashing can reduce redemption amount to zero
         if (redemptionAmount > 0) {
-            // Unknown ERC20 token behaviour, cater for bool usage
             bool transferred = _collateralTokens.transfer(
                 _msgSender(),
                 redemptionAmount
@@ -258,17 +281,23 @@ contract Bond is
     }
 
     /**
-     * @dev Resumes (unpauses) contract, allowing operation of all external functions.
+     * @notice Resumes all paused side affecting functions.
      */
     function unpause() external whenPaused onlyOwner {
         _unpause();
     }
 
     /**
-     * The amount of debt tokens remains the same. Slashing reduces the collateral tokens, so each debt token
-     * is redeemable for less collateral.
+     * @notice Enact a penalty for guarantors, a loss of a portion of their bonded collateral.
+     *          The designated Treasury is the recipient for the slashed collateral.
      *
-     * @dev Transfers the amount to the Treasury, reducing the amount available for later redemption (redemption ratio).
+     * @dev The penalty can range between one and all of the collateral.
+     *
+     * As the amount of debt tokens remains the same. Slashing reduces the collateral tokens, so each debt token
+     * is redeemable for less collateral, altering the redemption ratio calculated on allowRedemption().
+     *
+     * @param amount The number of bonded collateral token to transfer from the Bond to the Treasury.
+     *          Must be in the range of one to the number of collateral tokens held by the Bond.
      */
     function slash(uint256 amount)
         external
@@ -284,24 +313,30 @@ contract Bond is
 
         emit Slash(_collateralTokens.symbol(), amount);
 
-        // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(_treasury, amount);
         require(transferred, "Bond: collateral transfer failed");
     }
 
     /**
-     * @dev Permits the owner to update the treasury address, the address this receives any slashed or expired funds.
+     * Permits the owner to update the Treasury address.
+     *
+     * @dev treasury is the recipient of slashed, expired or withdrawn collateral.
+     *          Must be a non-zero address.
+     *
+     * @param replacement Treasury recipient for future operations. Must not be zero address.
      */
-    function setTreasury(address treasury_) external whenNotPaused onlyOwner {
-        require(treasury_ != address(0), "Bond: treasury is zero address");
-        _treasury = treasury_;
+    function setTreasury(address replacement) external whenNotPaused onlyOwner {
+        require(replacement != address(0), "Bond: treasury is zero address");
+        _treasury = replacement;
     }
 
     /**
-     * Allows the owner to move all the collateral held by the Bond into the Treasury.
+     * @notice Permits the owner to transfer all collateral held by the Bond to the Treasury.
      *
-     * @dev Slashing can result in collateral remaining after full redemption due to flooring.
-     *      Provides an emergency extracting moving of funds out of the Bond.
+     * @dev Intention is to sweeping up excess collateral from redemption ration calculation.
+     *         when there has been slashing. Slashing can result in collateral remaining due to flooring.
+
+     *  Can also provide an emergency extracting moving of funds out of the Bond by the owner.
      */
     function withdrawCollateral()
         external
@@ -318,7 +353,6 @@ contract Bond is
             collateralBalance
         );
 
-        // Unknown ERC20 token behaviour, cater for bool usage
         bool transferred = _collateralTokens.transfer(
             _treasury,
             collateralBalance
@@ -327,46 +361,60 @@ contract Bond is
     }
 
     /**
-     *  @dev Balance of collateral owned to Guarantors currently held by the Bond.
-     *       As collateral has come from guarantors, the balance changes on deposit, redeems, slashing and flushing.
-     *      This may be different to the balanceOf(this), if collateral tokens have been directly transferred
-     *      i.e. direct transfer interaction with the token contract, rather then using the Bond operations.
+     * @notice How much collateral held by the bond is owned to the Guarantors.
+     *
+     * @dev  Collateral has come from guarantors, with the balance changes on deposit, redeem, slashing and flushing.
+     *      This value may differ to balanceOf(this), if collateral tokens have been directly transferred
+     *      i.e. direct transfer interaction with the token contract, rather then using the Bond functions.
      */
     function collateral() external view returns (uint256) {
         return _collateral;
     }
 
     /**
-     * @dev Sum of the collateral that has been slashed from the Bond, to date.
+     * @notice Sum of collateral moved from the Bond to the Treasury by slashing.
+     *
+     * @dev Other methods of performing moving of collateral outside of slashing, are not included.
      */
     function collateralSlashed() external view returns (uint256) {
         return _collateralSlashed;
     }
 
     /**
-     * @dev The generic storage box for Bond related information not managed by the Bond (performance factor, assessment date, rewards pool).
+     * @notice The storage box for general Bond related information.
+     *
+     * @dev Information not pertinent to the contract, but relevant for off-chain evaluation
+     *          e.g. performance factor, assessment date, rewards pool.
      */
     function data() external view returns (string memory) {
         return _data;
     }
 
     /**
-     *  @dev Balance of debt tokens held by the bond.
+     * @notice Balance of debt tokens held by the bond.
+     *
+     * @dev Number of debt tokens that can still be swapped for collateral token (if before redemption state),
+     *          or the amount of under-collateralization (if during redemption state).
+     *
      */
     function debtTokens() external view returns (uint256) {
         return _debtTokensRemaining();
     }
 
     /**
-     * @dev Sum of debt tokens currently held by Guarantors.
-     *      Unaffected by minting or burning of the Bond's held debt tokens.
+     * @notice Balance of debt tokens held by the guarantors.
+     *
+     * @dev Number of debt tokens still held by Guarantors. The number only reduces when guarantors redeem
+     *          (swap their debt tokens for collateral).
      */
     function debtTokensOutstanding() external view returns (uint256) {
         return _debtTokensOutstanding;
     }
 
     /**
-     * @dev Balance outstanding when redemption was allowed. The amount of collateral not received (deposit 1:1 ratio).
+     * @notice Balance of debt tokes outstanding when the redemption state was entered.
+     *
+     * @dev As the collateral deposited is a 1:1, this is amount of collateral that was not received.
      *
      * @return zero if redemption is not yet allowed or full collateral was met, otherwise the number of debt tokens
      *          remaining without matched deposit when redemption was allowed,
@@ -376,28 +424,24 @@ contract Bond is
     }
 
     /**
-     * @dev Number of debt tokens created on the Bond init. The total supply of debt tokens will decrease, as redeem burns them.
+     * @notice Debt tokens created on Bond initialization.
+     *
+     * @dev Number of debt tokens minted on init. The total supply of debt tokens will decrease, as redeem burns them.
      */
     function initialDebtTokens() external view returns (uint256) {
         return _debtTokensInitialSupply;
     }
 
-    /**
-     * @dev Retrieves the address that receives any slashed funds.
-     */
     function treasury() external view returns (address) {
         return _treasury;
     }
 
-    /**
-     * @dev Whether or not the Bond contract has achieved full collateral target.
-     */
     function hasFullCollateral() public view returns (bool) {
         return _debtTokensRemaining() == 0;
     }
 
     /**
-     * @dev Creates additional debt tokens, inflating the supply, which without additional deposits affects the redemption ratio.
+     * @dev Mints additional debt tokens, inflating the supply. Without additional deposits the redemption ratio is affected.
      */
     function _mint(uint256 amount) private whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond::mint: too small");
@@ -405,8 +449,7 @@ contract Bond is
     }
 
     /**
-     *  @notice Ensure the Bond is paused.
-     *  @dev Pauses the Bond if not already paused. If already paused, does nothing (not revert).
+     *  @dev Pauses the Bond if not already paused. If already paused, does nothing (no revert).
      */
     function _pauseSafely() private {
         if (!paused()) {
@@ -429,9 +472,6 @@ contract Bond is
         }
     }
 
-    /**
-     * @dev Applies the redemption ratio calculation to the given amount.
-     */
     function _applyRedemptionRation(uint256 amount)
         private
         view
@@ -441,31 +481,31 @@ contract Bond is
     }
 
     /**
-     * @dev Determines the current redemption ratio for any redemption that would occur based on the current
-     * guarantor collateral and total supply.
+     * @return Redemption ration float value as an integer.
+     *           The float has been multiplied by _REDEMPTION_RATIO_ACCURACY, with any excess accuracy floored (lost).
      */
-    function _calculateRedemptionRation() private view returns (uint256) {
+    function _calculateRedemptionRatio() private view returns (uint256) {
         return
             (_REDEMPTION_RATIO_ACCURACY * _collateral) /
             (totalSupply() - _debtTokensRedemptionExcess);
     }
 
     /**
-     * @dev The balance of debt token held by the contract; amount of debt token that are awaiting swapping for collateral.
+     * @dev The balance of debt token held; amount of debt token that are awaiting collateral swap.
      */
     function _debtTokensRemaining() private view returns (uint256) {
         return balanceOf(address(this));
     }
 
     /**
-     * @dev Whether the Bond has been slashed, assuming a 1:1 deposit ratio of collateral to debt.
+     * @dev Whether the Bond has been slashed. Assumes a 1:1 deposit ratio (collateral to debt).
      */
     function _hasBeenSlashed() private view returns (bool) {
         return _collateral != (totalSupply() - _debtTokensRedemptionExcess);
     }
 
     /**
-     * @dev Whether or not the Bond contract has debt tokens remaining. Has not reached the collateral target.
+     * @dev Whether the Bond has held debt tokens.
      */
     function _hasDebtTokensRemaining() private view returns (bool) {
         return _debtTokensRemaining() > 0;

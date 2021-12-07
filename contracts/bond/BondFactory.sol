@@ -7,9 +7,9 @@ import "./CollateralWhitelist.sol";
 import "./Bond.sol";
 
 /**
- * @title Creates configured bond contracts.
+ * @title Creates bond contracts.
  *
- * @dev Applies common configuration to bond contracts created.
+ * @dev Uses common configuration when creating bond contracts.
  */
 contract BondFactory is
     CollateralWhitelist,
@@ -30,25 +30,28 @@ contract BondFactory is
     );
 
     /**
-     * @dev Initialises the factory with the given collateral tokens automatically being whitelisted.
+     * @notice Initialises the factory with the given collateral tokens automatically being whitelisted.
+     *
+     * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
+     * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
      */
     function initialize(
-        address erc20CollateralTokens_,
-        address erc20CapableTreasury_
+        address erc20CollateralTokens,
+        address erc20CapableTreasury
     ) external virtual initializer {
-        __BondFactory_init(erc20CollateralTokens_, erc20CapableTreasury_);
+        __BondFactory_init(erc20CollateralTokens, erc20CapableTreasury);
     }
 
     function createBond(
-        string calldata name_,
-        string calldata symbol_,
-        uint256 debtTokens_,
-        string calldata collateralTokenSymbol_,
-        uint256 expiryTimestamp_,
-        string calldata data_
+        string calldata name,
+        string calldata symbol,
+        uint256 debtTokens,
+        string calldata collateralTokenSymbol,
+        uint256 expiryTimestamp,
+        string calldata data
     ) external returns (address) {
         require(
-            isCollateralWhitelisted(collateralTokenSymbol_),
+            isCollateralWhitelisted(collateralTokenSymbol),
             "BF: collateral not whitelisted"
         );
 
@@ -56,23 +59,23 @@ contract BondFactory is
 
         emit CreateBond(
             address(bond),
-            name_,
-            symbol_,
-            debtTokens_,
+            name,
+            symbol,
+            debtTokens,
             owner(),
             _treasury,
-            expiryTimestamp_,
-            data_
+            expiryTimestamp,
+            data
         );
 
         bond.initialize(
-            name_,
-            symbol_,
-            debtTokens_,
-            whitelistedCollateralAddress(collateralTokenSymbol_),
+            name,
+            symbol,
+            debtTokens,
+            whitelistedCollateralAddress(collateralTokenSymbol),
             _treasury,
-            expiryTimestamp_,
-            data_
+            expiryTimestamp,
+            data
         );
         bond.transferOwnership(owner());
 
@@ -80,29 +83,36 @@ contract BondFactory is
     }
 
     /**
-     * @dev Permits the owner to update the treasury address.
-     * Only applies for bonds created after the update, previously created bonds remain unchanged.
+     * @notice Permits the owner to update the treasury address.
+     *
+     * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
      */
-    function setTreasury(address treasury_) external onlyOwner {
-        require(treasury_ != address(0), "BF: treasury is zero address");
-        require(_treasury != treasury_, "BF: treasury address identical");
-        _treasury = treasury_;
+    function setTreasury(address replacement) external onlyOwner {
+        require(replacement != address(0), "BF: treasury is zero address");
+        require(_treasury != replacement, "BF: treasury address identical");
+        _treasury = replacement;
     }
 
     /**
-     * @dev Permits the owner to update the collateral token address of an already whitelisted token.
-     * Only applies for bonds created after the update, previously created bonds remain unchanged.
+     * @notice Permits the owner to update the address of already whitelisted collateral token.
+     *
+     * @dev Only applies for bonds created after the update, previously created bonds remain unchanged.
+     *
+     * @param erc20CollateralTokens Must already be whitelisted and must not be address zero.
      */
-    function updateWhitelistedCollateral(address erc20CollateralTokens_)
+    function updateWhitelistedCollateral(address erc20CollateralTokens)
         external
         onlyOwner
     {
-        _updateWhitelistedCollateral(erc20CollateralTokens_);
+        _updateWhitelistedCollateral(erc20CollateralTokens);
     }
 
     /**
      * @notice Permits the owner to remove a collateral token from being accepted in future bonds.
-     * Only applies for bonds created after the removal, previously created bonds remain unchanged.
+     *
+     * @dev Only applies for bonds created after the removal, previously created bonds remain unchanged.
+     *
+     * @param symbol Symbol must exist in the collateral whitelist.
      */
     function removeWhitelistedCollateral(string calldata symbol)
         external
@@ -112,44 +122,45 @@ contract BondFactory is
     }
 
     /**
-     * @notice When a bond is created, the tokens used as collateral must have been whitelisted.
+     * @notice Adds an ERC20 token to the collateral whitelist.
      *
-     * @dev Whitelists the erc20 symbol as a Bond collateral token from now onwards.
+     * @dev When a bond is created, the tokens used as collateral must have been whitelisted.
+     *
+     * @param erc20CollateralTokens Whitelists the token from now onwards.
      *      On bond creation the tokens address used is retrieved by symbol from the whitelist.
      */
-    function whitelistCollateral(address erc20CollateralTokens_)
+    function whitelistCollateral(address erc20CollateralTokens)
         external
         onlyOwner
     {
-        _whitelistCollateral(erc20CollateralTokens_);
+        _whitelistCollateral(erc20CollateralTokens);
     }
 
-    /**
-     * @dev Retrieves the address that receives any slashed or remaining funds.
-     */
     function treasury() external view returns (address) {
         return _treasury;
     }
 
     function __BondFactory_init(
-        address erc20CollateralTokens_,
-        address erc20CapableTreasury_
+        address erc20CollateralTokens,
+        address erc20CapableTreasury
     ) internal initializer {
         __Ownable_init();
         __CollateralWhitelist_init();
 
         require(
-            erc20CapableTreasury_ != address(0),
+            erc20CapableTreasury != address(0),
             "BF: treasury is zero address"
         );
 
-        _treasury = erc20CapableTreasury_;
+        _treasury = erc20CapableTreasury;
 
-        _whitelistCollateral(erc20CollateralTokens_);
+        _whitelistCollateral(erc20CollateralTokens);
     }
 
     /**
-     * Permits only the owner to perform upgrades.
+     * @notice Permits only the owner to perform proxy upgrades.
+     *
+     * @dev Only applicable when deployed as implementation to a UUPS proxy.
      */
     function _authorizeUpgrade(address newImplementation)
         internal
