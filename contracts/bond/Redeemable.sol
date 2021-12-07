@@ -8,10 +8,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
     @dev A state machine of two states, not redeemable and redeemable.
          Provides the modifiers `onlyWhenRedeemable` and `onlyWhenNotRedeemable` that can be applied to your functions
          to restrict use until the appropriate state is attained.
-         This module is used through inheritance.
  */
 abstract contract Redeemable is Initializable {
-    /// Whether the state is redeemable (or not redeemable)
     bool private _redeemable;
 
     /**

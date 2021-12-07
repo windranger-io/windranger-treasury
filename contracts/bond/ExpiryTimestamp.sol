@@ -7,8 +7,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @title Provides an expiry timestamp, with evaluation modifier.
  *
  * @dev Time evaluation uses the block current timestamp.
- *
- * This module is used through inheritance.
  */
 abstract contract ExpiryTimestamp is Initializable {
     uint256 private _expiry;

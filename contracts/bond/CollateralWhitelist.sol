@@ -8,8 +8,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @title Whitelist for collateral tokens.
  *
  * @notice Encapsulation of a ERC20 collateral tokens whitelist, indexed by their symbol.
- *
- * @dev This module is used through inheritance.
  */
 abstract contract CollateralWhitelist is Initializable {
     // Token symbols to ERC20 Token contract addresses
