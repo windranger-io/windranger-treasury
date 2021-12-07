@@ -4,16 +4,17 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
-    @title Abstraction for whether a contract has the state of being redeemable.
-    @dev A state machine of two states, not redeemable and redeemable.
-         Provides the modifiers `onlyWhenRedeemable` and `onlyWhenNotRedeemable` that can be applied to your functions
-         to restrict use until the appropriate state is attained.
+ * @title Encapsulates the state of being redeemable.
+ *
+ * @notice The state of being redeemable is boolean and single direction transition from false to true.
  */
 abstract contract Redeemable is Initializable {
     bool private _redeemable;
 
     /**
-     * @dev Modifier to make a function callable only when the contract is not redeemable.
+     * @notice Makes a function callable only when the contract is not redeemable.
+     *
+     * @dev Reverts when the contract is redeemable.
      *
      * Requirements:
      * - The contract must not be redeemable.
@@ -24,7 +25,9 @@ abstract contract Redeemable is Initializable {
     }
 
     /**
-     * @dev Modifier to make a function callable only when the contract is redeemable.
+     * @notice Makes a function callable only when the contract is redeemable.
+     *
+     * @dev Reverts when the contract is not yet redeemable.
      *
      * Requirements:
      * - The contract must be redeemable.
@@ -34,9 +37,6 @@ abstract contract Redeemable is Initializable {
         _;
     }
 
-    /**
-     * @dev whether the Bond is in the redemption state (allows redeem operation, but denies deposit, mint and slash).
-     */
     function redeemable() external view returns (bool) {
         return _redeemable;
     }
@@ -44,8 +44,9 @@ abstract contract Redeemable is Initializable {
     function __Redeemable_init() internal initializer {}
 
     /**
-        @notice Sets the state to that of redemption.
-        @dev Any future invocation of modifiers will have them
+     * @dev Transitions redeemable from `false` to `true`.
+     *
+     * No affect if state is already transitioned.
      */
     function _allowRedemption() internal {
         _redeemable = true;
