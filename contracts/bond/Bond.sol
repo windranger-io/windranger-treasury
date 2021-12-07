@@ -8,11 +8,13 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./ExpiryTimestamp.sol";
 import "./Redeemable.sol";
 
-//TODO redemption state - on/off
 /**
  * @title A Bond is an issuance of debt tokens, which are exchange for deposit of collateral.
  *
  * @notice A single type of ERC20 token is accepted as collateral.
+ *
+ * The Bond uses a single redemption model. Before redemption, receiving and slashing collateral is permitted,
+ * while after redemption, redeem (by guarantors) or complete withdrawal (by owner) is allowed.
  *
  * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
  */
