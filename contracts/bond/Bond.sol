@@ -95,41 +95,41 @@ contract Bond is
     );
 
     /**
-     * @param erc20CollateralTokens_ To avoid being able to break the Bond behaviour, the reference to the collateral
+     * @param erc20CollateralTokens To avoid being able to break the Bond behaviour, the reference to the collateral
      *              tokens cannot be be changed after init.
      *              To update the tokens address, either follow the proxy convention for the collateral,
      *              or migrate to a new bond.
      */
     function initialize(
-        string calldata name_,
-        string calldata symbol_,
-        uint256 debtTokens_,
-        address erc20CollateralTokens_,
-        address erc20CapableTreasury_,
-        uint256 expiryTimestamp_,
-        string calldata data_
+        string calldata name,
+        string calldata symbol,
+        uint256 debtTokens,
+        address erc20CollateralTokens,
+        address erc20CapableTreasury,
+        uint256 expiryTimestamp,
+        string calldata data
     ) external initializer {
-        __ERC20_init(name_, symbol_);
+        __ERC20_init(name, symbol);
         __Ownable_init();
         __Pausable_init();
-        __ExpiryTimestamp_init(expiryTimestamp_);
+        __ExpiryTimestamp_init(expiryTimestamp);
         __Redeemable_init();
 
         require(
-            erc20CapableTreasury_ != address(0),
+            erc20CapableTreasury != address(0),
             "Bond: treasury is zero address"
         );
         require(
-            erc20CollateralTokens_ != address(0),
+            erc20CollateralTokens != address(0),
             "Bond: collateral is zero address"
         );
 
-        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens_);
-        _data = data_;
-        _debtTokensInitialSupply = debtTokens_;
-        _treasury = erc20CapableTreasury_;
+        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
+        _data = data;
+        _debtTokensInitialSupply = debtTokens;
+        _treasury = erc20CapableTreasury;
 
-        _mint(debtTokens_);
+        _mint(debtTokens);
     }
 
     /**
@@ -169,29 +169,29 @@ contract Bond is
      * @dev Before the deposit can be made, this contract must have been approved to transfer the given amount
      * from the ERC20 token being used as collateral.
      *
-     * @param amount_ The number of collateral token to transfer from the _msgSender().
+     * @param amount The number of collateral token to transfer from the _msgSender().
      *          Must be in the range of one to the number of debt tokens available for swapping.
      *          The _msgSender() receives the debt tokens.
      */
-    function deposit(uint256 amount_) external whenNotPaused whenNotRedeemable {
-        require(amount_ > 0, "Bond: too small");
-        require(amount_ <= _debtTokensRemaining(), "Bond: too large");
+    function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
+        require(amount > 0, "Bond: too small");
+        require(amount <= _debtTokensRemaining(), "Bond: too large");
 
-        _collateral += amount_;
-        _debtTokensOutstanding += amount_;
+        _collateral += amount;
+        _debtTokensOutstanding += amount;
 
-        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount_);
+        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
 
         bool transferred = _collateralTokens.transferFrom(
             _msgSender(),
             address(this),
-            amount_
+            amount
         );
         require(transferred, "Bond: collateral transfer failed");
 
-        emit DebtIssue(_msgSender(), symbol(), amount_);
+        emit DebtIssue(_msgSender(), symbol(), amount);
 
-        _transfer(address(this), _msgSender(), amount_);
+        _transfer(address(this), _msgSender(), amount);
 
         if (hasFullCollateral()) {
             emit FullCollateral(
@@ -246,31 +246,28 @@ contract Bond is
      *  amount of collateral against the remaining amount of debt.
      *  There are operations that reduce the held collateral, while the debt remains constant.
      *
-     * @param amount_ The number of debt token to transfer from the _msgSender().
+     * @param amount The number of debt token to transfer from the _msgSender().
      *          Must be in the range of one to the number of debt tokens available for swapping.
      *          The _msgSender() receives the redeemed collateral tokens.
      */
-    function redeem(uint256 amount_) external whenNotPaused whenRedeemable {
-        require(amount_ > 0, "Bond: too small");
-        require(
-            balanceOf(_msgSender()) >= amount_,
-            "Bond: too few debt tokens"
-        );
+    function redeem(uint256 amount) external whenNotPaused whenRedeemable {
+        require(amount > 0, "Bond: too small");
+        require(balanceOf(_msgSender()) >= amount, "Bond: too few debt tokens");
 
         uint256 totalSupply = totalSupply() - _debtTokensRedemptionExcess;
-        uint256 redemptionAmount = _redemptionAmount(amount_, totalSupply);
+        uint256 redemptionAmount = _redemptionAmount(amount, totalSupply);
         _collateral -= redemptionAmount;
         _debtTokensOutstanding -= redemptionAmount;
 
         emit Redemption(
             _msgSender(),
             symbol(),
-            amount_,
+            amount,
             _collateralTokens.symbol(),
             redemptionAmount
         );
 
-        _burn(_msgSender(), amount_);
+        _burn(_msgSender(), amount);
 
         // Slashing can reduce redemption amount to zero
         if (redemptionAmount > 0) {
@@ -298,36 +295,36 @@ contract Bond is
      * As the amount of debt tokens remains the same. Slashing reduces the collateral tokens, so each debt token
      * is redeemable for less collateral, altering the redemption ratio calculated on allowRedemption().
      *
-     * @param amount_ The number of bonded collateral token to transfer from the Bond to the Treasury.
+     * @param amount The number of bonded collateral token to transfer from the Bond to the Treasury.
      *          Must be in the range of one to the number of collateral tokens held by the Bond.
      */
-    function slash(uint256 amount_)
+    function slash(uint256 amount)
         external
         whenNotPaused
         whenNotRedeemable
         onlyOwner
     {
-        require(amount_ > 0, "Bond: too small");
-        require(amount_ <= _collateral, "Bond: too large");
+        require(amount > 0, "Bond: too small");
+        require(amount <= _collateral, "Bond: too large");
 
-        _collateral -= amount_;
-        _collateralSlashed += amount_;
+        _collateral -= amount;
+        _collateralSlashed += amount;
 
-        emit Slash(_collateralTokens.symbol(), amount_);
+        emit Slash(_collateralTokens.symbol(), amount);
 
-        bool transferred = _collateralTokens.transfer(_treasury, amount_);
+        bool transferred = _collateralTokens.transfer(_treasury, amount);
         require(transferred, "Bond: collateral transfer failed");
     }
 
     /**
      * Permits the owner to update the Treasury address.
      *
-     * @dev treasury_ Recipient of slashed, expired or withdrawn collateral.
+     * @dev treasury Recipient of slashed, expired or withdrawn collateral.
      *          Must be a non-zero address.
      */
-    function setTreasury(address treasury_) external whenNotPaused onlyOwner {
-        require(treasury_ != address(0), "Bond: treasury is zero address");
-        _treasury = treasury_;
+    function setTreasury(address treasury) external whenNotPaused onlyOwner {
+        require(treasury != address(0), "Bond: treasury is zero address");
+        _treasury = treasury;
     }
 
     /**
@@ -460,24 +457,24 @@ contract Bond is
     /**
      * @dev Collateral is deposited at a 1 to 1 ratio, however slashing can change that lower.
      */
-    function _redemptionAmount(uint256 amount_, uint256 totalSupply_)
+    function _redemptionAmount(uint256 amount, uint256 totalSupply)
         private
         view
         returns (uint256)
     {
-        if (_collateral == totalSupply_) {
-            return amount_;
+        if (_collateral == totalSupply) {
+            return amount;
         } else {
-            return _applyRedemptionRation(amount_);
+            return _applyRedemptionRation(amount);
         }
     }
 
-    function _applyRedemptionRation(uint256 amount_)
+    function _applyRedemptionRation(uint256 amount)
         private
         view
         returns (uint256)
     {
-        return (_redemptionRatio * amount_) / _REDEMPTION_RATIO_ACCURACY;
+        return (_redemptionRatio * amount) / _REDEMPTION_RATIO_ACCURACY;
     }
 
     /**
