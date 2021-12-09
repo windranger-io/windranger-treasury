@@ -26,7 +26,7 @@ contract Bond is
     Redeemable
 {
     // Multiplier / divider for four decimal places, used in redemption ratio calculation.
-    uint256 private constant _REDEMPTION_RATIO_ACCURACY = 10000;
+    uint256 private constant _REDEMPTION_RATIO_ACCURACY = 1e4;
 
     /*
      * Collateral that is held by the bond, owed to the Guarantors (unless slashed).
