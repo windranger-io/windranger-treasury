@@ -55,8 +55,6 @@ export async function upgradeContract<T extends DeployableContract<T>>(
     const factory = await ethers.getContractFactory(name)
     const contract = <T>(<unknown>await upgrades.upgradeProxy(address, factory))
 
-    upgrades.admin.changeProxyAdmin
-
     return contract.deployed()
 }
 
