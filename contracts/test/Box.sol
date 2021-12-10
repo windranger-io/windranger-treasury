@@ -14,10 +14,10 @@ contract Box {
     /**
         @notice store the given value.
         @dev storing the value causes the Store event to be emitted, overwriting any previously stored value.
-        @param boxValue_ value for storage in the Box, no restrictions.
+        @param boxValue value for storage in the Box, no restrictions.
      */
-    function store(string calldata boxValue_) external {
-        _value = boxValue_;
+    function store(string calldata boxValue) external {
+        _value = boxValue;
 
         emit Store(_value);
     }
