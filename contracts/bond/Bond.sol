@@ -51,7 +51,7 @@ contract Bond is
     // Balance of debt tokens held by the Bond when redemptions were allowed.
     uint256 private _debtTokensRedemptionExcess;
 
-    // Minimum debt holding allowed pre-redemption state.
+    // Minimum debt holding allowed in the pre-redemption state.
     uint256 private _minimumDeposit;
 
     /*
@@ -103,8 +103,8 @@ contract Bond is
      *              To update the tokens address, either follow the proxy convention for the collateral,
      *              or migrate to a new bond.
      * @param externalData Data not pertinent to the operation of the Bond, but required by external actors.
-     * @param minimumDepositHolding Minimum debt holding allowed during the deposit phase. Once the minimum is met,
-     *              any size deposit from that account is allowed, as the minimum has already been met.
+     * @param minimumDepositHolding Minimum debt holding allowed in the deposit phase. Once the minimum is met,
+     *              any sized deposit from that account is allowed, as the minimum has already been met.
      */
     function initialize(
         string calldata name,
