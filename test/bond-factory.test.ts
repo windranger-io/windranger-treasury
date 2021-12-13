@@ -39,7 +39,15 @@ describe('BondFactory contract', () => {
     describe('create bond', () => {
         it('non-whitelisted collateral', async () => {
             await expect(
-                bonds.createBond('Named bond', 'AA00AA', 101n, 'BEEP', 0n, '')
+                bonds.createBond(
+                    'Named bond',
+                    'AA00AA',
+                    101n,
+                    'BEEP',
+                    0n,
+                    0n,
+                    ''
+                )
             ).to.be.revertedWith('BF: collateral not whitelisted')
         })
 
@@ -49,6 +57,7 @@ describe('BondFactory contract', () => {
             const debtTokenAmount = 555666777n
             const collateralSymbol = 'BIT'
             const expiryTimestamp = 560000n
+            const minimumDeposit = 100n
             const data = 'a random;delimiter;separated string'
 
             const receipt = await execute(
@@ -58,6 +67,7 @@ describe('BondFactory contract', () => {
                     debtTokenAmount,
                     collateralSymbol,
                     expiryTimestamp,
+                    minimumDeposit,
                     data
                 )
             )

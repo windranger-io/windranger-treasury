@@ -51,6 +51,9 @@ contract Bond is
     // Balance of debt tokens held by the Bond when redemptions were allowed.
     uint256 private _debtTokensRedemptionExcess;
 
+    // Minimum debt holding allowed in the pre-redemption state.
+    uint256 private _minimumDeposit;
+
     /*
      * Ratio value between one (100% bond redeem) and zero (0% redeem), accuracy defined by _REDEMPTION_RATIO_ACCURACY.
      *
@@ -100,6 +103,8 @@ contract Bond is
      *              To update the tokens address, either follow the proxy convention for the collateral,
      *              or migrate to a new bond.
      * @param externalData Data not pertinent to the operation of the Bond, but required by external actors.
+     * @param minimumDepositHolding Minimum debt holding allowed in the deposit phase. Once the minimum is met,
+     *              any sized deposit from that account is allowed, as the minimum has already been met.
      */
     function initialize(
         string calldata name,
@@ -108,6 +113,7 @@ contract Bond is
         address erc20CollateralTokens,
         address erc20CapableTreasury,
         uint256 expiryTimestamp,
+        uint256 minimumDepositHolding,
         string calldata externalData
     ) external initializer {
         __ERC20_init(name, symbol);
@@ -128,6 +134,7 @@ contract Bond is
         _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
         _data = externalData;
         _debtTokensInitialSupply = debtAmount;
+        _minimumDeposit = minimumDepositHolding;
         _treasury = erc20CapableTreasury;
 
         _mint(debtAmount);
@@ -177,6 +184,10 @@ contract Bond is
     function deposit(uint256 amount) external whenNotPaused whenNotRedeemable {
         require(amount > 0, "Bond: too small");
         require(amount <= _debtTokensRemaining(), "Bond: too large");
+        require(
+            balanceOf(_msgSender()) + amount >= _minimumDeposit,
+            "Bond: below minimum"
+        );
 
         _collateral += amount;
         _debtTokensOutstanding += amount;
@@ -430,6 +441,16 @@ contract Bond is
      */
     function initialDebtTokens() external view returns (uint256) {
         return _debtTokensInitialSupply;
+    }
+
+    /**
+     * @notice Minimum amount of debt allowed for the created Bonds.
+     *
+     * @dev Avoids micro holdings, as some operations cost scale linear to debt holders.
+     *      Once an account holds the minimum, any deposit from is acceptable as their holding is above the minimum.
+     */
+    function minimumDeposit() external view returns (uint256) {
+        return _minimumDeposit;
     }
 
     function treasury() external view returns (address) {

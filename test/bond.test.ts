@@ -42,6 +42,7 @@ const FORTY_PERCENT = 40n
 const FIFTY_PERCENT = 50n
 const DATA = 'performance factors;assessment date;rewards pool'
 const BOND_EXPIRY = 750000n
+const MINIMUM_DEPOSIT = 100n
 
 describe('Bond contract', () => {
     before(async () => {
@@ -278,6 +279,15 @@ describe('Bond contract', () => {
             )
         })
 
+        it('cannot be below minimum deposit', async () => {
+            const belowMinimum = MINIMUM_DEPOSIT - 1n
+            bond = await createBond(bonds, 5566777n)
+
+            await expect(bond.deposit(belowMinimum)).to.be.revertedWith(
+                'Bond: below minimum'
+            )
+        })
+
         it('only when not paused', async () => {
             const pledge = 60n
             bond = await createBond(bonds, pledge)
@@ -396,6 +406,7 @@ describe('Bond contract', () => {
                     500n,
                     collateralSymbol,
                     Date.now() + ONE_DAY_MS,
+                    MINIMUM_DEPOSIT,
                     DATA
                 )
             )
@@ -421,6 +432,7 @@ describe('Bond contract', () => {
                     collateralTokens.address,
                     treasury,
                     BOND_EXPIRY,
+                    MINIMUM_DEPOSIT,
                     DATA
                 )
             ).to.be.revertedWith(
@@ -439,6 +451,7 @@ describe('Bond contract', () => {
                     collateralTokens.address,
                     treasury,
                     BOND_EXPIRY,
+                    MINIMUM_DEPOSIT,
                     DATA
                 )
             ).to.be.revertedWith('Bond::mint: too small')
@@ -455,6 +468,7 @@ describe('Bond contract', () => {
                     collateralTokens.address,
                     ADDRESS_ZERO,
                     BOND_EXPIRY,
+                    MINIMUM_DEPOSIT,
                     DATA
                 )
             ).to.be.revertedWith('Bond: treasury is zero address')
@@ -471,6 +485,7 @@ describe('Bond contract', () => {
                     ADDRESS_ZERO,
                     treasury,
                     BOND_EXPIRY,
+                    MINIMUM_DEPOSIT,
                     DATA
                 )
             ).to.be.revertedWith('Bond: collateral is zero address')
@@ -488,6 +503,7 @@ describe('Bond contract', () => {
                 collateralTokens.address,
                 treasury,
                 BOND_EXPIRY,
+                MINIMUM_DEPOSIT,
                 DATA
             )
 
@@ -506,6 +522,7 @@ describe('Bond contract', () => {
                 collateralTokens.address,
                 treasury,
                 BOND_EXPIRY,
+                MINIMUM_DEPOSIT,
                 DATA
             )
 
@@ -720,13 +737,13 @@ describe('Bond contract', () => {
 
     describe('withdraw collateral', () => {
         it('needs collateral remaining', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(bonds, MINIMUM_DEPOSIT)
             await setupGuarantorsWithCollateral([
-                {signer: guarantorOne, pledge: ONE}
+                {signer: guarantorOne, pledge: MINIMUM_DEPOSIT}
             ])
-            await depositBond(guarantorOne, ONE)
+            await depositBond(guarantorOne, MINIMUM_DEPOSIT)
             await allowRedemption()
-            await redeem(guarantorOne, ONE)
+            await redeem(guarantorOne, MINIMUM_DEPOSIT)
 
             await expect(bond.withdrawCollateral()).to.be.revertedWith(
                 'Bond: no collateral remains'
@@ -1671,6 +1688,7 @@ describe('Bond contract', () => {
                 debtTokens,
                 collateralSymbol,
                 BOND_EXPIRY,
+                MINIMUM_DEPOSIT,
                 DATA
             )
         )
