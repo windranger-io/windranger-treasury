@@ -26,6 +26,7 @@ contract BondFactory is
         address owner,
         address treasury,
         uint256 expiryTimestamp,
+        uint256 minimumDeposit,
         string data
     );
 
@@ -48,6 +49,7 @@ contract BondFactory is
         uint256 debtTokens,
         string calldata collateralTokenSymbol,
         uint256 expiryTimestamp,
+        uint256 minimumDeposit,
         string calldata data
     ) external returns (address) {
         require(
@@ -65,6 +67,7 @@ contract BondFactory is
             owner(),
             _treasury,
             expiryTimestamp,
+            minimumDeposit,
             data
         );
 
@@ -75,6 +78,7 @@ contract BondFactory is
             whitelistedCollateralAddress(collateralTokenSymbol),
             _treasury,
             expiryTimestamp,
+            minimumDeposit,
             data
         );
         bond.transferOwnership(owner());
