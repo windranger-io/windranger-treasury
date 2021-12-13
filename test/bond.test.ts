@@ -279,6 +279,15 @@ describe('Bond contract', () => {
             )
         })
 
+        it('cannot be below minimum deposit', async () => {
+            const belowMinimum = MINIMUM_DEPOSIT - 1n
+            bond = await createBond(bonds, 5566777n)
+
+            await expect(bond.deposit(belowMinimum)).to.be.revertedWith(
+                'Bond: below minimum'
+            )
+        })
+
         it('only when not paused', async () => {
             const pledge = 60n
             bond = await createBond(bonds, pledge)
