@@ -331,6 +331,8 @@ contract Bond is
      * @notice Replaces any stored metadata.
      *
      * @dev As metadata is not pertinent for Bond operations, this may be anything, such as a delimitated string.
+     *
+     * @param data Information useful for off-chain actions e.g. performance factor, assessment date, rewards pool.
      */
     function setMetaData(string calldata data) external onlyOwner {
         return _setMetaData(data);

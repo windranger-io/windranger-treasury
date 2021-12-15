@@ -14,10 +14,9 @@ abstract contract MetaDataStore is Initializable {
     string private _metaData;
 
     /**
-     * @notice The storage box for meta information no required for the contract operation.
+     * @notice The storage box for metadata. Information not required by the contract for operations.
      *
-     * @dev Information not pertinent to the contract, but relevant for off-chain evaluation
-     *          e.g. performance factor, assessment date, rewards pool.
+     * @dev Information related to the contract but not needed by the contract.
      */
     function metaData() external view returns (string memory) {
         return _metaData;
