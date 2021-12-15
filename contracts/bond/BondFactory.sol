@@ -147,7 +147,7 @@ contract BondFactory is
     function __BondFactory_init(
         address erc20CollateralTokens,
         address erc20CapableTreasury
-    ) internal initializer {
+    ) internal onlyInitializing {
         __Ownable_init();
         __CollateralWhitelist_init();
 
