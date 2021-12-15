@@ -41,7 +41,7 @@ abstract contract Redeemable is Initializable {
         return _redeemable;
     }
 
-    function __Redeemable_init() internal initializer {}
+    function __Redeemable_init() internal onlyInitializing {}
 
     /**
      * @dev Transitions redeemable from `false` to `true`.
