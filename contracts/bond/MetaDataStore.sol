@@ -6,9 +6,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 /**
  * @title A string storage bucket for metadata.
  *
- * @notice A string for use by off-chain source to store on data not required for the contract operation on-chain.
+ * @notice Useful for off-chain actors to store on data, related to the contract but not required for the contract
+ *          on-chain operations.
  *
- * @dev Data is expected to include UI related pieces, perhaps delimited to support multiple items.
+ * @dev Metadata could include UI related pieces, perhaps in a delimited format to support multiple items.
  */
 abstract contract MetaDataStore is Initializable {
     string private _metaData;
