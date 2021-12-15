@@ -510,10 +510,10 @@ describe('Bond contract', () => {
             expect(await bond.initialDebtTokens()).equals(debtTokens)
         })
 
-        it('data filed for external apps is populated', async () => {
+        it('metadata is initialised', async () => {
             const debtTokens = 554n
             bond = await deployContract('Bond')
-            expect(await bond.data()).equals('')
+            expect(await bond.metaData()).equals('')
 
             await bond.initialize(
                 'My Debt Tokens two',
@@ -526,7 +526,29 @@ describe('Bond contract', () => {
                 DATA
             )
 
-            expect(await bond.data()).equals(DATA)
+            expect(await bond.metaData()).equals(DATA)
+        })
+
+        it('metadata is updatable', async () => {
+            const debtTokens = 554n
+            const startMetaData = 'something you will neve know'
+            const endMetadata = 'has changed to something else'
+            bond = await deployContract('Bond')
+            await bond.initialize(
+                'My Debt Tokens two',
+                'MDT002',
+                debtTokens,
+                collateralTokens.address,
+                treasury,
+                BOND_EXPIRY,
+                MINIMUM_DEPOSIT,
+                startMetaData
+            )
+            expect(await bond.metaData()).equals(startMetaData)
+
+            await successfulTransaction(bond.setMetaData(endMetadata))
+
+            expect(await bond.metaData()).equals(endMetadata)
         })
     })
 

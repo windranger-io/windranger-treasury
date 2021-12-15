@@ -242,15 +242,6 @@ contract Bond is
     }
 
     /**
-     * @notice Replaces the store meta data.
-     *
-     * @dev As meta data is not pertinent for Bond operations, this may be anything, such as a delimitated string.
-     */
-    function metaData(string calldata data) external onlyOwner {
-        return _setMetaData(data);
-    }
-
-    /**
      * @notice Pauses most side affecting functions.
      *
      * @dev The ony side effecting (non view or pure function) function exempt from pausing is expire().
@@ -334,6 +325,15 @@ contract Bond is
 
         bool transferred = _collateralTokens.transfer(_treasury, amount);
         require(transferred, "Bond: collateral transfer failed");
+    }
+
+    /**
+     * @notice Replaces any stored metadata.
+     *
+     * @dev As metadata is not pertinent for Bond operations, this may be anything, such as a delimitated string.
+     */
+    function setMetaData(string calldata data) external onlyOwner {
+        return _setMetaData(data);
     }
 
     /**

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
- * @title A string storage bucket for meta data.
+ * @title A string storage bucket for metadata.
  *
  * @notice A string for use by off-chain source to store on data not required for the contract operation on-chain.
  *
@@ -31,9 +31,9 @@ abstract contract MetaDataStore is Initializable {
     }
 
     /**
-     * @notice Replaces any existing stored meta data.
+     * @notice Replaces any existing stored metadata.
      *
-     * @dev To expose the setter externally create a new method.
+     * @dev To expose the setter externally with modifier access control, create a new method invoking _setMetaData.
      */
     function _setMetaData(string calldata data) internal {
         _metaData = data;
