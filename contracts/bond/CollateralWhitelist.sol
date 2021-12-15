@@ -37,7 +37,7 @@ abstract contract CollateralWhitelist is Initializable {
         return _whitelist[symbol] != address(0);
     }
 
-    function __CollateralWhitelist_init() internal initializer {}
+    function __CollateralWhitelist_init() internal onlyInitializing {}
 
     /**
      * @notice Performs whitelisting of the ERC20 collateral token.
