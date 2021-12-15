@@ -28,7 +28,7 @@ abstract contract ExpiryTimestamp is Initializable {
      */
     function __ExpiryTimestamp_init(uint256 expiryTimestamp)
         internal
-        initializer
+        onlyInitializing
     {
         _expiry = expiryTimestamp;
     }

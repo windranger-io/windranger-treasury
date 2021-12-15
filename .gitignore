@@ -85,3 +85,6 @@ doc/
 
 # MacOS system files
 .DS_Store
+
+# OZ Cache (UUPS proxy deployment addresses)
+.openzeppelin
