@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./ExpiryTimestamp.sol";
+import "./MetaDataStore.sol";
 import "./Redeemable.sol";
 
 /**
@@ -21,6 +22,7 @@ import "./Redeemable.sol";
 contract Bond is
     ERC20Upgradeable,
     ExpiryTimestamp,
+    MetaDataStore,
     OwnableUpgradeable,
     PausableUpgradeable,
     Redeemable
@@ -39,9 +41,6 @@ contract Bond is
     uint256 private _collateralSlashed;
 
     IERC20MetadataUpgradeable private _collateralTokens;
-
-    // General storage box for Bond details not managed on-chain
-    string private _data;
 
     uint256 private _debtTokensInitialSupply;
 
@@ -102,7 +101,7 @@ contract Bond is
      *              tokens cannot be be changed after init.
      *              To update the tokens address, either follow the proxy convention for the collateral,
      *              or migrate to a new bond.
-     * @param externalData Data not pertinent to the operation of the Bond, but required by external actors.
+     * @param data Meta data not pertinent to the operation of the Bond, but required by external actors.
      * @param minimumDepositHolding Minimum debt holding allowed in the deposit phase. Once the minimum is met,
      *              any sized deposit from that account is allowed, as the minimum has already been met.
      */
@@ -114,12 +113,13 @@ contract Bond is
         address erc20CapableTreasury,
         uint256 expiryTimestamp,
         uint256 minimumDepositHolding,
-        string calldata externalData
+        string calldata data
     ) external initializer {
         __ERC20_init(name, symbol);
         __Ownable_init();
         __Pausable_init();
         __ExpiryTimestamp_init(expiryTimestamp);
+        __MetaDataStore_init(data);
         __Redeemable_init();
 
         require(
@@ -132,7 +132,6 @@ contract Bond is
         );
 
         _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
-        _data = externalData;
         _debtTokensInitialSupply = debtAmount;
         _minimumDeposit = minimumDepositHolding;
         _treasury = erc20CapableTreasury;
@@ -240,6 +239,15 @@ contract Bond is
         require(transferred, "Bond: collateral transfer failed");
 
         _pauseSafely();
+    }
+
+    /**
+     * @notice Replaces the store meta data.
+     *
+     * @dev As meta data is not pertinent for Bond operations, this may be anything, such as a delimitated string.
+     */
+    function metaData(string calldata data) external onlyOwner {
+        return _setMetaData(data);
     }
 
     /**
@@ -389,16 +397,6 @@ contract Bond is
      */
     function collateralSlashed() external view returns (uint256) {
         return _collateralSlashed;
-    }
-
-    /**
-     * @notice The storage box for general Bond related information.
-     *
-     * @dev Information not pertinent to the contract, but relevant for off-chain evaluation
-     *          e.g. performance factor, assessment date, rewards pool.
-     */
-    function data() external view returns (string memory) {
-        return _data;
     }
 
     /**
