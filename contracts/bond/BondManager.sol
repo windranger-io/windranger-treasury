@@ -1,39 +1,46 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
-import "./Bond.sol";
-import "./BondCreator.sol";
+import "./BondCurator.sol";
 
+//TODO owns bonds, single point of permission management for all bonds
 /**
- * @title Creates bond contracts.
+ * @title Manages bond contracts.
  *
- * @dev Uses common configuration when creating bond contracts.
+ * @dev Store for common configuration and managing Bond contracts.
  */
-contract BondFactory is
-    BondCreator,
+contract BondManager is
+    BondCurator,
     CollateralWhitelist,
     OwnableUpgradeable,
     UUPSUpgradeable
 {
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
+
+    EnumerableSetUpgradeable.AddressSet private _bonds;
     address private _treasury;
 
-    event CreateBond(
-        address bond,
-        string name,
-        string debtSymbol,
-        uint256 debtAmount,
-        address owner,
-        address treasury,
-        uint256 expiryTimestamp,
-        uint256 minimumDeposit,
-        string data
-    );
+    //TODO doco required init bond, with BM as the owner
+    function addBond(address bond) external override {
+        //TODO event
+
+        bool added = _bonds.add(bond);
+        require(added, "BondManager: already present");
+
+        require(
+            OwnableUpgradeable(bond).owner() == address(this),
+            "BondManager: not bond owner"
+        );
+    }
+
+    //TODO update messagegs
 
     /**
-     * @notice Initialises the factory with the given collateral tokens automatically being whitelisted.
+     * @notice Initialises with the given collateral tokens automatically being whitelisted.
      *
      * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
      * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
@@ -42,50 +49,7 @@ contract BondFactory is
         address erc20CollateralTokens,
         address erc20CapableTreasury
     ) external virtual initializer {
-        __BondFactory_init(erc20CollateralTokens, erc20CapableTreasury);
-    }
-
-    function createBond(
-        string calldata name,
-        string calldata symbol,
-        uint256 debtTokens,
-        string calldata collateralTokenSymbol,
-        uint256 expiryTimestamp,
-        uint256 minimumDeposit,
-        string calldata data
-    ) external override returns (address) {
-        require(
-            isCollateralWhitelisted(collateralTokenSymbol),
-            "BF: collateral not whitelisted"
-        );
-
-        Bond bond = new Bond();
-
-        emit CreateBond(
-            address(bond),
-            name,
-            symbol,
-            debtTokens,
-            owner(),
-            _treasury,
-            expiryTimestamp,
-            minimumDeposit,
-            data
-        );
-
-        bond.initialize(
-            name,
-            symbol,
-            debtTokens,
-            whitelistedCollateralAddress(collateralTokenSymbol),
-            _treasury,
-            expiryTimestamp,
-            minimumDeposit,
-            data
-        );
-        bond.transferOwnership(owner());
-
-        return address(bond);
+        __BondManager_init(erc20CollateralTokens, erc20CapableTreasury);
     }
 
     /**
@@ -142,11 +106,24 @@ contract BondFactory is
         _whitelistCollateral(erc20CollateralTokens);
     }
 
+    function bondAt(uint256 index) external view returns (address) {
+        require(
+            EnumerableSetUpgradeable.length(_bonds) > index,
+            "BondManager: too large"
+        );
+
+        return EnumerableSetUpgradeable.at(_bonds, index);
+    }
+
+    function bondCount() external view returns (uint256) {
+        return EnumerableSetUpgradeable.length(_bonds);
+    }
+
     function treasury() external view returns (address) {
         return _treasury;
     }
 
-    function __BondFactory_init(
+    function __BondManager_init(
         address erc20CollateralTokens,
         address erc20CapableTreasury
     ) internal onlyInitializing {
