@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
 
@@ -10,13 +11,23 @@ import "./BondCurator.sol";
  *
  * @dev Store for common configuration and managing Bond contracts.
  */
-contract AtomicBondManager {
+contract BondSetupMediator is OwnableUpgradeable, UUPSUpgradeable {
     //TODO control - only owner
-    //TODO upgradable
 
     //TODO init with these values non-zero & contracts
     BondCreator private _creator;
     BondCurator private _curator;
+
+    function initialize(address factory, address manager)
+        external
+        virtual
+        initializer
+    {
+        //TODO check contract addresses
+
+        _creator = BondCreator(factory);
+        _curator = BondCurator(manager);
+    }
 
     function createManagedBond(
         string calldata name,
@@ -43,4 +54,15 @@ contract AtomicBondManager {
 
         return bond;
     }
+
+    /**
+     * @notice Permits only the owner to perform proxy upgrades.
+     *
+     * @dev Only applicable when deployed as implementation to a UUPS proxy.
+     */
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        override
+        onlyOwner
+    {}
 }
