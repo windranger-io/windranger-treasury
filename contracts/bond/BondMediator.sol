@@ -42,7 +42,9 @@ contract BondMediator is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     /**
-     * @notice Creates a Bond from the BondCreator and registers it with the BondCurator.
+     * @notice Creates a new Bond, registering with the Bond Management contract.
+     *
+     * @dev Creates a new Bond with the BondCreator and registers it with the BondCurator.
      */
     function createManagedBond(
         string calldata name,
