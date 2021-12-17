@@ -73,11 +73,11 @@ contract BondMediator is OwnableUpgradeable, UUPSUpgradeable {
     }
 
     function bondCreator() external view returns (address) {
-        return _creator;
+        return address(_creator);
     }
 
     function bondCurator() external view returns (address) {
-        return _curator;
+        return address(_curator);
     }
 
     /**

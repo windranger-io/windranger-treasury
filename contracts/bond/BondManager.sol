@@ -7,11 +7,12 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./BondCurator.sol";
 
-//TODO owns bonds, single point of permission management for all bonds
 /**
- * @title Manages bond contracts.
+ * @title Manages interactions with Bond contracts.
  *
- * @dev Store for common configuration and managing Bond contracts.
+ * @notice A central place to discover created Bonds and apply access control.
+ *
+ * @dev Owns of all Bonds it manages, guarding function accordingly allows finer access control to be provided.
  */
 contract BondManager is
     BondCurator,
@@ -22,9 +23,7 @@ contract BondManager is
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     EnumerableSetUpgradeable.AddressSet private _bonds;
-    address private _treasury;
 
-    //TODO doco required init bond, with BM as the owner
     function addBond(address bond) external override {
         //TODO event
 
@@ -37,30 +36,20 @@ contract BondManager is
         );
     }
 
+    //TODO update doco
     //TODO update messagegs
 
     /**
      * @notice Initialises with the given collateral tokens automatically being whitelisted.
      *
      * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
-     * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
      */
-    function initialize(
-        address erc20CollateralTokens,
-        address erc20CapableTreasury
-    ) external virtual initializer {
-        __BondManager_init(erc20CollateralTokens, erc20CapableTreasury);
-    }
-
-    /**
-     * @notice Permits the owner to update the treasury address.
-     *
-     * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
-     */
-    function setTreasury(address replacement) external onlyOwner {
-        require(replacement != address(0), "BF: treasury is zero address");
-        require(_treasury != replacement, "BF: treasury address identical");
-        _treasury = replacement;
+    function initialize(address erc20CollateralTokens)
+        external
+        virtual
+        initializer
+    {
+        __BondManager_init(erc20CollateralTokens);
     }
 
     /**
@@ -119,23 +108,12 @@ contract BondManager is
         return EnumerableSetUpgradeable.length(_bonds);
     }
 
-    function treasury() external view returns (address) {
-        return _treasury;
-    }
-
-    function __BondManager_init(
-        address erc20CollateralTokens,
-        address erc20CapableTreasury
-    ) internal onlyInitializing {
+    function __BondManager_init(address erc20CollateralTokens)
+        internal
+        onlyInitializing
+    {
         __Ownable_init();
         __CollateralWhitelist_init();
-
-        require(
-            erc20CapableTreasury != address(0),
-            "BF: treasury is zero address"
-        );
-
-        _treasury = erc20CapableTreasury;
 
         _whitelistCollateral(erc20CollateralTokens);
     }
