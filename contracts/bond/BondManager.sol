@@ -25,6 +25,8 @@ contract BondManager is
     EnumerableSetUpgradeable.AddressSet private _bonds;
 
     function addBond(address bond) external override {
+        //TODO require collateral is in whitelist
+
         //TODO event
 
         bool added = _bonds.add(bond);

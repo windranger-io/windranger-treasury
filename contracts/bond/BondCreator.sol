@@ -13,7 +13,7 @@ abstract contract BondCreator {
      * @param name Description of the purpose of the Bond.
      * @param symbol Abbreviation to identify the Bond.
      * @param debtTokens Number of tokens to create, which get swapped for collateral tokens by depositing.
-     * @param collateralTokenSymbol Abbreviation of the collateral token that are swapped for  debt token in deposit.
+     * @param collateralTokenSymbol Abbreviation of the collateral token that are swapped for debt tokens in deposit.
      * @param expiryTimestamp Unix timestamp for when the Bond is expired and anyone can move the remaining collateral
      *              to the Treasury, then petition for redemption.
      * @param minimumDeposit Minimum debt holding allowed in the deposit phase. Once the minimum is met,
