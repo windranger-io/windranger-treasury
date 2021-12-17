@@ -12,9 +12,6 @@ import "./BondCurator.sol";
  * @dev Store for common configuration and managing Bond contracts.
  */
 contract BondSetupMediator is OwnableUpgradeable, UUPSUpgradeable {
-    //TODO control - only owner
-
-    //TODO init with these values non-zero & contracts
     BondCreator private _creator;
     BondCurator private _curator;
 
@@ -24,6 +21,8 @@ contract BondSetupMediator is OwnableUpgradeable, UUPSUpgradeable {
         initializer
     {
         //TODO check contract addresses
+
+        __Ownable_init();
 
         _creator = BondCreator(factory);
         _curator = BondCurator(manager);
@@ -37,7 +36,7 @@ contract BondSetupMediator is OwnableUpgradeable, UUPSUpgradeable {
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
         string calldata data
-    ) external returns (address) {
+    ) external onlyOwner returns (address) {
         address bond = _creator.createBond(
             name,
             symbol,
