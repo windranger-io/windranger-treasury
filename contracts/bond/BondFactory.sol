@@ -8,7 +8,7 @@ import "./Bond.sol";
 import "./BondCreator.sol";
 
 /**
- * @title Creates bond contracts.
+ * @title Creates Bond contracts.
  *
  * @dev Uses common configuration when creating bond contracts.
  */
