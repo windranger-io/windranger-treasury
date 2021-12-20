@@ -334,7 +334,11 @@ contract Bond is
      *
      * @param data Information useful for off-chain actions e.g. performance factor, assessment date, rewards pool.
      */
-    function setMetaData(string calldata data) external onlyOwner {
+    function setMetaData(string calldata data)
+        external
+        whenNotPaused
+        onlyOwner
+    {
         return _setMetaData(data);
     }
 
