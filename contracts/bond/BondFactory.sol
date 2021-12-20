@@ -5,13 +5,15 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./Bond.sol";
+import "./BondCreator.sol";
 
 /**
- * @title Creates bond contracts.
+ * @title Creates Bond contracts.
  *
  * @dev Uses common configuration when creating bond contracts.
  */
 contract BondFactory is
+    BondCreator,
     CollateralWhitelist,
     OwnableUpgradeable,
     UUPSUpgradeable
@@ -51,7 +53,7 @@ contract BondFactory is
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
         string calldata data
-    ) external returns (address) {
+    ) external override returns (address) {
         require(
             isCollateralWhitelisted(collateralTokenSymbol),
             "BF: collateral not whitelisted"
