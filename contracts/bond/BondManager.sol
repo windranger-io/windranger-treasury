@@ -39,7 +39,7 @@ contract BondManager is BondCurator, OwnableUpgradeable, UUPSUpgradeable {
 
     function bondAt(uint256 index) external view returns (address) {
         require(
-            EnumerableSetUpgradeable.length(_bonds) > index,
+            index < EnumerableSetUpgradeable.length(_bonds),
             "BondManager: too large"
         );
 
