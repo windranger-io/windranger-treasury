@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./BondCurator.sol";
+import "./ISingleCollateralBond.sol";
 
 /**
  * @title Manages interactions with Bond contracts.
@@ -28,30 +29,88 @@ contract BondManager is
     event AddBond(address bond);
 
     function addBond(address bond) external override whenNotPaused {
-        emit AddBond(bond);
-
-        bool added = _bonds.add(bond);
-        require(added, "BondManager: already present");
-
+        require(!_bonds.contains(bond), "BondManager: already managing");
         require(
             OwnableUpgradeable(bond).owner() == address(this),
             "BondManager: not bond owner"
         );
+
+        emit AddBond(bond);
+
+        bool added = _bonds.add(bond);
+        require(added, "BondManager: failed to add");
+    }
+
+    function bondAllowRedemption(address bond)
+        external
+        whenNotPaused
+        onlyOwner
+    {
+        _requireManagingBond(bond);
+
+        ISingleCollateralBond(bond).allowRedemption();
+    }
+
+    function bondDeposit(address bond, uint256 amount) external whenNotPaused {
+        _requireManagingBond(bond);
+
+        ISingleCollateralBond(bond).deposit(amount);
+    }
+
+    function bondPause(address bond) external whenNotPaused onlyOwner {
+        _requireManagingBond(bond);
+
+        ISingleCollateralBond(bond).pause();
+    }
+
+    function bondSlash(address bond, uint256 amount)
+        external
+        whenNotPaused
+        onlyOwner
+    {
+        _requireManagingBond(bond);
+
+        ISingleCollateralBond(bond).slash(amount);
+    }
+
+    function bondSetMetaData(address bond, string calldata data)
+        external
+        onlyOwner
+    {
+        _requireManagingBond(bond);
+
+        ISingleCollateralBond(bond).setMetaData(data);
+    }
+
+    function bondSetTreasury(address bond, address replacement)
+        external
+        whenNotPaused
+        onlyOwner
+    {
+        _requireManagingBond(bond);
+
+        ISingleCollateralBond(bond).setTreasury(replacement);
+    }
+
+    function bondUnpause(address bond) external whenNotPaused onlyOwner {
+        _requireManagingBond(bond);
+
+        ISingleCollateralBond(bond).unpause();
+    }
+
+    function bondWithdrawCollateral(address bond)
+        external
+        whenNotPaused
+        onlyOwner
+    {
+        _requireManagingBond(bond);
+
+        ISingleCollateralBond(bond).withdrawCollateral();
     }
 
     function initialize() external virtual initializer {
         __Ownable_init();
         __Pausable_init();
-    }
-
-    function allowRedemption(address bond) external whenNotPaused onlyOwner {
-        //TODO check bond owner
-        //TODO call
-    }
-
-    function deposit(address bond, uint256 amount) external whenNotPaused {
-        //TODO check bond owner
-        //TODO call
     }
 
     /**
@@ -63,41 +122,11 @@ contract BondManager is
         _pause();
     }
 
-    function pauseBond(address bond) external whenNotPaused onlyOwner {
-        //TODO check bond owner
-        //TODO call
-    }
-
-    function slash(uint256 amount) external whenNotPaused onlyOwner {
-        //TODO check bond owner
-        //TODO call
-    }
-
-    function setMetaData(string calldata data) external onlyOwner {
-        //TODO check bond owner
-        //TODO call
-    }
-
-    function setTreasury(address replacement) external whenNotPaused onlyOwner {
-        //TODO check bond owner
-        //TODO call
-    }
-
     /**
      * @notice Resumes all paused side affecting functions.
      */
     function unpause() external whenPaused onlyOwner {
         _unpause();
-    }
-
-    function unpauseBond(address bond) external whenNotPaused onlyOwner {
-        //TODO check bond owner
-        //TODO call
-    }
-
-    function withdrawCollateral() external whenNotPaused onlyOwner {
-        //TODO check bond owner
-        //TODO call
     }
 
     function bondAt(uint256 index) external view returns (address) {
@@ -123,4 +152,8 @@ contract BondManager is
         override
         onlyOwner
     {}
+
+    function _requireManagingBond(address bond) private view {
+        require(_bonds.contains(bond), "BondManager: not managing");
+    }
 }
