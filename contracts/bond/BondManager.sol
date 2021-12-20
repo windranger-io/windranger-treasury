@@ -19,8 +19,10 @@ contract BondManager is BondCurator, OwnableUpgradeable, UUPSUpgradeable {
 
     EnumerableSetUpgradeable.AddressSet private _bonds;
 
+    event AddBond(address bond);
+
     function addBond(address bond) external override {
-        //TODO event
+        emit AddBond(bond);
 
         bool added = _bonds.add(bond);
         require(added, "BondManager: already present");
