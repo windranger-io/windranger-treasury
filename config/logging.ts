@@ -1,5 +1,5 @@
 import * as LogFactory from 'bunyan'
 
-const log = LogFactory.createLogger({name: 'BitDAO.Token.Contract'})
+const log = LogFactory.createLogger({name: 'windranger-treasury'})
 
 export {log}
