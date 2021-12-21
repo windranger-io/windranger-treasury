@@ -83,7 +83,7 @@ contract BondFactory is
             minimumDeposit,
             data
         );
-        bond.transferOwnership(owner());
+        bond.transferOwnership(_msgSender());
 
         return address(bond);
     }

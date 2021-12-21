@@ -28,6 +28,7 @@ contract BondManager is
 
     event AddBond(address bond);
 
+    //TODO add permission guard - need to figure out single control model across three contracts
     function addBond(address bond) external override whenNotPaused {
         require(!_bonds.contains(bond), "BondManager: already managing");
         require(
