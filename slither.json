@@ -1,0 +1,10 @@
+{
+  "detectors_to_exclude": "solc-version,naming-convention",
+  "exclude_informational": false,
+  "exclude_low": false,
+  "exclude_medium": false,
+  "exclude_high": false,
+  "disable_color": false,
+  "filter_paths": "contracts/test|contracts/treasury|node_modules",
+  "legacy_ast": false
+}

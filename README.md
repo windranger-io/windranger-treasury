@@ -120,6 +120,12 @@ When at the project root, to run and exclude `BitDao.sol`, anything containing t
 slither . --filter-paths "BitDAO.sol|contracts/treasury|node_modules"
 ```
 
+Alternatively to run using a `slither.json` config file:
+
+```shell
+slither . --config-file slither.json
+```
+
 ### Docker
 
 The Trail of Bits toolbox image contains a number of applications (including Slither).
@@ -147,4 +153,11 @@ Navigate into the `test-me` directory and run the static analysis:
 ```shell
 cd test-me
 slither . --filter-paths "BitDAO.sol|contracts/treasury|node_modules"
+```
+
+Alternatively to run using a `slither.json` config file:
+
+```shell
+cd test-me
+slither . --config-file slither.json
 ```
