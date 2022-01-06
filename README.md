@@ -65,7 +65,7 @@ Run a single test (or a regex of tests), then pass in as an argument.
 The TypeScript transpiler will automatically as needed, execute through HardHat for the instantiated environment
 
 ```shell
-npx hardhat run .\scripts\sample-script.ts
+npx hardhat run .\scripts\deploy.ts
 ```
 
 ### Logging
