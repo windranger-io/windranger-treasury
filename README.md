@@ -158,5 +158,6 @@ slither . --filter-paths "BitDAO.sol|contracts/treasury|node_modules"
 Alternatively to run using a `slither.json` config file:
 
 ```shell
+cd test-me
 slither . --config-file slither.json
 ```
