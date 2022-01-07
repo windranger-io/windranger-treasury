@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-interface ISingleCollateralBond {
+interface SingleCollateralBond {
     /**
      * @notice Transitions the Bond state, from being non-redeemable (accepting deposits and slashing) to
      *          redeemable (accepting redeem and withdraw collateral).

@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./BondCurator.sol";
-import "./ISingleCollateralBond.sol";
+import "./SingleCollateralBond.sol";
 
 /**
  * @title Manages interactions with Bond contracts.
@@ -49,19 +49,19 @@ contract BondManager is
     {
         _requireManagingBond(bond);
 
-        ISingleCollateralBond(bond).allowRedemption();
+        SingleCollateralBond(bond).allowRedemption();
     }
 
     function bondDeposit(address bond, uint256 amount) external whenNotPaused {
         _requireManagingBond(bond);
 
-        ISingleCollateralBond(bond).deposit(amount);
+        SingleCollateralBond(bond).deposit(amount);
     }
 
     function bondPause(address bond) external whenNotPaused onlyOwner {
         _requireManagingBond(bond);
 
-        ISingleCollateralBond(bond).pause();
+        SingleCollateralBond(bond).pause();
     }
 
     function bondSlash(address bond, uint256 amount)
@@ -71,7 +71,7 @@ contract BondManager is
     {
         _requireManagingBond(bond);
 
-        ISingleCollateralBond(bond).slash(amount);
+        SingleCollateralBond(bond).slash(amount);
     }
 
     function bondSetMetaData(address bond, string calldata data)
@@ -80,7 +80,7 @@ contract BondManager is
     {
         _requireManagingBond(bond);
 
-        ISingleCollateralBond(bond).setMetaData(data);
+        SingleCollateralBond(bond).setMetaData(data);
     }
 
     function bondSetTreasury(address bond, address replacement)
@@ -90,13 +90,13 @@ contract BondManager is
     {
         _requireManagingBond(bond);
 
-        ISingleCollateralBond(bond).setTreasury(replacement);
+        SingleCollateralBond(bond).setTreasury(replacement);
     }
 
     function bondUnpause(address bond) external whenNotPaused onlyOwner {
         _requireManagingBond(bond);
 
-        ISingleCollateralBond(bond).unpause();
+        SingleCollateralBond(bond).unpause();
     }
 
     function bondWithdrawCollateral(address bond)
@@ -106,7 +106,7 @@ contract BondManager is
     {
         _requireManagingBond(bond);
 
-        ISingleCollateralBond(bond).withdrawCollateral();
+        SingleCollateralBond(bond).withdrawCollateral();
     }
 
     function initialize() external virtual initializer {

@@ -14,7 +14,7 @@ import {
     slashEvent,
     transferEvents,
     withdrawCollateralEvent
-} from './bond-events'
+} from './single-collateral-bond-events'
 
 /**
  * Verifies the content for a Allow Redemption event.

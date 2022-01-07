@@ -9,7 +9,7 @@ import {
     RedemptionEvent,
     SlashEvent,
     WithdrawCollateralEvent
-} from '../../../typechain/Bond'
+} from '../../../typechain/ERC20SingleCollateralBond'
 import {TransferEvent} from '../../../typechain/IERC20'
 
 /**
