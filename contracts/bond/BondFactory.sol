@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
-import "./Bond.sol";
+import "./ERC20SingleCollateralBond.sol";
 import "./BondCreator.sol";
 
 /**
@@ -59,7 +59,7 @@ contract BondFactory is
             "BF: collateral not whitelisted"
         );
 
-        Bond bond = new Bond();
+        ERC20SingleCollateralBond bond = new ERC20SingleCollateralBond();
 
         emit CreateBond(
             address(bond),

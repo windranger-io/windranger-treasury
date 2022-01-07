@@ -1,7 +1,9 @@
-import {Bond} from '../../../typechain'
+import {ERC20SingleCollateralBond} from '../../../typechain'
 import {ethers} from 'hardhat'
 
-export async function bondContractAt(address: string): Promise<Bond> {
-    const factory = await ethers.getContractFactory('Bond')
-    return <Bond>factory.attach(address)
+export async function erc20SingleCollateralBondContractAt(
+    address: string
+): Promise<ERC20SingleCollateralBond> {
+    const factory = await ethers.getContractFactory('ERC20SingleCollateralBond')
+    return <ERC20SingleCollateralBond>factory.attach(address)
 }
