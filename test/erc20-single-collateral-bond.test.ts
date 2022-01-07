@@ -32,9 +32,9 @@ import {
     verifySlashEvent,
     verifyTransferEvents,
     verifyWithdrawCollateralEvent
-} from './contracts/bond/verify-bond-events'
+} from './contracts/bond/verify-single-collateral-bond-events'
 import {createBondEvent} from './contracts/bond/bond-factory-events'
-import {erc20SingleCollateralBondContractAt} from './contracts/bond/bond-contract'
+import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
