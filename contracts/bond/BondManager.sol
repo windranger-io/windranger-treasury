@@ -134,6 +134,8 @@ contract BondManager is
         __AccessControl_init();
         __Pausable_init();
 
+        _setRoleAdmin(Roles.BOND_ADMIN, Roles.DAO_ADMIN);
+        _setRoleAdmin(Roles.BOND_AGGREGATOR, Roles.DAO_ADMIN);
         _setRoleAdmin(Roles.SYSTEM_ADMIN, Roles.DAO_ADMIN);
         _setupRole(Roles.DAO_ADMIN, _msgSender());
         _setupRole(Roles.SYSTEM_ADMIN, _msgSender());

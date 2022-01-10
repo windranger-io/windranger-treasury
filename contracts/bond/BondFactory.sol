@@ -168,6 +168,7 @@ contract BondFactory is
 
         _treasury = erc20CapableTreasury;
 
+        _setRoleAdmin(Roles.BOND_ADMIN, Roles.DAO_ADMIN);
         _setRoleAdmin(Roles.SYSTEM_ADMIN, Roles.DAO_ADMIN);
         _setupRole(Roles.DAO_ADMIN, _msgSender());
         _setupRole(Roles.SYSTEM_ADMIN, _msgSender());
