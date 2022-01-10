@@ -10,7 +10,7 @@ export function createBondEvent(event: Event): {
     name: string
     debtSymbol: string
     debtAmount: BigNumber
-    owner: string
+    creator: string
     treasury: string
     expiryTimestamp: BigNumber
     data: string
@@ -23,7 +23,7 @@ export function createBondEvent(event: Event): {
     expect(args?.name).is.not.undefined
     expect(args?.debtSymbol).is.not.undefined
     expect(args?.debtAmount).is.not.undefined
-    expect(args?.owner).is.not.undefined
+    expect(args?.creator).is.not.undefined
     expect(args?.treasury).is.not.undefined
     expect(args?.expiryTimestamp).is.not.undefined
     expect(args?.data).is.not.undefined

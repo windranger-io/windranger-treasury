@@ -77,7 +77,7 @@ describe('BondFactory contract', () => {
                     name: bondName,
                     debtSymbol: bondSymbol,
                     debtAmount: debtTokenAmount,
-                    owner: admin,
+                    creator: admin,
                     treasury: treasury,
                     expiryTimestamp: expiryTimestamp,
                     data: data
@@ -128,12 +128,14 @@ describe('BondFactory contract', () => {
                 )
             })
 
-            it('only owner', async () => {
+            it('only bond admin', async () => {
                 await expect(
                     bonds
                         .connect(nonAdmin)
                         .whitelistCollateral(collateralTokens.address)
-                ).to.be.revertedWith('Ownable: caller is not the owner')
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
         })
 
@@ -166,12 +168,14 @@ describe('BondFactory contract', () => {
                 )
             })
 
-            it('only owner', async () => {
+            it('only bond admin', async () => {
                 await expect(
                     bonds
                         .connect(nonAdmin)
                         .updateWhitelistedCollateral(collateralTokens.address)
-                ).to.be.revertedWith('Ownable: caller is not the owner')
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
 
             it('existing address', async () => {
@@ -219,12 +223,14 @@ describe('BondFactory contract', () => {
                 ).to.be.revertedWith('Whitelist: not whitelisted')
             })
 
-            it('only owner', async () => {
+            it('only bond admin', async () => {
                 await expect(
                     bonds
                         .connect(nonAdmin)
                         .removeWhitelistedCollateral(collateralSymbol)
-                ).to.be.revertedWith('Ownable: caller is not the owner')
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
         })
     })
@@ -267,10 +273,12 @@ describe('BondFactory contract', () => {
                 ).to.be.revertedWith('BF: treasury is zero address')
             })
 
-            it('only owner', async () => {
+            it('only bond admin', async () => {
                 await expect(
                     bonds.connect(nonAdmin).setTreasury(treasury)
-                ).to.be.revertedWith('Ownable: caller is not the owner')
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
         })
     })
