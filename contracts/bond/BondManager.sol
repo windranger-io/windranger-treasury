@@ -40,12 +40,13 @@ contract BondManager is
         onlyRole(Roles.BOND_AGGREGATOR)
     {
         require(!_bonds.contains(bond), "BondManager: already managing");
+
+        emit AddBond(bond);
+
         require(
             OwnableUpgradeable(bond).owner() == address(this),
             "BondManager: not bond owner"
         );
-
-        emit AddBond(bond);
 
         bool added = _bonds.add(bond);
         require(added, "BondManager: failed to add");
