@@ -14,9 +14,9 @@ import "./Roles.sol";
  * @dev Uses common configuration when creating bond contracts.
  */
 contract BondFactory is
+    AccessControlUpgradeable,
     BondCreator,
     CollateralWhitelist,
-    AccessControlUpgradeable,
     UUPSUpgradeable
 {
     address private _treasury;
