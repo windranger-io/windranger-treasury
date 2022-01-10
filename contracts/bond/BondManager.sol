@@ -33,8 +33,12 @@ contract BondManager is
 
     event AddBond(address bond);
 
-    //TODO add permission guard - need to figure out single control model across three contracts
-    function addBond(address bond) external override whenNotPaused {
+    function addBond(address bond)
+        external
+        override
+        whenNotPaused
+        onlyRole(Roles.BOND_AGGREGATOR)
+    {
         require(!_bonds.contains(bond), "BondManager: already managing");
         require(
             OwnableUpgradeable(bond).owner() == address(this),
@@ -134,6 +138,7 @@ contract BondManager is
         _setupRole(Roles.DAO_ADMIN, _msgSender());
         _setupRole(Roles.SYSTEM_ADMIN, _msgSender());
         _setupRole(Roles.BOND_ADMIN, _msgSender());
+        _setupRole(Roles.BOND_AGGREGATOR, _msgSender());
     }
 
     /**
