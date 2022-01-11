@@ -1,6 +1,6 @@
 import {ethers, run} from 'hardhat'
-import {BondMediator} from '../typechain'
-import {log} from '../config/logging'
+import {BondMediator} from '../../typechain'
+import {log} from '../../config/logging'
 import {ContractReceipt, Event} from 'ethers'
 
 const BOND_MEDIATOR_ADDRESS = '0x5023cC786D6596C405a98a956384012117d11118'
