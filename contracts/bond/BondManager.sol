@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./BondCurator.sol";
+import "./Roles.sol";
 import "./SingleCollateralBond.sol";
+
+interface OwnableUpgradeable {
+    function owner() external returns (address);
+}
 
 /**
  * @title Manages interactions with Bond contracts.
@@ -17,8 +22,8 @@ import "./SingleCollateralBond.sol";
  * @dev Owns of all Bonds it manages, guarding function accordingly allows finer access control to be provided.
  */
 contract BondManager is
+    AccessControlUpgradeable,
     BondCurator,
-    OwnableUpgradeable,
     PausableUpgradeable,
     UUPSUpgradeable
 {
@@ -28,15 +33,20 @@ contract BondManager is
 
     event AddBond(address bond);
 
-    //TODO add permission guard - need to figure out single control model across three contracts
-    function addBond(address bond) external override whenNotPaused {
+    function addBond(address bond)
+        external
+        override
+        whenNotPaused
+        onlyRole(Roles.BOND_AGGREGATOR)
+    {
         require(!_bonds.contains(bond), "BondManager: already managing");
+
+        emit AddBond(bond);
+
         require(
             OwnableUpgradeable(bond).owner() == address(this),
             "BondManager: not bond owner"
         );
-
-        emit AddBond(bond);
 
         bool added = _bonds.add(bond);
         require(added, "BondManager: failed to add");
@@ -45,7 +55,7 @@ contract BondManager is
     function bondAllowRedemption(address bond)
         external
         whenNotPaused
-        onlyOwner
+        onlyRole(Roles.BOND_ADMIN)
     {
         _requireManagingBond(bond);
 
@@ -58,7 +68,11 @@ contract BondManager is
         SingleCollateralBond(bond).deposit(amount);
     }
 
-    function bondPause(address bond) external whenNotPaused onlyOwner {
+    function bondPause(address bond)
+        external
+        whenNotPaused
+        onlyRole(Roles.BOND_ADMIN)
+    {
         _requireManagingBond(bond);
 
         SingleCollateralBond(bond).pause();
@@ -67,7 +81,7 @@ contract BondManager is
     function bondSlash(address bond, uint256 amount)
         external
         whenNotPaused
-        onlyOwner
+        onlyRole(Roles.BOND_ADMIN)
     {
         _requireManagingBond(bond);
 
@@ -76,7 +90,7 @@ contract BondManager is
 
     function bondSetMetaData(address bond, string calldata data)
         external
-        onlyOwner
+        onlyRole(Roles.BOND_ADMIN)
     {
         _requireManagingBond(bond);
 
@@ -86,14 +100,18 @@ contract BondManager is
     function bondSetTreasury(address bond, address replacement)
         external
         whenNotPaused
-        onlyOwner
+        onlyRole(Roles.BOND_ADMIN)
     {
         _requireManagingBond(bond);
 
         SingleCollateralBond(bond).setTreasury(replacement);
     }
 
-    function bondUnpause(address bond) external whenNotPaused onlyOwner {
+    function bondUnpause(address bond)
+        external
+        whenNotPaused
+        onlyRole(Roles.BOND_ADMIN)
+    {
         _requireManagingBond(bond);
 
         SingleCollateralBond(bond).unpause();
@@ -102,16 +120,28 @@ contract BondManager is
     function bondWithdrawCollateral(address bond)
         external
         whenNotPaused
-        onlyOwner
+        onlyRole(Roles.BOND_ADMIN)
     {
         _requireManagingBond(bond);
 
         SingleCollateralBond(bond).withdrawCollateral();
     }
 
+    /**
+     * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
+     *      have been setup.
+     */
     function initialize() external virtual initializer {
-        __Ownable_init();
+        __AccessControl_init();
         __Pausable_init();
+
+        _setRoleAdmin(Roles.BOND_ADMIN, Roles.DAO_ADMIN);
+        _setRoleAdmin(Roles.BOND_AGGREGATOR, Roles.DAO_ADMIN);
+        _setRoleAdmin(Roles.SYSTEM_ADMIN, Roles.DAO_ADMIN);
+        _setupRole(Roles.DAO_ADMIN, _msgSender());
+        _setupRole(Roles.SYSTEM_ADMIN, _msgSender());
+        _setupRole(Roles.BOND_ADMIN, _msgSender());
+        _setupRole(Roles.BOND_AGGREGATOR, _msgSender());
     }
 
     /**
@@ -119,14 +149,14 @@ contract BondManager is
      *
      * @dev The ony side effecting (non view or pure function) function exempt from pausing is expire().
      */
-    function pause() external whenNotPaused onlyOwner {
+    function pause() external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
         _pause();
     }
 
     /**
      * @notice Resumes all paused side affecting functions.
      */
-    function unpause() external whenPaused onlyOwner {
+    function unpause() external whenPaused onlyRole(Roles.BOND_ADMIN) {
         _unpause();
     }
 
@@ -151,7 +181,7 @@ contract BondManager is
     function _authorizeUpgrade(address newImplementation)
         internal
         override
-        onlyOwner
+        onlyRole(Roles.SYSTEM_ADMIN)
     {}
 
     function _requireManagingBond(address bond) private view {

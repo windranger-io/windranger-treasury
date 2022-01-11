@@ -1,6 +1,6 @@
 import {ethers, run} from 'hardhat'
-import {log} from '../config/logging'
-import {BitDAO, BondFactory, BondManager, BondMediator} from '../typechain'
+import {log} from '../../config/logging'
+import {BitDAO, BondFactory, BondManager, BondMediator} from '../../typechain'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 
 async function main() {

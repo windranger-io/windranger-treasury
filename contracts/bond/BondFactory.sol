@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./ERC20SingleCollateralBond.sol";
 import "./BondCreator.sol";
+import "./Roles.sol";
 
 /**
  * @title Creates Bond contracts.
@@ -13,9 +14,9 @@ import "./BondCreator.sol";
  * @dev Uses common configuration when creating bond contracts.
  */
 contract BondFactory is
+    AccessControlUpgradeable,
     BondCreator,
     CollateralWhitelist,
-    OwnableUpgradeable,
     UUPSUpgradeable
 {
     address private _treasury;
@@ -25,7 +26,7 @@ contract BondFactory is
         string name,
         string debtSymbol,
         uint256 debtAmount,
-        address owner,
+        address creator,
         address treasury,
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
@@ -66,7 +67,7 @@ contract BondFactory is
             name,
             symbol,
             debtTokens,
-            owner(),
+            _msgSender(),
             _treasury,
             expiryTimestamp,
             minimumDeposit,
@@ -93,7 +94,10 @@ contract BondFactory is
      *
      * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
      */
-    function setTreasury(address replacement) external onlyOwner {
+    function setTreasury(address replacement)
+        external
+        onlyRole(Roles.BOND_ADMIN)
+    {
         require(replacement != address(0), "BF: treasury is zero address");
         require(_treasury != replacement, "BF: treasury address identical");
         _treasury = replacement;
@@ -108,7 +112,7 @@ contract BondFactory is
      */
     function updateWhitelistedCollateral(address erc20CollateralTokens)
         external
-        onlyOwner
+        onlyRole(Roles.BOND_ADMIN)
     {
         _updateWhitelistedCollateral(erc20CollateralTokens);
     }
@@ -122,7 +126,7 @@ contract BondFactory is
      */
     function removeWhitelistedCollateral(string calldata symbol)
         external
-        onlyOwner
+        onlyRole(Roles.BOND_ADMIN)
     {
         _removeWhitelistedCollateral(symbol);
     }
@@ -137,7 +141,7 @@ contract BondFactory is
      */
     function whitelistCollateral(address erc20CollateralTokens)
         external
-        onlyOwner
+        onlyRole(Roles.BOND_ADMIN)
     {
         _whitelistCollateral(erc20CollateralTokens);
     }
@@ -146,11 +150,15 @@ contract BondFactory is
         return _treasury;
     }
 
+    /**
+     * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
+     *      have been setup.
+     */
     function __BondFactory_init(
         address erc20CollateralTokens,
         address erc20CapableTreasury
     ) internal onlyInitializing {
-        __Ownable_init();
+        __AccessControl_init();
         __CollateralWhitelist_init();
 
         require(
@@ -159,6 +167,12 @@ contract BondFactory is
         );
 
         _treasury = erc20CapableTreasury;
+
+        _setRoleAdmin(Roles.BOND_ADMIN, Roles.DAO_ADMIN);
+        _setRoleAdmin(Roles.SYSTEM_ADMIN, Roles.DAO_ADMIN);
+        _setupRole(Roles.DAO_ADMIN, _msgSender());
+        _setupRole(Roles.SYSTEM_ADMIN, _msgSender());
+        _setupRole(Roles.BOND_ADMIN, _msgSender());
 
         _whitelistCollateral(erc20CollateralTokens);
     }
@@ -171,6 +185,6 @@ contract BondFactory is
     function _authorizeUpgrade(address newImplementation)
         internal
         override
-        onlyOwner
+        onlyRole(Roles.SYSTEM_ADMIN)
     {}
 }
