@@ -35,7 +35,6 @@ describe('Bond Mediator contract', () => {
         memberTwo = (await signer(3)).address
         memberThree = (await signer(4)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        collateralSymbol = await collateralTokens.symbol()
         curator = await deployContractWithProxy<BondManager>('BondManager')
         creator = await deployContractWithProxy<BondFactory>(
             'BondFactory',
@@ -154,7 +153,6 @@ describe('Bond Mediator contract', () => {
     let memberTwo: string
     let memberThree: string
     let collateralTokens: ERC20
-    let collateralSymbol: string
     let mediator: BondMediator
     let curator: BondManager
     let creator: BondFactory

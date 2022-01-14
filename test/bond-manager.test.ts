@@ -6,12 +6,8 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondManager, ERC20} from '../typechain'
-import {
-    deployContract,
-    deployContractWithProxy,
-    signer
-} from './framework/contracts'
+import {BondManager} from '../typechain'
+import {deployContractWithProxy, signer} from './framework/contracts'
 import {
     BOND_ADMIN_ROLE,
     BOND_AGGREGATOR_ROLE,
@@ -25,12 +21,9 @@ chai.use(solidity)
 describe('Bond Manager contract', () => {
     before(async () => {
         admin = (await signer(0)).address
-        treasury = (await signer(1)).address
         memberOne = (await signer(2)).address
         memberTwo = (await signer(3)).address
         memberThree = (await signer(4)).address
-        collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        collateralSymbol = await collateralTokens.symbol()
         bonds = await deployContractWithProxy<BondManager>('BondManager')
     })
 
@@ -158,11 +151,8 @@ describe('Bond Manager contract', () => {
     })
 
     let admin: string
-    let treasury: string
     let memberOne: string
     let memberTwo: string
     let memberThree: string
-    let collateralTokens: ERC20
-    let collateralSymbol: string
     let bonds: BondManager
 })
