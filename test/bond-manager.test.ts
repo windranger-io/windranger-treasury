@@ -12,8 +12,6 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-
-import {utils} from 'ethers'
 import {
     BOND_ADMIN_ROLE,
     BOND_AGGREGATOR_ROLE,
@@ -24,7 +22,7 @@ import {
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-describe('BondManager contract', () => {
+describe('Bond Manager contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
@@ -38,14 +36,6 @@ describe('BondManager contract', () => {
 
     describe('Access control', () => {
         describe('Bond Admin', () => {
-            it('modifier', async () => {
-                expect(await bonds.hasRole(BOND_ADMIN_ROLE, admin)).is.true
-
-                await expect(
-                    bonds.bondAllowRedemption(treasury)
-                ).to.be.revertedWith('BondManager: not managing')
-            })
-
             it('add member', async () => {
                 expect(await bonds.hasRole(BOND_ADMIN_ROLE, memberOne)).is.false
                 expect(await bonds.hasRole(BOND_ADMIN_ROLE, admin)).is.true
@@ -74,14 +64,6 @@ describe('BondManager contract', () => {
         })
 
         describe('Bond Aggregator', () => {
-            it('modifier', async () => {
-                expect(await bonds.hasRole(BOND_AGGREGATOR_ROLE, admin)).is.true
-
-                await expect(
-                    bonds.bondAllowRedemption(treasury)
-                ).to.be.revertedWith('BondManager: not managing')
-            })
-
             it('add member', async () => {
                 expect(await bonds.hasRole(BOND_AGGREGATOR_ROLE, memberOne)).is
                     .false

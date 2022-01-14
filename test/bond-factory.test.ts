@@ -27,7 +27,7 @@ chai.use(solidity)
 
 const ADDRESS_ZERO = constants.AddressZero
 
-describe('BondFactory contract', () => {
+describe('Bond Factory contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
@@ -46,14 +46,6 @@ describe('BondFactory contract', () => {
 
     describe('access control', () => {
         describe('Bond Admin', () => {
-            it('modifier', async () => {
-                expect(await bonds.hasRole(BOND_ADMIN_ROLE, admin)).is.true
-
-                await expect(bonds.setTreasury(treasury)).to.be.revertedWith(
-                    'BF: treasury address identical'
-                )
-            })
-
             it('add member', async () => {
                 expect(await bonds.hasRole(BOND_ADMIN_ROLE, memberOne)).is.false
                 expect(await bonds.hasRole(BOND_ADMIN_ROLE, admin)).is.true
