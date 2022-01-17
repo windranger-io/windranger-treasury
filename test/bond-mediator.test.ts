@@ -20,9 +20,13 @@ import {
 } from './framework/contracts'
 import {
     BOND_ADMIN_ROLE,
+    BOND_AGGREGATOR_ROLE,
     DAO_ADMIN_ROLE,
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
+import {successfulTransaction} from './framework/transaction'
+import {event} from './framework/events'
+import {addBondEvent} from './contracts/bond/bond-manager-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -46,6 +50,8 @@ describe('Bond Mediator contract', () => {
             creator.address,
             curator.address
         )
+
+        await curator.grantRole(BOND_AGGREGATOR_ROLE, mediator.address)
     })
 
     describe('Access control', () => {
@@ -144,6 +150,29 @@ describe('Bond Mediator contract', () => {
                     DAO_ADMIN_ROLE
                 )
             })
+        })
+    })
+
+    describe('Managed bond', () => {
+        it('create', async () => {
+            const receipt = await successfulTransaction(
+                mediator.createManagedBond(
+                    'Bond Name',
+                    'Bond Symbol',
+                    100n,
+                    'BIT',
+                    0n,
+                    1n,
+                    ''
+                )
+            )
+
+            // TODO there are five event but they don't have names? don't know why?
+            const addedBond = addBondEvent(event('AddBond', receipt)).bond
+
+            // TODO verify the create bond matches
+
+            // TODO verify transfer ownership occurs
         })
     })
 
