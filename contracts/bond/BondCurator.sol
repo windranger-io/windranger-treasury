@@ -10,6 +10,8 @@ pragma solidity ^0.8.0;
  *      to be provided.
  */
 abstract contract BondCurator {
+    event AddBond(address bond);
+
     /**
      * @notice Before a Bond can be managed, it must first be added.
      *

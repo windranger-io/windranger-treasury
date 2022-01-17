@@ -31,8 +31,6 @@ contract BondManager is
 
     EnumerableSetUpgradeable.AddressSet private _bonds;
 
-    event AddBond(address bond);
-
     function addBond(address bond)
         external
         override
