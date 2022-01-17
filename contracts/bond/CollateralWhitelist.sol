@@ -10,6 +10,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @notice Encapsulation of a ERC20 collateral tokens whitelist, indexed by their symbol.
  */
 abstract contract CollateralWhitelist is Initializable {
+    // Space reserving. To upgrading with additional vars decrement array size.
+    uint256[10] private __gap;
+
     // Token symbols to ERC20 Token contract addresses
     mapping(string => address) private _whitelist;
 

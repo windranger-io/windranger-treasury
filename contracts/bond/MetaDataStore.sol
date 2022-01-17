@@ -12,6 +12,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @dev Metadata could include UI related pieces, perhaps in a delimited format to support multiple items.
  */
 abstract contract MetaDataStore is Initializable {
+    // Space reserving. To upgrading with additional vars decrement array size.
+    uint256[10] private __gap;
+
     string private _metaData;
 
     /**

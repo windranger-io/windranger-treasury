@@ -9,6 +9,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @dev Time evaluation uses the block current timestamp.
  */
 abstract contract ExpiryTimestamp is Initializable {
+    // Space reserving. To upgrading with additional vars decrement array size.
+    uint256[10] private __gap;
+
     uint256 private _expiry;
 
     /**

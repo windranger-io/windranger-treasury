@@ -9,6 +9,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @notice The state of being redeemable is boolean and single direction transition from false to true.
  */
 abstract contract Redeemable is Initializable {
+    // Space reserving. To upgrading with additional vars decrement array size.
+    uint256[10] private __gap;
+
     bool private _redeemable;
 
     /**
