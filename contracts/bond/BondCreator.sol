@@ -8,11 +8,11 @@ pragma solidity ^0.8.0;
  */
 abstract contract BondCreator {
     event CreateBond(
-        address bond,
+        address indexed bond,
         string name,
         string debtSymbol,
         uint256 debtAmount,
-        address creator,
+        address indexed creator,
         address treasury,
         uint256 expiryTimestamp,
         uint256 minimumDeposit,

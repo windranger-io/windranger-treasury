@@ -25,8 +25,8 @@ import {
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
 import {successfulTransaction} from './framework/transaction'
-import {event} from './framework/events'
-import {addBondEvent} from './contracts/bond/bond-manager-events'
+import {addBondEventLog} from './contracts/bond/bond-manager-events'
+import {eventLog} from './framework/event-logs'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -167,8 +167,12 @@ describe('Bond Mediator contract', () => {
                 )
             )
 
-            // TODO there are five event but they don't have names? don't know why?
-            const addedBond = addBondEvent(event('AddBond', receipt)).bond
+            const bond = addBondEventLog(
+                eventLog('AddBond', curator, receipt)
+            ).bond
+
+            const b = bond
+            // TODO verify address non-zero
 
             // TODO verify the create bond matches
 
