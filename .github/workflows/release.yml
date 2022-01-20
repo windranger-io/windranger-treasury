@@ -11,6 +11,6 @@ jobs:
     name: Test
     steps:
       - name: echo 1
-        run: echo "testing 1"
+        run: echo "testing 11"
       - name: echo 2
         run: echo "testing 22"
