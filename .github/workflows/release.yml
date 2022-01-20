@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Test
     steps:
-      - name: Check out code
-      - uses: actions/checkout@v2
-      - run: echo "testing!"
-      
+      - name: echo 1
+      - run: echo "testing 1"
+      - name: echo 2
+      - run: echo "testing 2"
