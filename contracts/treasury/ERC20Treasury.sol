@@ -5,12 +5,14 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "../interfaces/ERC20DepositStrategy.sol";
 import "../interfaces/ERC20WithdrawStrategy.sol";
 
+import "../abstract/Version.sol";
+
 /**
  * @title Vault for ERC20 token types.
  *
  * @dev
  */
-contract ERC20Treasury is Context {
+contract ERC20Treasury is Version, Context {
     ERC20DepositStrategy private _depositStrategy;
     ERC20WithdrawStrategy private _withdrawStrategy;
     mapping(string => address) private _tokens;
@@ -45,5 +47,10 @@ contract ERC20Treasury is Context {
         //TODO check balance, maybe do that elsewhere or delegate to token contract?
         //TODO contact the ERC20 contract and transfer
         //TODO emit transfer out event
+    }
+
+    /// @notice Returns the API version
+    function getVersion() public pure override returns (string memory) {
+        return "0.0.1";
     }
 }
