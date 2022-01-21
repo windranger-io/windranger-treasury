@@ -8,18 +8,15 @@ import {deployContract} from '../common'
 const AddressZero = ethers.constants.AddressZero
 
 // for each deployable contract, check that the hardcoded version matches the tag version
-async function checkReleaseTag(
-    contractName: string
-): Promise<boolean> {
+async function checkReleaseTag(contractName: string): Promise<boolean> {
     const gitSourceTag = process.env.SOURCE_TAG
-    if(gitSourceTag){
+    if (gitSourceTag) {
         log.info(`git tag from workflow: ${gitSourceTag}`)
-    }
-    else {
+    } else {
         log.info(`git tag from workflow not defined!`)
         process.exit(1)
     }
-    
+
     log.info(
         `Checking ${contractName} release against git release tag ${gitSourceTag}`
     )
@@ -32,13 +29,17 @@ async function checkReleaseTag(
     )
     log.info(`deployed contact at ${contract.address}`)
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const contractVersion: string = (await contract.getVersion() as unknown) as string
+    
+    const contractVersion: string =
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        (await contract.getVersion()) as unknown as string
     log.info(`Contract version: ${contractVersion}`)
     if (gitSourceTag === contractVersion) {
         return true
     }
-    throw new Error(`Contract version mismatch! ${contractVersion} vs. ${gitSourceTag}`)
+    throw new Error(
+        `Contract version mismatch! ${contractVersion} vs. ${gitSourceTag}`
+    )
 }
 
 log.info('running checkReleaseTag()')

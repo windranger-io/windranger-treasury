@@ -1,6 +1,5 @@
-import hre, {ethers, upgrades} from 'hardhat'
+import {ethers, upgrades} from 'hardhat'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-// import {ethers, upgrades} from 'hardhat'
 import {expect} from 'chai'
 import {ContractReceipt, ContractTransaction} from 'ethers'
 
@@ -18,11 +17,7 @@ export async function deployContract<T extends DeployableContract<T>>(
     ...args: Array<unknown>
 ): Promise<T> {
     const factory = await ethers.getContractFactory(name)
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    // console.log(`got contract factory for ${name}.. ${JSON.stringify(factory)}`)
     const contract = <T>(<unknown>await factory.deploy(...args))
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    // console.log(`deployed contract at ${(contract as unknown).address}`)
     return contract.deployed()
 }
 

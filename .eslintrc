@@ -43,7 +43,7 @@
     "multiline-comment-style": ["error", "starred-block"],
     "no-array-constructor": "error",
     "no-bitwise": "error",
-    "no-console": "off",
+    "no-console": "error",
     "no-continue": "error",
     "no-else-return": "error",
     "no-eq-null": "error",
