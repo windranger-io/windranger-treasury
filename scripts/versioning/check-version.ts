@@ -1,18 +1,28 @@
+// this script will be triggered from workflow actions when a new tag is push
+
 import {ethers, run} from 'hardhat'
 import {Contract} from 'ethers'
 import {ERC20Treasury} from '../../typechain'
 import {log} from '../../config/logging'
 
 const AddressZero = ethers.constants.AddressZero
-// this script will be triggered from workflow actions when a new tag is push
 
 // for each deployable contract, check that the hardcoded version matches the tag version
-
 async function checkReleaseTag(
     gitReleaseTag: string,
     contractName: string
 ): Promise<boolean> {
-    await run('compile')
+    await run('compile') // think run compiles by default - remove?
+
+    const sourceTag = process.env.SOURCE_TAG
+    if(sourceTag){
+        log.info(`git tag from workflow: ${sourceTag}`)
+    }
+    else {
+        log.info(`git tag from workflow not defined!`)
+        // panic?
+    }
+    
 
     log.info(
         `Checking ${contractName} release against git release tag ${gitReleaseTag}`

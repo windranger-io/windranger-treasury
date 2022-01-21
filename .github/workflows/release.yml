@@ -41,6 +41,6 @@ jobs:
       
       - name: Run versioning release script
         run: |
-          hardhat ./scripts/versioning/check-version.ts
+          npx hardhat ./scripts/versioning/check-version.ts
         env:
           SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}
