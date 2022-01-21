@@ -43,7 +43,7 @@
     "multiline-comment-style": ["error", "starred-block"],
     "no-array-constructor": "error",
     "no-bitwise": "error",
-    "no-console": "error",
+    "no-console": "off",
     "no-continue": "error",
     "no-else-return": "error",
     "no-eq-null": "error",
@@ -78,6 +78,6 @@
     "comma-spacing": ["error", { "before": false, "after": true }],
     "eol-last": "error",
 
-    "prettier/prettier": "error"
+    // "prettier/prettier": "error"
   }
 }

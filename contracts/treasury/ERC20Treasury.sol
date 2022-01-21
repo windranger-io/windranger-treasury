@@ -51,6 +51,6 @@ contract ERC20Treasury is Version, Context {
 
     /// @notice Returns the API version
     function getVersion() public pure override returns (string memory) {
-        return "0.0.1";
+        return "v0.0.1";
     }
 }
