@@ -48,9 +48,4 @@ contract ERC20Treasury is Version, Context {
         //TODO contact the ERC20 contract and transfer
         //TODO emit transfer out event
     }
-
-    /// @notice Returns the API version
-    function getVersion() public pure override returns (string memory) {
-        return "v0.0.1";
-    }
 }

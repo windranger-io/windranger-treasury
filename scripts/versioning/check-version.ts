@@ -19,10 +19,7 @@ async function checkReleaseTag(contractName: string): Promise<boolean> {
         log.info(`git tag from workflow not defined!`)
         process.exit(1)
     }
-
-    const isSemverFlag = isSemver(gitSourceTag)
-    log.info("isSemverFlag: ", isSemverFlag)
-
+    // validate sematics of the git tag - could we do this instead in husky? before commit reaches remote/origin?
     if (!isSemver(gitSourceTag)) {
         throw new Error(`Invalid source tag: ${gitSourceTag}`)
     }
@@ -41,7 +38,7 @@ async function checkReleaseTag(contractName: string): Promise<boolean> {
 
     const contractVersion: string =
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        (await contract.getVersion()) as unknown as string
+        (await contract.VERSION()) as unknown as string
     log.info(`Contract version: ${contractVersion}`)
     if (gitSourceTag === contractVersion) {
         return true

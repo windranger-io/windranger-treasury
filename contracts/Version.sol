@@ -2,5 +2,5 @@
 pragma solidity ^0.8.0;
 
 abstract contract Version {
-    function getVersion() public view virtual returns (string memory);
+    string public constant VERSION = "v0.0.1";
 }

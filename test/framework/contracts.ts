@@ -1,5 +1,5 @@
-import {ethers, upgrades} from 'hardhat'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {ethers, upgrades} from 'hardhat'
 import {expect} from 'chai'
 import {ContractReceipt, ContractTransaction} from 'ethers'
 
@@ -18,6 +18,7 @@ export async function deployContract<T extends DeployableContract<T>>(
 ): Promise<T> {
     const factory = await ethers.getContractFactory(name)
     const contract = <T>(<unknown>await factory.deploy(...args))
+
     return contract.deployed()
 }
 
