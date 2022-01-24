@@ -2,6 +2,8 @@
 import {ethers} from 'hardhat'
 import {Contract} from 'ethers'
 import {ERC20Treasury} from '../../typechain'
+import isSemver from 'is-semver'
+
 import {log} from '../../config/logging'
 import {deployContract} from '../common'
 
@@ -10,11 +12,16 @@ const AddressZero = ethers.constants.AddressZero
 // for each deployable contract, check that the hardcoded version matches the tag version
 async function checkReleaseTag(contractName: string): Promise<boolean> {
     const gitSourceTag = process.env.SOURCE_TAG
+
     if (gitSourceTag) {
         log.info(`git tag from workflow: ${gitSourceTag}`)
     } else {
         log.info(`git tag from workflow not defined!`)
         process.exit(1)
+    }
+
+    if (!isSemver(gitSourceTag)) {
+        throw new Error(`Invalid source tag: ${gitSourceTag}`)
     }
 
     log.info(
@@ -29,7 +36,6 @@ async function checkReleaseTag(contractName: string): Promise<boolean> {
     )
     log.info(`deployed contact at ${contract.address}`)
 
-    
     const contractVersion: string =
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         (await contract.getVersion()) as unknown as string
