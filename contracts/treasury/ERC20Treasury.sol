@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "../interfaces/ERC20DepositStrategy.sol";
 import "../interfaces/ERC20WithdrawStrategy.sol";
 
-import "../abstract/Version.sol";
+import "../Version.sol";
 
 /**
  * @title Vault for ERC20 token types.
