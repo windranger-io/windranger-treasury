@@ -1,22 +1,25 @@
-import {BaseContract, ContractReceipt} from 'ethers'
+import {BaseContract, ContractReceipt, utils} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 
 /**
- * Retrieves a single event log that matches the given name, failing if not present.
+ * Retrieves the event logs that matches the given name, failing if not present.
  *
  * @param name  name of the event expected within the given contracts.
  * @param decoder emitter contract that emits the event and provide decoding of the event log.
- * @param receipt expected to contain the events matching the given name.
+ * @param receipt events matching the given event name.
  */
 export function eventLog<T extends BaseContract>(
     name: string,
     emitter: T,
     receipt: ContractReceipt
-): Result {
+): Result[] {
     const found = eventLogs(name, emitter, receipt)
-    expect(found.length, 'Expecting a single EventLog entry').equals(1)
-    return found[0]
+    expect(
+        found.length,
+        'Expecting at least a single EventLog entry'
+    ).is.greaterThanOrEqual(1)
+    return found
 }
 
 /**
@@ -33,14 +36,12 @@ function eventLogs<T extends BaseContract>(
 ): Result[] {
     const found: Result[] = []
 
+    const eventId = utils.id(emitter.interface.getEvent(name).format())
+
     for (const log of receipt.logs) {
-        if (emitter.address === log.address) {
+        if (emitter.address === log.address && eventId === log.topics[0]) {
             found.push(
-                emitter.interface.decodeEventLog(
-                    'AddBond',
-                    log.data,
-                    log.topics
-                )
+                emitter.interface.decodeEventLog(name, log.data, log.topics)
             )
         }
     }

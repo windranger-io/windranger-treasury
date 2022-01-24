@@ -25,8 +25,11 @@ import {
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
 import {successfulTransaction} from './framework/transaction'
-import {addBondEventLog} from './contracts/bond/bond-manager-events'
+import {addBondEventLogs} from './contracts/bond/bond-manager-events'
 import {eventLog} from './framework/event-logs'
+import {ownershipTransferredEventLogs} from './contracts/ownable/ownable-events'
+import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
+import {constants} from 'ethers'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -167,16 +170,39 @@ describe('Bond Mediator contract', () => {
                 )
             )
 
-            const bond = addBondEventLog(
+            const addBondEvents = addBondEventLogs(
                 eventLog('AddBond', curator, receipt)
-            ).bond
+            )
+            expect(addBondEvents.length).to.equal(1)
 
-            const b = bond
-            // TODO verify address non-zero
+            const createdBondAddress = addBondEvents[0].bond
+            expect(await curator.bondCount()).equals(1)
+            expect(await curator.bondAt(0)).equals(createdBondAddress)
 
-            // TODO verify the create bond matches
+            const bond = await erc20SingleCollateralBondContractAt(
+                createdBondAddress
+            )
 
-            // TODO verify transfer ownership occurs
+            const transferredEvents = ownershipTransferredEventLogs(
+                eventLog('OwnershipTransferred', bond, receipt)
+            )
+
+            expect(transferredEvents.length).to.equal(3)
+
+            expect(transferredEvents[0].previousOwner).to.equal(
+                constants.AddressZero
+            )
+            expect(transferredEvents[0].newOwner).to.equal(creator.address)
+
+            expect(transferredEvents[1].previousOwner).to.equal(creator.address)
+            expect(transferredEvents[1].newOwner).to.equal(mediator.address)
+
+            expect(transferredEvents[2].previousOwner).to.equal(
+                mediator.address
+            )
+            expect(transferredEvents[2].newOwner).to.equal(curator.address)
+
+            // TODO query bond state matches given input
         })
     })
 

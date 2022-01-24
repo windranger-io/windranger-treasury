@@ -1,14 +1,16 @@
 import {Event} from 'ethers'
 import {expect} from 'chai'
 import {AddBondEvent} from '../../../typechain/BondManager'
-import {Result} from '@ethersproject/abi/src.ts/coders/abstract-coder'
+import {Result} from '@ethersproject/abi'
+
+type AddBond = {
+    bond: string
+}
 
 /**
  * Shape check and conversion for a AddBondEvent.
  */
-export function addBondEvent(event: Event): {
-    bond: string
-} {
+export function addBondEvent(event: Event): AddBond {
     const create = event as AddBondEvent
     expect(event.args).is.not.undefined
 
@@ -21,11 +23,14 @@ export function addBondEvent(event: Event): {
 /**
  * Shape check and conversion for a event log entry for AddBond.
  */
-export function addBondEventLog(event: Result): {
-    bond: string
-} {
-    expect(event?.bond).is.not.undefined
-    expect(event?.bond).to.be.a('string')
+export function addBondEventLogs(events: Result[]): AddBond[] {
+    const results: AddBond[] = []
 
-    return {bond: String(event.bond)}
+    for (const event of events) {
+        expect(event?.bond).is.not.undefined
+        expect(event?.bond).to.be.a('string')
+        results.push({bond: String(event.bond)})
+    }
+
+    return results
 }
