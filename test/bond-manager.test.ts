@@ -27,7 +27,7 @@ describe('Bond Manager contract', () => {
         bonds = await deployContractWithProxy<BondManager>('BondManager')
     })
 
-    describe('Access control', () => {
+    describe('access control', () => {
         describe('Bond Admin', () => {
             it('add member', async () => {
                 expect(await bonds.hasRole(BOND_ADMIN_ROLE, memberOne)).is.false
@@ -147,6 +147,12 @@ describe('Bond Manager contract', () => {
                     DAO_ADMIN_ROLE
                 )
             })
+        })
+    })
+
+    describe('add Bond', () => {
+        it('only Bond Aggregator', async () => {
+            // TODO code
         })
     })
 

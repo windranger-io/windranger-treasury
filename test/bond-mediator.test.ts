@@ -59,7 +59,7 @@ describe('Bond Mediator contract', () => {
         await curator.grantRole(BOND_AGGREGATOR_ROLE, mediator.address)
     })
 
-    describe('Access control', () => {
+    describe('access control', () => {
         describe('Bond Admin', () => {
             it('add member', async () => {
                 expect(await mediator.hasRole(BOND_ADMIN_ROLE, memberOne)).is
@@ -158,7 +158,7 @@ describe('Bond Mediator contract', () => {
         })
     })
 
-    describe('Managed bond', () => {
+    describe('managed bond', () => {
         describe('create', () => {
             it('only bond admin', async () => {
                 await expect(
