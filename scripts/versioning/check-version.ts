@@ -20,6 +20,9 @@ async function checkReleaseTag(contractName: string): Promise<boolean> {
         process.exit(1)
     }
 
+    const isSemverFlag = isSemver(gitSourceTag)
+    log.info("isSemverFlag: ", isSemverFlag)
+
     if (!isSemver(gitSourceTag)) {
         throw new Error(`Invalid source tag: ${gitSourceTag}`)
     }
