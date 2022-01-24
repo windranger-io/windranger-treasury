@@ -27,9 +27,9 @@ import {
 import {successfulTransaction} from './framework/transaction'
 import {addBondEventLogs} from './contracts/bond/bond-manager-events'
 import {eventLog} from './framework/event-logs'
-import {ownershipTransferredEventLogs} from './contracts/ownable/ownable-events'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
 import {constants} from 'ethers'
+import {verifyOwnershipTransferredEventLogs} from './contracts/ownable/verify-ownable-event'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -193,35 +193,32 @@ describe('Bond Mediator contract', () => {
                 createdBondAddress
             )
 
-            const transferredEvents = ownershipTransferredEventLogs(
-                eventLog('OwnershipTransferred', bond, receipt)
+            verifyOwnershipTransferredEventLogs(
+                [
+                    {
+                        previousOwner: constants.AddressZero,
+                        newOwner: creator.address
+                    },
+                    {
+                        previousOwner: creator.address,
+                        newOwner: mediator.address
+                    },
+                    {
+                        previousOwner: mediator.address,
+                        newOwner: curator.address
+                    }
+                ],
+                bond,
+                receipt
             )
-
-            expect(transferredEvents.length).to.equal(3)
-
-            // TODO switch to verify structure
-            expect(transferredEvents[0].previousOwner).to.equal(
-                constants.AddressZero
-            )
-            expect(transferredEvents[0].newOwner).to.equal(creator.address)
-
-            expect(transferredEvents[1].previousOwner).to.equal(creator.address)
-            expect(transferredEvents[1].newOwner).to.equal(mediator.address)
-
-            expect(transferredEvents[2].previousOwner).to.equal(
-                mediator.address
-            )
-            expect(transferredEvents[2].newOwner).to.equal(curator.address)
 
             expect(await bond.name()).equals(bondName)
             expect(await bond.symbol()).equals(bondSymbol)
             expect(await bond.debtTokens()).equals(debtTokens)
-
-            /*
-             * TODO expose the collateral symbol?
-             * TODO expose the expiry timestamp
-             */
-
+            expect(await bond.collateralTokens()).equals(
+                collateralTokens.address
+            )
+            expect(await bond.expiryTimestamp()).equals(expiryTimestamp)
             expect(await bond.minimumDeposit()).equals(minimumDeposit)
             expect(await bond.metaData()).equals(metaData)
         })
