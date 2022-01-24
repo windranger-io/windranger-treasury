@@ -348,6 +348,13 @@ contract ERC20SingleCollateralBond is
     }
 
     /**
+     * @notice The ERC20 contract being used as collateral.
+     */
+    function collateralTokens() external view returns (address) {
+        return address(_collateralTokens);
+    }
+
+    /**
      * @notice Sum of collateral moved from the Bond to the Treasury by slashing.
      *
      * @dev Other methods of performing moving of collateral outside of slashing, are not included.

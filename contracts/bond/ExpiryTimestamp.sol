@@ -22,14 +22,23 @@ abstract contract ExpiryTimestamp is Initializable {
     }
 
     /**
+     * @notice The timestamp compared with the block time to determine expiry.
+     *
+     * @dev Timestamp is the Unix time.
+     */
+    function expiryTimestamp() external view returns (uint256) {
+        return _expiry;
+    }
+
+    /**
      * @notice Initialisation of the expiry timestamp to enable the 'hasExpired' modifier.
      *
-     * @param expiryTimestamp expiry without any restriction e.g. it has not yet passed.
+     * @param timestamp expiry without any restriction e.g. it has not yet passed.
      */
-    function __ExpiryTimestamp_init(uint256 expiryTimestamp)
+    function __ExpiryTimestamp_init(uint256 timestamp)
         internal
         onlyInitializing
     {
-        _expiry = expiryTimestamp;
+        _expiry = timestamp;
     }
 }

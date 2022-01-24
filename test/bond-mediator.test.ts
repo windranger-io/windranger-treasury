@@ -157,16 +157,26 @@ describe('Bond Mediator contract', () => {
     })
 
     describe('Managed bond', () => {
+        // TODO promote a level - onlyAdmin
+
         it('create', async () => {
+            const bondName = 'A highly unique bond name'
+            const bondSymbol = 'Bond Symbol'
+            const debtTokens = 101n
+            const collateralSymbol = 'BIT'
+            const expiryTimestamp = 9999n
+            const minimumDeposit = 1n
+            const metaData = 'meh'
+
             const receipt = await successfulTransaction(
                 mediator.createManagedBond(
-                    'Bond Name',
-                    'Bond Symbol',
-                    100n,
-                    'BIT',
-                    0n,
-                    1n,
-                    ''
+                    bondName,
+                    bondSymbol,
+                    debtTokens,
+                    collateralSymbol,
+                    expiryTimestamp,
+                    minimumDeposit,
+                    metaData
                 )
             )
 
@@ -189,6 +199,7 @@ describe('Bond Mediator contract', () => {
 
             expect(transferredEvents.length).to.equal(3)
 
+            // TODO switch to verify structure
             expect(transferredEvents[0].previousOwner).to.equal(
                 constants.AddressZero
             )
@@ -202,7 +213,17 @@ describe('Bond Mediator contract', () => {
             )
             expect(transferredEvents[2].newOwner).to.equal(curator.address)
 
-            // TODO query bond state matches given input
+            expect(await bond.name()).equals(bondName)
+            expect(await bond.symbol()).equals(bondSymbol)
+            expect(await bond.debtTokens()).equals(debtTokens)
+
+            /*
+             * TODO expose the collateral symbol?
+             * TODO expose the expiry timestamp
+             */
+
+            expect(await bond.minimumDeposit()).equals(minimumDeposit)
+            expect(await bond.metaData()).equals(metaData)
         })
     })
 
