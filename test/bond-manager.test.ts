@@ -230,6 +230,28 @@ describe('Bond Manager contract', () => {
         })
     })
 
+    // TODO For all test: roles, is managing bond and bond state affect
+
+    // TODO bondAllowRedemption
+
+    // TODO bondDeposit
+
+    // TODO bondPause
+
+    // TODO bondSlash
+
+    // TODO bondSetMetaData
+
+    // TODO bondSetTreasury
+
+    // TODO bondUnpause
+
+    // TODO bondWithdrawCollateral
+
+    // TODO pause
+
+    // TODO unpause
+
     async function createBond(): Promise<ERC20SingleCollateralBond> {
         return createBondWithOwner(curator.address)
     }
