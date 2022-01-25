@@ -108,12 +108,12 @@ describe('Bond Manager contract', () => {
                 expect(await curator.hasRole(BOND_AGGREGATOR_ROLE, memberOne))
                     .is.true
 
-                await curator.revokeRole(BOND_AGGREGATOR_ROLE, admin)
+                await curator.revokeRole(BOND_AGGREGATOR_ROLE, memberOne)
 
                 expect(await curator.hasRole(BOND_AGGREGATOR_ROLE, admin)).is
-                    .false
+                    .true
                 expect(await curator.hasRole(BOND_AGGREGATOR_ROLE, memberOne))
-                    .is.true
+                    .is.false
             })
 
             it('DAO Admin is the role admin', async () => {
@@ -171,11 +171,11 @@ describe('Bond Manager contract', () => {
                 expect(await curator.hasRole(SYSTEM_ADMIN_ROLE, memberThree)).is
                     .true
 
-                await curator.revokeRole(SYSTEM_ADMIN_ROLE, admin)
+                await curator.revokeRole(SYSTEM_ADMIN_ROLE, memberThree)
 
-                expect(await curator.hasRole(SYSTEM_ADMIN_ROLE, admin)).is.false
+                expect(await curator.hasRole(SYSTEM_ADMIN_ROLE, admin)).is.true
                 expect(await curator.hasRole(SYSTEM_ADMIN_ROLE, memberThree)).is
-                    .true
+                    .false
             })
 
             it('DAO Admin is the role admin', async () => {
