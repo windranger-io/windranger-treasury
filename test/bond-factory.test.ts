@@ -6,14 +6,7 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {
-    BitDAO,
-    BondFactory,
-    Box,
-    ERC20,
-    UpgradedVersion,
-    Version
-} from '../typechain'
+import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
 import {
     deployContract,
     deployContractWithProxy,
@@ -52,15 +45,16 @@ describe('Bond Factory contract', () => {
         )
     })
 
-    describe.only('proxy upgrade', () => {
+    describe('proxy upgrade', () => {
         it('maintains version across upgrade', async () => {
             const originalVersion = await bonds.VERSION()
+            // upgrading to the same implementation
             await upgradeContract('BondFactory', bonds.address)
             const upgradedVersion = await bonds.VERSION()
             expect(originalVersion).to.equal(upgradedVersion)
-            // dummyUpgradedBondFactory = await deployContract<UpgradedVersion>("UpgradedVersion")
-            await upgradeContract('UpgradedVersion', bonds.address)
-            expect(await bonds.VERSION()).to.equal('v0.0.6-beta.3')
+            // pointing the proxy to the upgraded contract -- the version tag here is mock_tag
+            await upgradeContract('MockUpgradedBondFactory', bonds.address)
+            expect(await bonds.VERSION()).to.equal('mock_tag')
         })
     })
 
@@ -410,5 +404,4 @@ describe('Bond Factory contract', () => {
     let collateralTokens: ERC20
     let collateralSymbol: string
     let bonds: BondFactory
-    let dummyUpgradedBondFactory: UpgradedVersion
 })
