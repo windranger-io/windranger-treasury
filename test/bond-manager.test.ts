@@ -188,7 +188,7 @@ describe('Bond Manager contract', () => {
         })
     })
 
-    describe('add', () => {
+    describe('add bond', () => {
         it('only Bond Aggregator', async () => {
             await expect(
                 curator.connect(nonAggregator).addBond(constants.AddressZero)
@@ -206,7 +206,7 @@ describe('Bond Manager contract', () => {
             )
         })
 
-        it('owns the bond', async () => {
+        it('is the owner', async () => {
             const bond = await createBondWithOwner(admin)
 
             await expect(curator.addBond(bond.address)).to.be.revertedWith(
@@ -214,7 +214,7 @@ describe('Bond Manager contract', () => {
             )
         })
 
-        it('valid bond', async () => {
+        it('when valid', async () => {
             const bond = await createBond()
 
             const receipt = await successfulTransaction(
