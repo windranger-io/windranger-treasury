@@ -11,7 +11,8 @@ import {
     deployContract,
     deployContractWithProxy,
     execute,
-    signer
+    signer,
+    upgradeContract
 } from './framework/contracts'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
@@ -42,6 +43,15 @@ describe('Bond Factory contract', () => {
             collateralTokens.address,
             treasury
         )
+    })
+
+    describe('proxy upgrade', () => {
+        it('maintains version across upgrade', async () => {
+            const originalVersion = await bonds.VERSION()
+            await upgradeContract('BondFactory', bonds.address)
+            const upgradedVersion = await bonds.VERSION()
+            expect(originalVersion).to.equal(upgradedVersion)
+        })
     })
 
     describe('access control', () => {

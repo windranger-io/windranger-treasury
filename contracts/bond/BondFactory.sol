@@ -7,6 +7,7 @@ import "./CollateralWhitelist.sol";
 import "./ERC20SingleCollateralBond.sol";
 import "./BondCreator.sol";
 import "./Roles.sol";
+import "../Version.sol";
 
 /**
  * @title Creates Bond contracts.
@@ -17,7 +18,8 @@ contract BondFactory is
     AccessControlUpgradeable,
     BondCreator,
     CollateralWhitelist,
-    UUPSUpgradeable
+    UUPSUpgradeable,
+    Version
 {
     address private _treasury;
 
