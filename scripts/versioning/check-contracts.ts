@@ -7,16 +7,8 @@ const AddressZero = ethers.constants.AddressZero
 
 // could do this with an array of contracts to be deployed?
 deployContract<ERC20Treasury>('ERC20Treasury', AddressZero, AddressZero)
-    .then((erc20TreasuryContract: Version) => {
-        checkContractVersionAgainstReleaseTag(erc20TreasuryContract)
-            .then((resolve) => {
-                log.info(resolve)
-                process.exit(0)
-            })
-            .catch((error) => {
-                log.error(error)
-                process.exit(1)
-            })
+    .then(async (erc20TreasuryContract: Version) => {
+        await checkContractVersionAgainstReleaseTag(erc20TreasuryContract)
     })
     .catch((error) => {
         log.error(error)
