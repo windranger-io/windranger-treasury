@@ -207,11 +207,10 @@ describe('Bond Manager contract', () => {
         })
 
         it('owns the bond', async () => {
-            const bond = await createBond()
-            await successfulTransaction(bond.transferOwnership(memberThree))
+            const bond = await createBondWithOwner(admin)
 
             await expect(curator.addBond(bond.address)).to.be.revertedWith(
-                'Ownable: caller is not the owner'
+                'BondManager: not bond owner'
             )
         })
 
@@ -221,8 +220,10 @@ describe('Bond Manager contract', () => {
             const receipt = await successfulTransaction(
                 curator.addBond(bond.address)
             )
-            expect(await curator.bondCount()).equals(1)
-            expect(await curator.bondAt(0)).equals(bond.address)
+            const createdBondIndex = await curator.bondCount()
+            expect(await curator.bondAt(createdBondIndex.sub(1n))).equals(
+                bond.address
+            )
             const expectedAddBondEvents = [{bond: bond.address}]
             verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
             verifyAddBondEvents(receipt, expectedAddBondEvents)
@@ -230,6 +231,12 @@ describe('Bond Manager contract', () => {
     })
 
     async function createBond(): Promise<ERC20SingleCollateralBond> {
+        return createBondWithOwner(curator.address)
+    }
+
+    async function createBondWithOwner(
+        owner: string
+    ): Promise<ERC20SingleCollateralBond> {
         const receipt = await execute(
             creator.createBond(
                 'name',
@@ -246,7 +253,7 @@ describe('Bond Manager contract', () => {
         const bond = await erc20SingleCollateralBondContractAt(
             creationEvent.bond
         )
-        await bond.transferOwnership(curator.address)
+        await bond.transferOwnership(owner)
 
         return bond
     }
