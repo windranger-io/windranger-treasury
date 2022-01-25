@@ -6,7 +6,14 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
+import {
+    BitDAO,
+    BondFactory,
+    Box,
+    ERC20,
+    UpgradedVersion,
+    Version
+} from '../typechain'
 import {
     deployContract,
     deployContractWithProxy,
@@ -22,6 +29,7 @@ import {
     DAO_ADMIN_ROLE,
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
+import {checkContractVersionAgainstReleaseTag} from '../scripts/versioning/check'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -51,6 +59,15 @@ describe('Bond Factory contract', () => {
             await upgradeContract('BondFactory', bonds.address)
             const upgradedVersion = await bonds.VERSION()
             expect(originalVersion).to.equal(upgradedVersion)
+            // dummyUpgradedBondFactory = await deployContract<UpgradedVersion>("UpgradedVersion")
+            const upgradedContract = await upgradeContract(
+                'UpgradedVersion',
+                bonds.address
+            )
+            const result = await checkContractVersionAgainstReleaseTag(
+                upgradedContract as Version
+            )
+            expect(result).to.equal(true)
         })
     })
 
@@ -400,4 +417,5 @@ describe('Bond Factory contract', () => {
     let collateralTokens: ERC20
     let collateralSymbol: string
     let bonds: BondFactory
+    let dummyUpgradedBondFactory: UpgradedVersion
 })

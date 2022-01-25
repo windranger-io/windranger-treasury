@@ -7,6 +7,9 @@ import {log} from '../../config/logging'
 /*
  * takes a contract that inherits Version and returns true if the contract's version is equal to the release tag
  * throws otherwise
+ *
+ * @param A Contract object that inherits Version
+ *
  */
 export async function checkContractVersionAgainstReleaseTag(
     contract: Version
