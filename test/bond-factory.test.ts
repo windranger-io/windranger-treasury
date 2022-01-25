@@ -29,7 +29,6 @@ import {
     DAO_ADMIN_ROLE,
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
-import {checkContractVersionAgainstReleaseTag} from '../scripts/versioning/check'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -53,21 +52,15 @@ describe('Bond Factory contract', () => {
         )
     })
 
-    describe('proxy upgrade', () => {
+    describe.only('proxy upgrade', () => {
         it('maintains version across upgrade', async () => {
             const originalVersion = await bonds.VERSION()
             await upgradeContract('BondFactory', bonds.address)
             const upgradedVersion = await bonds.VERSION()
             expect(originalVersion).to.equal(upgradedVersion)
             // dummyUpgradedBondFactory = await deployContract<UpgradedVersion>("UpgradedVersion")
-            const upgradedContract = await upgradeContract(
-                'UpgradedVersion',
-                bonds.address
-            )
-            const result = await checkContractVersionAgainstReleaseTag(
-                upgradedContract as Version
-            )
-            expect(result).to.equal(true)
+            await upgradeContract('UpgradedVersion', bonds.address)
+            expect(await bonds.VERSION()).to.equal('v0.0.6-beta.3')
         })
     })
 
