@@ -27,12 +27,14 @@ import {
 } from './contracts/roles'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {constants} from 'ethers'
-import {addBondEventLogs} from './contracts/bond/bond-manager-events'
-import {eventLog} from './framework/event-logs'
 import {successfulTransaction} from './framework/transaction'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
 import {createBondEvent} from './contracts/bond/bond-factory-events'
 import {event} from './framework/events'
+import {
+    verifyAddBondEvents,
+    verifyAddBondLogEvents
+} from './contracts/bond/verify-manager-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -196,35 +198,38 @@ describe('Bond Manager contract', () => {
         })
 
         it('not already managing', async () => {
-            // TODO code
+            const bond = await createBond()
+            await successfulTransaction(curator.addBond(bond.address))
+
+            await expect(curator.addBond(bond.address)).to.be.revertedWith(
+                'BondManager: already managing'
+            )
         })
 
         it('owns the bond', async () => {
-            // TODO code
+            const bond = await createBond()
+            await successfulTransaction(bond.transferOwnership(memberThree))
+
+            await expect(curator.addBond(bond.address)).to.be.revertedWith(
+                'Ownable: caller is not the owner'
+            )
         })
 
         it('valid bond', async () => {
-            const bond = await createBondWithOwner()
+            const bond = await createBond()
 
             const receipt = await successfulTransaction(
                 curator.addBond(bond.address)
             )
-
-            const addBondEvents = addBondEventLogs(
-                eventLog('AddBond', curator, receipt)
-            )
-            expect(addBondEvents.length).to.equal(1)
-
             expect(await curator.bondCount()).equals(1)
             expect(await curator.bondAt(0)).equals(bond.address)
-
-            // TODO top level event msh too - verify address is correct
-
-            // TODO event log for  Add bond
+            const expectedAddBondEvents = [{bond: bond.address}]
+            verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
+            verifyAddBondEvents(receipt, expectedAddBondEvents)
         })
     })
 
-    async function createBondWithOwner(): Promise<ERC20SingleCollateralBond> {
+    async function createBond(): Promise<ERC20SingleCollateralBond> {
         const receipt = await execute(
             creator.createBond(
                 'name',

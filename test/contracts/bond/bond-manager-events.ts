@@ -3,21 +3,27 @@ import {expect} from 'chai'
 import {AddBondEvent} from '../../../typechain/BondManager'
 import {Result} from '@ethersproject/abi'
 
-type AddBond = {
+export type AddBond = {
     bond: string
 }
 
 /**
  * Shape check and conversion for a AddBondEvent.
  */
-export function addBondEvent(event: Event): AddBond {
-    const create = event as AddBondEvent
-    expect(event.args).is.not.undefined
+export function addBondEvents(events: Event[]): AddBond[] {
+    const bonds: AddBond[] = []
 
-    const args = event.args
-    expect(args?.bond).is.not.undefined
+    for (const event of events) {
+        const create = event as AddBondEvent
+        expect(event.args).is.not.undefined
 
-    return create.args
+        const args = event.args
+        expect(args?.bond).is.not.undefined
+
+        bonds.push(create.args)
+    }
+
+    return bonds
 }
 
 /**
