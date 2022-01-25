@@ -32,7 +32,8 @@ abstract contract WithdrawTokens is OwnableUpgradeable {
         // can we safely make this non-onlyOwner?
         // approvals?
 
-        token.transfer(beneficiary, amount); // use safe transfer lib?
+        bool result = token.transfer(beneficiary, amount); // use safe transfer lib?
+        require(result, "WithdrawTokens/transfer failed");
     }
 
     function withdrawERC721Tokens(IERC721Upgradeable token, uint256 tokenId)
