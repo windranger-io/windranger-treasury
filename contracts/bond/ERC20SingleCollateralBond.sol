@@ -104,6 +104,7 @@ contract ERC20SingleCollateralBond is
      *              To update the tokens address, either follow the proxy convention for the collateral,
      *              or migrate to a new bond.
      * @param data Metadata not required for the operation of the Bond, but needed by external actors.
+     * @param expiry Timestamp after which the bond may be expired by anyone.
      * @param minimumDepositHolding Minimum debt holding allowed in the deposit phase. Once the minimum is met,
      *              any sized deposit from that account is allowed, as the minimum has already been met.
      */
@@ -113,14 +114,14 @@ contract ERC20SingleCollateralBond is
         uint256 debtAmount,
         address erc20CollateralTokens,
         address erc20CapableTreasury,
-        uint256 expiryTimestamp,
+        uint256 expiry,
         uint256 minimumDepositHolding,
         string calldata data
     ) external initializer {
         __ERC20_init(name, symbol);
         __Ownable_init();
         __Pausable_init();
-        __ExpiryTimestamp_init(expiryTimestamp);
+        __ExpiryTimestamp_init(expiry);
         __MetaDataStore_init(data);
         __Redeemable_init();
 
