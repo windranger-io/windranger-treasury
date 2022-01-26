@@ -47,13 +47,14 @@ describe('Bond Manager contract', () => {
         memberThree = (await signer(4)).address
         nonBondAggregator = await signer(5)
         nonBondAdmin = await signer(6)
+        treasury = (await signer(7)).address
         curator = await deployContractWithProxy<BondManager>('BondManager')
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
         creator = await deployContractWithProxy<BondFactory>(
             'BondFactory',
             collateralTokens.address,
-            admin
+            treasury
         )
     })
 
@@ -408,7 +409,14 @@ describe('Bond Manager contract', () => {
 
         describe('set treasury', () => {
             it('calls bond', async () => {
-                // TODO bondSetTreasury
+                await successfulTransaction(curator.addBond(bond.address))
+                expect(await bond.treasury()).equals(treasury)
+
+                await successfulTransaction(
+                    curator.bondSetTreasury(bond.address, curator.address)
+                )
+
+                expect(await bond.treasury()).equals(curator.address)
             })
 
             it('only when managing', async () => {
@@ -589,6 +597,7 @@ describe('Bond Manager contract', () => {
     let memberOne: string
     let memberTwo: string
     let memberThree: string
+    let treasury: string
     let nonBondAdmin: SignerWithAddress
     let nonBondAggregator: SignerWithAddress
     let curator: BondManager
