@@ -21,18 +21,6 @@ contract BondFactory is
 {
     address private _treasury;
 
-    event CreateBond(
-        address bond,
-        string name,
-        string debtSymbol,
-        uint256 debtAmount,
-        address creator,
-        address treasury,
-        uint256 expiryTimestamp,
-        uint256 minimumDeposit,
-        string data
-    );
-
     /**
      * @notice Initialises the factory with the given collateral tokens automatically being whitelisted.
      *

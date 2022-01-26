@@ -1,25 +1,26 @@
-import {ContractReceipt} from 'ethers'
-import {event} from '../../framework/events'
+import {BaseContract, ContractReceipt} from 'ethers'
 import {expect} from 'chai'
-import {ethers} from 'hardhat'
-import {ownershipTransferredEvent} from './ownable-events'
+import {ownershipTransferredEventLogs} from './ownable-events'
+import {eventLog} from '../../framework/event-logs'
 
 /**
- * Verifies the content for a Ownership Transferred event.
+ * Verifies the content for ordered Ownership Transferred log events.
  */
-export function verifyOwnershipTransferredEvent(
-    expected: {
+export function verifyOwnershipTransferredEventLogs<T extends BaseContract>(
+    expectedEvent: {
         previousOwner: string
         newOwner: string
-    },
+    }[],
+    emitter: T,
     receipt: ContractReceipt
 ): void {
-    const ownership = ownershipTransferredEvent(
-        event('OwnershipTransferred', receipt)
+    const events = ownershipTransferredEventLogs(
+        eventLog('OwnershipTransferred', emitter, receipt)
     )
-    expect(ethers.utils.isAddress(ownership.previousOwner)).is.true
-    expect(ethers.utils.isAddress(ownership.newOwner)).is.true
 
-    expect(ownership.previousOwner).equals(expected.previousOwner)
-    expect(ownership.newOwner).equals(expected.newOwner)
+    expect(events.length).equals(expectedEvent.length)
+
+    for (let i = 0; i < expectedEvent.length; i++) {
+        expect(events[i]).to.deep.equal(expectedEvent[i])
+    }
 }

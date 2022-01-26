@@ -2,15 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
 import "./Roles.sol";
-
-interface OwnableUpgradeable {
-    function transferOwnership(address newOwner) external;
-}
 
 /**
  * @title Mediates between a Bond creator and Bond curator.

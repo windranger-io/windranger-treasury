@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -9,10 +10,6 @@ import "./CollateralWhitelist.sol";
 import "./BondCurator.sol";
 import "./Roles.sol";
 import "./SingleCollateralBond.sol";
-
-interface OwnableUpgradeable {
-    function owner() external returns (address);
-}
 
 /**
  * @title Manages interactions with Bond contracts.
@@ -30,8 +27,6 @@ contract BondManager is
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     EnumerableSetUpgradeable.AddressSet private _bonds;
-
-    event AddBond(address bond);
 
     function addBond(address bond)
         external
@@ -62,12 +57,6 @@ contract BondManager is
         SingleCollateralBond(bond).allowRedemption();
     }
 
-    function bondDeposit(address bond, uint256 amount) external whenNotPaused {
-        _requireManagingBond(bond);
-
-        SingleCollateralBond(bond).deposit(amount);
-    }
-
     function bondPause(address bond)
         external
         whenNotPaused
@@ -90,6 +79,7 @@ contract BondManager is
 
     function bondSetMetaData(address bond, string calldata data)
         external
+        whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
         _requireManagingBond(bond);

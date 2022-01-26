@@ -7,6 +7,18 @@ pragma solidity ^0.8.0;
  * @notice Creating a Bond involves the two steps of deploying and initialising.
  */
 abstract contract BondCreator {
+    event CreateBond(
+        address indexed bond,
+        string name,
+        string debtSymbol,
+        uint256 debtAmount,
+        address indexed creator,
+        address treasury,
+        uint256 expiryTimestamp,
+        uint256 minimumDeposit,
+        string data
+    );
+
     /**
      * @notice Deploys and initialises a new Bond.
      *
