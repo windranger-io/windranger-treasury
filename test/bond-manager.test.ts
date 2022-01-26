@@ -265,7 +265,13 @@ describe('Bond Manager contract', () => {
             })
 
             it('only bond admin', async () => {
-                // TODO permissions
+                await expect(
+                    curator
+                        .connect(nonBondAdmin)
+                        .bondAllowRedemption(bond.address)
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
 
             it('only when not paused', async () => {
@@ -311,7 +317,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only bond admin', async () => {
-                // TODO permissions
+                await expect(
+                    curator.connect(nonBondAdmin).bondPause(bond.address)
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
 
             it('only when not paused', async () => {
@@ -336,7 +346,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only bond admin', async () => {
-                // TODO permissions
+                await expect(
+                    curator.connect(nonBondAdmin).bondSlash(bond.address, 5n)
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
 
             it('only when not paused', async () => {
@@ -361,7 +375,13 @@ describe('Bond Manager contract', () => {
             })
 
             it('only bond admin', async () => {
-                // TODO permissions
+                await expect(
+                    curator
+                        .connect(nonBondAdmin)
+                        .bondSetMetaData(bond.address, 'meta')
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
 
             it('only when not paused', async () => {
@@ -386,7 +406,13 @@ describe('Bond Manager contract', () => {
             })
 
             it('only bond admin', async () => {
-                // TODO permissions
+                await expect(
+                    curator
+                        .connect(nonBondAdmin)
+                        .bondSetTreasury(bond.address, bond.address)
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
 
             it('only when not paused', async () => {
@@ -411,7 +437,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only bond admin', async () => {
-                // TODO permissions
+                await expect(
+                    curator.connect(nonBondAdmin).bondUnpause(bond.address)
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
 
             it('only when not paused', async () => {
@@ -436,7 +466,13 @@ describe('Bond Manager contract', () => {
             })
 
             it('only bond admin', async () => {
-                // TODO permissions
+                await expect(
+                    curator
+                        .connect(nonBondAdmin)
+                        .bondWithdrawCollateral(bond.address)
+                ).to.be.revertedWith(
+                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                )
             })
 
             it('only when not paused', async () => {
