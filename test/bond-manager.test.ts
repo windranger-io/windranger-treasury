@@ -240,7 +240,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                // TODO must be in set
+                const bond = await createBond()
+
+                await expect(
+                    curator.bondAllowRedemption(bond.address)
+                ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only bond admin', async () => {
@@ -254,7 +258,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                // TODO must be in set
+                const bond = await createBond()
+
+                await expect(
+                    curator.bondDeposit(bond.address, 1n)
+                ).to.be.revertedWith('BondManager: not managing')
             })
         })
 
@@ -264,7 +272,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                // TODO must be in set
+                const bond = await createBond()
+
+                await expect(
+                    curator.bondPause(bond.address)
+                ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only bond admin', async () => {
@@ -278,7 +290,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                // TODO must be in set
+                const bond = await createBond()
+
+                await expect(
+                    curator.bondSlash(bond.address, 5n)
+                ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only bond admin', async () => {
@@ -292,7 +308,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                // TODO must be in set
+                const bond = await createBond()
+
+                await expect(
+                    curator.bondSetMetaData(bond.address, 'meta')
+                ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only bond admin', async () => {
@@ -306,7 +326,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                // TODO must be in set
+                const bond = await createBond()
+
+                await expect(
+                    curator.bondSetTreasury(bond.address, bond.address)
+                ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only bond admin', async () => {
@@ -320,7 +344,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                // TODO must be in set
+                const bond = await createBond()
+
+                await expect(
+                    curator.bondUnpause(bond.address)
+                ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only bond admin', async () => {
@@ -334,7 +362,11 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                // TODO must be in set
+                const bond = await createBond()
+
+                await expect(
+                    curator.bondWithdrawCollateral(bond.address)
+                ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only bond admin', async () => {
