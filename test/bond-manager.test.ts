@@ -255,7 +255,14 @@ describe('Bond Manager contract', () => {
 
         describe('allow redemption', () => {
             it('calls bond', async () => {
-                // TODO bondAllowRedemption
+                expect(await bond.redeemable()).is.false
+                await successfulTransaction(curator.addBond(bond.address))
+
+                await successfulTransaction(
+                    curator.bondAllowRedemption(bond.address)
+                )
+
+                expect(await bond.redeemable()).is.true
             })
 
             it('only when managing', async () => {
