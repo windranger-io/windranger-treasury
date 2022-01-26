@@ -314,7 +314,12 @@ describe('Bond Manager contract', () => {
 
         describe('pause', () => {
             it('calls bond', async () => {
-                // TODO bondPause
+                expect(await bond.paused()).is.false
+                await successfulTransaction(curator.addBond(bond.address))
+
+                await successfulTransaction(curator.bondPause(bond.address))
+
+                expect(await bond.paused()).is.true
             })
 
             it('only when managing', async () => {
@@ -434,7 +439,14 @@ describe('Bond Manager contract', () => {
 
         describe('unpause', () => {
             it('calls bond', async () => {
-                // TODO bondUnpause
+                expect(await bond.paused()).is.false
+                await successfulTransaction(curator.addBond(bond.address))
+                await successfulTransaction(curator.bondPause(bond.address))
+                expect(await bond.paused()).is.true
+
+                await successfulTransaction(curator.bondUnpause(bond.address))
+
+                expect(await bond.paused()).is.false
             })
 
             it('only when managing', async () => {
