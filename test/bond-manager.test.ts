@@ -250,6 +250,7 @@ describe('Bond Manager contract', () => {
     describe('bond', () => {
         beforeEach(async () => {
             curator = await deployContractWithProxy<BondManager>('BondManager')
+            bond = await createBond()
         })
 
         describe('allow redemption', () => {
@@ -258,8 +259,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                const bond = await createBond()
-
                 await expect(
                     curator.bondAllowRedemption(bond.address)
                 ).to.be.revertedWith('BondManager: not managing')
@@ -270,7 +269,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when not paused', async () => {
-                const bond = await createBond()
                 await successfulTransaction(curator.pause())
                 expect(await curator.paused()).is.true
 
@@ -286,15 +284,12 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                const bond = await createBond()
-
                 await expect(
                     curator.bondDeposit(bond.address, 1n)
                 ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only when not paused', async () => {
-                const bond = await createBond()
                 await successfulTransaction(curator.pause())
                 expect(await curator.paused()).is.true
 
@@ -310,8 +305,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                const bond = await createBond()
-
                 await expect(
                     curator.bondPause(bond.address)
                 ).to.be.revertedWith('BondManager: not managing')
@@ -322,7 +315,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when not paused', async () => {
-                const bond = await createBond()
                 await successfulTransaction(curator.pause())
                 expect(await curator.paused()).is.true
 
@@ -338,8 +330,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                const bond = await createBond()
-
                 await expect(
                     curator.bondSlash(bond.address, 5n)
                 ).to.be.revertedWith('BondManager: not managing')
@@ -350,7 +340,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when not paused', async () => {
-                const bond = await createBond()
                 await successfulTransaction(curator.pause())
                 expect(await curator.paused()).is.true
 
@@ -366,8 +355,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                const bond = await createBond()
-
                 await expect(
                     curator.bondSetMetaData(bond.address, 'meta')
                 ).to.be.revertedWith('BondManager: not managing')
@@ -378,7 +365,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when not paused', async () => {
-                const bond = await createBond()
                 await successfulTransaction(curator.pause())
                 expect(await curator.paused()).is.true
 
@@ -394,8 +380,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                const bond = await createBond()
-
                 await expect(
                     curator.bondSetTreasury(bond.address, bond.address)
                 ).to.be.revertedWith('BondManager: not managing')
@@ -406,7 +390,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when not paused', async () => {
-                const bond = await createBond()
                 await successfulTransaction(curator.pause())
                 expect(await curator.paused()).is.true
 
@@ -422,8 +405,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                const bond = await createBond()
-
                 await expect(
                     curator.bondUnpause(bond.address)
                 ).to.be.revertedWith('BondManager: not managing')
@@ -434,7 +415,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when not paused', async () => {
-                const bond = await createBond()
                 await successfulTransaction(curator.pause())
                 expect(await curator.paused()).is.true
 
@@ -450,8 +430,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when managing', async () => {
-                const bond = await createBond()
-
                 await expect(
                     curator.bondWithdrawCollateral(bond.address)
                 ).to.be.revertedWith('BondManager: not managing')
@@ -462,7 +440,6 @@ describe('Bond Manager contract', () => {
             })
 
             it('only when not paused', async () => {
-                const bond = await createBond()
                 await successfulTransaction(curator.pause())
                 expect(await curator.paused()).is.true
 
@@ -471,6 +448,8 @@ describe('Bond Manager contract', () => {
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
+
+        let bond: ERC20SingleCollateralBond
     })
 
     describe('pause', () => {
