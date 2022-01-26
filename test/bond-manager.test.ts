@@ -233,23 +233,115 @@ describe('Bond Manager contract', () => {
         })
     })
 
-    // TODO For all test: roles, is managing bond and bond state affect
+    describe('bond', () => {
+        describe('allow redemption', () => {
+            it('calls bond', async () => {
+                // TODO bondAllowRedemption
+            })
 
-    // TODO bondAllowRedemption
+            it('only when managing', async () => {
+                // TODO must be in set
+            })
 
-    // TODO bondDeposit
+            it('only bond admin', async () => {
+                // TODO permissions
+            })
+        })
 
-    // TODO bondPause
+        describe('deposit', () => {
+            it('calls bond', async () => {
+                // TODO bondDeposit
+            })
 
-    // TODO bondSlash
+            it('only when managing', async () => {
+                // TODO must be in set
+            })
+        })
 
-    // TODO bondSetMetaData
+        describe('pause', () => {
+            it('calls bond', async () => {
+                // TODO bondPause
+            })
 
-    // TODO bondSetTreasury
+            it('only when managing', async () => {
+                // TODO must be in set
+            })
 
-    // TODO bondUnpause
+            it('only bond admin', async () => {
+                // TODO permissions
+            })
+        })
 
-    // TODO bondWithdrawCollateral
+        describe('slash', () => {
+            it('calls bond', async () => {
+                // TODO bondSlash
+            })
+
+            it('only when managing', async () => {
+                // TODO must be in set
+            })
+
+            it('only bond admin', async () => {
+                // TODO permissions
+            })
+        })
+
+        describe('set metadata', () => {
+            it('calls bond', async () => {
+                // TODO bondSetMetaData
+            })
+
+            it('only when managing', async () => {
+                // TODO must be in set
+            })
+
+            it('only bond admin', async () => {
+                // TODO permissions
+            })
+        })
+
+        describe('set treasury', () => {
+            it('calls bond', async () => {
+                // TODO bondSetTreasury
+            })
+
+            it('only when managing', async () => {
+                // TODO must be in set
+            })
+
+            it('only bond admin', async () => {
+                // TODO permissions
+            })
+        })
+
+        describe('unpause', () => {
+            it('calls bond', async () => {
+                // TODO bondUnpause
+            })
+
+            it('only when managing', async () => {
+                // TODO must be in set
+            })
+
+            it('only bond admin', async () => {
+                // TODO permissions
+            })
+        })
+
+        describe('withdraw collateral', () => {
+            it('calls bond', async () => {
+                // TODO bondWithdrawCollateral
+            })
+
+            it('only when managing', async () => {
+                // TODO must be in set
+            })
+
+            it('only bond admin', async () => {
+                // TODO permissions
+            })
+        })
+    })
 
     describe('pause', () => {
         it('changes state', async () => {
