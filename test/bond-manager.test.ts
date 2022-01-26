@@ -255,7 +255,7 @@ describe('Bond Manager contract', () => {
         })
 
         describe('allow redemption', () => {
-            it('calls bond', async () => {
+            it('delegates', async () => {
                 expect(await bond.redeemable()).is.false
                 await successfulTransaction(curator.addBond(bond.address))
 
@@ -293,7 +293,7 @@ describe('Bond Manager contract', () => {
         })
 
         describe('deposit', () => {
-            it('calls bond', async () => {
+            it('delegates', async () => {
                 // TODO bondDeposit
             })
 
@@ -314,7 +314,7 @@ describe('Bond Manager contract', () => {
         })
 
         describe('pause', () => {
-            it('calls bond', async () => {
+            it('delegates', async () => {
                 expect(await bond.paused()).is.false
                 await successfulTransaction(curator.addBond(bond.address))
 
@@ -348,7 +348,7 @@ describe('Bond Manager contract', () => {
         })
 
         describe('slash', () => {
-            it('calls bond', async () => {
+            it('delegates', async () => {
                 // TODO bondSlash
             })
 
@@ -377,7 +377,7 @@ describe('Bond Manager contract', () => {
         })
 
         describe('set metadata', () => {
-            it('calls bond', async () => {
+            it('delegates', async () => {
                 await successfulTransaction(curator.addBond(bond.address))
                 expect(await bond.metaData()).equals('')
 
@@ -415,7 +415,7 @@ describe('Bond Manager contract', () => {
         })
 
         describe('set treasury', () => {
-            it('calls bond', async () => {
+            it('delegates', async () => {
                 await successfulTransaction(curator.addBond(bond.address))
                 expect(await bond.treasury()).equals(treasury)
 
@@ -453,7 +453,7 @@ describe('Bond Manager contract', () => {
         })
 
         describe('unpause', () => {
-            it('calls bond', async () => {
+            it('delegates', async () => {
                 expect(await bond.paused()).is.false
                 await successfulTransaction(curator.addBond(bond.address))
                 await successfulTransaction(curator.bondPause(bond.address))
@@ -489,7 +489,7 @@ describe('Bond Manager contract', () => {
         })
 
         describe('withdraw collateral', () => {
-            it('calls bond', async () => {
+            it('delegates', async () => {
                 // TODO bondWithdrawCollateral
             })
 
