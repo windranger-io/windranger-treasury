@@ -754,11 +754,10 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('only owner', async () => {
             bond = await createBond(bonds, ONE)
-            await bond.pause()
 
-            await expect(
-                bond.connect(guarantorTwo).unpause()
-            ).to.be.revertedWith('Ownable: caller is not the owner')
+            await expect(bond.connect(guarantorTwo).pause()).to.be.revertedWith(
+                'Ownable: caller is not the owner'
+            )
         })
     })
 

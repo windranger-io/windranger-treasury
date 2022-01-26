@@ -250,7 +250,30 @@ describe('Bond Manager contract', () => {
 
     // TODO pause
 
-    // TODO unpause
+    describe('unpause', () => {
+        it('changes state', async () => {
+            await curator.pause()
+            expect(await curator.paused()).is.true
+
+            await curator.unpause()
+
+            expect(await curator.paused()).is.false
+        })
+
+        it('only when paused', async () => {
+            await expect(curator.unpause()).to.be.revertedWith(
+                'Pausable: not paused'
+            )
+        })
+
+        it('only owner', async () => {
+            await expect(
+                curator.connect(nonAggregator).pause()
+            ).to.be.revertedWith(
+                'AccessControl: account 0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+            )
+        })
+    })
 
     async function createBond(): Promise<ERC20SingleCollateralBond> {
         return createBondWithOwner(curator.address)
