@@ -19,7 +19,7 @@ export function verifyAddBondEvents(
         actualEvents,
         bonds,
         (actual: AddBond, expected: ExpectedAddBondEvent) =>
-            deepEquals(actual, expected)
+            deepEqualsAddBondEvent(actual, expected)
     )
 }
 
@@ -37,10 +37,13 @@ export function verifyAddBondLogEvents<T extends BaseContract>(
         actualEvents,
         bonds,
         (actual: AddBond, expected: ExpectedAddBondEvent) =>
-            deepEquals(actual, expected)
+            deepEqualsAddBondEvent(actual, expected)
     )
 }
 
-function deepEquals(actual: AddBond, expected: ExpectedAddBondEvent): boolean {
+function deepEqualsAddBondEvent(
+    actual: AddBond,
+    expected: ExpectedAddBondEvent
+): boolean {
     return actual.bond === expected.bond
 }

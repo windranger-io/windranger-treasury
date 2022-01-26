@@ -15,6 +15,13 @@ import {
     transferEvents,
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
+import {verifyOrderedEvents} from '../../framework/verify'
+
+type ActualTokenTransfer = {
+    from: string
+    to: string
+    value: BigNumber
+}
 
 /**
  * Verifies the content for a Allow Redemption event.
@@ -156,53 +163,15 @@ export function verifySlashEvent(
  */
 export function verifyTransferEvents(
     receipt: ContractReceipt,
-    transfers: ExpectTokenTransfer[]
+    expectedTransfers: ExpectTokenTransfer[]
 ): void {
     const actualTransfers = transferEvents(events('Transfer', receipt))
-    let matches = 0
-    let lastMatchIndex = -1
 
-    /*
-     * Matching entries are removed from actualTransfers before the next loop.
-     * Avoids the same event being matched twice.
-     */
-    for (const expectedTransfer of transfers) {
-        let matchIndex = -1
-        for (let i = 0; i < actualTransfers.length; i++) {
-            if (equalTokenTransfer(expectedTransfer, actualTransfers[i])) {
-                matchIndex = i
-            }
-        }
-        if (matchIndex >= 0) {
-            // Size of array reduces on match, hence >= and not >
-            expect(
-                matchIndex,
-                'TransferEvent in wrong order'
-            ).is.greaterThanOrEqual(lastMatchIndex)
-
-            matches++
-            actualTransfers.splice(matchIndex, 1)
-            lastMatchIndex = matchIndex
-        }
-    }
-
-    expect(matches, 'Not all expected TransferEvent matches found').equals(
-        transfers.length
-    )
-}
-
-function equalTokenTransfer(
-    expected: ExpectTokenTransfer,
-    transfer: {
-        from: string
-        to: string
-        value: BigNumber
-    }
-) {
-    return (
-        expected.from === transfer.from &&
-        expected.to === transfer.to &&
-        expected.amount === transfer.value.toBigInt()
+    verifyOrderedEvents(
+        actualTransfers,
+        expectedTransfers,
+        (actual: ActualTokenTransfer, expected: ExpectTokenTransfer) =>
+            deepEqualsTokenTransfer(actual, expected)
     )
 }
 
@@ -222,5 +191,16 @@ export function verifyWithdrawCollateralEvent(
     )
     expect(onlyTransferEvent.collateralAmount, 'Transfer amount').equals(
         transfer.amount
+    )
+}
+
+function deepEqualsTokenTransfer(
+    actual: ActualTokenTransfer,
+    expected: ExpectTokenTransfer
+): boolean {
+    return (
+        actual.to === expected.to &&
+        actual.from === expected.from &&
+        actual.value.toBigInt() === expected.amount
     )
 }
