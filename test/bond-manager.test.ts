@@ -217,6 +217,20 @@ describe('Bond Manager contract', () => {
             )
         })
 
+        it('only when not paused', async () => {
+            const bond = await createBond()
+            expect(await curator.paused()).is.false
+            await successfulTransaction(curator.pause())
+            expect(await curator.paused()).is.true
+
+            await expect(curator.addBond(bond.address)).to.be.revertedWith(
+                'Pausable: paused'
+            )
+
+            await successfulTransaction(curator.unpause())
+            expect(await curator.paused()).is.false
+        })
+
         it('when valid', async () => {
             const bond = await createBond()
 
@@ -234,6 +248,10 @@ describe('Bond Manager contract', () => {
     })
 
     describe('bond', () => {
+        beforeEach(async () => {
+            curator = await deployContractWithProxy<BondManager>('BondManager')
+        })
+
         describe('allow redemption', () => {
             it('calls bond', async () => {
                 // TODO bondAllowRedemption
@@ -250,6 +268,16 @@ describe('Bond Manager contract', () => {
             it('only bond admin', async () => {
                 // TODO permissions
             })
+
+            it('only when not paused', async () => {
+                const bond = await createBond()
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondAllowRedemption(bond.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
 
         describe('deposit', () => {
@@ -263,6 +291,16 @@ describe('Bond Manager contract', () => {
                 await expect(
                     curator.bondDeposit(bond.address, 1n)
                 ).to.be.revertedWith('BondManager: not managing')
+            })
+
+            it('only when not paused', async () => {
+                const bond = await createBond()
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondDeposit(bond.address, 1n)
+                ).to.be.revertedWith('Pausable: paused')
             })
         })
 
@@ -282,6 +320,16 @@ describe('Bond Manager contract', () => {
             it('only bond admin', async () => {
                 // TODO permissions
             })
+
+            it('only when not paused', async () => {
+                const bond = await createBond()
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondPause(bond.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
 
         describe('slash', () => {
@@ -299,6 +347,16 @@ describe('Bond Manager contract', () => {
 
             it('only bond admin', async () => {
                 // TODO permissions
+            })
+
+            it('only when not paused', async () => {
+                const bond = await createBond()
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondSlash(bond.address, 4n)
+                ).to.be.revertedWith('Pausable: paused')
             })
         })
 
@@ -318,6 +376,16 @@ describe('Bond Manager contract', () => {
             it('only bond admin', async () => {
                 // TODO permissions
             })
+
+            it('only when not paused', async () => {
+                const bond = await createBond()
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondSetMetaData(bond.address, 'data')
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
 
         describe('set treasury', () => {
@@ -335,6 +403,16 @@ describe('Bond Manager contract', () => {
 
             it('only bond admin', async () => {
                 // TODO permissions
+            })
+
+            it('only when not paused', async () => {
+                const bond = await createBond()
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondSetTreasury(bond.address, bond.address)
+                ).to.be.revertedWith('Pausable: paused')
             })
         })
 
@@ -354,6 +432,16 @@ describe('Bond Manager contract', () => {
             it('only bond admin', async () => {
                 // TODO permissions
             })
+
+            it('only when not paused', async () => {
+                const bond = await createBond()
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondUnpause(bond.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
 
         describe('withdraw collateral', () => {
@@ -372,11 +460,23 @@ describe('Bond Manager contract', () => {
             it('only bond admin', async () => {
                 // TODO permissions
             })
+
+            it('only when not paused', async () => {
+                const bond = await createBond()
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondWithdrawCollateral(bond.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
     })
 
     describe('pause', () => {
         it('changes state', async () => {
+            expect(await curator.paused()).is.true
+            await successfulTransaction(curator.unpause())
             expect(await curator.paused()).is.false
 
             await curator.pause()

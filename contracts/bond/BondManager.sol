@@ -85,6 +85,7 @@ contract BondManager is
 
     function bondSetMetaData(address bond, string calldata data)
         external
+        whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
         _requireManagingBond(bond);
