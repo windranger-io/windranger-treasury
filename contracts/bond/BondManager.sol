@@ -57,12 +57,6 @@ contract BondManager is
         SingleCollateralBond(bond).allowRedemption();
     }
 
-    function bondDeposit(address bond, uint256 amount) external whenNotPaused {
-        _requireManagingBond(bond);
-
-        SingleCollateralBond(bond).deposit(amount);
-    }
-
     function bondPause(address bond)
         external
         whenNotPaused

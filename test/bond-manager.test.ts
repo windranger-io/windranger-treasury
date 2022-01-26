@@ -292,27 +292,6 @@ describe('Bond Manager contract', () => {
             })
         })
 
-        describe('deposit', () => {
-            it('delegates', async () => {
-                // TODO bondDeposit
-            })
-
-            it('only when managing', async () => {
-                await expect(
-                    curator.bondDeposit(bond.address, 1n)
-                ).to.be.revertedWith('BondManager: not managing')
-            })
-
-            it('only when not paused', async () => {
-                await successfulTransaction(curator.pause())
-                expect(await curator.paused()).is.true
-
-                await expect(
-                    curator.bondDeposit(bond.address, 1n)
-                ).to.be.revertedWith('Pausable: paused')
-            })
-        })
-
         describe('pause', () => {
             it('delegates', async () => {
                 expect(await bond.paused()).is.false
@@ -349,7 +328,11 @@ describe('Bond Manager contract', () => {
 
         describe('slash', () => {
             it('delegates', async () => {
-                // TODO bondSlash
+                await successfulTransaction(curator.addBond(bond.address))
+
+                await expect(
+                    curator.bondSlash(bond.address, 77n)
+                ).to.be.revertedWith('Bond: too large')
             })
 
             it('only when managing', async () => {
@@ -490,7 +473,11 @@ describe('Bond Manager contract', () => {
 
         describe('withdraw collateral', () => {
             it('delegates', async () => {
-                // TODO bondWithdrawCollateral
+                await successfulTransaction(curator.addBond(bond.address))
+
+                await expect(
+                    curator.bondWithdrawCollateral(bond.address)
+                ).to.be.revertedWith('whenRedeemable: not redeemable')
             })
 
             it('only when managing', async () => {
