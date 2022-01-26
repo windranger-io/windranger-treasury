@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
  *
  * @dev
  */
-abstract contract BaseTokenSweep {
+abstract contract BaseTokenSweep is UUPSUpgradeable {
     address public beneficiary;
 
     event BeneficiaryUpdated(address indexed beneficiary);
@@ -34,11 +34,4 @@ abstract contract BaseTokenSweep {
      *      However when used in conjunction with a proxy, the init means the contract can be upgraded.
      */
     function initialize() external virtual;
-
-    /**
-     * @notice Permits only the owner to perform proxy upgrades.
-     *
-     * @dev Only applicable when deployed as implementation to a UUPS proxy.
-     */
-    function _authorizeUpgrade(address newImplementation) internal virtual;
 }
