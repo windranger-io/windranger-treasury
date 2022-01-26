@@ -33,12 +33,12 @@ abstract contract BaseTokenSweep {
      * @dev Compared to a constructor, an init adds deployment cost (as constructor code is executed but not deployed).
      *      However when used in conjunction with a proxy, the init means the contract can be upgraded.
      */
-    function initialize() public virtual {}
+    function initialize() external virtual;
 
     /**
      * @notice Permits only the owner to perform proxy upgrades.
      *
      * @dev Only applicable when deployed as implementation to a UUPS proxy.
      */
-    function _authorizeUpgrade(address newImplementation) internal virtual {}
+    function _authorizeUpgrade(address newImplementation) internal virtual;
 }

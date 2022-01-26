@@ -3,7 +3,13 @@ pragma solidity ^0.8.0;
 import "../token/SweepERC20.sol";
 
 contract SweepERC20TokensHarness is SweepERC20 {
+    function initialize() external override {
+        // blank
+    }
+
     function upgradeTo(address) public {
         // blank
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override {}
 }
