@@ -378,7 +378,14 @@ describe('Bond Manager contract', () => {
 
         describe('set metadata', () => {
             it('calls bond', async () => {
-                // TODO bondSetMetaData
+                await successfulTransaction(curator.addBond(bond.address))
+                expect(await bond.metaData()).equals('')
+
+                await successfulTransaction(
+                    curator.bondSetMetaData(bond.address, 'new meta data')
+                )
+
+                expect(await bond.metaData()).equals('new meta data')
             })
 
             it('only when managing', async () => {
