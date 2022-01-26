@@ -45,19 +45,6 @@ describe('Bond Factory contract', () => {
         )
     })
 
-    describe('proxy upgrade', () => {
-        it('maintains version across upgrade', async () => {
-            const originalVersion = await bonds.VERSION()
-            // upgrading to the same implementation
-            await upgradeContract('BondFactory', bonds.address)
-            const upgradedVersion = await bonds.VERSION()
-            expect(originalVersion).to.equal(upgradedVersion)
-            // pointing the proxy to the upgraded contract -- the version tag here is mock_tag
-            await upgradeContract('MockUpgradedBondFactory', bonds.address)
-            expect(await bonds.VERSION()).to.equal('mock_tag')
-        })
-    })
-
     describe('access control', () => {
         describe('Bond Admin', () => {
             it('add member', async () => {
