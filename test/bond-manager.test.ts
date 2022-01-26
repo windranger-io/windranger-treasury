@@ -45,7 +45,8 @@ describe('Bond Manager contract', () => {
         memberOne = (await signer(2)).address
         memberTwo = (await signer(3)).address
         memberThree = (await signer(4)).address
-        nonAggregator = await signer(5)
+        nonBondAggregator = await signer(5)
+        nonBondAdmin = await signer(6)
         curator = await deployContractWithProxy<BondManager>('BondManager')
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
@@ -191,7 +192,9 @@ describe('Bond Manager contract', () => {
     describe('add bond', () => {
         it('only Bond Aggregator', async () => {
             await expect(
-                curator.connect(nonAggregator).addBond(constants.AddressZero)
+                curator
+                    .connect(nonBondAggregator)
+                    .addBond(constants.AddressZero)
             ).to.be.revertedWith(
                 'AccessControl: account 0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc is missing role 0x424f4e445f41474752454741544f520000000000000000000000000000000000'
             )
@@ -248,11 +251,32 @@ describe('Bond Manager contract', () => {
 
     // TODO bondWithdrawCollateral
 
-    // TODO pause
+    describe('pause', () => {
+        it('changes state', async () => {
+            expect(await curator.paused()).is.false
+
+            await curator.pause()
+
+            expect(await curator.paused()).is.true
+        })
+
+        it('only when not paused', async () => {
+            expect(await curator.paused()).is.true
+
+            await expect(curator.pause()).to.be.revertedWith('Pausable: paused')
+        })
+
+        it('only owner', async () => {
+            await expect(
+                curator.connect(nonBondAdmin).unpause()
+            ).to.be.revertedWith(
+                'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+            )
+        })
+    })
 
     describe('unpause', () => {
         it('changes state', async () => {
-            await curator.pause()
             expect(await curator.paused()).is.true
 
             await curator.unpause()
@@ -268,9 +292,9 @@ describe('Bond Manager contract', () => {
 
         it('only owner', async () => {
             await expect(
-                curator.connect(nonAggregator).pause()
+                curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(
-                'AccessControl: account 0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
             )
         })
     })
@@ -307,7 +331,8 @@ describe('Bond Manager contract', () => {
     let memberOne: string
     let memberTwo: string
     let memberThree: string
-    let nonAggregator: SignerWithAddress
+    let nonBondAdmin: SignerWithAddress
+    let nonBondAggregator: SignerWithAddress
     let curator: BondManager
     let collateralTokens: ERC20
     let collateralSymbol: string
