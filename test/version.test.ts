@@ -7,19 +7,11 @@ import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {Box} from '../typechain'
-import {
-    deployContract,
-    deployContractWithProxy,
-    execute,
-    signer,
-    upgradeContract
-} from './framework/contracts'
-import {constants} from 'ethers'
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {deployContractWithProxy, upgradeContract} from './framework/contracts'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
-describe.only('Versioned Box contract', () => {
+describe('Versioned Box contract', () => {
     let box: Box
 
     before(async () => {
@@ -32,11 +24,11 @@ describe.only('Versioned Box contract', () => {
             const originalVersion = await box.VERSION()
             expect(originalVersion).to.not.equal(MOCK_TAG)
             // upgrading to the same implementation
-            await upgradeContract('BondFactory', box.address)
+            await upgradeContract('Box', box.address)
             const upgradedVersion = await box.VERSION()
             expect(originalVersion).to.equal(upgradedVersion)
             // pointing the proxy to the upgraded contract -- the version tag here is mock_tag
-            await upgradeContract('MockUpgradedBondFactory', box.address)
+            await upgradeContract('BoxExtension', box.address)
             expect(await box.VERSION()).to.equal(MOCK_TAG)
         })
     })

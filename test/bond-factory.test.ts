@@ -11,8 +11,7 @@ import {
     deployContract,
     deployContractWithProxy,
     execute,
-    signer,
-    upgradeContract
+    signer
 } from './framework/contracts'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'

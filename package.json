@@ -24,7 +24,8 @@
     "lint-sol": "solhint 'contracts/**/*.sol'",
     "plant": "npx node-plantuml ./docs/specs",
     "prepare": "husky install",
-    "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register 'test/**/*.test.ts'"
+    "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register 'test/**/*.test.ts'",
+    "slither": "slither . --config-file slither.json"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.3",
