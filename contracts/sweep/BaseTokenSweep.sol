@@ -20,18 +20,11 @@ abstract contract BaseTokenSweep is UUPSUpgradeable {
      * @param _beneficiary The address of the beneficiary
      */
     function setBeneficiary(address _beneficiary) external virtual {
-        require(_beneficiary != address(0), "WithdrawTokens/beneficiary-zero");
-        require(_beneficiary != address(this), "WithdrawToken/self-address");
+        require(_beneficiary != address(0), "BaseTokenSweep: beneficiary-zero");
+        require(_beneficiary != address(this), "BaseTokenSweep: self-address");
+        require(_beneficiary != beneficiary, "BaseTokenSweep: not-updating");
 
         beneficiary = _beneficiary;
         emit BeneficiaryUpdated(_beneficiary);
     }
-
-    /**
-     * @notice An initializer instead of a constructor.
-     *
-     * @dev Compared to a constructor, an init adds deployment cost (as constructor code is executed but not deployed).
-     *      However when used in conjunction with a proxy, the init means the contract can be upgraded.
-     */
-    function initialize() external virtual;
 }

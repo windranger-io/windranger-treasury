@@ -15,8 +15,8 @@ abstract contract SweepERC721 is BaseTokenSweep {
         external
         virtual
     {
-        require(address(token) != address(this), "SweepERC721/self-transfer");
-        require(address(token) != address(0), "SweepERC721/null-token");
+        require(address(token) != address(this), "SweepERC721: self-transfer");
+        require(address(token) != address(0), "SweepERC721: null-token");
 
         token.safeTransferFrom(address(this), beneficiary, tokenId);
     }
