@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 // Start - Support direct Mocha run & debug
 import 'hardhat'
 import '@nomiclabs/hardhat-ethers'
@@ -53,7 +51,7 @@ describe.only('Token Sweep contracts', () => {
     describe('setBeneficiary()', () => {
         it('updates the beneficiary address', async () => {
             const newBeneficiary = await signer(1)
-            expect(
+            await expect(
                 await erc20SweepHarness.setBeneficiary(newBeneficiary.address)
             ).to.emit(erc20SweepHarness, 'BeneficiaryUpdated')
         })
@@ -71,7 +69,7 @@ describe.only('Token Sweep contracts', () => {
         })
 
         it('cannot update to self', async () => {
-            const randomAddress = await Wallet.createRandom().address
+            const randomAddress = Wallet.createRandom().address
             await erc20SweepHarness.setBeneficiary(randomAddress)
             await expect(
                 erc20SweepHarness.setBeneficiary(randomAddress)
