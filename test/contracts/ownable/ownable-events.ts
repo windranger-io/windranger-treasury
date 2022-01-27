@@ -1,6 +1,3 @@
-/* tslint:disable */
-/* eslint-disable */
-
 /**
  * Events for an OpenZeppelin ownable contract.
  */

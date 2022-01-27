@@ -22,7 +22,6 @@ export async function checkContractVersionAgainstReleaseTag(
         log.info(`git tag not defined!`)
         process.exit(1)
     }
-    // validate syntax of the git tag - could we do this instead in husky? before commit reaches remote/origin?
     if (!isSemver(gitSourceTag)) {
         throw new Error(`Invalid source tag: ${gitSourceTag}`)
     }
