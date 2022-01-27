@@ -1,4 +1,4 @@
-# WindRanger Treasury
+# Windranger Treasury
 
 Inbound and outbound treasury
 
