@@ -1,5 +1,5 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {AddBond, addBondEventLogs, addBondEvents} from './bond-manager-events'
+import {AddBond, addBondEventLogs, addBondEvents} from './bond-curator-events'
 import {eventLog} from '../../framework/event-logs'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
