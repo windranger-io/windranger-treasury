@@ -6,6 +6,8 @@ import "./BaseTokenSweep.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title Adds the ability to sweep a token to a beneficiary address
  *
@@ -16,10 +18,22 @@ abstract contract SweepERC20 is BaseTokenSweep {
         external
         virtual
     {
+        console.log("SweepERC20 entered");
+
         require(address(token) != address(this), "SweepERC20: self-transfer");
         require(address(token) != address(0), "SweepERC20: null-token");
 
+        console.log("SweepERC20 beneficiary: ", beneficiary);
+        console.log(
+            "SweepERC20 before balanceOf(): ",
+            token.balanceOf(beneficiary)
+        );
         bool result = token.transfer(beneficiary, amount);
         require(result, "SweepERC20: transfer failed");
+
+        console.log(
+            "SweepERC20 after balanceOf(): ",
+            token.balanceOf(beneficiary)
+        );
     }
 }

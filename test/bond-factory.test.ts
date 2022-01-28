@@ -6,7 +6,13 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondFactory, Box, ERC20} from '../typechain-types'
+import {
+    BitDAO,
+    BondFactory,
+    Box,
+    ERC20PresetMinterPauser,
+    ERC20
+} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
@@ -119,8 +125,8 @@ describe('Bond Factory contract', () => {
         describe('add', () => {
             it('new token', async () => {
                 const symbol = 'EEK'
-                const tokens = await deployContract<ERC20>(
-                    'ERC20',
+                const tokens = await deployContract<ERC20PresetMinterPauser>(
+                    'ERC20PresetMinterPauser',
                     'Another erc20 Token',
                     symbol
                 )
