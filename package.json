@@ -17,14 +17,14 @@
     "build": "hardhat compile",
     "clean": "hardhat clean",
     "format": "npm run format-sol && npm run format-ts",
-    "format-sol": "prettier '**/*.sol' --write",
-    "format-ts": "prettier '**/*.ts' --write",
+    "format-sol": "prettier **/*.sol --write",
+    "format-ts": "prettier **/*.ts --write",
     "lint": "npm run lint-ts && npm run lint-sol",
     "lint-ts": "eslint . --ext .ts",
     "lint-sol": "solhint 'contracts/**/*.sol'",
     "plant": "npx node-plantuml ./docs/specs",
     "prepare": "husky install",
-    "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register 'test/**/*.test.ts'"
+    "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register test/**/*.test.ts"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.3",
