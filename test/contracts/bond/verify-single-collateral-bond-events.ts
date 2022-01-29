@@ -9,32 +9,13 @@ import {
     partialCollateralEvent,
     redemptionEvent,
     slashEvent,
-    transferEvents,
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
+
 import {verifyOrderedEvents} from '../../framework/verify'
+import {deepEqualsTokenTransfer, transferEvents} from '../common/erc20'
 
-/**
- * Expected balance combination of a symbol and amount (value).
- */
-export type ExpectTokenBalance = {
-    symbol: string
-    amount: bigint
-}
-
-export type ExpectTokenTransferEvent = {
-    from: string
-    to: string
-    amount: bigint
-}
-
-export type ExpectFlushTransferEvent = {
-    to: string
-    symbol: string
-    amount: bigint
-}
-
-export type ActualTokenTransferEvent = {
+export type ActualTokenTransfer = {
     from: string
     to: string
     value: BigNumber
@@ -214,16 +195,5 @@ export function verifyWithdrawCollateralEvent(
     )
     expect(onlyTransferEvent.collateralAmount, 'Transfer amount').equals(
         transfer.amount
-    )
-}
-
-function deepEqualsTokenTransfer(
-    actual: ActualTokenTransferEvent,
-    expected: ExpectTokenTransferEvent
-): boolean {
-    return (
-        actual.to === expected.to &&
-        actual.from === expected.from &&
-        actual.value.toBigInt() === expected.amount
     )
 }
