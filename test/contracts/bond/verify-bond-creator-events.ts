@@ -1,4 +1,4 @@
-import {createBondEvent} from './bond-factory-events'
+import {createBondEvent} from './bond-creator-events'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {ethers} from 'hardhat'

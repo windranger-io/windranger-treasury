@@ -33,7 +33,7 @@ import {
     verifyTransferEvents,
     verifyWithdrawCollateralEvent
 } from './contracts/bond/verify-single-collateral-bond-events'
-import {createBondEvent} from './contracts/bond/bond-factory-events'
+import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
 
 // Wires up Waffle with Chai

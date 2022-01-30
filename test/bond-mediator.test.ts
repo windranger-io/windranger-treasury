@@ -25,7 +25,7 @@ import {
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
 import {successfulTransaction} from './framework/transaction'
-import {addBondEventLogs} from './contracts/bond/bond-manager-events'
+import {addBondEventLogs} from './contracts/bond/bond-curator-events'
 import {eventLog} from './framework/event-logs'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
 import {constants} from 'ethers'

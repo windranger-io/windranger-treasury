@@ -29,12 +29,12 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {constants} from 'ethers'
 import {successfulTransaction} from './framework/transaction'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
-import {createBondEvent} from './contracts/bond/bond-factory-events'
+import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {event} from './framework/events'
 import {
     verifyAddBondEvents,
     verifyAddBondLogEvents
-} from './contracts/bond/verify-manager-events'
+} from './contracts/bond/verify-curator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
