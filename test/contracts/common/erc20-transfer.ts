@@ -7,6 +7,7 @@ import {events} from '../../framework/events'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
 import {Result} from '@ethersproject/abi'
+import {log} from '../../../config/logging'
 
 export function deepEqualsTokenTransfer(
     actual: ActualTokenTransfer,
@@ -101,14 +102,14 @@ function transferEventLogsFromResult(_events: Result): ExpectedTransfer[] {
         expect(event?.from).is.not.undefined
         expect(event?.from).to.be.a('string')
 
-        expect(event?.amount).is.not.undefined
-        expect(event?.amount).to.be.a('bigint') // ? correct type?
+        expect(event?.value).is.not.undefined
+        // expect(event?.value).to.be.a('bignumber') // ? correct type?
 
         results.push({
             to: String(event?.to),
             from: String(event?.from),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            amount: BigInt(event?.amount)
+            amount: BigInt(event?.value)
         })
     }
     /* eslint-enable @typescript-eslint/no-unsafe-member-access */

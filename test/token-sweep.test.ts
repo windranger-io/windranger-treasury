@@ -102,7 +102,7 @@ describe('Token Sweep contracts', () => {
         })
     })
 
-    describe.only('sweepERC20Tokens()', () => {
+    describe('sweepERC20Tokens()', () => {
         const ERC20_TOKEN_AMOUNT = 100n
         before(async () => {
             await erc20SweepHarness.setBeneficiary(beneficary)
@@ -136,25 +136,7 @@ describe('Token Sweep contracts', () => {
             )
         }
 
-        it.only('sweeps erroneously sent erc-20', async () => {
-            /*
-             * const balanceHarnessBefore = await erc20.balanceOf(
-             *     erc20SweepHarness.address
-             * )
-             * const balanceBeneficiaryBefore = await erc20.balanceOf(beneficary)
-             * expect(balanceBeneficiaryBefore).to.eq(0)
-             * expect(balanceHarnessBefore).to.eq(ERC20_TOKEN_AMOUNT)
-             */
-
-            /*
-             * await expect(
-             *     await erc20SweepHarness.sweepERC20Tokens(
-             *         erc20.address,
-             *         ERC20_TOKEN_AMOUNT
-             *     )
-             * ).to.emit(erc20, 'Transfer')
-             */
-            log.info('sweep erc20 tokens at address: ', erc20.address)
+        it('sweeps erroneously sent erc-20', async () => {
             const receipt = await sweepERC20Tokens(
                 erc20.address,
                 ERC20_TOKEN_AMOUNT
@@ -168,18 +150,9 @@ describe('Token Sweep contracts', () => {
                         amount: ERC20_TOKEN_AMOUNT
                     }
                 ],
-                erc20SweepHarness,
+                erc20,
                 receipt
             )
-
-            /*
-             * const balanceHarnessAfter = await erc20.balanceOf(
-             *     erc20SweepHarness.address
-             * )
-             * const balanceBeneficiaryAfter = await erc20.balanceOf(beneficary)
-             * expect(balanceHarnessAfter).to.eq(0)
-             * expect(balanceBeneficiaryAfter).to.eq(ERC20_TOKEN_AMOUNT)
-             */
         })
     })
 
