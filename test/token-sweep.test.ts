@@ -18,9 +18,11 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {constants, Wallet} from 'ethers'
+import {constants, ContractReceipt, Wallet} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {log} from '../config/logging'
+import {verifyTransferEvents} from './contracts/common/erc20'
+import {successfulTransaction} from './framework/transaction'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -44,6 +46,7 @@ describe('Token Sweep contracts', () => {
         erc20SweepHarness =
             await deployContractWithProxy<SweepERC20TokensHarness>(
                 'SweepERC20TokensHarness'
+                // [erc20Symbol, erc20Name]
             )
         log.info(`deployed at ${erc20SweepHarness.address}`)
 
@@ -96,8 +99,8 @@ describe('Token Sweep contracts', () => {
         })
     })
 
-    describe('sweepERC20Tokens()', () => {
-        const ERC20_TOKEN_AMOUNT = '100000000000000000000'
+    describe.only('sweepERC20Tokens()', () => {
+        const ERC20_TOKEN_AMOUNT = 100n
         before(async () => {
             await erc20SweepHarness.setBeneficiary(beneficary)
             await erc20.mint(erc20SweepHarness.address, ERC20_TOKEN_AMOUNT)
@@ -121,26 +124,66 @@ describe('Token Sweep contracts', () => {
             ).to.be.revertedWith('SweepERC20: self-transfer')
         })
 
-        it('sweeps erroneously sent erc-20', async () => {
-            const balanceHarnessBefore = await erc20.balanceOf(
-                erc20SweepHarness.address
+        async function sweepERC20Tokens(
+            tokenAddress: string,
+            amount: bigint
+        ): Promise<ContractReceipt> {
+            return successfulTransaction(
+                erc20SweepHarness.sweepERC20Tokens(tokenAddress, amount)
             )
-            const balanceBeneficiaryBefore = await erc20.balanceOf(beneficary)
-            expect(balanceBeneficiaryBefore).to.eq(0)
-            expect(balanceHarnessBefore).to.eq(ERC20_TOKEN_AMOUNT)
+        }
 
-            await expect(
-                await erc20SweepHarness.sweepERC20Tokens(
-                    erc20.address,
-                    ERC20_TOKEN_AMOUNT
-                )
-            ).to.emit(erc20, 'Transfer')
-            const balanceHarnessAfter = await erc20.balanceOf(
-                erc20SweepHarness.address
+        it.only('sweeps erroneously sent erc-20', async () => {
+            /*
+             * const balanceHarnessBefore = await erc20.balanceOf(
+             *     erc20SweepHarness.address
+             * )
+             * const balanceBeneficiaryBefore = await erc20.balanceOf(beneficary)
+             * expect(balanceBeneficiaryBefore).to.eq(0)
+             * expect(balanceHarnessBefore).to.eq(ERC20_TOKEN_AMOUNT)
+             */
+
+            /*
+             * await expect(
+             *     await erc20SweepHarness.sweepERC20Tokens(
+             *         erc20.address,
+             *         ERC20_TOKEN_AMOUNT
+             *     )
+             * ).to.emit(erc20, 'Transfer')
+             */
+            log.info('sweep erc20 tokens at address: ', erc20.address)
+            const receipt = await sweepERC20Tokens(
+                erc20.address,
+                ERC20_TOKEN_AMOUNT
             )
-            const balanceBeneficiaryAfter = await erc20.balanceOf(beneficary)
-            expect(balanceHarnessAfter).to.eq(0)
-            expect(balanceBeneficiaryAfter).to.eq(ERC20_TOKEN_AMOUNT)
+            /*
+             * log.info(`test:: receipt: ${JSON.stringify(receipt)}`)
+             * receipt object does not have the Event fields -- is this because ethers doesnt parse it from the tx?
+             */
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const parsedLogEvents = erc20.interface.parseLog(receipt.logs[0])
+
+            log.info(
+                `test:: parsedLogEvents: ${JSON.stringify(parsedLogEvents)}`
+            )
+
+            verifyTransferEvents(receipt, [
+                {
+                    from: erc20SweepHarness.address,
+                    to: beneficary,
+                    amount: ERC20_TOKEN_AMOUNT
+                }
+            ])
+
+            /*
+             * const balanceHarnessAfter = await erc20.balanceOf(
+             *     erc20SweepHarness.address
+             * )
+             * const balanceBeneficiaryAfter = await erc20.balanceOf(beneficary)
+             * expect(balanceHarnessAfter).to.eq(0)
+             * expect(balanceBeneficiaryAfter).to.eq(ERC20_TOKEN_AMOUNT)
+             */
         })
     })
 

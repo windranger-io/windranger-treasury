@@ -14,6 +14,7 @@ import {
 
 import {verifyOrderedEvents} from '../../framework/verify'
 import {deepEqualsTokenTransfer, transferEvents} from '../common/erc20'
+import {log} from '../../../config/logging'
 
 export type ActualTokenTransfer = {
     from: string
@@ -157,25 +158,6 @@ export function verifySlashEvent(
     )
     expect(onlySlashEvent.collateralAmount, 'Slash amount').equals(
         collateral.amount
-    )
-}
-
-/**
- * Verifies the content matches at least one of the Transfer events.
- */
-export function verifyTransferEvents(
-    receipt: ContractReceipt,
-    expectedTransfers: ExpectTokenTransferEvent[]
-): void {
-    const actualTransfers = transferEvents(events('Transfer', receipt))
-
-    verifyOrderedEvents(
-        actualTransfers,
-        expectedTransfers,
-        (
-            actual: ActualTokenTransferEvent,
-            expected: ExpectTokenTransferEvent
-        ) => deepEqualsTokenTransfer(actual, expected)
     )
 }
 
