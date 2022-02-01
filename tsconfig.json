@@ -16,14 +16,9 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
-    "types": ["node", "mocha", "./typings"]
+    "types": ["node", "mocha"]
   },
   "files": ["./hardhat.config.ts"],
-  "include": [
-    "./config/**/*.ts",
-    "./scripts/**/*.ts",
-    "./test/**/*.ts",
-    "./typings/*"
-  ],
+  "include": ["./config/**/*.ts", "./scripts/**/*.ts", "./test/**/*.ts"],
   "exclude": ["node_modules"]
 }

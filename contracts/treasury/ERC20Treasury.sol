@@ -5,14 +5,12 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "../interfaces/ERC20DepositStrategy.sol";
 import "../interfaces/ERC20WithdrawStrategy.sol";
 
-import "../Version.sol";
-
 /**
  * @title Vault for ERC20 token types.
  *
  * @dev
  */
-contract ERC20Treasury is Version, Context {
+contract ERC20Treasury is Context {
     ERC20DepositStrategy private _depositStrategy;
     ERC20WithdrawStrategy private _withdrawStrategy;
     mapping(string => address) private _tokens;

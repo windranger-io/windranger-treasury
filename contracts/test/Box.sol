@@ -14,7 +14,7 @@ import "./BaseBox.sol";
  *
  * @dev Event emitted on storing the value.
  */
-contract Box is BaseBox, UUPSUpgradeable, Version {
+contract Box is BaseBox, Version {
     /**
      * @notice An initializer instead of a constructor.
      *

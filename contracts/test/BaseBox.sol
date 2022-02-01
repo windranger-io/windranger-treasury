@@ -13,7 +13,7 @@ import "../Version.sol";
  *
  * @dev Event emitted on storing the value.
  */
-contract BaseBox is OwnableUpgradeable {
+abstract contract BaseBox is OwnableUpgradeable, UUPSUpgradeable {
     string private _value;
 
     event Store(string value);

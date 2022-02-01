@@ -2,8 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "./Box.sol";
-
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 contract MockUpgradedVersion {
@@ -13,7 +11,7 @@ contract MockUpgradedVersion {
 /**
  * Contract adding a variable create a unique contract, that a Box may be upgraded as.
  */
-contract BoxExtension is BaseBox, UUPSUpgradeable, MockUpgradedVersion {
+contract BoxExtension is BaseBox, MockUpgradedVersion {
     uint256 private _difference;
 
     /**

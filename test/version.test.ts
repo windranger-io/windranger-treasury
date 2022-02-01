@@ -21,7 +21,7 @@ describe('Versioned Box contract', () => {
     describe('proxy upgrade', () => {
         it('maintains version across upgrade', async () => {
             const MOCK_TAG = 'mock_tag'
-            const originalVersion = await box.VERSION()
+            const originalVersion: string = await box.VERSION()
             expect(originalVersion).to.not.equal(MOCK_TAG)
             // upgrading to the same implementation
             await upgradeContract('Box', box.address)
