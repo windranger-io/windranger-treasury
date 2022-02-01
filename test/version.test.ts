@@ -21,6 +21,8 @@ describe('Versioned Box contract', () => {
     describe('proxy upgrade', () => {
         it('maintains version across upgrade', async () => {
             const MOCK_TAG = 'mock_tag'
+            const LONG_TAG =
+                'blahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblah'
             const originalVersion: string = await box.VERSION()
             expect(originalVersion).to.not.equal(MOCK_TAG)
             // upgrading to the same implementation
@@ -30,6 +32,11 @@ describe('Versioned Box contract', () => {
             // pointing the proxy to the upgraded contract -- the version tag here is mock_tag
             await upgradeContract('BoxExtension', box.address)
             expect(await box.VERSION()).to.equal(MOCK_TAG)
+            await upgradeContract(
+                'BoxExtensionWithVeryLongVersionTag',
+                box.address
+            )
+            expect(await box.VERSION()).to.equal(LONG_TAG)
         })
     })
 })
