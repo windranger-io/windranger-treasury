@@ -1,10 +1,12 @@
 import {ExpectTokenTransfer} from '../bond/single-collateral-bond-events'
 import {ActualTokenTransfer} from '../bond/verify-single-collateral-bond-events'
-import {BigNumber, ContractReceipt, Event} from 'ethers'
+import {BigNumber, BaseContract, ContractReceipt, Event} from 'ethers'
 import {TransferEvent} from '../../../typechain/IERC20'
 import {expect} from 'chai'
 import {events} from '../../framework/events'
 import {verifyOrderedEvents} from '../../framework/verify'
+import {eventLog} from '../../framework/event-logs'
+import {Result} from '@ethersproject/abi'
 
 export function deepEqualsTokenTransfer(
     actual: ActualTokenTransfer,
@@ -61,4 +63,55 @@ export function verifyTransferEvents(
         (actual: ActualTokenTransfer, expected: ExpectTokenTransfer) =>
             deepEqualsTokenTransfer(actual, expected)
     )
+}
+
+export type ExpectedTransfer = {
+    to: string
+    from: string
+    amount: bigint
+}
+
+/**
+ * Verifies the content forW
+ */
+export function verifyTransferEventLogs<T extends BaseContract>(
+    expectedEvent: ExpectedTransfer[],
+    emitter: T,
+    receipt: ContractReceipt
+): void {
+    const transferEventLogResults = eventLog('Transfer', emitter, receipt)
+    const transferEventLogs = transferEventLogsFromResult(
+        transferEventLogResults
+    )
+    expect(transferEventLogs.length).equals(expectedEvent.length)
+
+    for (let i = 0; i < expectedEvent.length; i++) {
+        expect(transferEventLogs[i]).to.deep.equal(expectedEvent[i])
+    }
+}
+
+function transferEventLogsFromResult(_events: Result): ExpectedTransfer[] {
+    const results: ExpectedTransfer[] = []
+
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+    for (const event of _events) {
+        expect(event?.to).is.not.undefined
+        expect(event?.to).to.be.a('string')
+
+        expect(event?.from).is.not.undefined
+        expect(event?.from).to.be.a('string')
+
+        expect(event?.amount).is.not.undefined
+        expect(event?.amount).to.be.a('bigint') // ? correct type?
+
+        results.push({
+            to: String(event?.to),
+            from: String(event?.from),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            amount: BigInt(event?.amount)
+        })
+    }
+    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+
+    return results
 }

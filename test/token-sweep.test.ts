@@ -21,7 +21,10 @@ import {
 import {constants, ContractReceipt, Wallet} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {log} from '../config/logging'
-import {verifyTransferEvents} from './contracts/common/erc20'
+import {
+    verifyTransferEventLogs,
+    verifyTransferEvents
+} from './contracts/common/erc20-transfer'
 import {successfulTransaction} from './framework/transaction'
 
 // Wires up Waffle with Chai
@@ -156,25 +159,18 @@ describe('Token Sweep contracts', () => {
                 erc20.address,
                 ERC20_TOKEN_AMOUNT
             )
-            /*
-             * log.info(`test:: receipt: ${JSON.stringify(receipt)}`)
-             * receipt object does not have the Event fields -- is this because ethers doesnt parse it from the tx?
-             */
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const parsedLogEvents = erc20.interface.parseLog(receipt.logs[0])
-
-            log.info(
-                `test:: parsedLogEvents: ${JSON.stringify(parsedLogEvents)}`
+            verifyTransferEventLogs(
+                [
+                    {
+                        from: erc20SweepHarness.address,
+                        to: beneficary,
+                        amount: ERC20_TOKEN_AMOUNT
+                    }
+                ],
+                erc20SweepHarness,
+                receipt
             )
-
-            verifyTransferEvents(receipt, [
-                {
-                    from: erc20SweepHarness.address,
-                    to: beneficary,
-                    amount: ERC20_TOKEN_AMOUNT
-                }
-            ])
 
             /*
              * const balanceHarnessAfter = await erc20.balanceOf(

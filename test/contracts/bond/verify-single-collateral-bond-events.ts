@@ -13,7 +13,7 @@ import {
 } from './single-collateral-bond-events'
 
 import {verifyOrderedEvents} from '../../framework/verify'
-import {deepEqualsTokenTransfer, transferEvents} from '../common/erc20'
+import {deepEqualsTokenTransfer, transferEvents} from '../common/erc20-transfer'
 import {log} from '../../../config/logging'
 
 export type ActualTokenTransfer = {
