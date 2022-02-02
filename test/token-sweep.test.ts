@@ -18,7 +18,6 @@ import {
     signer
 } from './framework/contracts'
 import {constants, ContractReceipt, Wallet} from 'ethers'
-import {log} from '../config/logging'
 import {verifyERC20TransferEventLogs} from './contracts/common/verify-erc20-transfer'
 import {successfulTransaction} from './framework/transaction'
 import {verifyERC721TransferEventLogs} from './contracts/common/verify-erc721-transfer'
@@ -41,33 +40,30 @@ describe('Token Sweep contracts', () => {
     let erc721SweepHarness: SweepERC721TokensHarness
     before(async () => {
         beneficary = (await signer(2)).address
-        log.info(`beneficiary: ${beneficary}`)
+
         erc20SweepHarness =
             await deployContractWithProxy<SweepERC20TokensHarness>(
                 'SweepERC20TokensHarness'
                 // [erc20Symbol, erc20Name]
             )
-        log.info(`deployed at ${erc20SweepHarness.address}`)
 
         erc721SweepHarness =
             await deployContractWithProxy<SweepERC721TokensHarness>(
                 'SweepERC721TokensHarness'
             )
-        log.info(`deployed at ${erc721SweepHarness.address}`)
 
         erc20 = await deployContract<ERC20PresetMinterPauser>(
             'ERC20PresetMinterPauser',
             erc20Symbol,
             erc20Name
         )
-        log.info(`erc20 deployed at ${erc20.address}`)
+
         erc721 = await deployContract<ERC721PresetMinterPauserAutoId>(
             'ERC721PresetMinterPauserAutoId',
             erc721Name,
             erc721Symbol,
             erc721URI
         )
-        log.info(`erc721 deployed at ${erc721.address}`)
     })
     describe('setBeneficiary()', () => {
         it('updates the beneficiary address', async () => {

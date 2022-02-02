@@ -1,6 +1,5 @@
 import {ContractReceipt, Event} from 'ethers'
 import {expect} from 'chai'
-import {log} from '../../config/logging'
 
 /**
  * Retrieves a single events that matches the given name, failing if not present.
@@ -22,8 +21,6 @@ export function event(name: string, receipt: ContractReceipt): Event {
  */
 export function events(name: string, receipt: ContractReceipt): Event[] {
     const availableEvents = receiptEvents(receipt)
-    log.info('looking for event name: ', name)
-    log.info('receipt to string: ', JSON.stringify(receipt.events))
     const found = []
 
     for (let i = 0; i < availableEvents.length; i++) {
