@@ -1,6 +1,6 @@
 import {run} from 'hardhat'
 import {log} from '../../config/logging'
-import {BitDAO, BondFactory, BondManager, BondMediator} from '../../typechain'
+import {BitDAO, BondFactory, BondManager, BondMediator} from '../../typechain-types'
 import {
     deployContract,
     signer,

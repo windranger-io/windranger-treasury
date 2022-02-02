@@ -11,7 +11,7 @@ import {
     BondFactory,
     ERC20,
     ERC20SingleCollateralBond
-} from '../typechain'
+} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,

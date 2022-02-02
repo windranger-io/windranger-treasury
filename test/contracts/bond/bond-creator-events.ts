@@ -1,5 +1,5 @@
 import {BigNumber, Event} from 'ethers'
-import {CreateBondEvent} from '../../../typechain/BondFactory'
+import {CreateBondEvent} from '../../../typechain-types/BondFactory'
 import {expect} from 'chai'
 
 /**

@@ -9,8 +9,8 @@ import {
     RedemptionEvent,
     SlashEvent,
     WithdrawCollateralEvent
-} from '../../../typechain/ERC20SingleCollateralBond'
-import {TransferEvent} from '../../../typechain/IERC20'
+} from '../../../typechain-types/ERC20SingleCollateralBond'
+import {TransferEvent} from '../../../typechain-types/IERC20'
 
 /**
  * Expected balance combination of a symbol and amount (value).

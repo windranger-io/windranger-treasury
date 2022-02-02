@@ -10,9 +10,8 @@ import {
     BitDAO,
     BondFactory,
     BondManager,
-    ERC20,
     ERC20SingleCollateralBond
-} from '../typechain'
+} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
@@ -595,7 +594,7 @@ describe('Bond Manager contract', () => {
     let nonBondAdmin: SignerWithAddress
     let nonBondAggregator: SignerWithAddress
     let curator: BondManager
-    let collateralTokens: ERC20
+    let collateralTokens: BitDAO
     let collateralSymbol: string
     let creator: BondFactory
 })

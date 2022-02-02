@@ -10,9 +10,8 @@ import {
     BitDAO,
     BondFactory,
     BondManager,
-    BondMediator,
-    ERC20
-} from '../typechain'
+    BondMediator
+} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
@@ -252,7 +251,7 @@ describe('Bond Mediator contract', () => {
     let memberTwo: string
     let memberThree: string
     let nonAdmin: SignerWithAddress
-    let collateralTokens: ERC20
+    let collateralTokens: BitDAO
     let mediator: BondMediator
     let curator: BondManager
     let creator: BondFactory

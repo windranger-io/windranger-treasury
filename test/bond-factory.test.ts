@@ -6,7 +6,7 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
+import {BitDAO, BondFactory, Box, ERC20} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
@@ -387,7 +387,7 @@ describe('Bond Factory contract', () => {
     let memberTwo: string
     let memberThree: string
     let nonAdmin: SignerWithAddress
-    let collateralTokens: ERC20
+    let collateralTokens: BitDAO
     let collateralSymbol: string
     let bonds: BondFactory
 })

@@ -4,7 +4,7 @@
 
 import {Event} from 'ethers'
 import {expect} from 'chai'
-import {OwnershipTransferredEvent} from '../../../typechain/OwnableUpgradeable'
+import {OwnershipTransferredEvent} from '../../../typechain-types/OwnableUpgradeable'
 import {Result} from '@ethersproject/abi'
 
 type OwnershipTransfer = {
