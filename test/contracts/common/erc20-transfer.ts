@@ -9,7 +9,7 @@ import {eventLog} from '../../framework/event-logs'
 import {Result} from '@ethersproject/abi'
 import {log} from '../../../config/logging'
 
-export function deepEqualsTokenTransfer(
+export function deepEqualsERC20TokenTransfer(
     actual: ActualTokenTransfer,
     expected: ExpectTokenTransfer
 ): boolean {
@@ -23,7 +23,7 @@ export function deepEqualsTokenTransfer(
 /**
  * Shape check and conversion for a TransferEvents.
  */
-export function transferEvents(_events: Event[]): {
+export function erc20TransferEvents(_events: Event[]): {
     from: string
     to: string
     value: BigNumber
@@ -48,51 +48,16 @@ export function transferEvents(_events: Event[]): {
 
     return converted
 }
-
-/**
- * Verifies the content matches at least one of the Transfer events.
- */
-export function verifyERC20TransferEvents(
-    receipt: ContractReceipt,
-    expectedTransfers: ExpectTokenTransfer[]
-): void {
-    const actualTransfers = transferEvents(events('Transfer', receipt))
-
-    verifyOrderedEvents(
-        actualTransfers,
-        expectedTransfers,
-        (actual: ActualTokenTransfer, expected: ExpectTokenTransfer) =>
-            deepEqualsTokenTransfer(actual, expected)
-    )
-}
-
-export type ExpectedTransfer = {
+export type ExpectedERC20Transfer = {
     to: string
     from: string
     amount: bigint
 }
 
-/**
- * Verifies the content forW
- */
-export function verifyTransferEventLogs<T extends BaseContract>(
-    expectedEvent: ExpectedTransfer[],
-    emitter: T,
-    receipt: ContractReceipt
-): void {
-    const transferEventLogResults = eventLog('Transfer', emitter, receipt)
-    const transferEventLogs = transferEventLogsFromResult(
-        transferEventLogResults
-    )
-    expect(transferEventLogs.length).equals(expectedEvent.length)
-
-    for (let i = 0; i < expectedEvent.length; i++) {
-        expect(transferEventLogs[i]).to.deep.equal(expectedEvent[i])
-    }
-}
-
-function transferEventLogsFromResult(_events: Result): ExpectedTransfer[] {
-    const results: ExpectedTransfer[] = []
+export function erc20TransferEventLogsFromResult(
+    _events: Result
+): ExpectedERC20Transfer[] {
+    const results: ExpectedERC20Transfer[] = []
 
     /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     for (const event of _events) {

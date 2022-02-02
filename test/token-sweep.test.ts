@@ -15,18 +15,13 @@ import {
 import {
     deployContract,
     deployContractWithProxy,
-    execute,
     signer
 } from './framework/contracts'
-import {BigNumber, constants, ContractReceipt, Wallet} from 'ethers'
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {constants, ContractReceipt, Wallet} from 'ethers'
 import {log} from '../config/logging'
-import {
-    verifyTransferEventLogs,
-    verifyERC20TransferEvents
-} from './contracts/common/erc20-transfer'
+import {verifyERC20TransferEventLogs} from './contracts/common/verify-erc20-transfer'
 import {successfulTransaction} from './framework/transaction'
-import {verifyERC721TransferEventLogs} from './contracts/common/erc721-transfer'
+import {verifyERC721TransferEventLogs} from './contracts/common/verify-erc721-transfer'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -143,7 +138,7 @@ describe('Token Sweep contracts', () => {
                 ERC20_TOKEN_AMOUNT
             )
 
-            verifyTransferEventLogs(
+            verifyERC20TransferEventLogs(
                 [
                     {
                         from: erc20SweepHarness.address,

@@ -47,53 +47,19 @@ export function erc721TransferEvents(_events: Event[]): {
     return converted
 }
 
-/**
- * Verifies the content matches at least one of the Transfer events.
- */
-export function verifyERC20TransferEvents(
-    receipt: ContractReceipt,
-    expectedTransfers: ExpectedERC721Transfer[]
-): void {
-    const actualTransfers = erc721TransferEvents(events('Transfer', receipt))
-
-    verifyOrderedEvents(
-        actualTransfers,
-        expectedTransfers,
-        (actual: ActualERC721Transfer, expected: ExpectedERC721Transfer) =>
-            deepEqualsERC721TokenTransfer(actual, expected)
-    )
-}
-
 export type ExpectedERC721Transfer = {
     to: string
     from: string
     tokenId: bigint
 }
+
 export type ActualERC721Transfer = {
     to: string
     from: string
     tokenId: BigNumber
 }
-/**
- * Verifies the content forW
- */
-export function verifyERC721TransferEventLogs<T extends BaseContract>(
-    expectedEvent: ExpectedERC721Transfer[],
-    emitter: T,
-    receipt: ContractReceipt
-): void {
-    const transferEventLogResults = eventLog('Transfer', emitter, receipt)
-    const transferEventLogs = erc721TransferEventLogsFromResult(
-        transferEventLogResults
-    )
-    expect(transferEventLogs.length).equals(expectedEvent.length)
 
-    for (let i = 0; i < expectedEvent.length; i++) {
-        expect(transferEventLogs[i]).to.deep.equal(expectedEvent[i])
-    }
-}
-
-function erc721TransferEventLogsFromResult(
+export function erc721TransferEventLogsFromResult(
     _events: Result
 ): ExpectedERC721Transfer[] {
     const results: ExpectedERC721Transfer[] = []
