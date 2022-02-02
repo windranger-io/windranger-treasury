@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 /**
- * @title
+ * @title Abstract upgradeable contract that provides the ability to sweep erroneous transferred tokens to a defined beneficiary address
  *
- * @dev
+ * @dev Access control implementation is required for many functions by design
  */
 abstract contract BaseTokenSweep is UUPSUpgradeable {
     address public beneficiary;

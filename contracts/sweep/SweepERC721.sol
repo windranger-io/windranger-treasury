@@ -11,6 +11,11 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol"
  * @dev
  */
 abstract contract SweepERC721 is BaseTokenSweep {
+    /**
+     * @notice Sweep the erc721 tokens to the beneficiary address
+     *
+     * @dev Needs access control implemented in the inheriting contract
+     **/
     function sweepERC721Tokens(IERC721Upgradeable token, uint256 tokenId)
         external
         virtual

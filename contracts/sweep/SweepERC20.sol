@@ -12,6 +12,11 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
  * @dev
  */
 abstract contract SweepERC20 is BaseTokenSweep {
+    /**
+     * @notice Sweep the erc20 tokens to the beneficiary address
+     *
+     * @dev Needs access control implemented in the inheriting contract
+     **/
     function sweepERC20Tokens(IERC20Upgradeable token, uint256 amount)
         external
         virtual
