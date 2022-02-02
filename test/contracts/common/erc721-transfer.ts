@@ -1,7 +1,5 @@
-import {ExpectTokenTransfer} from '../bond/single-collateral-bond-events'
-import {ActualTokenTransfer} from '../bond/verify-single-collateral-bond-events'
 import {BigNumber, BaseContract, ContractReceipt, Event} from 'ethers'
-import {TransferEvent} from '../../../typechain/IERC20'
+import {TransferEvent} from '../../../typechain/IERC721'
 import {expect} from 'chai'
 import {events} from '../../framework/events'
 import {verifyOrderedEvents} from '../../framework/verify'
@@ -9,29 +7,29 @@ import {eventLog} from '../../framework/event-logs'
 import {Result} from '@ethersproject/abi'
 import {log} from '../../../config/logging'
 
-export function deepEqualsTokenTransfer(
-    actual: ActualTokenTransfer,
-    expected: ExpectTokenTransfer
+export function deepEqualsERC721TokenTransfer(
+    actual: ActualERC721Transfer,
+    expected: ExpectedERC721Transfer
 ): boolean {
     return (
         actual.to === expected.to &&
         actual.from === expected.from &&
-        actual.value.toBigInt() === expected.amount
+        actual.tokenId.toBigInt() === expected.tokenId
     )
 }
 
 /**
  * Shape check and conversion for a TransferEvents.
  */
-export function transferEvents(_events: Event[]): {
+export function erc721TransferEvents(_events: Event[]): {
     from: string
     to: string
-    value: BigNumber
+    tokenId: BigNumber
 }[] {
     const converted: {
         from: string
         to: string
-        value: BigNumber
+        tokenId: BigNumber
     }[] = []
 
     for (let i = 0; i < _events.length; i++) {
@@ -41,7 +39,7 @@ export function transferEvents(_events: Event[]): {
         const args = _events[i].args
         expect(args?.from).is.not.undefined
         expect(args?.to).is.not.undefined
-        expect(args?.value).is.not.undefined
+        expect(args?.tokenId).is.not.undefined
 
         converted.push(transfer.args)
     }
@@ -54,34 +52,38 @@ export function transferEvents(_events: Event[]): {
  */
 export function verifyERC20TransferEvents(
     receipt: ContractReceipt,
-    expectedTransfers: ExpectTokenTransfer[]
+    expectedTransfers: ExpectedERC721Transfer[]
 ): void {
-    const actualTransfers = transferEvents(events('Transfer', receipt))
+    const actualTransfers = erc721TransferEvents(events('Transfer', receipt))
 
     verifyOrderedEvents(
         actualTransfers,
         expectedTransfers,
-        (actual: ActualTokenTransfer, expected: ExpectTokenTransfer) =>
-            deepEqualsTokenTransfer(actual, expected)
+        (actual: ActualERC721Transfer, expected: ExpectedERC721Transfer) =>
+            deepEqualsERC721TokenTransfer(actual, expected)
     )
 }
 
-export type ExpectedTransfer = {
+export type ExpectedERC721Transfer = {
     to: string
     from: string
-    amount: bigint
+    tokenId: bigint
 }
-
+export type ActualERC721Transfer = {
+    to: string
+    from: string
+    tokenId: BigNumber
+}
 /**
  * Verifies the content forW
  */
-export function verifyTransferEventLogs<T extends BaseContract>(
-    expectedEvent: ExpectedTransfer[],
+export function verifyERC721TransferEventLogs<T extends BaseContract>(
+    expectedEvent: ExpectedERC721Transfer[],
     emitter: T,
     receipt: ContractReceipt
 ): void {
     const transferEventLogResults = eventLog('Transfer', emitter, receipt)
-    const transferEventLogs = transferEventLogsFromResult(
+    const transferEventLogs = erc721TransferEventLogsFromResult(
         transferEventLogResults
     )
     expect(transferEventLogs.length).equals(expectedEvent.length)
@@ -91,8 +93,10 @@ export function verifyTransferEventLogs<T extends BaseContract>(
     }
 }
 
-function transferEventLogsFromResult(_events: Result): ExpectedTransfer[] {
-    const results: ExpectedTransfer[] = []
+function erc721TransferEventLogsFromResult(
+    _events: Result
+): ExpectedERC721Transfer[] {
+    const results: ExpectedERC721Transfer[] = []
 
     /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     for (const event of _events) {
@@ -102,14 +106,14 @@ function transferEventLogsFromResult(_events: Result): ExpectedTransfer[] {
         expect(event?.from).is.not.undefined
         expect(event?.from).to.be.a('string')
 
-        expect(event?.value).is.not.undefined
-        expect(event?.value._isBigNumber).to.be.true
+        expect(event?.tokenId).is.not.undefined
+        expect(event?.tokenId._isBigNumber).to.be.true
 
         results.push({
             to: String(event?.to),
             from: String(event?.from),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            amount: BigInt(event?.value)
+            tokenId: BigInt(event?.tokenId)
         })
     }
     /* eslint-enable @typescript-eslint/no-unsafe-member-access */

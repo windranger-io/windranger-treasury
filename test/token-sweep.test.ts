@@ -18,14 +18,15 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {constants, ContractReceipt, Wallet} from 'ethers'
+import {BigNumber, constants, ContractReceipt, Wallet} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {log} from '../config/logging'
 import {
     verifyTransferEventLogs,
-    verifyTransferEvents
+    verifyERC20TransferEvents
 } from './contracts/common/erc20-transfer'
 import {successfulTransaction} from './framework/transaction'
+import {verifyERC721TransferEventLogs} from './contracts/common/erc721-transfer'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -163,7 +164,6 @@ describe('Token Sweep contracts', () => {
         })
 
         it('cannot sweep with zero address', async () => {
-            await erc721SweepHarness.setBeneficiary((await signer(1)).address)
             await expect(
                 erc721SweepHarness.sweepERC721Tokens(ADDRESS_ZERO, 0)
             ).to.be.revertedWith('SweepERC721: null-token')
@@ -178,10 +178,29 @@ describe('Token Sweep contracts', () => {
             ).to.be.revertedWith('SweepERC721: self-transfer')
         })
 
+        async function sweepERC721Tokens(
+            tokenAddress: string,
+            tokenId: bigint
+        ): Promise<ContractReceipt> {
+            return successfulTransaction(
+                erc721SweepHarness.sweepERC721Tokens(tokenAddress, tokenId)
+            )
+        }
+
         it('transfers trapped erc721', async () => {
-            await expect(
-                await erc721SweepHarness.sweepERC721Tokens(erc721.address, 0)
-            ).to.emit(erc721, 'Transfer')
+            const receipt = await sweepERC721Tokens(erc721.address, BigInt(0))
+
+            verifyERC721TransferEventLogs(
+                [
+                    {
+                        from: erc721SweepHarness.address,
+                        to: beneficary,
+                        tokenId: BigInt(0)
+                    }
+                ],
+                erc721,
+                receipt
+            )
         })
     })
 })
