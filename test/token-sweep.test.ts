@@ -39,7 +39,6 @@ describe('Token Sweep contracts', () => {
         erc20SweepHarness =
             await deployContractWithProxy<SweepERC20TokensHarness>(
                 'SweepERC20TokensHarness'
-                // [erc20Symbol, erc20Name]
             )
 
         erc721SweepHarness =
