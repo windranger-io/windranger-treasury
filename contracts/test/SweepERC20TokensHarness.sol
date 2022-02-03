@@ -8,7 +8,5 @@ contract SweepERC20TokensHarness is SweepERC20 {
         internal
         view
         override
-    {
-        // blank
-    }
+    {}
 }

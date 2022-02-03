@@ -8,7 +8,5 @@ contract SweepERC721TokensHarness is SweepERC721 {
         internal
         view
         override
-    {
-        // blank
-    }
+    {}
 }
