@@ -23,12 +23,12 @@ abstract contract TokenSweep is UUPSUpgradeable {
      * @dev Needs access control implemented in the inheriting contract
      * @param beneficiary The address of the beneficiary
      */
-    function _setBeneficiary(address beneficiary) internal {
-        require(beneficiary != address(0), "TokenSweep: beneficiary-zero");
-        require(beneficiary != address(this), "TokenSweep: self-address");
-        require(beneficiary != _beneficiary, "TokenSweep: not-updating");
+    function _setBeneficiary(address newBeneficiary) internal {
+        require(newBeneficiary != address(0), "TokenSweep: beneficiary-zero");
+        require(newBeneficiary != address(this), "TokenSweep: self-address");
+        require(newBeneficiary != _beneficiary, "TokenSweep: not-updating");
 
-        _beneficiary = beneficiary;
-        emit BeneficiaryUpdated(beneficiary);
+        _beneficiary = newBeneficiary;
+        emit BeneficiaryUpdated(newBeneficiary);
     }
 }
