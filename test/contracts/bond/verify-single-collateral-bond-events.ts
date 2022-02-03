@@ -1,7 +1,9 @@
 import {BigNumber, ContractReceipt} from 'ethers'
-import {event, events} from '../../framework/events'
+import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {
+    ExpectFlushTransfer,
+    ExpectTokenBalance,
     allowRedemptionEvent,
     debtIssueEvent,
     expireEvent,
@@ -11,13 +13,6 @@ import {
     slashEvent,
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
-
-import {verifyOrderedEvents} from '../../framework/verify'
-import {
-    deepEqualsERC20TokenTransfer,
-    erc20TransferEvents
-} from '../common/erc20-transfer'
-import {log} from '../../../config/logging'
 
 export type ActualTokenTransfer = {
     from: string
