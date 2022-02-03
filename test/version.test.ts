@@ -22,7 +22,7 @@ describe('Versioned Box contract', () => {
         it('maintains version across upgrade', async () => {
             const MOCK_TAG = 'mock_tag'
             const LONG_TAG =
-                'blahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblah'
+                'blahblahblahblahblahblahblahblahblahblahblahblahblahblahblahblahb'
             const originalVersion: string = await box.VERSION()
             expect(originalVersion).to.not.equal(MOCK_TAG)
             // upgrading to the same implementation
