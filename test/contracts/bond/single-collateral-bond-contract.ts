@@ -1,4 +1,4 @@
-import {ERC20SingleCollateralBond} from '../../../typechain'
+import {ERC20SingleCollateralBond} from '../../../typechain-types'
 import {ethers} from 'hardhat'
 
 export async function erc20SingleCollateralBondContractAt(

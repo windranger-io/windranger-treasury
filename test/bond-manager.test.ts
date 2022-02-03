@@ -10,9 +10,8 @@ import {
     BitDAO,
     BondFactory,
     BondManager,
-    ERC20,
     ERC20SingleCollateralBond
-} from '../typechain'
+} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
@@ -35,6 +34,7 @@ import {
     verifyAddBondEvents,
     verifyAddBondLogEvents
 } from './contracts/bond/verify-curator-events'
+import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -595,7 +595,7 @@ describe('Bond Manager contract', () => {
     let nonBondAdmin: SignerWithAddress
     let nonBondAggregator: SignerWithAddress
     let curator: BondManager
-    let collateralTokens: ERC20
+    let collateralTokens: ExtendedERC20
     let collateralSymbol: string
     let creator: BondFactory
 })

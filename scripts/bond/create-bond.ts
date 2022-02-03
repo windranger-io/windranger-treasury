@@ -1,5 +1,5 @@
 import {ethers, run} from 'hardhat'
-import {BondMediator} from '../../typechain'
+import {BondMediator} from '../../typechain-types'
 import {log} from '../../config/logging'
 import {ContractReceipt, Event} from 'ethers'
 

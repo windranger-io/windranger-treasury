@@ -4,7 +4,7 @@
 import {
     AdminChangedEvent,
     UpgradedEvent
-} from '../../../typechain/UUPSUpgradeable'
+} from '../../../typechain-types/UUPSUpgradeable'
 import {Event} from 'ethers'
 import {expect} from 'chai'
 

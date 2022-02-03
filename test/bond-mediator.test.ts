@@ -10,9 +10,8 @@ import {
     BitDAO,
     BondFactory,
     BondManager,
-    BondMediator,
-    ERC20
-} from '../typechain'
+    BondMediator
+} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
@@ -31,6 +30,7 @@ import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-colla
 import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from './contracts/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -252,7 +252,7 @@ describe('Bond Mediator contract', () => {
     let memberTwo: string
     let memberThree: string
     let nonAdmin: SignerWithAddress
-    let collateralTokens: ERC20
+    let collateralTokens: ExtendedERC20
     let mediator: BondMediator
     let curator: BondManager
     let creator: BondFactory

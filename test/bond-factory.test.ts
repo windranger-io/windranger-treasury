@@ -6,7 +6,7 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondFactory, Box, ERC20} from '../typechain'
+import {BitDAO, BondFactory, Box, ERC20} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
@@ -21,6 +21,7 @@ import {
     DAO_ADMIN_ROLE,
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
+import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -387,7 +388,7 @@ describe('Bond Factory contract', () => {
     let memberTwo: string
     let memberThree: string
     let nonAdmin: SignerWithAddress
-    let collateralTokens: ERC20
+    let collateralTokens: ExtendedERC20
     let collateralSymbol: string
     let bonds: BondFactory
 })

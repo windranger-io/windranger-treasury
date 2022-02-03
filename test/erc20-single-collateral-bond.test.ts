@@ -9,9 +9,8 @@ import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
     BondFactory,
-    ERC20,
     ERC20SingleCollateralBond
-} from '../typechain'
+} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
@@ -35,6 +34,7 @@ import {
 } from './contracts/bond/verify-single-collateral-bond-events'
 import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
+import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -59,7 +59,10 @@ describe('ERC20 Single Collateral Bond contract', () => {
     })
 
     beforeEach(async () => {
-        collateralTokens = await deployContract<BitDAO>('BitDAO', admin.address)
+        collateralTokens = (await deployContract<BitDAO>(
+            'BitDAO',
+            admin.address
+        )) as ExtendedERC20
         collateralSymbol = await collateralTokens.symbol()
         bonds = await deployContractWithProxy<BondFactory>(
             'BondFactory',
@@ -1728,7 +1731,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
     let admin: SignerWithAddress
     let bond: ERC20SingleCollateralBond
     let treasury: string
-    let collateralTokens: ERC20
+    let collateralTokens: ExtendedERC20
     let collateralSymbol: string
     let guarantorOne: SignerWithAddress
     let guarantorTwo: SignerWithAddress
@@ -1754,7 +1757,7 @@ type GuarantorCollateralSetup = {
 async function setupGuarantorWithCollateral(
     guarantor: GuarantorCollateralSetup,
     bond: ERC20SingleCollateralBond,
-    collateral: ERC20
+    collateral: ExtendedERC20
 ) {
     await collateral.transfer(guarantor.signer.address, guarantor.pledge)
     await collateral
@@ -1764,7 +1767,7 @@ async function setupGuarantorWithCollateral(
 
 async function verifyBondAndCollateralBalances(
     balance: ExpectedBalance,
-    collateral: ERC20,
+    collateral: ExtendedERC20,
     bond: ERC20SingleCollateralBond
 ): Promise<void> {
     const address =

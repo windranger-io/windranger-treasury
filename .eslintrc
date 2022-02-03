@@ -2,7 +2,7 @@
   "ignorePatterns": [
     "dist",
     "node_modules",
-    "typechain"
+    "typechain-types"
   ],
   "root": true,
   "parser": "@typescript-eslint/parser",
