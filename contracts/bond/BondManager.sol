@@ -10,6 +10,7 @@ import "./CollateralWhitelist.sol";
 import "./BondCurator.sol";
 import "./Roles.sol";
 import "./SingleCollateralBond.sol";
+import "../Version.sol";
 
 /**
  * @title Manages interactions with Bond contracts.
@@ -22,7 +23,8 @@ contract BondManager is
     AccessControlUpgradeable,
     BondCurator,
     PausableUpgradeable,
-    UUPSUpgradeable
+    UUPSUpgradeable,
+    Version
 {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 

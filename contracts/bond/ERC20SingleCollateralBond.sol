@@ -9,6 +9,7 @@ import "./ExpiryTimestamp.sol";
 import "./SingleCollateralBond.sol";
 import "./MetaDataStore.sol";
 import "./Redeemable.sol";
+import "../Version.sol";
 
 /**
  * @title A Bond is an issuance of debt tokens, which are exchange for deposit of collateral.
@@ -27,7 +28,8 @@ contract ERC20SingleCollateralBond is
     MetaDataStore,
     OwnableUpgradeable,
     PausableUpgradeable,
-    Redeemable
+    Redeemable,
+    Version
 {
     // Multiplier / divider for four decimal places, used in redemption ratio calculation.
     uint256 private constant _REDEMPTION_RATIO_ACCURACY = 1e4;
