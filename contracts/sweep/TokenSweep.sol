@@ -21,7 +21,7 @@ abstract contract TokenSweep is UUPSUpgradeable {
      * @notice Set the beneficiary of the token sweep
      *
      * @dev Needs access control implemented in the inheriting contract
-     * @param beneficiary The address of the beneficiary
+     * @param newBeneficiary The address of the beneficiary
      */
     function _setBeneficiary(address newBeneficiary) internal {
         require(newBeneficiary != address(0), "TokenSweep: beneficiary-zero");
