@@ -13,13 +13,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol"
 abstract contract SweepERC721 is TokenSweep {
     /**
      * @notice Sweep the erc721 tokens to the beneficiary address
-     *
-     * @dev Needs access control implemented in the inheriting contract
      **/
-    function sweepERC721Tokens(address token, uint256 tokenId)
-        external
-        virtual
-    {
+    function _sweepERC721Tokens(address token, uint256 tokenId) internal {
         require(address(token) != address(this), "SweepERC721: self-transfer");
         require(address(token) != address(0), "SweepERC721: null-token");
 

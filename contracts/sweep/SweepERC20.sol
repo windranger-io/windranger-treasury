@@ -14,10 +14,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 abstract contract SweepERC20 is TokenSweep {
     /**
      * @notice Sweep the erc20 tokens to the beneficiary address
-     *
-     * @dev Needs access control implemented in the inheriting contract
      **/
-    function sweepERC20Tokens(address token, uint256 amount) external virtual {
+    function _sweepERC20Tokens(address token, uint256 amount) internal {
         require(address(token) != address(this), "SweepERC20: self-transfer");
         require(address(token) != address(0), "SweepERC20: null-token");
 
