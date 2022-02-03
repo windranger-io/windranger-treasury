@@ -6,6 +6,8 @@ import {
     ExpireEvent,
     FullCollateralEvent,
     PartialCollateralEvent,
+    PartialReleaseEvent,
+    PartialReleaseWithdrawEvent,
     RedemptionEvent,
     SlashEvent,
     WithdrawCollateralEvent
@@ -215,4 +217,42 @@ export function withdrawCollateralEvent(event: Event): {
     expect(args?.collateralAmount).is.not.undefined
 
     return withdraw.args
+}
+
+/**
+ * Shape check and conversion for a PartialReleaseEvent.
+ */
+export function partialReleaseEvent(event: Event): {
+    collateralSymbol: string
+    collateralAmount: BigNumber
+} {
+    const partialRelease = event as PartialReleaseEvent
+    expect(partialRelease.args).is.not.undefined
+
+    const args = partialRelease.args
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.collateralAmount).is.not.undefined
+
+    return partialRelease.args
+}
+
+/**
+ * Shape check and conversion for a PartialReleaseWithdraw.
+ */
+export function partialReleaseWithdrawEvent(event: Event): {
+    user: string
+    debtSymbol: string
+    collateralSymbol: string
+    partialReleaseAmount: BigNumber
+} {
+    const debt = event as PartialReleaseWithdrawEvent
+    expect(debt.args).is.not.undefined
+
+    const args = debt.args
+    expect(args?.user).is.not.undefined
+    expect(args?.debtSymbol).is.not.undefined
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.partialReleaseAmount).is.not.undefined
+
+    return debt.args
 }

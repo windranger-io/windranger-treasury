@@ -31,7 +31,9 @@ import {
     verifyRedemptionEvent,
     verifySlashEvent,
     verifyTransferEvents,
-    verifyWithdrawCollateralEvent
+    verifyWithdrawCollateralEvent,
+    verifyPartialReleaseEvent,
+    verifyPartialReleaseWithdrawEvent
 } from './contracts/bond/verify-single-collateral-bond-events'
 import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
@@ -43,6 +45,8 @@ const ADDRESS_ZERO = constants.AddressZero
 const ZERO = 0n
 const ONE = 1n
 const ONE_DAY_MS = 1000 * 60 * 60 * 24
+const TEN_PERCENT = 10n
+const TWEENTY_PERCENT = 20n
 const FORTY_PERCENT = 40n
 const FIFTY_PERCENT = 50n
 const DATA = 'performance factors;assessment date;rewards pool'
@@ -1651,6 +1655,268 @@ describe('ERC20 Single Collateral Bond contract', () => {
         ])
     })
 
+    describe('partial release', () => {
+        let debtSymbol: string
+        const pledgeOne = 40000n
+        const pledgeTwo = 60000n
+        const debtTokens = pledgeOne + pledgeTwo
+        const slashedCollateralOne = slash(debtTokens, 100n - FORTY_PERCENT)
+        const slashedCollateralTwo = slash(debtTokens, 100n - TEN_PERCENT)
+        const partialReleaseOne = partialReleaseAmount(debtTokens, TEN_PERCENT)
+        const partialReleaseTwo = partialReleaseAmount(
+            debtTokens,
+            TWEENTY_PERCENT
+        )
+
+        beforeEach(async () => {
+            bond = await createBond(bonds, debtTokens)
+            debtSymbol = await bond.symbol()
+            await setupGuarantorsWithCollateral([
+                {signer: guarantorOne, pledge: pledgeOne},
+                {signer: guarantorTwo, pledge: pledgeTwo}
+            ])
+        })
+
+        it('check balance', async () => {
+            // Each Guarantor has their full collateral amount (their pledge)
+            await verifyBalances([
+                {address: bond.address, bond: debtTokens, collateral: ZERO},
+                {address: guarantorOne, bond: ZERO, collateral: pledgeOne},
+                {address: guarantorTwo, bond: ZERO, collateral: pledgeTwo},
+                {address: treasury, bond: ZERO, collateral: ZERO}
+            ])
+        })
+
+        it('reverts when call partialRelease', async () => {
+            await expect(partialRelease(0n)).to.be.revertedWith(
+                'Bond: too small'
+            )
+            await expect(partialRelease(200000n)).to.be.revertedWith(
+                'Bond: too large'
+            )
+        })
+
+        it('reverts when call withdrawPartialRelease part 1', async () => {
+            await expect(
+                withdrawPartialRelease(guarantorOne)
+            ).to.be.revertedWith('whenRedeemable: not redeemable')
+            // Bond redemption allowed by Owner
+            const allowRedemptionReceipt = await allowRedemption()
+            verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+            await expect(
+                withdrawPartialRelease(guarantorOne)
+            ).to.be.revertedWith('Bond: no partial release')
+        })
+
+        it('reverts when call withdrawPartialRelease part 2', async () => {
+            await depositBond(guarantorOne, pledgeOne)
+            // partial release 10%(pledgeOne * 10% = 4000n)
+            const partialReleaseReceipt = await partialRelease(
+                partialReleaseOne
+            )
+            verifyPartialReleaseEvent(partialReleaseReceipt, {
+                symbol: collateralSymbol,
+                amount: partialReleaseOne
+            })
+
+            // Bond redemption allowed by Owner
+            await allowRedemption()
+
+            await expect(
+                withdrawPartialRelease(guarantorTwo)
+            ).to.be.revertedWith('Bond: user has no deposit')
+
+            // Guarantor One withdrawPartialRelease, can get 10%(pledgeOne * 10% = 4000n)
+            await withdrawPartialRelease(guarantorOne)
+
+            // Guarantor One withdrawPartialRelease again
+            await expect(
+                withdrawPartialRelease(guarantorOne)
+            ).to.be.revertedWith('Bond: already withdrawn')
+        })
+
+        it('one guarantor deposit his full collateral, partial release 10%, redeem, then withdraw partial release', async () => {
+            await depositBond(guarantorOne, pledgeOne)
+            expect(await bond.collateral()).equals(pledgeOne)
+            await verifyBalances([
+                {address: bond.address, bond: pledgeTwo, collateral: pledgeOne},
+                {address: guarantorOne, bond: pledgeOne, collateral: ZERO}
+            ])
+
+            // partial release 10%(pledgeOne * 10% = 4000n)
+            const partialReleaseReceipt = await partialRelease(
+                partialReleaseOne
+            )
+            verifyPartialReleaseEvent(partialReleaseReceipt, {
+                symbol: collateralSymbol,
+                amount: partialReleaseOne
+            })
+
+            // Bond redemption allowed by Owner
+            const allowRedemptionReceipt = await allowRedemption()
+            verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+
+            // Guarantor One redeem their bond, can only redeem 90%(because of 10% partial release)
+            const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
+            verifyRedemptionEvent(
+                redeemOneReceipt,
+                guarantorOne.address,
+                {symbol: debtSymbol, amount: pledgeOne},
+                {
+                    symbol: collateralSymbol,
+                    amount: pledgeOne - partialReleaseOne
+                }
+            )
+
+            // Guarantor One withdrawPartialRelease, can get 10%(pledgeOne * 10% = 4000n)
+            const withdrawPartialReleaseReceipt = await withdrawPartialRelease(
+                guarantorOne
+            )
+            verifyPartialReleaseWithdrawEvent(
+                withdrawPartialReleaseReceipt,
+                guarantorOne.address,
+                {symbol: debtSymbol, amount: 0n},
+                {symbol: collateralSymbol, amount: partialReleaseOne}
+            )
+
+            await verifyBalances([
+                {address: guarantorOne, bond: ZERO, collateral: pledgeOne}
+            ])
+        })
+
+        it('two guarantors deposit full collateral, partially slashed, partially release, then redeem and withdraw partial release', async () => {
+            await depositBond(guarantorOne, pledgeOne)
+            expect(await bond.collateral()).equals(pledgeOne)
+            await verifyBalances([
+                {address: bond.address, bond: pledgeTwo, collateral: pledgeOne},
+                {address: guarantorOne, bond: pledgeOne, collateral: ZERO}
+            ])
+
+            await depositBond(guarantorTwo, pledgeTwo)
+            expect(await bond.collateral()).equals(debtTokens)
+
+            // Bond holds all collateral, issued debt tokens
+            await verifyBalances([
+                {address: bond.address, bond: ZERO, collateral: debtTokens},
+                {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
+                {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
+                {address: treasury, bond: ZERO, collateral: ZERO}
+            ])
+
+            // slash 40%
+            await slashCollateral(slashedCollateralOne)
+            await verifyBalances([
+                {
+                    address: bond.address,
+                    bond: ZERO,
+                    collateral: debtTokens - slashedCollateralOne
+                },
+                {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
+                {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
+                {
+                    address: treasury,
+                    bond: ZERO,
+                    collateral: slashedCollateralOne
+                }
+            ])
+
+            // partial release 10%
+            await partialRelease(partialReleaseOne)
+
+            // partial release 20%
+            await partialRelease(partialReleaseTwo)
+
+            // slash 10%
+            await slashCollateral(slashedCollateralTwo)
+
+            await verifyBalances([
+                {
+                    address: bond.address,
+                    bond: ZERO,
+                    collateral:
+                        debtTokens - slashedCollateralOne - slashedCollateralTwo
+                },
+                {address: guarantorOne, bond: pledgeOne, collateral: ZERO},
+                {address: guarantorTwo, bond: pledgeTwo, collateral: ZERO},
+                {
+                    address: treasury,
+                    bond: ZERO,
+                    collateral: slashedCollateralOne + slashedCollateralTwo
+                }
+            ])
+
+            // Bond redemption allowed by Owner
+            const allowRedemptionReceipt = await allowRedemption()
+            verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+
+            // Guarantor One redeem their bond, can only redeem 20%(40000n * 20% = 8000)
+            const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
+            verifyRedemptionEvent(
+                redeemOneReceipt,
+                guarantorOne.address,
+                {symbol: debtSymbol, amount: pledgeOne},
+                {symbol: collateralSymbol, amount: (pledgeOne * 2n) / 10n}
+            )
+
+            /*
+             * slash 40% + partial release 10% + partial release 20% + slash 10% = 80%
+             * total slash 50% = 100000n * 50% = 50000n
+             * total partial release 30% = 100000n * 30% = 30000n
+             */
+
+            // Guarantor Two redeem their bond, can only redeem 20%(60000n * 20% = 12000)
+            const redeemTwoReceipt = await redeem(guarantorTwo, pledgeTwo)
+            verifyRedemptionEvent(
+                redeemTwoReceipt,
+                guarantorTwo.address,
+                {symbol: debtSymbol, amount: pledgeTwo},
+                {symbol: collateralSymbol, amount: (pledgeTwo * 2n) / 10n}
+            )
+
+            // Guarantor One withdrawPartialRelease, can get (40000n * (100000n * 30%)) / 100000n = 12000
+            const withdrawPartialReleaseReceipt = await withdrawPartialRelease(
+                guarantorOne
+            )
+            verifyPartialReleaseWithdrawEvent(
+                withdrawPartialReleaseReceipt,
+                guarantorOne.address,
+                {symbol: debtSymbol, amount: ZERO},
+                {symbol: collateralSymbol, amount: 12000n}
+            )
+
+            // Guarantor Two withdrawPartialRelease, can get (60000n * (100000n * 30%)) / 100000n = 18000
+            const withdrawPartialReleaseReceiptTwo =
+                await withdrawPartialRelease(guarantorTwo)
+            verifyPartialReleaseWithdrawEvent(
+                withdrawPartialReleaseReceiptTwo,
+                guarantorTwo.address,
+                {symbol: debtSymbol, amount: ZERO},
+                {symbol: collateralSymbol, amount: 18000n}
+            )
+
+            const pledgeOneRedeem = (pledgeOne * 2n) / 10n
+            const pledgeTwoRedeem = (pledgeTwo * 2n) / 10n
+            await verifyBalances([
+                {address: bond.address, bond: ZERO, collateral: ZERO},
+                {
+                    address: guarantorOne,
+                    bond: ZERO,
+                    collateral: 12000n + pledgeOneRedeem
+                },
+                {
+                    address: guarantorTwo,
+                    bond: ZERO,
+                    collateral: 18000n + pledgeTwoRedeem
+                },
+                {
+                    address: treasury,
+                    bond: ZERO,
+                    collateral: slashedCollateralOne + slashedCollateralTwo
+                }
+            ])
+        })
+    })
+
     async function expire(): Promise<ContractReceipt> {
         return successfulTransaction(bond.expire())
     }
@@ -1672,6 +1938,18 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
     async function withdrawCollateral(): Promise<ContractReceipt> {
         return successfulTransaction(bond.withdrawCollateral())
+    }
+
+    async function partialRelease(amount: bigint): Promise<ContractReceipt> {
+        return successfulTransaction(bond.partialRelease(amount))
+    }
+
+    async function withdrawPartialRelease(
+        guarantor: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(
+            bond.connect(guarantor).withdrawPartialRelease()
+        )
     }
 
     async function depositBond(
@@ -1738,6 +2016,10 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
 function slash(amount: bigint, percent: bigint): bigint {
     return ((100n - percent) * amount) / 100n
+}
+
+function partialReleaseAmount(amount: bigint, percent: bigint): bigint {
+    return (percent * amount) / 100n
 }
 
 type ExpectedBalance = {

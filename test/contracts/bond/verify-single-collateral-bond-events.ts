@@ -13,7 +13,9 @@ import {
     redemptionEvent,
     slashEvent,
     transferEvents,
-    withdrawCollateralEvent
+    withdrawCollateralEvent,
+    partialReleaseEvent,
+    partialReleaseWithdrawEvent
 } from './single-collateral-bond-events'
 import {verifyOrderedEvents} from '../../framework/verify'
 
@@ -203,4 +205,54 @@ function deepEqualsTokenTransfer(
         actual.from === expected.from &&
         actual.value.toBigInt() === expected.amount
     )
+}
+
+/**
+ * Verifies the content for a PartialRelease event.
+ */
+export function verifyPartialReleaseEvent(
+    receipt: ContractReceipt,
+    collateral: ExpectTokenBalance
+): void {
+    const onlyPartialReleaseEvent = partialReleaseEvent(
+        event('PartialRelease', receipt)
+    )
+    expect(
+        onlyPartialReleaseEvent.collateralSymbol,
+        'PartialRelease symbol'
+    ).equals(collateral.symbol)
+    expect(
+        onlyPartialReleaseEvent.collateralAmount,
+        'PartialRelease amount'
+    ).equals(collateral.amount)
+}
+
+/**
+ * Verifies the content for a PartialReleaseWithdraw event.
+ */
+export function verifyPartialReleaseWithdrawEvent(
+    receipt: ContractReceipt,
+    user: string,
+    debt: ExpectTokenBalance,
+    collateral: ExpectTokenBalance
+): void {
+    const onlyPartialReleaseWithdrawEvent = partialReleaseWithdrawEvent(
+        event('PartialReleaseWithdraw', receipt)
+    )
+    expect(
+        onlyPartialReleaseWithdrawEvent.user,
+        'PartialReleaseWithdraw user'
+    ).equals(user)
+    expect(
+        onlyPartialReleaseWithdrawEvent.debtSymbol,
+        'PartialReleaseWithdraw debt symbol'
+    ).equals(debt.symbol)
+    expect(
+        onlyPartialReleaseWithdrawEvent.collateralSymbol,
+        'PartialReleaseWithdraw collateral symbol'
+    ).equals(collateral.symbol)
+    expect(
+        onlyPartialReleaseWithdrawEvent.partialReleaseAmount,
+        'PartialReleaseWithdraw collateral amount'
+    ).equals(collateral.amount)
 }

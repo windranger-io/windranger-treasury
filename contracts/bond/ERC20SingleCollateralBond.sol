@@ -64,6 +64,18 @@ contract ERC20SingleCollateralBond is
 
     address private _treasury;
 
+    // amount of partial release
+    uint256 private _partialReleaseTotal;
+
+    // mapping of user deposit
+    mapping(address => uint256) private _userDeposit;
+
+    // wthether user has withdrew partial release
+    mapping(address => bool) private _hasWithdrewPartialRelease;
+
+    // total supply snapshot, total supply will be changed by redeem
+    uint256 private _totalSupplySnapshot;
+
     event AllowRedemption(address authorizer);
     event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
     event Deposit(
@@ -96,6 +108,13 @@ contract ERC20SingleCollateralBond is
         address treasury,
         string collateralSymbol,
         uint256 collateralAmount
+    );
+    event PartialRelease(string collateralSymbol, uint256 collateralAmount);
+    event PartialReleaseWithdraw(
+        address user,
+        string debtSymbol,
+        string collateralSymbol,
+        uint256 partialReleaseAmount
     );
 
     /**
@@ -163,9 +182,11 @@ contract ERC20SingleCollateralBond is
             );
         }
 
-        if (_hasBeenSlashed()) {
+        if (_hasBeenSlashed() || _hasPartialRelease()) {
             _redemptionRatio = _calculateRedemptionRatio();
         }
+        // total supply snapshot
+        _totalSupplySnapshot = totalSupply() - _debtTokensRedemptionExcess;
     }
 
     function deposit(uint256 amount)
@@ -183,6 +204,7 @@ contract ERC20SingleCollateralBond is
 
         _collateral += amount;
         _debtTokensOutstanding += amount;
+        _userDeposit[_msgSender()] += amount;
 
         emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
 
@@ -337,6 +359,51 @@ contract ERC20SingleCollateralBond is
         require(transferred, "Bond: collateral transfer failed");
     }
 
+    function partialRelease(uint256 amount)
+        external
+        whenNotPaused
+        whenNotRedeemable
+        onlyOwner
+    {
+        require(amount > 0, "Bond: too small");
+        require(amount <= _collateral, "Bond: too large");
+
+        _collateral -= amount;
+        _partialReleaseTotal += amount;
+
+        emit PartialRelease(_collateralTokens.symbol(), amount);
+    }
+
+    function withdrawPartialRelease() external whenNotPaused whenRedeemable {
+        require(_partialReleaseTotal > 0, "Bond: no partial release");
+        require(
+            !_hasWithdrewPartialRelease[_msgSender()],
+            "Bond: already withdrawn"
+        );
+        require(_userDeposit[_msgSender()] > 0, "Bond: user has no deposit");
+        uint256 partialWithdrawalAmount = _getPartialWithdrawalAmount();
+
+        _debtTokensOutstanding -= partialWithdrawalAmount;
+
+        emit PartialReleaseWithdraw(
+            _msgSender(),
+            symbol(),
+            _collateralTokens.symbol(),
+            partialWithdrawalAmount
+        );
+
+        if (partialWithdrawalAmount > 0) {
+            // Partial release can reduce redemption amount to zero
+            _hasWithdrewPartialRelease[_msgSender()] = true;
+
+            bool transferred = _collateralTokens.transfer(
+                _msgSender(),
+                partialWithdrawalAmount
+            );
+            require(transferred, "Bond: partial transfer failed");
+        }
+    }
+
     /**
      * @notice How much collateral held by the bond is owned to the Guarantors.
      *
@@ -420,6 +487,20 @@ contract ERC20SingleCollateralBond is
         return _treasury;
     }
 
+    /**
+     * @notice Total amount of partial release.
+     */
+    function getPartialReleaseTotal() external view returns (uint256) {
+        return _partialReleaseTotal;
+    }
+
+    /**
+     * @notice Get user deposit by address.
+     */
+    function getUserDeposit(address user) external view returns (uint256) {
+        return _userDeposit[user];
+    }
+
     function hasFullCollateral() public view returns (bool) {
         return _debtTokensRemaining() == 0;
     }
@@ -489,9 +570,22 @@ contract ERC20SingleCollateralBond is
     }
 
     /**
+     * @dev Whether has partial release.
+     */
+    function _hasPartialRelease() private view returns (bool) {
+        return _partialReleaseTotal > 0;
+    }
+
+    /**
      * @dev Whether the Bond has held debt tokens.
      */
     function _hasDebtTokensRemaining() private view returns (bool) {
         return _debtTokensRemaining() > 0;
+    }
+
+    function _getPartialWithdrawalAmount() private view returns (uint256) {
+        return
+            (_userDeposit[_msgSender()] * _partialReleaseTotal) /
+            _totalSupplySnapshot;
     }
 }
