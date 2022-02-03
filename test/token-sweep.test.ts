@@ -65,7 +65,7 @@ describe('Token Sweep contracts', () => {
             erc721URI
         )
     })
-    describe('setBeneficiary()', () => {
+    describe('set beneficiary address', () => {
         it('updates the beneficiary address', async () => {
             const newBeneficiary = await signer(1)
             await expect(
@@ -94,14 +94,14 @@ describe('Token Sweep contracts', () => {
         })
     })
 
-    describe('sweepERC20Tokens()', () => {
+    describe('sweep erc20 tokens', () => {
         const ERC20_TOKEN_AMOUNT = 100n
         before(async () => {
             await erc20SweepHarness.setBeneficiary(beneficary)
             await erc20.mint(erc20SweepHarness.address, ERC20_TOKEN_AMOUNT)
         })
 
-        it('cannot sweep with zero address', async () => {
+        it('cannot sweep with zero address as token', async () => {
             await expect(
                 erc20SweepHarness.sweepERC20Tokens(
                     ADDRESS_ZERO,
@@ -110,7 +110,7 @@ describe('Token Sweep contracts', () => {
             ).to.be.revertedWith('SweepERC20: null-token')
         })
 
-        it('cannot sweep with self address', async () => {
+        it('cannot sweep with self address as token', async () => {
             await expect(
                 erc20SweepHarness.sweepERC20Tokens(
                     erc20SweepHarness.address,
@@ -148,19 +148,19 @@ describe('Token Sweep contracts', () => {
         })
     })
 
-    describe('sweepERC721Tokens()', () => {
+    describe('sweep erc721 tokens', () => {
         before(async () => {
             await erc721SweepHarness.setBeneficiary(beneficary)
             await erc721.mint(erc721SweepHarness.address)
         })
 
-        it('cannot sweep with zero address', async () => {
+        it('cannot sweep with zero address as token', async () => {
             await expect(
                 erc721SweepHarness.sweepERC721Tokens(ADDRESS_ZERO, 0)
             ).to.be.revertedWith('SweepERC721: null-token')
         })
 
-        it('cannot sweep with self address', async () => {
+        it('cannot sweep with self address as token', async () => {
             await expect(
                 erc721SweepHarness.sweepERC721Tokens(
                     erc721SweepHarness.address,
