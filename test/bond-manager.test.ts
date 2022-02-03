@@ -34,7 +34,7 @@ import {
     verifyAddBondEvents,
     verifyAddBondLogEvents
 } from './contracts/bond/verify-curator-events'
-import {ExtendedERC20} from './contracts/extended-erc20'
+import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

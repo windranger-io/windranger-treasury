@@ -21,7 +21,7 @@ import {
     DAO_ADMIN_ROLE,
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
-import {ExtendedERC20} from './contracts/extended-erc20'
+import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

@@ -6,7 +6,7 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {Box} from '../typechain'
+import {Box} from '../typechain-types'
 import {deployContractWithProxy, upgradeContract} from './framework/contracts'
 
 // Wires up Waffle with Chai

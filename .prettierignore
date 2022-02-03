@@ -1,4 +1,4 @@
 # Ignore artifacts:
 node_modules
 dist
-typechain
+test/contracts/cast

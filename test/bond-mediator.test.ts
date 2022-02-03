@@ -30,7 +30,7 @@ import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-colla
 import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from './contracts/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {ExtendedERC20} from './contracts/extended-erc20'
+import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
