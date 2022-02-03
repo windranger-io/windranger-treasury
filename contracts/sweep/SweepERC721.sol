@@ -6,9 +6,7 @@ import "./TokenSweep.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 
 /**
- * @title Adds the ability to sweep a token to a beneficiary address
- *
- * @dev
+ * @title Adds the ability to sweep ERC721 tokens to a beneficiary address
  */
 abstract contract SweepERC721 is TokenSweep {
     /**
