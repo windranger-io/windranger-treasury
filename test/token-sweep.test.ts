@@ -26,18 +26,13 @@ import {verifyERC721TransferEventLogs} from './contracts/common/verify-erc721-tr
 chai.use(solidity)
 
 const ADDRESS_ZERO = constants.AddressZero
+const erc20Symbol = 'TKN'
+const erc20Name = 'Test ERC20 Token'
+const erc721Symbol = 'TKN721'
+const erc721Name = 'Test ERC721 Token'
+const erc721URI = 'blah'
 
 describe('Token Sweep contracts', () => {
-    let beneficary: string
-    let erc20: ERC20PresetMinterPauser
-    const erc20Symbol = 'TKN'
-    const erc20Name = 'Test ERC20 Token'
-    const erc721Symbol = 'TKN721'
-    const erc721Name = 'Test ERC721 Token'
-    const erc721URI = 'blah'
-    let erc20SweepHarness: SweepERC20TokensHarness
-    let erc721: ERC721PresetMinterPauserAutoId
-    let erc721SweepHarness: SweepERC721TokensHarness
     before(async () => {
         beneficary = (await signer(2)).address
 
@@ -194,4 +189,9 @@ describe('Token Sweep contracts', () => {
             )
         })
     })
+    let erc20SweepHarness: SweepERC20TokensHarness
+    let erc721: ERC721PresetMinterPauserAutoId
+    let erc721SweepHarness: SweepERC721TokensHarness
+    let erc20: ERC20PresetMinterPauser
+    let beneficary: string
 })
