@@ -76,13 +76,13 @@ describe('Token Sweep contracts', () => {
         it('cannot set zero address as beneficiary', async () => {
             await expect(
                 erc20SweepHarness.setBeneficiary(ADDRESS_ZERO)
-            ).to.be.revertedWith('BaseTokenSweep: beneficiary-zero')
+            ).to.be.revertedWith('TokenSweep: beneficiary-zero')
         })
 
         it('cannot set self as beneficiary', async () => {
             await expect(
                 erc20SweepHarness.setBeneficiary(erc20SweepHarness.address)
-            ).to.be.revertedWith('BaseTokenSweep: self-address')
+            ).to.be.revertedWith('TokenSweep: self-address')
         })
 
         it('cannot update to self', async () => {
@@ -90,7 +90,7 @@ describe('Token Sweep contracts', () => {
             await erc20SweepHarness.setBeneficiary(randomAddress)
             await expect(
                 erc20SweepHarness.setBeneficiary(randomAddress)
-            ).to.be.revertedWith('BaseTokenSweep: not-updating')
+            ).to.be.revertedWith('TokenSweep: not-updating')
         })
     })
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./BaseTokenSweep.sol";
+import "./TokenSweep.sol";
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
@@ -11,7 +11,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
  *
  * @dev
  */
-abstract contract SweepERC20 is BaseTokenSweep {
+abstract contract SweepERC20 is TokenSweep {
     /**
      * @notice Sweep the erc20 tokens to the beneficiary address
      *
@@ -24,7 +24,7 @@ abstract contract SweepERC20 is BaseTokenSweep {
         require(address(token) != address(this), "SweepERC20: self-transfer");
         require(address(token) != address(0), "SweepERC20: null-token");
 
-        bool result = token.transfer(beneficiary, amount);
+        bool result = token.transfer(_beneficiary, amount);
         require(result, "SweepERC20: transfer failed");
     }
 }
