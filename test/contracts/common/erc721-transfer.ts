@@ -1,11 +1,7 @@
-import {BigNumber, BaseContract, ContractReceipt, Event} from 'ethers'
+import {BigNumber, Event} from 'ethers'
 import {TransferEvent} from '../../../typechain/IERC721'
 import {expect} from 'chai'
-import {events} from '../../framework/events'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {eventLog} from '../../framework/event-logs'
 import {Result} from '@ethersproject/abi'
-import {log} from '../../../config/logging'
 
 export function deepEqualsERC721TokenTransfer(
     actual: ActualERC721Transfer,

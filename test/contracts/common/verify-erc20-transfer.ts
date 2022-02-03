@@ -1,13 +1,10 @@
 import {ExpectTokenTransfer} from '../bond/single-collateral-bond-events'
 import {ActualTokenTransfer} from '../bond/verify-single-collateral-bond-events'
-import {BigNumber, BaseContract, ContractReceipt, Event} from 'ethers'
-import {TransferEvent} from '../../../typechain/IERC20'
+import {BaseContract, ContractReceipt} from 'ethers'
 import {expect} from 'chai'
 import {events} from '../../framework/events'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
-import {Result} from '@ethersproject/abi'
-import {log} from '../../../config/logging'
 import {
     erc20TransferEvents,
     deepEqualsERC20TokenTransfer,

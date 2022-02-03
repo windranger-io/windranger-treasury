@@ -16,13 +16,17 @@ abstract contract SweepERC721 is TokenSweep {
      *
      * @dev Needs access control implemented in the inheriting contract
      **/
-    function sweepERC721Tokens(IERC721Upgradeable token, uint256 tokenId)
+    function sweepERC721Tokens(address token, uint256 tokenId)
         external
         virtual
     {
         require(address(token) != address(this), "SweepERC721: self-transfer");
         require(address(token) != address(0), "SweepERC721: null-token");
 
-        token.safeTransferFrom(address(this), _beneficiary, tokenId);
+        IERC721Upgradeable(token).safeTransferFrom(
+            address(this),
+            _beneficiary,
+            tokenId
+        );
     }
 }

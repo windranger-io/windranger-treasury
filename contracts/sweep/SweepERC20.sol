@@ -17,14 +17,11 @@ abstract contract SweepERC20 is TokenSweep {
      *
      * @dev Needs access control implemented in the inheriting contract
      **/
-    function sweepERC20Tokens(IERC20Upgradeable token, uint256 amount)
-        external
-        virtual
-    {
+    function sweepERC20Tokens(address token, uint256 amount) external virtual {
         require(address(token) != address(this), "SweepERC20: self-transfer");
         require(address(token) != address(0), "SweepERC20: null-token");
 
-        bool result = token.transfer(_beneficiary, amount);
+        bool result = IERC20Upgradeable(token).transfer(_beneficiary, amount);
         require(result, "SweepERC20: transfer failed");
     }
 }

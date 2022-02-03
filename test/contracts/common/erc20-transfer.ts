@@ -1,13 +1,9 @@
 import {ExpectTokenTransfer} from '../bond/single-collateral-bond-events'
 import {ActualTokenTransfer} from '../bond/verify-single-collateral-bond-events'
-import {BigNumber, BaseContract, ContractReceipt, Event} from 'ethers'
+import {BigNumber, Event} from 'ethers'
 import {TransferEvent} from '../../../typechain/IERC20'
 import {expect} from 'chai'
-import {events} from '../../framework/events'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {eventLog} from '../../framework/event-logs'
 import {Result} from '@ethersproject/abi'
-import {log} from '../../../config/logging'
 
 export function deepEqualsERC20TokenTransfer(
     actual: ActualTokenTransfer,
@@ -23,7 +19,7 @@ export function deepEqualsERC20TokenTransfer(
 /**
  * Shape check and conversion for a TransferEvents.
  */
-export function erc20TransferEvents(_events: Event[]): {
+export function erc20TransferEvents(events: Event[]): {
     from: string
     to: string
     value: BigNumber
@@ -34,11 +30,11 @@ export function erc20TransferEvents(_events: Event[]): {
         value: BigNumber
     }[] = []
 
-    for (let i = 0; i < _events.length; i++) {
-        const transfer = _events[i] as TransferEvent
+    for (let i = 0; i < events.length; i++) {
+        const transfer = events[i] as TransferEvent
         expect(transfer.args).is.not.undefined
 
-        const args = _events[i].args
+        const args = events[i].args
         expect(args?.from).is.not.undefined
         expect(args?.to).is.not.undefined
         expect(args?.value).is.not.undefined
@@ -55,12 +51,12 @@ export type ExpectedERC20Transfer = {
 }
 
 export function erc20TransferEventLogsFromResult(
-    _events: Result
+    events: Result
 ): ExpectedERC20Transfer[] {
     const results: ExpectedERC20Transfer[] = []
 
     /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-    for (const event of _events) {
+    for (const event of events) {
         expect(event?.to).is.not.undefined
         expect(event?.to).to.be.a('string')
 
