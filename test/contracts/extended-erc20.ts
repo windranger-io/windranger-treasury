@@ -12,6 +12,7 @@ import {Provider} from '@ethersproject/providers'
 /**
  * Partial duplication of the TypeChain generated file, to enable casting of contract that inherit from ERC20.
  * (This broken during the TypeChain 7.x & associated HardHat upgrades)
+ * If the casting from a child to a parent TypeChain contract (i.e. BitDAO -> ERC20) works again, this should be removed.
  */
 export interface ExtendedERC20 extends BaseContract {
     connect(signerOrProvider: Signer | Provider | string): this

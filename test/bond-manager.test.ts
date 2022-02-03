@@ -34,6 +34,7 @@ import {
     verifyAddBondEvents,
     verifyAddBondLogEvents
 } from './contracts/bond/verify-curator-events'
+import {ExtendedERC20} from './contracts/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -594,7 +595,7 @@ describe('Bond Manager contract', () => {
     let nonBondAdmin: SignerWithAddress
     let nonBondAggregator: SignerWithAddress
     let curator: BondManager
-    let collateralTokens: BitDAO
+    let collateralTokens: ExtendedERC20
     let collateralSymbol: string
     let creator: BondFactory
 })

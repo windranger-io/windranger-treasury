@@ -30,6 +30,7 @@ import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-colla
 import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from './contracts/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {ExtendedERC20} from './contracts/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -251,7 +252,7 @@ describe('Bond Mediator contract', () => {
     let memberTwo: string
     let memberThree: string
     let nonAdmin: SignerWithAddress
-    let collateralTokens: BitDAO
+    let collateralTokens: ExtendedERC20
     let mediator: BondMediator
     let curator: BondManager
     let creator: BondFactory

@@ -21,6 +21,7 @@ import {
     DAO_ADMIN_ROLE,
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
+import {ExtendedERC20} from './contracts/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -387,7 +388,7 @@ describe('Bond Factory contract', () => {
     let memberTwo: string
     let memberThree: string
     let nonAdmin: SignerWithAddress
-    let collateralTokens: BitDAO
+    let collateralTokens: ExtendedERC20
     let collateralSymbol: string
     let bonds: BondFactory
 })
