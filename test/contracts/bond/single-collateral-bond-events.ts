@@ -10,7 +10,6 @@ import {
     SlashEvent,
     WithdrawCollateralEvent
 } from '../../../typechain-types/ERC20SingleCollateralBond'
-import {TransferEvent} from '../../../typechain-types/IERC20'
 
 export type ActualAllowRedemptionEvent = {authorizer: string}
 

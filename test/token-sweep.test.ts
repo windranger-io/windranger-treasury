@@ -11,7 +11,7 @@ import {
     SweepERC721TokensHarness,
     ERC721PresetMinterPauserAutoId,
     ERC20PresetMinterPauser
-} from '../typechain'
+} from '../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,

@@ -1,5 +1,5 @@
 import {BigNumber, Event} from 'ethers'
-import {TransferEvent} from '../../../typechain/IERC721'
+import {TransferEvent} from '../../../typechain-types/IERC721'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 

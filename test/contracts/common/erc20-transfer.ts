@@ -1,7 +1,7 @@
 import {ExpectTokenTransfer} from '../bond/single-collateral-bond-events'
 import {ActualTokenTransfer} from '../bond/verify-single-collateral-bond-events'
 import {BigNumber, Event} from 'ethers'
-import {TransferEvent} from '../../../typechain/IERC20'
+import {TransferEvent} from '../../../typechain-types/IERC20'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 
