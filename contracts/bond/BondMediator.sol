@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
 import "./Roles.sol";
+import "../Version.sol";
 
 /**
  * @title Mediates between a Bond creator and Bond curator.
@@ -15,7 +16,7 @@ import "./Roles.sol";
  * @dev Orchestrates a BondCreator and BondCurator to provide a single function to aggregate the various calls
  *      providing a single function to create and setup a bond for management with the curator.
  */
-contract BondMediator is AccessControlUpgradeable, UUPSUpgradeable {
+contract BondMediator is AccessControlUpgradeable, UUPSUpgradeable, Version {
     BondCreator private _creator;
     BondCurator private _curator;
 
