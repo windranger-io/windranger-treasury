@@ -7,7 +7,7 @@ artifacts
 cache
 
 # TypeChain
-typechain
+typechain-types
 
 # Logs
 logs
