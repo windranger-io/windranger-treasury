@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
 import "./Roles.sol";
@@ -16,7 +16,7 @@ import "../Version.sol";
  * @dev Orchestrates a BondCreator and BondCurator to provide a single function to aggregate the various calls
  *      providing a single function to create and setup a bond for management with the curator.
  */
-contract BondMediator is AccessControlUpgradeable, UUPSUpgradeable, Version {
+contract BondMediator is BondAccessControl, UUPSUpgradeable, Version {
     BondCreator private _creator;
     BondCurator private _curator;
 
@@ -41,17 +41,11 @@ contract BondMediator is AccessControlUpgradeable, UUPSUpgradeable, Version {
             "Mediator: curator not a contract"
         );
 
-        __AccessControl_init();
+        __BondAccessControl_init();
+        __UUPSUpgradeable_init();
 
         _creator = BondCreator(factory);
         _curator = BondCurator(manager);
-
-        _setRoleAdmin(Roles.BOND_ADMIN, Roles.DAO_ADMIN);
-        _setRoleAdmin(Roles.DAO_ADMIN, Roles.DAO_ADMIN);
-        _setRoleAdmin(Roles.SYSTEM_ADMIN, Roles.DAO_ADMIN);
-        _setupRole(Roles.DAO_ADMIN, _msgSender());
-        _setupRole(Roles.SYSTEM_ADMIN, _msgSender());
-        _setupRole(Roles.BOND_ADMIN, _msgSender());
     }
 
     /**

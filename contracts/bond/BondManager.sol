@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "./CollateralWhitelist.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+import "./BondAccessControl.sol";
 import "./BondCurator.sol";
+import "./CollateralWhitelist.sol";
 import "./Roles.sol";
 import "./SingleCollateralBond.sol";
 import "../Version.sol";
@@ -20,7 +20,7 @@ import "../Version.sol";
  * @dev Owns of all Bonds it manages, guarding function accordingly allows finer access control to be provided.
  */
 contract BondManager is
-    AccessControlUpgradeable,
+    BondAccessControl,
     BondCurator,
     PausableUpgradeable,
     UUPSUpgradeable,
@@ -124,17 +124,9 @@ contract BondManager is
      *      have been setup.
      */
     function initialize() external virtual initializer {
-        __AccessControl_init();
+        __BondAccessControl_init();
         __Pausable_init();
-
-        _setRoleAdmin(Roles.BOND_ADMIN, Roles.DAO_ADMIN);
-        _setRoleAdmin(Roles.BOND_AGGREGATOR, Roles.DAO_ADMIN);
-        _setRoleAdmin(Roles.DAO_ADMIN, Roles.DAO_ADMIN);
-        _setRoleAdmin(Roles.SYSTEM_ADMIN, Roles.DAO_ADMIN);
-        _setupRole(Roles.BOND_ADMIN, _msgSender());
-        _setupRole(Roles.BOND_AGGREGATOR, _msgSender());
-        _setupRole(Roles.DAO_ADMIN, _msgSender());
-        _setupRole(Roles.SYSTEM_ADMIN, _msgSender());
+        __UUPSUpgradeable_init();
     }
 
     /**
