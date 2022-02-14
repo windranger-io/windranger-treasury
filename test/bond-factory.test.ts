@@ -16,11 +16,6 @@ import {
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
-import {
-    BOND_ADMIN_ROLE,
-    DAO_ADMIN_ROLE,
-    SYSTEM_ADMIN_ROLE
-} from './contracts/roles'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai

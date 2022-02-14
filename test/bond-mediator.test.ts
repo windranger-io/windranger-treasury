@@ -17,12 +17,7 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {
-    BOND_ADMIN_ROLE,
-    BOND_AGGREGATOR_ROLE,
-    DAO_ADMIN_ROLE,
-    SYSTEM_ADMIN_ROLE
-} from './contracts/roles'
+import {BOND_AGGREGATOR_ROLE} from './contracts/roles'
 import {successfulTransaction} from './framework/transaction'
 import {addBondEventLogs} from './contracts/bond/bond-curator-events'
 import {eventLog} from './framework/event-logs'
