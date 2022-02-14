@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./ERC20SingleCollateralBond.sol";
+import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./Roles.sol";
 import "../Version.sol";
@@ -15,7 +15,7 @@ import "../Version.sol";
  * @dev Uses common configuration when creating bond contracts.
  */
 contract BondFactory is
-    AccessControlUpgradeable,
+    BondAccessControl,
     BondCreator,
     CollateralWhitelist,
     UUPSUpgradeable,
@@ -141,34 +141,6 @@ contract BondFactory is
     }
 
     /**
-     * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
-     *      have been setup.
-     */
-    function __BondFactory_init(
-        address erc20CollateralTokens,
-        address erc20CapableTreasury
-    ) internal onlyInitializing {
-        __AccessControl_init();
-        __CollateralWhitelist_init();
-
-        require(
-            erc20CapableTreasury != address(0),
-            "BF: treasury is zero address"
-        );
-
-        _treasury = erc20CapableTreasury;
-
-        _setRoleAdmin(Roles.BOND_ADMIN, Roles.DAO_ADMIN);
-        _setRoleAdmin(Roles.DAO_ADMIN, Roles.DAO_ADMIN);
-        _setRoleAdmin(Roles.SYSTEM_ADMIN, Roles.DAO_ADMIN);
-        _setupRole(Roles.DAO_ADMIN, _msgSender());
-        _setupRole(Roles.SYSTEM_ADMIN, _msgSender());
-        _setupRole(Roles.BOND_ADMIN, _msgSender());
-
-        _whitelistCollateral(erc20CollateralTokens);
-    }
-
-    /**
      * @notice Permits only the owner to perform proxy upgrades.
      *
      * @dev Only applicable when deployed as implementation to a UUPS proxy.
@@ -178,4 +150,25 @@ contract BondFactory is
         override
         onlyRole(Roles.SYSTEM_ADMIN)
     {}
+
+    /**
+     * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
+     *      have been setup.
+     */
+    function __BondFactory_init(
+        address erc20CollateralTokens,
+        address erc20CapableTreasury
+    ) internal onlyInitializing {
+        __BondAccessControl_init();
+        __CollateralWhitelist_init();
+        __UUPSUpgradeable_init();
+
+        require(
+            erc20CapableTreasury != address(0),
+            "BF: treasury is zero address"
+        );
+
+        _treasury = erc20CapableTreasury;
+        _whitelistCollateral(erc20CollateralTokens);
+    }
 }
