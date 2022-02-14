@@ -1,12 +1,11 @@
 import {ExpectTokenTransfer} from '../bond/single-collateral-bond-events'
-import {ActualTokenTransfer} from '../bond/verify-single-collateral-bond-events'
 import {BigNumber, Event} from 'ethers'
 import {TransferEvent} from '../../../typechain-types/IERC20'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 
 export function deepEqualsERC20TokenTransfer(
-    actual: ActualTokenTransfer,
+    actual: ActualERC20Transfer,
     expected: ExpectTokenTransfer
 ): boolean {
     return (
@@ -14,6 +13,18 @@ export function deepEqualsERC20TokenTransfer(
         actual.from === expected.from &&
         actual.value.toBigInt() === expected.amount
     )
+}
+
+type ConvertedTransferEvent = {
+    from: string
+    to: string
+    value: BigNumber
+}
+
+export type ActualERC20Transfer = {
+    from: string
+    to: string
+    value: BigNumber
 }
 
 /**
@@ -24,11 +35,7 @@ export function erc20TransferEvents(events: Event[]): {
     to: string
     value: BigNumber
 }[] {
-    const converted: {
-        from: string
-        to: string
-        value: BigNumber
-    }[] = []
+    const converted: ConvertedTransferEvent[] = []
 
     for (let i = 0; i < events.length; i++) {
         const transfer = events[i] as TransferEvent
@@ -50,10 +57,8 @@ export type ExpectedERC20Transfer = {
     amount: bigint
 }
 
-export function erc20TransferEventLogsFromResult(
-    events: Result
-): ExpectedERC20Transfer[] {
-    const results: ExpectedERC20Transfer[] = []
+export function erc20TransferLogEvents(events: Result): ActualERC20Transfer[] {
+    const results: ActualERC20Transfer[] = []
 
     /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     for (const event of events) {
@@ -70,7 +75,7 @@ export function erc20TransferEventLogsFromResult(
             to: String(event?.to),
             from: String(event?.from),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            amount: BigInt(event?.value)
+            value: BigInt(event?.value)
         })
     }
     /* eslint-enable @typescript-eslint/no-unsafe-member-access */

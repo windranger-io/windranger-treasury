@@ -1,5 +1,4 @@
 import {ExpectTokenTransfer} from '../bond/single-collateral-bond-events'
-import {ActualTokenTransfer} from '../bond/verify-single-collateral-bond-events'
 import {BaseContract, ContractReceipt} from 'ethers'
 import {expect} from 'chai'
 import {events} from '../../framework/events'
@@ -9,7 +8,8 @@ import {
     erc20TransferEvents,
     deepEqualsERC20TokenTransfer,
     ExpectedERC20Transfer,
-    erc20TransferEventLogsFromResult
+    erc20TransferLogEvents,
+    ActualERC20Transfer
 } from './erc20-transfer'
 
 /**
@@ -24,7 +24,7 @@ export function verifyERC20TransferEvents(
     verifyOrderedEvents(
         actualTransfers,
         expectedTransfers,
-        (actual: ActualTokenTransfer, expected: ExpectTokenTransfer) =>
+        (actual: ActualERC20Transfer, expected: ExpectTokenTransfer) =>
             deepEqualsERC20TokenTransfer(actual, expected)
     )
 }
@@ -37,7 +37,7 @@ export function verifyERC20TransferEventLogs<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt
 ): void {
-    const transferEventLogs = erc20TransferEventLogsFromResult(
+    const transferEventLogs = erc20TransferLogEvents(
         eventLog('Transfer', emitter, receipt)
     )
     expect(transferEventLogs.length).equals(expectedEvent.length)

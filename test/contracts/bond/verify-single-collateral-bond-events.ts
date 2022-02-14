@@ -14,6 +14,7 @@ import {
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
 
+<<<<<<< HEAD
 export type ActualTokenTransfer = {
     from: string
     to: string
@@ -24,6 +25,8 @@ export type ExpectAllowRedemptionEvent = {
     authorizer: string
 }
 
+=======
+>>>>>>> 9f72f9a (typings and PR review feedback)
 /**
  * Verifies the content for a Allow Redemption event.
  */

@@ -14,25 +14,27 @@ export function deepEqualsERC721TokenTransfer(
     )
 }
 
+type ConvertedTransferEvent = {
+    from: string
+    to: string
+    tokenId: BigNumber
+}
+
 /**
  * Shape check and conversion for a TransferEvents.
  */
-export function erc721TransferEvents(_events: Event[]): {
+export function erc721TransferEvents(events: Event[]): {
     from: string
     to: string
     tokenId: BigNumber
 }[] {
-    const converted: {
-        from: string
-        to: string
-        tokenId: BigNumber
-    }[] = []
+    const converted: ConvertedTransferEvent[] = []
 
-    for (let i = 0; i < _events.length; i++) {
-        const transfer = _events[i] as TransferEvent
+    for (let i = 0; i < events.length; i++) {
+        const transfer = events[i] as TransferEvent
         expect(transfer.args).is.not.undefined
 
-        const args = _events[i].args
+        const args = events[i].args
         expect(args?.from).is.not.undefined
         expect(args?.to).is.not.undefined
         expect(args?.tokenId).is.not.undefined
@@ -56,12 +58,12 @@ export type ActualERC721Transfer = {
 }
 
 export function erc721TransferEventLogsFromResult(
-    _events: Result
+    events: Result
 ): ExpectedERC721Transfer[] {
     const results: ExpectedERC721Transfer[] = []
 
     /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-    for (const event of _events) {
+    for (const event of events) {
         expect(event?.to).is.not.undefined
         expect(event?.to).to.be.a('string')
 
