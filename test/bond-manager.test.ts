@@ -18,12 +18,6 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {
-    BOND_ADMIN_ROLE,
-    BOND_AGGREGATOR_ROLE,
-    DAO_ADMIN_ROLE,
-    SYSTEM_ADMIN_ROLE
-} from './contracts/roles'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {constants} from 'ethers'
 import {successfulTransaction} from './framework/transaction'
@@ -42,12 +36,9 @@ chai.use(solidity)
 describe('Bond Manager contract', () => {
     before(async () => {
         admin = (await signer(0)).address
-        memberOne = (await signer(2)).address
-        memberTwo = (await signer(3)).address
-        memberThree = (await signer(4)).address
-        nonBondAggregator = await signer(5)
-        nonBondAdmin = await signer(6)
-        treasury = (await signer(7)).address
+        nonBondAggregator = await signer(1)
+        nonBondAdmin = await signer(2)
+        treasury = (await signer(3)).address
         curator = await deployContractWithProxy<BondManager>('BondManager')
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
@@ -65,7 +56,7 @@ describe('Bond Manager contract', () => {
                     .connect(nonBondAggregator)
                     .addBond(constants.AddressZero)
             ).to.be.revertedWith(
-                'AccessControl: account 0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc is missing role 0x424f4e445f41474752454741544f520000000000000000000000000000000000'
+                'AccessControl: account 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 is missing role 0x424f4e445f41474752454741544f520000000000000000000000000000000000'
             )
         })
 
@@ -146,7 +137,7 @@ describe('Bond Manager contract', () => {
                         .connect(nonBondAdmin)
                         .bondAllowRedemption(bond.address)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
                 )
             })
 
@@ -180,7 +171,7 @@ describe('Bond Manager contract', () => {
                 await expect(
                     curator.connect(nonBondAdmin).bondPause(bond.address)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
                 )
             })
 
@@ -213,7 +204,7 @@ describe('Bond Manager contract', () => {
                 await expect(
                     curator.connect(nonBondAdmin).bondSlash(bond.address, 5n)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
                 )
             })
 
@@ -251,7 +242,7 @@ describe('Bond Manager contract', () => {
                         .connect(nonBondAdmin)
                         .bondSetMetaData(bond.address, 'meta')
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
                 )
             })
 
@@ -289,7 +280,7 @@ describe('Bond Manager contract', () => {
                         .connect(nonBondAdmin)
                         .bondSetTreasury(bond.address, bond.address)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
                 )
             })
 
@@ -325,7 +316,7 @@ describe('Bond Manager contract', () => {
                 await expect(
                     curator.connect(nonBondAdmin).bondUnpause(bond.address)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
                 )
             })
 
@@ -360,7 +351,7 @@ describe('Bond Manager contract', () => {
                         .connect(nonBondAdmin)
                         .bondWithdrawCollateral(bond.address)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
                 )
             })
 
@@ -398,7 +389,7 @@ describe('Bond Manager contract', () => {
             await expect(
                 curator.connect(nonBondAdmin).unpause()
             ).to.be.revertedWith(
-                'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
             )
         })
     })
@@ -422,7 +413,7 @@ describe('Bond Manager contract', () => {
             await expect(
                 curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(
-                'AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
             )
         })
     })
@@ -456,9 +447,6 @@ describe('Bond Manager contract', () => {
     }
 
     let admin: string
-    let memberOne: string
-    let memberTwo: string
-    let memberThree: string
     let treasury: string
     let nonBondAdmin: SignerWithAddress
     let nonBondAggregator: SignerWithAddress

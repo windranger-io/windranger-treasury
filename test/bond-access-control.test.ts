@@ -13,7 +13,6 @@ import {
 import {before} from 'mocha'
 import {deployContract, signer} from './framework/contracts'
 import {BondAccessControlBox} from '../typechain-types'
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {solidity} from 'ethereum-waffle'
 
 // Wires up Waffle with Chai
@@ -22,8 +21,6 @@ chai.use(solidity)
 describe('Bond Access Control contract', () => {
     before(async () => {
         admin = (await signer(0)).address
-        treasury = (await signer(1)).address
-        nonAdmin = await signer(2)
         memberOne = (await signer(3)).address
         memberTwo = (await signer(4)).address
         memberThree = (await signer(5)).address
@@ -169,10 +166,8 @@ describe('Bond Access Control contract', () => {
     })
 
     let admin: string
-    let treasury: string
     let memberOne: string
     let memberTwo: string
     let memberThree: string
-    let nonAdmin: SignerWithAddress
     let accessControl: BondAccessControlBox
 })
