@@ -36,12 +36,9 @@ chai.use(solidity)
 describe('Bond Manager contract', () => {
     before(async () => {
         admin = (await signer(0)).address
-        memberOne = (await signer(2)).address
-        memberTwo = (await signer(3)).address
-        memberThree = (await signer(4)).address
-        nonBondAggregator = await signer(5)
-        nonBondAdmin = await signer(6)
-        treasury = (await signer(7)).address
+        nonBondAggregator = await signer(1)
+        nonBondAdmin = await signer(2)
+        treasury = (await signer(3)).address
         curator = await deployContractWithProxy<BondManager>('BondManager')
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
@@ -450,9 +447,6 @@ describe('Bond Manager contract', () => {
     }
 
     let admin: string
-    let memberOne: string
-    let memberTwo: string
-    let memberThree: string
     let treasury: string
     let nonBondAdmin: SignerWithAddress
     let nonBondAggregator: SignerWithAddress

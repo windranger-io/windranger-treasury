@@ -34,10 +34,7 @@ describe('Bond Mediator contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
-        memberOne = (await signer(2)).address
-        memberTwo = (await signer(3)).address
-        memberThree = (await signer(4)).address
-        nonAdmin = await signer(5)
+        nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         curator = await deployContractWithProxy<BondManager>('BondManager')
         creator = await deployContractWithProxy<BondFactory>(
@@ -144,9 +141,6 @@ describe('Bond Mediator contract', () => {
 
     let admin: string
     let treasury: string
-    let memberOne: string
-    let memberTwo: string
-    let memberThree: string
     let nonAdmin: SignerWithAddress
     let collateralTokens: ExtendedERC20
     let mediator: BondMediator

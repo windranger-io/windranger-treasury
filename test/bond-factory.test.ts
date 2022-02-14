@@ -28,9 +28,6 @@ describe('Bond Factory contract', () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
-        memberOne = (await signer(3)).address
-        memberTwo = (await signer(4)).address
-        memberThree = (await signer(5)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
         bonds = await deployContractWithProxy<BondFactory>(
@@ -289,9 +286,6 @@ describe('Bond Factory contract', () => {
 
     let admin: string
     let treasury: string
-    let memberOne: string
-    let memberTwo: string
-    let memberThree: string
     let nonAdmin: SignerWithAddress
     let collateralTokens: ExtendedERC20
     let collateralSymbol: string
