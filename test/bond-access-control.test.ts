@@ -6,6 +6,7 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {
     BOND_ADMIN_ROLE,
+    BOND_AGGREGATOR_ROLE,
     DAO_ADMIN_ROLE,
     SYSTEM_ADMIN_ROLE
 } from './contracts/roles'
@@ -63,6 +64,42 @@ describe('Bond Access Control contract', () => {
         })
     })
 
+    describe('Bond Aggregator', () => {
+        it('add member', async () => {
+            expect(await accessControl.hasRole(BOND_AGGREGATOR_ROLE, memberOne))
+                .is.false
+            expect(await accessControl.hasRole(BOND_AGGREGATOR_ROLE, admin)).is
+                .true
+
+            await accessControl.grantRole(BOND_AGGREGATOR_ROLE, memberOne)
+
+            expect(await accessControl.hasRole(BOND_AGGREGATOR_ROLE, admin)).is
+                .true
+            expect(await accessControl.hasRole(BOND_AGGREGATOR_ROLE, memberOne))
+                .is.true
+        })
+
+        it('remove member', async () => {
+            expect(await accessControl.hasRole(BOND_AGGREGATOR_ROLE, admin)).is
+                .true
+            expect(await accessControl.hasRole(BOND_AGGREGATOR_ROLE, memberOne))
+                .is.true
+
+            await accessControl.revokeRole(BOND_AGGREGATOR_ROLE, memberOne)
+
+            expect(await accessControl.hasRole(BOND_AGGREGATOR_ROLE, admin)).is
+                .true
+            expect(await accessControl.hasRole(BOND_AGGREGATOR_ROLE, memberOne))
+                .is.false
+        })
+
+        it('DAO Admin is the role admin', async () => {
+            expect(
+                await accessControl.getRoleAdmin(BOND_AGGREGATOR_ROLE)
+            ).equals(DAO_ADMIN_ROLE)
+        })
+    })
+
     describe('DAO Admin', () => {
         it('add member', async () => {
             expect(await accessControl.hasRole(DAO_ADMIN_ROLE, admin)).is.true
@@ -116,12 +153,12 @@ describe('Bond Access Control contract', () => {
             expect(await accessControl.hasRole(SYSTEM_ADMIN_ROLE, memberThree))
                 .is.true
 
-            await accessControl.revokeRole(SYSTEM_ADMIN_ROLE, admin)
+            await accessControl.revokeRole(SYSTEM_ADMIN_ROLE, memberThree)
 
             expect(await accessControl.hasRole(SYSTEM_ADMIN_ROLE, admin)).is
-                .false
+                .true
             expect(await accessControl.hasRole(SYSTEM_ADMIN_ROLE, memberThree))
-                .is.true
+                .is.false
         })
 
         it('DAO Admin is the role admin', async () => {
