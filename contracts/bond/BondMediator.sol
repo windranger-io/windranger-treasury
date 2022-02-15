@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
@@ -16,7 +17,12 @@ import "../Version.sol";
  * @dev Orchestrates a BondCreator and BondCurator to provide a single function to aggregate the various calls
  *      providing a single function to create and setup a bond for management with the curator.
  */
-contract BondMediator is BondAccessControl, UUPSUpgradeable, Version {
+contract BondMediator is
+    BondAccessControl,
+    UUPSUpgradeable,
+    Version,
+    PausableUpgradeable
+{
     BondCreator private _creator;
     BondCurator private _curator;
 
@@ -61,7 +67,7 @@ contract BondMediator is BondAccessControl, UUPSUpgradeable, Version {
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
         string calldata data
-    ) external onlyRole(Roles.BOND_ADMIN) returns (address) {
+    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
         address bond = _creator.createBond(
             name,
             symbol,
@@ -77,6 +83,20 @@ contract BondMediator is BondAccessControl, UUPSUpgradeable, Version {
         _curator.addBond(bond);
 
         return bond;
+    }
+
+    /**
+     * @notice Pauses most side affecting functions.
+     */
+    function pause() external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+        _pause();
+    }
+
+    /**
+     * @notice Resumes all paused side affecting functions.
+     */
+    function unpause() external whenPaused onlyRole(Roles.BOND_ADMIN) {
+        _unpause();
     }
 
     function bondCreator() external view returns (address) {

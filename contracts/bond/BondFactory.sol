@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./CollateralWhitelist.sol";
 import "./ERC20SingleCollateralBond.sol";
@@ -19,7 +20,8 @@ contract BondFactory is
     BondCreator,
     CollateralWhitelist,
     UUPSUpgradeable,
-    Version
+    Version,
+    PausableUpgradeable
 {
     address private _treasury;
 
@@ -44,7 +46,7 @@ contract BondFactory is
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
         string calldata data
-    ) external override returns (address) {
+    ) external override whenNotPaused returns (address) {
         require(
             isCollateralWhitelisted(collateralTokenSymbol),
             "BF: collateral not whitelisted"
@@ -86,6 +88,7 @@ contract BondFactory is
      */
     function setTreasury(address replacement)
         external
+        whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
         require(replacement != address(0), "BF: treasury is zero address");
@@ -102,6 +105,7 @@ contract BondFactory is
      */
     function updateWhitelistedCollateral(address erc20CollateralTokens)
         external
+        whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
         _updateWhitelistedCollateral(erc20CollateralTokens);
@@ -116,6 +120,7 @@ contract BondFactory is
      */
     function removeWhitelistedCollateral(string calldata symbol)
         external
+        whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
         _removeWhitelistedCollateral(symbol);
@@ -131,9 +136,24 @@ contract BondFactory is
      */
     function whitelistCollateral(address erc20CollateralTokens)
         external
+        whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
         _whitelistCollateral(erc20CollateralTokens);
+    }
+
+    /**
+     * @notice Pauses most side affecting functions.
+     */
+    function pause() external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+        _pause();
+    }
+
+    /**
+     * @notice Resumes all paused side affecting functions.
+     */
+    function unpause() external whenPaused onlyRole(Roles.BOND_ADMIN) {
+        _unpause();
     }
 
     function treasury() external view returns (address) {

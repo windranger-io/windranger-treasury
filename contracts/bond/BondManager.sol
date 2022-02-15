@@ -131,8 +131,6 @@ contract BondManager is
 
     /**
      * @notice Pauses most side affecting functions.
-     *
-     * @dev The ony side effecting (non view or pure function) function exempt from pausing is expire().
      */
     function pause() external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
         _pause();
