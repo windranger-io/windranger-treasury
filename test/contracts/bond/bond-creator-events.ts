@@ -2,10 +2,7 @@ import {BigNumber, Event} from 'ethers'
 import {CreateBondEvent} from '../../../typechain-types/BondFactory'
 import {expect} from 'chai'
 
-/**
- * Shape check and conversion for a CreateBondEvent.
- */
-export function createBondEvent(event: Event): {
+export type ActualCreateBondEvent = {
     bond: string
     name: string
     debtSymbol: string
@@ -14,7 +11,12 @@ export function createBondEvent(event: Event): {
     treasury: string
     expiryTimestamp: BigNumber
     data: string
-} {
+}
+
+/**
+ * Shape check and conversion for a CreateBondEvent.
+ */
+export function createBondEvent(event: Event): ActualCreateBondEvent {
     const create = event as CreateBondEvent
     expect(event.args).is.not.undefined
 

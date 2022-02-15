@@ -2,9 +2,6 @@ import {BigNumber, ContractReceipt} from 'ethers'
 import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
-    ExpectFlushTransfer,
-    ExpectTokenBalance,
-    ExpectTokenTransfer,
     allowRedemptionEvent,
     debtIssueEvent,
     expireEvent,
@@ -16,6 +13,32 @@ import {
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
 import {verifyOrderedEvents} from '../../framework/verify'
+
+/**
+ * Expected balance combination of a symbol and amount (value).
+ */
+export type ExpectTokenBalance = {
+    symbol: string
+    amount: bigint
+}
+
+/**
+ * Expected ERC20 token transfer event.
+ */
+export type ExpectTokenTransfer = {
+    from: string
+    to: string
+    amount: bigint
+}
+
+/**
+ * Expected transfer event, withdrawing the remaining token amount from a Bond.
+ */
+export type ExpectFlushTransfer = {
+    to: string
+    symbol: string
+    amount: bigint
+}
 
 type ActualTokenTransfer = {
     from: string

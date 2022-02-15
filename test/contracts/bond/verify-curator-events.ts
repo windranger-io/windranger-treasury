@@ -1,5 +1,9 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {AddBond, addBondEventLogs, addBondEvents} from './bond-curator-events'
+import {
+    ActualAddBondEvent,
+    addBondEventLogs,
+    addBondEvents
+} from './bond-curator-events'
 import {eventLog} from '../../framework/event-logs'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
@@ -18,7 +22,7 @@ export function verifyAddBondEvents(
     verifyOrderedEvents(
         actualEvents,
         bonds,
-        (actual: AddBond, expected: ExpectedAddBondEvent) =>
+        (actual: ActualAddBondEvent, expected: ExpectedAddBondEvent) =>
             deepEqualsAddBondEvent(actual, expected)
     )
 }
@@ -36,13 +40,13 @@ export function verifyAddBondLogEvents<T extends BaseContract>(
     verifyOrderedEvents(
         actualEvents,
         bonds,
-        (actual: AddBond, expected: ExpectedAddBondEvent) =>
+        (actual: ActualAddBondEvent, expected: ExpectedAddBondEvent) =>
             deepEqualsAddBondEvent(actual, expected)
     )
 }
 
 function deepEqualsAddBondEvent(
-    actual: AddBond,
+    actual: ActualAddBondEvent,
     expected: ExpectedAddBondEvent
 ): boolean {
     return actual.bond === expected.bond

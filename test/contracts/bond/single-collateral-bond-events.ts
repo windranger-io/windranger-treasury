@@ -12,36 +12,62 @@ import {
 } from '../../../typechain-types/ERC20SingleCollateralBond'
 import {TransferEvent} from '../../../typechain-types/IERC20'
 
-/**
- * Expected balance combination of a symbol and amount (value).
- */
-export type ExpectTokenBalance = {
-    symbol: string
-    amount: bigint
+export type ActualAllowRedemptionEvent = {authorizer: string}
+
+export type ActualDebtIssueEvent = {
+    receiver: string
+    debSymbol: string
+    debtAmount: BigNumber
 }
 
-/**
- * Expected ERC20 token transfer event.
- */
-export type ExpectTokenTransfer = {
+export type ActualExpireEvent = {
+    sender: string
+    treasury: string
+    collateralSymbol: string
+    collateralAmount: BigNumber
+}
+
+export type ActualFullCollateralEvent = {
+    collateralSymbol: string
+    collateralAmount: BigNumber
+}
+
+export type ActualPartialCollateralEvent = {
+    collateralSymbol: string
+    collateralAmount: BigNumber
+    debtSymbol: string
+    debtRemaining: BigNumber
+}
+
+export type ActualRedemptionEvent = {
+    redeemer: string
+    debtSymbol: string
+    debtAmount: BigNumber
+    collateralSymbol: string
+    collateralAmount: BigNumber
+}
+
+export type ActualSlashEvent = {
+    collateralSymbol: string
+    collateralAmount: BigNumber
+}
+
+export type ActualTransferEvents = {
     from: string
     to: string
-    amount: bigint
+    value: BigNumber
 }
 
-/**
- * Expected transfer event, withdrawing the remaining token amount from a Bond.
- */
-export type ExpectFlushTransfer = {
-    to: string
-    symbol: string
-    amount: bigint
+export type ActualWithdrawCollateralEvent = {
+    treasury: string
+    collateralSymbol: string
+    collateralAmount: BigNumber
 }
 
 /**
  * Shape check and conversion for a AllowRedemptionEvent.
  */
-export function allowRedemptionEvent(event: Event): {authorizer: string} {
+export function allowRedemptionEvent(event: Event): ActualAllowRedemptionEvent {
     const redemption = event as AllowRedemptionEvent
     expect(redemption.args).is.not.undefined
 
@@ -54,11 +80,7 @@ export function allowRedemptionEvent(event: Event): {authorizer: string} {
 /**
  * Shape check and conversion for a DebtIssueEvent.
  */
-export function debtIssueEvent(event: Event): {
-    receiver: string
-    debSymbol: string
-    debtAmount: BigNumber
-} {
+export function debtIssueEvent(event: Event): ActualDebtIssueEvent {
     const debt = event as DebtIssueEvent
     expect(debt.args).is.not.undefined
 
@@ -73,12 +95,7 @@ export function debtIssueEvent(event: Event): {
 /**
  * Shape check and conversion for a ExpireEvent.
  */
-export function expireEvent(event: Event): {
-    sender: string
-    treasury: string
-    collateralSymbol: string
-    collateralAmount: BigNumber
-} {
+export function expireEvent(event: Event): ActualExpireEvent {
     const expire = event as ExpireEvent
     expect(expire.args).is.not.undefined
 
@@ -94,10 +111,7 @@ export function expireEvent(event: Event): {
 /**
  * Shape check and conversion for a FullCollateralEvent.
  */
-export function fullCollateralEvent(event: Event): {
-    collateralSymbol: string
-    collateralAmount: BigNumber
-} {
+export function fullCollateralEvent(event: Event): ActualFullCollateralEvent {
     const collateral = event as FullCollateralEvent
     expect(collateral.args).is.not.undefined
 
@@ -111,12 +125,9 @@ export function fullCollateralEvent(event: Event): {
 /**
  * Shape check and conversion for a PartialCollateralEvent.
  */
-export function partialCollateralEvent(event: Event): {
-    collateralSymbol: string
-    collateralAmount: BigNumber
-    debtSymbol: string
-    debtRemaining: BigNumber
-} {
+export function partialCollateralEvent(
+    event: Event
+): ActualPartialCollateralEvent {
     const collateral = event as PartialCollateralEvent
     expect(collateral.args).is.not.undefined
 
@@ -132,13 +143,7 @@ export function partialCollateralEvent(event: Event): {
 /**
  * Shape check and conversion for a RedemptionEvent.
  */
-export function redemptionEvent(event: Event): {
-    redeemer: string
-    debtSymbol: string
-    debtAmount: BigNumber
-    collateralSymbol: string
-    collateralAmount: BigNumber
-} {
+export function redemptionEvent(event: Event): ActualRedemptionEvent {
     const debt = event as RedemptionEvent
     expect(debt.args).is.not.undefined
 
@@ -155,10 +160,7 @@ export function redemptionEvent(event: Event): {
 /**
  * Shape check and conversion for a SlashEvent.
  */
-export function slashEvent(event: Event): {
-    collateralSymbol: string
-    collateralAmount: BigNumber
-} {
+export function slashEvent(event: Event): ActualSlashEvent {
     const slash = event as SlashEvent
     expect(slash.args).is.not.undefined
 
@@ -172,11 +174,7 @@ export function slashEvent(event: Event): {
 /**
  * Shape check and conversion for a TransferEvents.
  */
-export function transferEvents(events: Event[]): {
-    from: string
-    to: string
-    value: BigNumber
-}[] {
+export function transferEvents(events: Event[]): ActualTransferEvents[] {
     const converted: {
         from: string
         to: string
@@ -201,11 +199,9 @@ export function transferEvents(events: Event[]): {
 /**
  * Shape check and conversion for a WithdrawCollateralEvent.
  */
-export function withdrawCollateralEvent(event: Event): {
-    treasury: string
-    collateralSymbol: string
-    collateralAmount: BigNumber
-} {
+export function withdrawCollateralEvent(
+    event: Event
+): ActualWithdrawCollateralEvent {
     const withdraw = event as WithdrawCollateralEvent
     expect(withdraw.args).is.not.undefined
 

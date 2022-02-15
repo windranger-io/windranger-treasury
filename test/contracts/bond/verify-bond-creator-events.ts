@@ -4,19 +4,21 @@ import {expect} from 'chai'
 import {ethers} from 'hardhat'
 import {ContractReceipt} from 'ethers'
 
+export type ActualVerifyCreateBondEvent = {
+    name: string
+    debtSymbol: string
+    debtAmount: bigint
+    creator: string
+    treasury: string
+    expiryTimestamp: bigint
+    data: string
+}
+
 /**
  * Verifies the content for a Create Bond event.
  */
 export async function verifyCreateBondEvent(
-    expected: {
-        name: string
-        debtSymbol: string
-        debtAmount: bigint
-        creator: string
-        treasury: string
-        expiryTimestamp: bigint
-        data: string
-    },
+    expected: ActualVerifyCreateBondEvent,
     receipt: ContractReceipt
 ): Promise<void> {
     const creationEvent = createBondEvent(event('CreateBond', receipt))
