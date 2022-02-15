@@ -34,6 +34,7 @@ import {
 import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
 import {verifyERC20TransferEvents} from './contracts/common/verify-erc20-transfer'
+import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
