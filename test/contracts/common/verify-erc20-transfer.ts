@@ -8,7 +8,7 @@ import {
     erc20TransferEvents,
     deepEqualsERC20TokenTransfer,
     ExpectedERC20Transfer,
-    erc20TransferLogEvents,
+    erc20TransferEventLogs,
     ActualERC20Transfer
 } from './erc20-transfer'
 
@@ -33,16 +33,16 @@ export function verifyERC20TransferEvents(
  * Verifies the content for
  */
 export function verifyERC20TransferEventLogs<T extends BaseContract>(
-    expectedEvent: ExpectedERC20Transfer[],
+    expectedEvents: ExpectedERC20Transfer[],
     emitter: T,
     receipt: ContractReceipt
 ): void {
-    const transferEventLogs = erc20TransferLogEvents(
+    const transferEventLogs = erc20TransferEventLogs(
         eventLog('Transfer', emitter, receipt)
     )
-    expect(transferEventLogs.length).equals(expectedEvent.length)
+    expect(transferEventLogs.length).equals(expectedEvents.length)
 
-    for (let i = 0; i < expectedEvent.length; i++) {
-        expect(transferEventLogs[i]).to.deep.equal(expectedEvent[i])
+    for (let i = 0; i < expectedEvents.length; i++) {
+        deepEqualsERC20TokenTransfer(transferEventLogs[i], expectedEvents[i])
     }
 }

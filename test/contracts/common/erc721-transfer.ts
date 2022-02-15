@@ -3,6 +3,18 @@ import {TransferEvent} from '../../../typechain-types/IERC721'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 
+export type ExpectedERC721Transfer = {
+    to: string
+    from: string
+    tokenId: bigint
+}
+
+export type ActualERC721Transfer = {
+    to: string
+    from: string
+    tokenId: BigNumber
+}
+
 export function deepEqualsERC721TokenTransfer(
     actual: ActualERC721Transfer,
     expected: ExpectedERC721Transfer
@@ -14,21 +26,11 @@ export function deepEqualsERC721TokenTransfer(
     )
 }
 
-type ConvertedTransferEvent = {
-    from: string
-    to: string
-    tokenId: BigNumber
-}
-
 /**
  * Shape check and conversion for a TransferEvents.
  */
-export function erc721TransferEvents(events: Event[]): {
-    from: string
-    to: string
-    tokenId: BigNumber
-}[] {
-    const converted: ConvertedTransferEvent[] = []
+export function erc721TransferEvents(events: Event[]): ActualERC721Transfer[] {
+    const converted: ActualERC721Transfer[] = []
 
     for (let i = 0; i < events.length; i++) {
         const transfer = events[i] as TransferEvent
@@ -45,24 +47,11 @@ export function erc721TransferEvents(events: Event[]): {
     return converted
 }
 
-export type ExpectedERC721Transfer = {
-    to: string
-    from: string
-    tokenId: bigint
-}
+export function erc721TransferEventLogs(
+    events: Result[]
+): ActualERC721Transfer[] {
+    const results: ActualERC721Transfer[] = []
 
-export type ActualERC721Transfer = {
-    to: string
-    from: string
-    tokenId: BigNumber
-}
-
-export function erc721TransferEventLogsFromResult(
-    events: Result
-): ExpectedERC721Transfer[] {
-    const results: ExpectedERC721Transfer[] = []
-
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     for (const event of events) {
         expect(event?.to).is.not.undefined
         expect(event?.to).to.be.a('string')
@@ -71,16 +60,13 @@ export function erc721TransferEventLogsFromResult(
         expect(event?.from).to.be.a('string')
 
         expect(event?.tokenId).is.not.undefined
-        expect(event?.tokenId._isBigNumber).to.be.true
 
         results.push({
             to: String(event?.to),
             from: String(event?.from),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            tokenId: BigInt(event?.tokenId)
+            tokenId: BigNumber.from(event?.tokenId)
         })
     }
-    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
     return results
 }

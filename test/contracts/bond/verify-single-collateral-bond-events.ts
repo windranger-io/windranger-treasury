@@ -1,4 +1,4 @@
-import {BigNumber, ContractReceipt} from 'ethers'
+import {ContractReceipt} from 'ethers'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {

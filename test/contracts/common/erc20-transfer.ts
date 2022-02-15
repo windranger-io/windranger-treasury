@@ -4,6 +4,18 @@ import {TransferEvent} from '../../../typechain-types/IERC20'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 
+export type ActualERC20Transfer = {
+    from: string
+    to: string
+    value: BigNumber
+}
+
+export type ExpectedERC20Transfer = {
+    to: string
+    from: string
+    amount: bigint
+}
+
 export function deepEqualsERC20TokenTransfer(
     actual: ActualERC20Transfer,
     expected: ExpectTokenTransfer
@@ -15,27 +27,11 @@ export function deepEqualsERC20TokenTransfer(
     )
 }
 
-type ConvertedTransferEvent = {
-    from: string
-    to: string
-    value: BigNumber
-}
-
-export type ActualERC20Transfer = {
-    from: string
-    to: string
-    value: BigNumber
-}
-
 /**
  * Shape check and conversion for a TransferEvents.
  */
-export function erc20TransferEvents(events: Event[]): {
-    from: string
-    to: string
-    value: BigNumber
-}[] {
-    const converted: ConvertedTransferEvent[] = []
+export function erc20TransferEvents(events: Event[]): ActualERC20Transfer[] {
+    const converted: ActualERC20Transfer[] = []
 
     for (let i = 0; i < events.length; i++) {
         const transfer = events[i] as TransferEvent
@@ -51,16 +47,12 @@ export function erc20TransferEvents(events: Event[]): {
 
     return converted
 }
-export type ExpectedERC20Transfer = {
-    to: string
-    from: string
-    amount: bigint
-}
 
-export function erc20TransferLogEvents(events: Result): ActualERC20Transfer[] {
+export function erc20TransferEventLogs(
+    events: Result[]
+): ActualERC20Transfer[] {
     const results: ActualERC20Transfer[] = []
 
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     for (const event of events) {
         expect(event?.to).is.not.undefined
         expect(event?.to).to.be.a('string')
@@ -69,16 +61,12 @@ export function erc20TransferLogEvents(events: Result): ActualERC20Transfer[] {
         expect(event?.from).to.be.a('string')
 
         expect(event?.value).is.not.undefined
-        expect(event?.value._isBigNumber).to.be.true
 
         results.push({
             to: String(event?.to),
             from: String(event?.from),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            value: BigInt(event?.value)
+            value: BigNumber.from(event?.value)
         })
     }
-    /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-
     return results
 }

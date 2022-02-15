@@ -8,7 +8,7 @@ import {
     ActualERC721Transfer,
     erc721TransferEvents,
     deepEqualsERC721TokenTransfer,
-    erc721TransferEventLogsFromResult
+    erc721TransferEventLogs
 } from './erc721-transfer'
 
 /**
@@ -32,16 +32,16 @@ export function verifyERC721TransferEvents(
  * Verifies the content forW
  */
 export function verifyERC721TransferEventLogs<T extends BaseContract>(
-    expectedEvent: ExpectedERC721Transfer[],
+    expectedEvents: ExpectedERC721Transfer[],
     emitter: T,
     receipt: ContractReceipt
 ): void {
-    const transferEventLogs = erc721TransferEventLogsFromResult(
+    const transferEventLogs = erc721TransferEventLogs(
         eventLog('Transfer', emitter, receipt)
     )
-    expect(transferEventLogs.length).equals(expectedEvent.length)
+    expect(transferEventLogs.length).equals(expectedEvents.length)
 
-    for (let i = 0; i < expectedEvent.length; i++) {
-        expect(transferEventLogs[i]).to.deep.equal(expectedEvent[i])
+    for (let i = 0; i < expectedEvents.length; i++) {
+        deepEqualsERC721TokenTransfer(transferEventLogs[i], expectedEvents[i])
     }
 }
