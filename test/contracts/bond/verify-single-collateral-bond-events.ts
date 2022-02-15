@@ -2,9 +2,6 @@ import {BigNumber, ContractReceipt} from 'ethers'
 import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
-    ExpectFlushTransfer,
-    ExpectTokenBalance,
-    ExpectTokenTransfer,
     allowRedemptionEvent,
     debtIssueEvent,
     expireEvent,
@@ -17,10 +14,34 @@ import {
 } from './single-collateral-bond-events'
 import {verifyOrderedEvents} from '../../framework/verify'
 
-type ActualTokenTransfer = {
+/**
+ * Expected balance combination of a symbol and amount (value).
+ */
+export type ExpectTokenBalance = {
+    symbol: string
+    amount: bigint
+}
+
+export type ExpectTokenTransferEvent = {
+    from: string
+    to: string
+    amount: bigint
+}
+
+export type ExpectFlushTransferEvent = {
+    to: string
+    symbol: string
+    amount: bigint
+}
+
+export type ActualTokenTransferEvent = {
     from: string
     to: string
     value: BigNumber
+}
+
+export type ExpectAllowRedemptionEvent = {
+    authorizer: string
 }
 
 /**
@@ -28,13 +49,13 @@ type ActualTokenTransfer = {
  */
 export function verifyAllowRedemptionEvent(
     receipt: ContractReceipt,
-    authorizer: string
+    expected: ExpectAllowRedemptionEvent
 ): void {
     const allowRedemption = allowRedemptionEvent(
         event('AllowRedemption', receipt)
     )
     expect(allowRedemption.authorizer, 'AllowRedemption authorizer').equals(
-        authorizer
+        expected.authorizer
     )
 }
 
@@ -163,15 +184,17 @@ export function verifySlashEvent(
  */
 export function verifyTransferEvents(
     receipt: ContractReceipt,
-    expectedTransfers: ExpectTokenTransfer[]
+    expectedTransfers: ExpectTokenTransferEvent[]
 ): void {
     const actualTransfers = transferEvents(events('Transfer', receipt))
 
     verifyOrderedEvents(
         actualTransfers,
         expectedTransfers,
-        (actual: ActualTokenTransfer, expected: ExpectTokenTransfer) =>
-            deepEqualsTokenTransfer(actual, expected)
+        (
+            actual: ActualTokenTransferEvent,
+            expected: ExpectTokenTransferEvent
+        ) => deepEqualsTokenTransfer(actual, expected)
     )
 }
 
@@ -180,7 +203,7 @@ export function verifyTransferEvents(
  */
 export function verifyWithdrawCollateralEvent(
     receipt: ContractReceipt,
-    transfer: ExpectFlushTransfer
+    transfer: ExpectFlushTransferEvent
 ): void {
     const onlyTransferEvent = withdrawCollateralEvent(
         event('WithdrawCollateral', receipt)
@@ -195,8 +218,8 @@ export function verifyWithdrawCollateralEvent(
 }
 
 function deepEqualsTokenTransfer(
-    actual: ActualTokenTransfer,
-    expected: ExpectTokenTransfer
+    actual: ActualTokenTransferEvent,
+    expected: ExpectTokenTransferEvent
 ): boolean {
     return (
         actual.to === expected.to &&
