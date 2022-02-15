@@ -9,7 +9,7 @@ pragma solidity ^0.8.0;
  * @dev The curator is the owner of all Bonds it manages, guarding function accordingly allows finer access control
  *      to be provided.
  */
-abstract contract BondCurator {
+interface BondCurator {
     event AddBond(address bond);
 
     /**
@@ -17,5 +17,5 @@ abstract contract BondCurator {
      *
      * @param bond Deployed Bond contract, with the Owner set as the BondCurator.
      */
-    function addBond(address bond) external virtual;
+    function addBond(address bond) external;
 }
