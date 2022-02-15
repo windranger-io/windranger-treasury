@@ -878,7 +878,9 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, {
+            authorizer: admin.address
+        })
 
         // Guarantor One redeem their bond, partial conversion (slashed)
         const redeemOneReceipt = await redeem(guarantorOne, pledge)
@@ -979,7 +981,9 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, {
+            authorizer: admin.address
+        })
         verifyPartialCollateralEvent(
             allowRedemptionReceipt,
             {
@@ -1101,7 +1105,9 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, {
+            authorizer: admin.address
+        })
 
         // Guarantor One redeem their bond, full conversion
         const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
@@ -1279,7 +1285,9 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, {
+            authorizer: admin.address
+        })
         verifyPartialCollateralEvent(
             allowRedemptionReceipt,
             {symbol: collateralSymbol, amount: pledgeOne + pledgeTwo},
@@ -1575,7 +1583,9 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption()
-        verifyAllowRedemptionEvent(allowRedemptionReceipt, admin.address)
+        verifyAllowRedemptionEvent(allowRedemptionReceipt, {
+            authorizer: admin.address
+        })
 
         // Guarantor One redeem their bond, partial conversion (slashed)
         const redeemOneReceipt = await redeem(guarantorOne, pledgeOne)
