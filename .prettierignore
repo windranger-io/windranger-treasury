@@ -1,4 +1,6 @@
 # Ignore artifacts:
+.github
+.husky
 .openzeppelin
 .eslintrc
 artifacts
@@ -8,5 +10,3 @@ docs
 node_modules
 test/contracts/cast
 typechain-types
-.github
-
