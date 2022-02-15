@@ -1,9 +1,7 @@
-import {ContractReceipt} from 'ethers'
+import {BigNumber, ContractReceipt} from 'ethers'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {
-    ExpectFlushTransfer,
-    ExpectTokenBalance,
     allowRedemptionEvent,
     debtIssueEvent,
     expireEvent,
@@ -15,7 +13,31 @@ import {
 } from './single-collateral-bond-events'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 export type ActualTokenTransfer = {
+=======
+/**
+ * Expected balance combination of a symbol and amount (value).
+ */
+export type ExpectTokenBalance = {
+    symbol: string
+    amount: bigint
+}
+
+export type ExpectTokenTransferEvent = {
+    from: string
+    to: string
+    amount: bigint
+}
+
+export type ExpectFlushTransferEvent = {
+    to: string
+    symbol: string
+    amount: bigint
+}
+
+export type ActualTokenTransferEvent = {
+>>>>>>> bb063ce (continue rebase)
     from: string
     to: string
     value: BigNumber
@@ -163,6 +185,10 @@ export function verifySlashEvent(
 }
 
 /**
+<<<<<<< HEAD
+=======
+ *
+>>>>>>> bb063ce (continue rebase)
  * Verifies the content for withdrawing the left over collateral (flush of remaining collateral assets) event.
  */
 export function verifyWithdrawCollateralEvent(

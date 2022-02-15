@@ -1,4 +1,3 @@
-import {ExpectTokenTransfer} from '../bond/single-collateral-bond-events'
 import {BigNumber, Event} from 'ethers'
 import {TransferEvent} from '../../../typechain-types/IERC20'
 import {expect} from 'chai'
@@ -18,7 +17,7 @@ export type ExpectedERC20Transfer = {
 
 export function deepEqualsERC20TokenTransfer(
     actual: ActualERC20Transfer,
-    expected: ExpectTokenTransfer
+    expected: ExpectedERC20Transfer
 ): boolean {
     return (
         actual.to === expected.to &&
