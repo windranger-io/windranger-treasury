@@ -17,7 +17,7 @@
     "build": "hardhat compile",
     "clean": "hardhat clean",
     "format": "npm run format-sol && npm run format-ts",
-    "format-sol": "prettier **/*.sol --write",
+    "format-sol": "prettier contracts --write",
     "format-ts": "prettier **/*.ts --write",
     "lint": "npm run lint-ts && npm run lint-sol",
     "lint-ts": "eslint . --ext .ts",
