@@ -19,9 +19,9 @@ contract BondFactory is
     BondAccessControl,
     BondCreator,
     CollateralWhitelist,
+    PausableUpgradeable,
     UUPSUpgradeable,
-    Version,
-    PausableUpgradeable
+    Version
 {
     address private _treasury;
 

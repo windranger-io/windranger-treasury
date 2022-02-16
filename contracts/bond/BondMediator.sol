@@ -19,9 +19,9 @@ import "../Version.sol";
  */
 contract BondMediator is
     BondAccessControl,
+    PausableUpgradeable,
     UUPSUpgradeable,
-    Version,
-    PausableUpgradeable
+    Version
 {
     BondCreator private _creator;
     BondCurator private _curator;
