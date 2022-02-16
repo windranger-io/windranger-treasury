@@ -12,10 +12,4 @@ contract SweepERC20TokensHarness is SweepERC20 {
     function sweepERC20Tokens(address token, uint256 amount) external {
         _sweepERC20Tokens(token, amount);
     }
-
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        view
-        override
-    {}
 }

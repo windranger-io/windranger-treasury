@@ -12,11 +12,7 @@ import {
     ERC721PresetMinterPauserAutoId,
     ERC20PresetMinterPauser
 } from '../typechain-types'
-import {
-    deployContract,
-    deployContractWithProxy,
-    signer
-} from './framework/contracts'
+import {deployContract, signer} from './framework/contracts'
 import {constants, ContractReceipt, Wallet} from 'ethers'
 import {verifyERC20TransferEventLogs} from './contracts/common/verify-erc20-transfer'
 import {successfulTransaction} from './framework/transaction'
@@ -36,15 +32,13 @@ describe('Token Sweep contracts', () => {
     before(async () => {
         beneficary = (await signer(2)).address
 
-        erc20SweepHarness =
-            await deployContractWithProxy<SweepERC20TokensHarness>(
-                'SweepERC20TokensHarness'
-            )
+        erc20SweepHarness = await deployContract<SweepERC20TokensHarness>(
+            'SweepERC20TokensHarness'
+        )
 
-        erc721SweepHarness =
-            await deployContractWithProxy<SweepERC721TokensHarness>(
-                'SweepERC721TokensHarness'
-            )
+        erc721SweepHarness = await deployContract<SweepERC721TokensHarness>(
+            'SweepERC721TokensHarness'
+        )
 
         erc20 = await deployContract<ERC20PresetMinterPauser>(
             'ERC20PresetMinterPauser',

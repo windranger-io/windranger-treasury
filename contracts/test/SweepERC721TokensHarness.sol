@@ -12,10 +12,4 @@ contract SweepERC721TokensHarness is SweepERC721 {
     function sweepERC721Tokens(address token, uint256 tokenId) external {
         _sweepERC721Tokens(token, tokenId);
     }
-
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        view
-        override
-    {}
 }
