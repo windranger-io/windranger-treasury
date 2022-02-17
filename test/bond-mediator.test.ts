@@ -135,6 +135,46 @@ describe('Bond Mediator contract', () => {
                 expect(await bond.minimumDeposit()).equals(minimumDeposit)
                 expect(await bond.metaData()).equals(metaData)
             })
+
+            it('only when not paused', async () => {
+                await successfulTransaction(mediator.pause())
+                expect(await mediator.paused()).is.true
+                await expect(
+                    mediator.createManagedBond(
+                        'Bond Name',
+                        'Bond Symbol',
+                        1n,
+                        'Collateral Symbol',
+                        0n,
+                        100n,
+                        ''
+                    )
+                ).to.be.revertedWith('Pausable: paused')
+            })
+        })
+    })
+
+    describe('unpause', () => {
+        it('changes state', async () => {
+            await mediator.pause()
+
+            expect(await mediator.paused()).is.true
+
+            await mediator.unpause()
+
+            expect(await mediator.paused()).is.false
+        })
+
+        it('only bond factory admin', async () => {
+            await expect(mediator.connect(nonAdmin).pause()).to.be.revertedWith(
+                'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+            )
+        })
+
+        it('only when paused', async () => {
+            await expect(mediator.unpause()).to.be.revertedWith(
+                'Pausable: not paused'
+            )
         })
     })
 

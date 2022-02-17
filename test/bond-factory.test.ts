@@ -353,11 +353,22 @@ describe('Bond Factory contract', () => {
     })
 
     describe('unpause', () => {
+        it('changes state', async () => {
+            await bonds.pause()
+
+            expect(await bonds.paused()).is.true
+
+            await bonds.unpause()
+
+            expect(await bonds.paused()).is.false
+        })
+
         it('only bond factory admin', async () => {
             await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
                 'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
             )
         })
+
         it('only when paused', async () => {
             await expect(bonds.unpause()).to.be.revertedWith(
                 'Pausable: not paused'
