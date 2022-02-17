@@ -33,15 +33,13 @@ describe('Bond Access Control contract', () => {
 
     describe('Bond Admin', () => {
         it('add member', async () => {
-            expect(await accessControl.hasRole(BOND_ADMIN.hex, memberOne)).is
-                .false
-            expect(await accessControl.hasRole(BOND_ADMIN.hex, admin)).is.true
+            expect(await hasRole(BOND_ADMIN, memberOne)).is.false
+            expect(await hasRole(BOND_ADMIN, admin)).is.true
 
-            await accessControl.grantRole(BOND_ADMIN.hex, memberOne)
+            await grantRole(BOND_ADMIN, memberOne)
 
-            expect(await accessControl.hasRole(BOND_ADMIN.hex, admin)).is.true
-            expect(await accessControl.hasRole(BOND_ADMIN.hex, memberOne)).is
-                .true
+            expect(await hasRole(BOND_ADMIN, admin)).is.true
+            expect(await hasRole(BOND_ADMIN, memberOne)).is.true
         })
 
         it('remove member', async () => {
