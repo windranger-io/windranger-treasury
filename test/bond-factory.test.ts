@@ -27,7 +27,7 @@ chai.use(solidity)
 const ADDRESS_ZERO = constants.AddressZero
 
 describe('Bond Factory contract', () => {
-    beforeEach(async () => {
+    before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
@@ -108,6 +108,9 @@ describe('Bond Factory contract', () => {
     })
 
     describe('collateral whitelist', () => {
+        before(async () => {
+            await bonds.unpause()
+        })
         describe('add', () => {
             it('new token', async () => {
                 const symbol = 'EEK'
@@ -176,6 +179,9 @@ describe('Bond Factory contract', () => {
         })
 
         describe('update', () => {
+            before(async () => {
+                await bonds.unpause()
+            })
             it('cannot have identical value', async () => {
                 await expect(
                     bonds.updateWhitelistedCollateral(collateralTokens.address)
@@ -255,6 +261,9 @@ describe('Bond Factory contract', () => {
         })
 
         describe('remove', () => {
+            before(async () => {
+                await bonds.unpause()
+            })
             it('entry', async () => {
                 expect(await bonds.isCollateralWhitelisted(collateralSymbol)).is
                     .true
@@ -306,6 +315,9 @@ describe('Bond Factory contract', () => {
         })
 
         describe('update', () => {
+            before(async () => {
+                await bonds.unpause()
+            })
             beforeEach(async () => {
                 if ((await bonds.treasury()) !== treasury) {
                     await bonds.setTreasury(treasury)
@@ -353,6 +365,9 @@ describe('Bond Factory contract', () => {
     })
 
     describe('unpause', () => {
+        before(async () => {
+            await bonds.unpause()
+        })
         it('changes state', async () => {
             await bonds.pause()
 
