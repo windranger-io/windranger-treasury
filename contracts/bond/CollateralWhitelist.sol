@@ -17,6 +17,13 @@ abstract contract CollateralWhitelist is Initializable {
     EnumerableMapUpgradeable.UintToAddressMap private _whitelist;
 
     /**
+     * @notice Returns an array of all currently whitelisted symbols
+     */
+    function whitelistedSymbols() external view returns (bytes32[] memory) {
+        return _whitelist._inner._keys._inner._values;
+    }
+
+    /**
      * @notice The whitelisted ERC20 token address associated for a symbol.
      *
      * @return When present in the whitelist, the token address, otherwise address zero.
@@ -38,13 +45,6 @@ abstract contract CollateralWhitelist is Initializable {
         returns (bool)
     {
         return _whitelist.contains(stringToUint256(symbol));
-    }
-
-    /**
-     * @notice Returns an array of all currently whitelisted symbols
-     */
-    function whitelistedSymbols() public view returns (bytes32[] memory) {
-        return _whitelist._inner._keys._inner._values;
     }
 
     // this is likely dangerous
