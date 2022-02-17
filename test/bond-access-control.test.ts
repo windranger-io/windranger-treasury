@@ -9,7 +9,7 @@ import {
     BOND_AGGREGATOR_ROLE,
     DAO_ADMIN_ROLE,
     SYSTEM_ADMIN_ROLE
-} from './contracts/roles'
+} from './contracts/bond/roles'
 import {before} from 'mocha'
 import {deployContract, signer} from './framework/contracts'
 import {BondAccessControlBox} from '../typechain-types'

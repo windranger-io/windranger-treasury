@@ -18,7 +18,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {BOND_ADMIN_ROLE} from './contracts/roles'
+import {BOND_ADMIN_ROLE} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

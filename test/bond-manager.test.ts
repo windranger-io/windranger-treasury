@@ -30,7 +30,7 @@ import {
 } from './contracts/bond/verify-curator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {BOND_ADMIN_ROLE, BOND_AGGREGATOR_ROLE} from './contracts/roles'
+import {BOND_ADMIN_ROLE, BOND_AGGREGATOR_ROLE} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

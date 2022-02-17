@@ -17,7 +17,7 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {BOND_ADMIN_ROLE, BOND_AGGREGATOR_ROLE} from './contracts/roles'
+import {BOND_ADMIN_ROLE, BOND_AGGREGATOR_ROLE} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 import {addBondEventLogs} from './contracts/bond/bond-curator-events'
 import {eventLog} from './framework/event-logs'
