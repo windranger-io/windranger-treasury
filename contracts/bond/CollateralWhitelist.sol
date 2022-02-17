@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableMapUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
 /**
  * @title Whitelist for collateral tokens.
@@ -12,14 +11,10 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
  * @notice Encapsulation of a ERC20 collateral tokens whitelist, indexed by their symbol.
  */
 abstract contract CollateralWhitelist is Initializable {
-    using StringsUpgradeable for uint256;
-
     using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
 
-    EnumerableMapUpgradeable.UintToAddressMap private _whitelist;
-
     // Token symbols to ERC20 Token contract addresses
-    //    mapping(string => address) private _whitelist;
+    EnumerableMapUpgradeable.UintToAddressMap private _whitelist;
 
     /**
      * @notice The whitelisted ERC20 token address associated for a symbol.
@@ -42,7 +37,7 @@ abstract contract CollateralWhitelist is Initializable {
         view
         returns (bool)
     {
-        return _whitelist.contains(stringToUint256(symbol)); // 0 placeholder
+        return _whitelist.contains(stringToUint256(symbol));
     }
 
     /**
