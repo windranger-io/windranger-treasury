@@ -18,7 +18,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {BOND_ADMIN_ROLE} from './contracts/bond/roles'
+import {BOND_ADMIN} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -137,7 +137,7 @@ describe('Bond Factory contract', () => {
                         .connect(nonAdmin)
                         .whitelistCollateral(collateralTokens.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
         })
@@ -177,7 +177,7 @@ describe('Bond Factory contract', () => {
                         .connect(nonAdmin)
                         .updateWhitelistedCollateral(collateralTokens.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
 
@@ -232,7 +232,7 @@ describe('Bond Factory contract', () => {
                         .connect(nonAdmin)
                         .removeWhitelistedCollateral(collateralSymbol)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
         })
@@ -280,7 +280,7 @@ describe('Bond Factory contract', () => {
                 await expect(
                     bonds.connect(nonAdmin).setTreasury(treasury)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
         })

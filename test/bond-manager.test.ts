@@ -30,7 +30,7 @@ import {
 } from './contracts/bond/verify-curator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {BOND_ADMIN_ROLE, BOND_AGGREGATOR_ROLE} from './contracts/bond/roles'
+import {BOND_ADMIN, BOND_AGGREGATOR} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -58,10 +58,7 @@ describe('Bond Manager contract', () => {
                     .connect(nonBondAggregator)
                     .addBond(constants.AddressZero)
             ).to.be.revertedWith(
-                accessControlRevertMessage(
-                    nonBondAggregator,
-                    BOND_AGGREGATOR_ROLE
-                )
+                accessControlRevertMessage(nonBondAggregator, BOND_AGGREGATOR)
             )
         })
 
@@ -142,7 +139,7 @@ describe('Bond Manager contract', () => {
                         .connect(nonBondAdmin)
                         .bondAllowRedemption(bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
             })
 
@@ -176,7 +173,7 @@ describe('Bond Manager contract', () => {
                 await expect(
                     curator.connect(nonBondAdmin).bondPause(bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
             })
 
@@ -209,7 +206,7 @@ describe('Bond Manager contract', () => {
                 await expect(
                     curator.connect(nonBondAdmin).bondSlash(bond.address, 5n)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
             })
 
@@ -247,7 +244,7 @@ describe('Bond Manager contract', () => {
                         .connect(nonBondAdmin)
                         .bondSetMetaData(bond.address, 'meta')
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
             })
 
@@ -285,7 +282,7 @@ describe('Bond Manager contract', () => {
                         .connect(nonBondAdmin)
                         .bondSetTreasury(bond.address, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
             })
 
@@ -321,7 +318,7 @@ describe('Bond Manager contract', () => {
                 await expect(
                     curator.connect(nonBondAdmin).bondUnpause(bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
             })
 
@@ -356,7 +353,7 @@ describe('Bond Manager contract', () => {
                         .connect(nonBondAdmin)
                         .bondWithdrawCollateral(bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
             })
 
@@ -394,7 +391,7 @@ describe('Bond Manager contract', () => {
             await expect(
                 curator.connect(nonBondAdmin).unpause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
             )
         })
     })
@@ -418,7 +415,7 @@ describe('Bond Manager contract', () => {
             await expect(
                 curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, BOND_ADMIN_ROLE)
+                accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
             )
         })
     })

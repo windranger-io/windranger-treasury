@@ -17,7 +17,7 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {BOND_ADMIN_ROLE, BOND_AGGREGATOR_ROLE} from './contracts/bond/roles'
+import {BOND_ADMIN, BOND_AGGREGATOR} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 import {addBondEventLogs} from './contracts/bond/bond-curator-events'
 import {eventLog} from './framework/event-logs'
@@ -49,7 +49,7 @@ describe('Bond Mediator contract', () => {
             curator.address
         )
 
-        await curator.grantRole(BOND_AGGREGATOR_ROLE, mediator.address)
+        await curator.grantRole(BOND_AGGREGATOR.hex, mediator.address)
     })
 
     describe('managed bond', () => {
@@ -68,7 +68,7 @@ describe('Bond Mediator contract', () => {
                             ''
                         )
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN_ROLE)
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
 
