@@ -32,7 +32,7 @@ import {accessControlRevertMessage} from './contracts/bond/bond-access-control-m
 chai.use(solidity)
 
 describe('Bond Mediator contract', () => {
-    before(async () => {
+    beforeEach(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
