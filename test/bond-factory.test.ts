@@ -380,7 +380,7 @@ describe('Bond Factory contract', () => {
 
         it('only bond factory admin', async () => {
             await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
-                'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                accessControlRevertMessage(nonAdmin, BOND_ADMIN)
             )
         })
 
