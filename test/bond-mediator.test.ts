@@ -17,7 +17,7 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {BOND_AGGREGATOR_ROLE} from './contracts/roles'
+import {BOND_ADMIN_ROLE, BOND_AGGREGATOR_ROLE} from './contracts/roles'
 import {successfulTransaction} from './framework/transaction'
 import {addBondEventLogs} from './contracts/bond/bond-curator-events'
 import {eventLog} from './framework/event-logs'
@@ -26,6 +26,7 @@ import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from './contracts/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
+import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -67,9 +68,7 @@ describe('Bond Mediator contract', () => {
                             ''
                         )
                 ).to.be.revertedWith(
-                    'AccessControl: account ' +
-                        nonAdmin.address.toLowerCase() +
-                        ' is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN_ROLE)
                 )
             })
 
