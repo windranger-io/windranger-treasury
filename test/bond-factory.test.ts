@@ -17,6 +17,8 @@ import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
+import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
+import {BOND_ADMIN} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -135,7 +137,7 @@ describe('Bond Factory contract', () => {
                         .connect(nonAdmin)
                         .whitelistCollateral(collateralTokens.address)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
         })
@@ -175,7 +177,7 @@ describe('Bond Factory contract', () => {
                         .connect(nonAdmin)
                         .updateWhitelistedCollateral(collateralTokens.address)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
 
@@ -230,7 +232,7 @@ describe('Bond Factory contract', () => {
                         .connect(nonAdmin)
                         .removeWhitelistedCollateral(collateralSymbol)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
         })
@@ -278,7 +280,7 @@ describe('Bond Factory contract', () => {
                 await expect(
                     bonds.connect(nonAdmin).setTreasury(treasury)
                 ).to.be.revertedWith(
-                    'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x424f4e445f41444d494e00000000000000000000000000000000000000000000'
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
         })
