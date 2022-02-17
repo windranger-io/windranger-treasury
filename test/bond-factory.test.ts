@@ -13,7 +13,7 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {constants, Wallet} from 'ethers'
+import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
