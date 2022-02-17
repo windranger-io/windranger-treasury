@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableMapUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
 /**
  * @title Whitelist for collateral tokens.
@@ -10,8 +12,14 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @notice Encapsulation of a ERC20 collateral tokens whitelist, indexed by their symbol.
  */
 abstract contract CollateralWhitelist is Initializable {
+    using StringsUpgradeable for uint256;
+
+    using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
+
+    EnumerableMapUpgradeable.UintToAddressMap private _whitelist;
+
     // Token symbols to ERC20 Token contract addresses
-    mapping(string => address) private _whitelist;
+    //    mapping(string => address) private _whitelist;
 
     /**
      * @notice The whitelisted ERC20 token address associated for a symbol.
@@ -23,7 +31,7 @@ abstract contract CollateralWhitelist is Initializable {
         view
         returns (address)
     {
-        return _whitelist[symbol];
+        return _whitelist.get(stringToUint256(symbol));
     }
 
     /**
@@ -34,7 +42,31 @@ abstract contract CollateralWhitelist is Initializable {
         view
         returns (bool)
     {
-        return _whitelist[symbol] != address(0);
+        return _whitelist.contains(stringToUint256(symbol)); // 0 placeholder
+    }
+
+    /**
+     * @notice Returns an array of all currently whitelisted symbols
+     */
+    function whitelistedSymbols() public view returns (bytes32[] memory) {
+        return _whitelist._inner._keys._inner._values;
+    }
+
+    // this is likely dangerous
+    function stringToUint256(string memory source)
+        public
+        pure
+        returns (uint256 result)
+    {
+        bytes memory tempEmptyStringTest = bytes(source);
+        if (tempEmptyStringTest.length == 0) {
+            return 0x0;
+        }
+
+        assembly {
+            result := mload(add(source, 32))
+        }
+        result = uint256(result);
     }
 
     function __CollateralWhitelist_init() internal onlyInitializing {}
@@ -46,13 +78,13 @@ abstract contract CollateralWhitelist is Initializable {
      *
      * Reverts if address is zero or the symbol already has a mapped address, or does not implement `symbol()`.
      */
-    function _whitelistCollateral(address erc20CollateralTokens) internal {
-        _requireNonZeroAddress(erc20CollateralTokens);
+    function _whitelistCollateral(address erc20CollateralToken) internal {
+        _requireNonZeroAddress(erc20CollateralToken);
 
-        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
+        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralToken)
             .symbol();
-        require(_whitelist[symbol] == address(0), "Whitelist: already present");
-        _whitelist[symbol] = erc20CollateralTokens;
+        require(!isCollateralWhitelisted(symbol), "Whitelist: already present");
+        _whitelist.set(stringToUint256(symbol), erc20CollateralToken);
     }
 
     /**
@@ -67,12 +99,13 @@ abstract contract CollateralWhitelist is Initializable {
 
         string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
             .symbol();
+
         require(isCollateralWhitelisted(symbol), "Whitelist: not whitelisted");
         require(
-            _whitelist[symbol] != erc20CollateralTokens,
+            _whitelist.get(stringToUint256(symbol)) != erc20CollateralTokens,
             "Whitelist: identical address"
         );
-        _whitelist[symbol] = erc20CollateralTokens;
+        _whitelist.set(stringToUint256(symbol), erc20CollateralTokens);
     }
 
     /**
@@ -82,7 +115,7 @@ abstract contract CollateralWhitelist is Initializable {
      */
     function _removeWhitelistedCollateral(string memory symbol) internal {
         require(isCollateralWhitelisted(symbol), "Whitelist: not whitelisted");
-        delete _whitelist[symbol];
+        _whitelist.remove(stringToUint256(symbol));
     }
 
     /**
