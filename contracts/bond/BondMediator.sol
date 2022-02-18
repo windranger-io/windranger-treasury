@@ -8,6 +8,8 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
+import "./BondIdentity.sol";
+import "./BondSettings.sol";
 import "./Roles.sol";
 import "../Version.sol";
 
@@ -26,18 +28,21 @@ contract BondMediator is
     BondCreator private _creator;
     BondCurator private _curator;
 
+    address private _treasury;
+
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
      *
      * @param factory A deployed BondCreator contract to use when creating bonds.
      * @param manager A deployed BondCurator contract to register created bonds with,
+     * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
      */
-    function initialize(address factory, address manager)
-        external
-        virtual
-        initializer
-    {
+    function initialize(
+        address factory,
+        address manager,
+        address erc20CapableTreasury
+    ) external virtual initializer {
         require(
             AddressUpgradeable.isContract(factory),
             "Mediator: creator not a contract"
@@ -46,10 +51,15 @@ contract BondMediator is
             AddressUpgradeable.isContract(manager),
             "Mediator: curator not a contract"
         );
+        require(
+            erc20CapableTreasury != address(0),
+            "Mediator: treasury address zero"
+        );
 
         __BondAccessControl_init();
         __UUPSUpgradeable_init();
 
+        _treasury = erc20CapableTreasury;
         _creator = BondCreator(factory);
         _curator = BondCurator(manager);
     }
@@ -68,14 +78,17 @@ contract BondMediator is
         uint256 minimumDeposit,
         string calldata data
     ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
+        BondIdentity memory id = BondIdentity({name: name, symbol: symbol});
         address bond = _creator.createBond(
-            name,
-            symbol,
-            debtTokens,
-            collateralTokenSymbol,
-            expiryTimestamp,
-            minimumDeposit,
-            data
+            id,
+            BondSettings({
+                debtTokens: debtTokens,
+                collateralTokenSymbol: collateralTokenSymbol,
+                treasury: _treasury,
+                expiryTimestamp: expiryTimestamp,
+                minimumDeposit: minimumDeposit,
+                data: data
+            })
         );
 
         OwnableUpgradeable(bond).transferOwnership(address(_curator));
@@ -93,6 +106,21 @@ contract BondMediator is
     }
 
     /**
+     * @notice Permits the owner to update the treasury address.
+     *
+     * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
+     */
+    function setTreasury(address replacement)
+        external
+        whenNotPaused
+        onlyRole(Roles.BOND_ADMIN)
+    {
+        require(replacement != address(0), "Mediator: treasury address zero");
+        require(_treasury != replacement, "Mediator: same treasury address");
+        _treasury = replacement;
+    }
+
+    /**
      * @notice Resumes all paused side affecting functions.
      */
     function unpause() external whenPaused onlyRole(Roles.BOND_ADMIN) {
@@ -105,6 +133,10 @@ contract BondMediator is
 
     function bondCurator() external view returns (address) {
         return address(_curator);
+    }
+
+    function treasury() external view returns (address) {
+        return _treasury;
     }
 
     /**

@@ -7,13 +7,15 @@ import "./CollateralWhitelist.sol";
 import "./ERC20SingleCollateralBond.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
+import "./BondIdentity.sol";
+import "./BondSettings.sol";
 import "./Roles.sol";
 import "../Version.sol";
 
 /**
  * @title Creates Bond contracts.
  *
- * @dev Uses common configuration when creating bond contracts.
+ * @dev An upgradable contract that encapsulates the Bond implementation and associated deployment cost.
  */
 contract BondFactory is
     BondAccessControl,
@@ -23,32 +25,27 @@ contract BondFactory is
     UUPSUpgradeable,
     Version
 {
-    address private _treasury;
-
     /**
      * @notice Initialises the factory with the given collateral tokens automatically being whitelisted.
      *
      * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
-     * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
      */
-    function initialize(
-        address erc20CollateralTokens,
-        address erc20CapableTreasury
-    ) external virtual initializer {
-        __BondFactory_init(erc20CollateralTokens, erc20CapableTreasury);
+    function initialize(address erc20CollateralTokens)
+        external
+        virtual
+        initializer
+    {
+        __BondFactory_init(erc20CollateralTokens);
     }
 
-    function createBond(
-        string calldata name,
-        string calldata symbol,
-        uint256 debtTokens,
-        string calldata collateralTokenSymbol,
-        uint256 expiryTimestamp,
-        uint256 minimumDeposit,
-        string calldata data
-    ) external override whenNotPaused returns (address) {
+    function createBond(BondIdentity calldata id, BondSettings calldata config)
+        external
+        override
+        whenNotPaused
+        returns (address)
+    {
         require(
-            isCollateralWhitelisted(collateralTokenSymbol),
+            isCollateralWhitelisted(config.collateralTokenSymbol),
             "BF: collateral not whitelisted"
         );
 
@@ -56,44 +53,29 @@ contract BondFactory is
 
         emit CreateBond(
             address(bond),
-            name,
-            symbol,
-            debtTokens,
+            id.name,
+            id.symbol,
+            config.debtTokens,
             _msgSender(),
-            _treasury,
-            expiryTimestamp,
-            minimumDeposit,
-            data
+            config.treasury,
+            config.expiryTimestamp,
+            config.minimumDeposit,
+            config.data
         );
 
         bond.initialize(
-            name,
-            symbol,
-            debtTokens,
-            whitelistedCollateralAddress(collateralTokenSymbol),
-            _treasury,
-            expiryTimestamp,
-            minimumDeposit,
-            data
+            id.name,
+            id.symbol,
+            config.debtTokens,
+            whitelistedCollateralAddress(config.collateralTokenSymbol),
+            config.treasury,
+            config.expiryTimestamp,
+            config.minimumDeposit,
+            config.data
         );
         bond.transferOwnership(_msgSender());
 
         return address(bond);
-    }
-
-    /**
-     * @notice Permits the owner to update the treasury address.
-     *
-     * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
-     */
-    function setTreasury(address replacement)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
-        require(replacement != address(0), "BF: treasury is zero address");
-        require(_treasury != replacement, "BF: treasury address identical");
-        _treasury = replacement;
     }
 
     /**
@@ -156,10 +138,6 @@ contract BondFactory is
         _unpause();
     }
 
-    function treasury() external view returns (address) {
-        return _treasury;
-    }
-
     /**
      * @notice Permits only the owner to perform proxy upgrades.
      *
@@ -175,20 +153,14 @@ contract BondFactory is
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
      */
-    function __BondFactory_init(
-        address erc20CollateralTokens,
-        address erc20CapableTreasury
-    ) internal onlyInitializing {
+    function __BondFactory_init(address erc20CollateralTokens)
+        internal
+        onlyInitializing
+    {
         __BondAccessControl_init();
         __CollateralWhitelist_init();
         __UUPSUpgradeable_init();
 
-        require(
-            erc20CapableTreasury != address(0),
-            "BF: treasury is zero address"
-        );
-
-        _treasury = erc20CapableTreasury;
         _whitelistCollateral(erc20CollateralTokens);
     }
 }

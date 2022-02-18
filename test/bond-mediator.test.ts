@@ -31,6 +31,8 @@ import {accessControlRevertMessage} from './contracts/bond/bond-access-control-m
 // Wires up Waffle with Chai
 chai.use(solidity)
 
+const ADDRESS_ZERO = constants.AddressZero
+
 describe('Bond Mediator contract', () => {
     before(async () => {
         admin = (await signer(0)).address
@@ -40,13 +42,13 @@ describe('Bond Mediator contract', () => {
         curator = await deployContractWithProxy<BondManager>('BondManager')
         creator = await deployContractWithProxy<BondFactory>(
             'BondFactory',
-            collateralTokens.address,
-            treasury
+            collateralTokens.address
         )
         mediator = await deployContractWithProxy<BondMediator>(
             'BondMediator',
             creator.address,
-            curator.address
+            curator.address,
+            treasury
         )
 
         await curator.grantRole(BOND_AGGREGATOR.hex, mediator.address)
@@ -150,6 +152,65 @@ describe('Bond Mediator contract', () => {
                         ''
                     )
                 ).to.be.revertedWith('Pausable: paused')
+            })
+        })
+    })
+
+    describe('treasury', () => {
+        describe('retrieve', () => {
+            it(' by non-owner', async () => {
+                expect(await mediator.connect(nonAdmin).treasury()).equals(
+                    treasury
+                )
+            })
+        })
+
+        describe('update', () => {
+            before(async () => {
+                await mediator.unpause()
+            })
+            beforeEach(async () => {
+                if ((await mediator.treasury()) !== treasury) {
+                    await mediator.setTreasury(treasury)
+                }
+            })
+
+            it('to a valid address', async () => {
+                expect(await mediator.treasury()).equals(treasury)
+
+                await mediator.setTreasury(nonAdmin.address)
+
+                expect(await mediator.treasury()).equals(nonAdmin.address)
+            })
+
+            it('cannot be identical', async () => {
+                expect(await mediator.treasury()).equals(treasury)
+
+                await expect(mediator.setTreasury(treasury)).to.be.revertedWith(
+                    'Mediator: same treasury address'
+                )
+            })
+
+            it('cannot be zero', async () => {
+                await expect(
+                    mediator.setTreasury(ADDRESS_ZERO)
+                ).to.be.revertedWith('Mediator: treasury address zero')
+            })
+
+            it('only bond admin', async () => {
+                await expect(
+                    mediator.connect(nonAdmin).setTreasury(treasury)
+                ).to.be.revertedWith(
+                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
+                )
+            })
+
+            it('only when not paused', async () => {
+                await successfulTransaction(mediator.pause())
+                expect(await mediator.paused()).is.true
+                await expect(mediator.setTreasury(treasury)).to.be.revertedWith(
+                    'Pausable: paused'
+                )
             })
         })
     })

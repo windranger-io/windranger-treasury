@@ -35,8 +35,7 @@ describe('Bond Factory contract', () => {
         collateralSymbol = await collateralTokens.symbol()
         bonds = await deployContractWithProxy<BondFactory>(
             'BondFactory',
-            collateralTokens.address,
-            treasury
+            collateralTokens.address
         )
     })
 
@@ -44,13 +43,15 @@ describe('Bond Factory contract', () => {
         it('non-whitelisted collateral', async () => {
             await expect(
                 bonds.createBond(
-                    'Named bond',
-                    'AA00AA',
-                    101n,
-                    'BEEP',
-                    0n,
-                    0n,
-                    ''
+                    {name: 'Named bond', symbol: 'AA00AA'},
+                    {
+                        debtTokens: 101n,
+                        collateralTokenSymbol: 'BEEP',
+                        expiryTimestamp: 0n,
+                        minimumDeposit: 0n,
+                        treasury: treasury,
+                        data: ''
+                    }
                 )
             ).to.be.revertedWith('BF: collateral not whitelisted')
         })
@@ -66,13 +67,15 @@ describe('Bond Factory contract', () => {
 
             const receipt = await execute(
                 bonds.createBond(
-                    bondName,
-                    bondSymbol,
-                    debtTokenAmount,
-                    collateralSymbol,
-                    expiryTimestamp,
-                    minimumDeposit,
-                    data
+                    {name: bondName, symbol: bondSymbol},
+                    {
+                        debtTokens: debtTokenAmount,
+                        collateralTokenSymbol: collateralSymbol,
+                        expiryTimestamp: expiryTimestamp,
+                        minimumDeposit: minimumDeposit,
+                        treasury: treasury,
+                        data: data
+                    }
                 )
             )
 
@@ -95,13 +98,15 @@ describe('Bond Factory contract', () => {
 
             await expect(
                 bonds.createBond(
-                    'Named bond',
-                    'AA00AA',
-                    101n,
-                    'BEEP',
-                    0n,
-                    0n,
-                    ''
+                    {name: 'Named bond', symbol: 'AA00AA'},
+                    {
+                        debtTokens: 101n,
+                        collateralTokenSymbol: 'BEEP',
+                        expiryTimestamp: 0n,
+                        minimumDeposit: 0n,
+                        treasury: treasury,
+                        data: ''
+                    }
                 )
             ).to.be.revertedWith('Pausable: paused')
         })
@@ -301,65 +306,6 @@ describe('Bond Factory contract', () => {
                 await expect(
                     bonds.removeWhitelistedCollateral(symbol)
                 ).to.be.revertedWith('Pausable: paused')
-            })
-        })
-    })
-
-    describe('treasury', () => {
-        describe('retrieve', () => {
-            it(' by non-owner', async () => {
-                expect(await bonds.connect(nonAdmin).treasury()).equals(
-                    treasury
-                )
-            })
-        })
-
-        describe('update', () => {
-            before(async () => {
-                await bonds.unpause()
-            })
-            beforeEach(async () => {
-                if ((await bonds.treasury()) !== treasury) {
-                    await bonds.setTreasury(treasury)
-                }
-            })
-
-            it('to a valid address', async () => {
-                expect(await bonds.treasury()).equals(treasury)
-
-                await bonds.setTreasury(nonAdmin.address)
-
-                expect(await bonds.treasury()).equals(nonAdmin.address)
-            })
-
-            it('cannot be identical', async () => {
-                expect(await bonds.treasury()).equals(treasury)
-
-                await expect(bonds.setTreasury(treasury)).to.be.revertedWith(
-                    'BF: treasury address identical'
-                )
-            })
-
-            it('cannot be zero', async () => {
-                await expect(
-                    bonds.setTreasury(ADDRESS_ZERO)
-                ).to.be.revertedWith('BF: treasury is zero address')
-            })
-
-            it('only bond admin', async () => {
-                await expect(
-                    bonds.connect(nonAdmin).setTreasury(treasury)
-                ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
-                )
-            })
-
-            it('only when not paused', async () => {
-                await successfulTransaction(bonds.pause())
-                expect(await bonds.paused()).is.true
-                await expect(bonds.setTreasury(treasury)).to.be.revertedWith(
-                    'Pausable: paused'
-                )
             })
         })
     })
