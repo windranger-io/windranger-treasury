@@ -66,8 +66,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         collateralSymbol = await collateralTokens.symbol()
         bonds = await deployContractWithProxy<BondFactory>(
             'BondFactory',
-            collateralTokens.address,
-            treasury
+            collateralTokens.address
         )
     })
 
@@ -409,13 +408,15 @@ describe('ERC20 Single Collateral Bond contract', () => {
         it('only after expiry', async () => {
             const receipt = await execute(
                 bonds.createBond(
-                    'Special Debt Certificate',
-                    'SDC001',
-                    500n,
-                    collateralSymbol,
-                    Date.now() + ONE_DAY_MS,
-                    MINIMUM_DEPOSIT,
-                    DATA
+                    {name: 'Special Debt Certificate', symbol: 'SDC001'},
+                    {
+                        debtTokens: 500n,
+                        collateralTokenSymbol: collateralSymbol,
+                        expiryTimestamp: Date.now() + ONE_DAY_MS,
+                        minimumDeposit: MINIMUM_DEPOSIT,
+                        treasury: treasury,
+                        data: DATA
+                    }
                 )
             )
             bond = await erc20SingleCollateralBondContractAt(
@@ -1722,13 +1723,15 @@ describe('ERC20 Single Collateral Bond contract', () => {
     ): Promise<ERC20SingleCollateralBond> {
         const receipt = await execute(
             factory.createBond(
-                'Special Debt Certificate',
-                'SDC001',
-                debtTokens,
-                collateralSymbol,
-                BOND_EXPIRY,
-                MINIMUM_DEPOSIT,
-                DATA
+                {name: 'Special Debt Certificate', symbol: 'SDC001'},
+                {
+                    debtTokens: debtTokens,
+                    collateralTokenSymbol: collateralSymbol,
+                    expiryTimestamp: BOND_EXPIRY,
+                    minimumDeposit: MINIMUM_DEPOSIT,
+                    treasury: treasury,
+                    data: DATA
+                }
             )
         )
         const creationEvent = createBondEvent(event('CreateBond', receipt))

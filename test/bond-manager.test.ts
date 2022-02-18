@@ -46,8 +46,7 @@ describe('Bond Manager contract', () => {
         collateralSymbol = await collateralTokens.symbol()
         creator = await deployContractWithProxy<BondFactory>(
             'BondFactory',
-            collateralTokens.address,
-            treasury
+            collateralTokens.address
         )
     })
 
@@ -429,13 +428,15 @@ describe('Bond Manager contract', () => {
     ): Promise<ERC20SingleCollateralBond> {
         const receipt = await execute(
             creator.createBond(
-                'name',
-                'symbol',
-                100n,
-                collateralSymbol,
-                0n,
-                1n,
-                ''
+                {name: 'name', symbol: 'symbol'},
+                {
+                    debtTokens: 100n,
+                    collateralTokenSymbol: collateralSymbol,
+                    expiryTimestamp: 0n,
+                    minimumDeposit: 1n,
+                    treasury: treasury,
+                    data: ''
+                }
             )
         )
 
