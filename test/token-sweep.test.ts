@@ -78,7 +78,7 @@ describe('Token Sweep contracts', () => {
             await erc20SweepHarness.setBeneficiary(randomAddress)
             await expect(
                 erc20SweepHarness.setBeneficiary(randomAddress)
-            ).to.be.revertedWith('TokenSweep: beneficiary-identical')
+            ).to.be.revertedWith('TokenSweep: beneficiary-same')
         })
     })
 
