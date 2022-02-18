@@ -8,8 +8,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
-import "./BondIdentity.sol";
-import "./BondSettings.sol";
 import "./Roles.sol";
 import "../Version.sol";
 
@@ -78,10 +76,13 @@ contract BondMediator is
         uint256 minimumDeposit,
         string calldata data
     ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
-        BondIdentity memory id = BondIdentity({name: name, symbol: symbol});
+        BondCreator.BondIdentity memory id = BondCreator.BondIdentity({
+            name: name,
+            symbol: symbol
+        });
         address bond = _creator.createBond(
             id,
-            BondSettings({
+            BondCreator.BondSettings({
                 debtTokens: debtTokens,
                 collateralTokenSymbol: collateralTokenSymbol,
                 treasury: _treasury,
