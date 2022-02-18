@@ -7,8 +7,6 @@ import "./CollateralWhitelist.sol";
 import "./ERC20SingleCollateralBond.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
-import "./BondIdentity.sol";
-import "./BondSettings.sol";
 import "./Roles.sol";
 import "../Version.sol";
 
