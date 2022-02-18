@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.5;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableMapUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+
+import "hardhat/console.sol";
 
 /**
  * @title Whitelist for collateral tokens.
@@ -19,8 +22,14 @@ abstract contract CollateralWhitelist is Initializable {
     /**
      * @notice Returns an array of all currently whitelisted symbols
      */
-    function whitelistedSymbols() external view returns (bytes32[] memory) {
-        return _whitelist._inner._keys._inner._values;
+    function whitelistedSymbols() external view returns (string[] memory) {
+        bytes32[] memory keys = _whitelist._inner._keys._inner._values;
+        string[] memory keyStrings = new string[](keys.length);
+        for (uint256 i = 0; i < keys.length; i++) {
+            console.log("adding ", string(abi.encodePacked(keys[i])));
+            keyStrings[i] = string(abi.encodePacked(keys[i])); // this will have trailing zero padding..
+        }
+        return keyStrings;
     }
 
     /**
@@ -47,21 +56,13 @@ abstract contract CollateralWhitelist is Initializable {
         return _whitelist.contains(stringToUint256(symbol));
     }
 
-    // this is likely dangerous
+    // this is likely dangerous -- rename symbolToUint256 and check length of string?
     function stringToUint256(string memory source)
         public
         pure
-        returns (uint256 result)
+        returns (uint256)
     {
-        bytes memory tempEmptyStringTest = bytes(source);
-        if (tempEmptyStringTest.length == 0) {
-            return 0x0;
-        }
-
-        assembly {
-            result := mload(add(source, 32))
-        }
-        result = uint256(result);
+        return uint256(bytes32(abi.encodePacked(source)));
     }
 
     function __CollateralWhitelist_init() internal onlyInitializing {}

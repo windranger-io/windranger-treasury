@@ -68,9 +68,44 @@ describe('Bond Factory contract', () => {
                 receipt
             )
         })
-        it('only when not paused', async () => {
-            await successfulTransaction(bonds.pause())
-            expect(await bonds.paused()).is.true
+    })
+
+    describe.only('collateral whitelist', () => {
+        describe('add', () => {
+            it('new token', async () => {
+                const symbol = 'EEK'
+                const tokens = await deployContract<ERC20>(
+                    'ERC20',
+                    'Another erc20 Token',
+                    symbol
+                )
+                expect(await tokens.symbol()).equals(symbol)
+
+                await bonds.whitelistCollateral(tokens.address)
+
+                expect(await bonds.isCollateralWhitelisted(symbol)).is.true
+                expect(await bonds.whitelistedCollateralAddress(symbol)).equals(
+                    tokens.address
+                )
+            })
+
+            it('gets all existing tokens', async () => {
+                const tokens: string[] = await bonds.whitelistedSymbols()
+
+                // eslint-disable-next-line no-console
+                console.log(tokens)
+
+                /*
+                 * expect(utils.parseBytes32String(tokens[0])).to.equal('BIT')
+                 * expect(utils.parseBytes32String(tokens[1])).to.equal('EEK')
+                 */
+            })
+
+            it('cannot be an existing token', async () => {
+                await expect(
+                    bonds.whitelistCollateral(collateralTokens.address)
+                ).to.be.revertedWith('Whitelist: already present')
+            })
 
             await expect(
                 bonds.createBond(
