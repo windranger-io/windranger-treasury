@@ -29,7 +29,7 @@ export function verifyERC721TransferEvents(
 }
 
 /**
- * Verifies the content forW
+ * Verifies the content matches at least on of the Transfer events from EventLogs
  */
 export function verifyERC721TransferEventLogs<T extends BaseContract>(
     expectedEvents: ExpectedERC721Transfer[],

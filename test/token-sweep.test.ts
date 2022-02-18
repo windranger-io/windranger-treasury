@@ -58,7 +58,7 @@ describe('Token Sweep contracts', () => {
             const newBeneficiary = await signer(1)
             await expect(
                 await erc20SweepHarness.setBeneficiary(newBeneficiary.address)
-            ).to.emit(erc20SweepHarness, 'BeneficiaryUpdated')
+            ).to.emit(erc20SweepHarness, 'BeneficiaryUpdate')
         })
 
         it('cannot set zero address as beneficiary', async () => {
@@ -78,7 +78,7 @@ describe('Token Sweep contracts', () => {
             await erc20SweepHarness.setBeneficiary(randomAddress)
             await expect(
                 erc20SweepHarness.setBeneficiary(randomAddress)
-            ).to.be.revertedWith('TokenSweep: not-updating')
+            ).to.be.revertedWith('TokenSweep: beneficiary-identical')
         })
     })
 

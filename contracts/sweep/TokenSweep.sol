@@ -9,7 +9,7 @@ pragma solidity ^0.8.0;
 abstract contract TokenSweep {
     address internal _beneficiary;
 
-    event BeneficiaryUpdated(address indexed beneficiary);
+    event BeneficiaryUpdate(address indexed beneficiary);
 
     function beneficiary() external view returns (address) {
         return _beneficiary;
@@ -24,9 +24,12 @@ abstract contract TokenSweep {
     function _setBeneficiary(address newBeneficiary) internal {
         require(newBeneficiary != address(0), "TokenSweep: beneficiary-zero");
         require(newBeneficiary != address(this), "TokenSweep: self-address");
-        require(newBeneficiary != _beneficiary, "TokenSweep: not-updating");
+        require(
+            newBeneficiary != _beneficiary,
+            "TokenSweep:beneficiary-identical"
+        );
 
         _beneficiary = newBeneficiary;
-        emit BeneficiaryUpdated(newBeneficiary);
+        emit BeneficiaryUpdate(newBeneficiary);
     }
 }
