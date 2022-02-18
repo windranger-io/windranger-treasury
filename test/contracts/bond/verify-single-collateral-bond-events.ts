@@ -12,10 +12,6 @@ import {
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-export type ActualTokenTransfer = {
-=======
 /**
  * Expected balance combination of a symbol and amount (value).
  */
@@ -37,7 +33,6 @@ export type ExpectFlushTransferEvent = {
 }
 
 export type ActualTokenTransferEvent = {
->>>>>>> bb063ce (continue rebase)
     from: string
     to: string
     value: BigNumber
@@ -46,9 +41,6 @@ export type ActualTokenTransferEvent = {
 export type ExpectAllowRedemptionEvent = {
     authorizer: string
 }
-
-=======
->>>>>>> 9f72f9a (typings and PR review feedback)
 /**
  * Verifies the content for a Allow Redemption event.
  */
@@ -185,10 +177,7 @@ export function verifySlashEvent(
 }
 
 /**
-<<<<<<< HEAD
-=======
  *
->>>>>>> bb063ce (continue rebase)
  * Verifies the content for withdrawing the left over collateral (flush of remaining collateral assets) event.
  */
 export function verifyWithdrawCollateralEvent(

@@ -11,6 +11,7 @@ import {
     BondFactory,
     Box,
     ERC20PresetMinterPauser
+    // ERC20PresetMinterPauser
 } from '../typechain-types'
 import {
     deployContract,
@@ -124,7 +125,7 @@ describe('Bond Factory contract', () => {
         describe('add', () => {
             it('new token', async () => {
                 const symbol = 'EEK'
-                const tokens = await deployContract<ERC20PresetMinterPauser>(
+                const tokens = await deployContract<ExtendedERC20>(
                     'ERC20PresetMinterPauser',
                     'Another erc20 Token',
                     symbol
@@ -175,8 +176,8 @@ describe('Bond Factory contract', () => {
                 await successfulTransaction(bonds.pause())
                 expect(await bonds.paused()).is.true
                 const symbol = 'EEK'
-                const tokens = await deployContract<ERC20>(
-                    'ERC20',
+                const tokens = await deployContract<ERC20PresetMinterPauser>(
+                    'ERC20PresetMinterPauser',
                     'Another erc20 Token',
                     symbol
                 )
@@ -257,8 +258,8 @@ describe('Bond Factory contract', () => {
                 await successfulTransaction(bonds.pause())
                 expect(await bonds.paused()).is.true
                 const symbol = 'EEK'
-                const tokens = await deployContract<ERC20>(
-                    'ERC20',
+                const tokens = await deployContract<ERC20PresetMinterPauser>(
+                    'ERC20PresetMinterPauser',
                     'Another erc20 Token',
                     symbol
                 )
