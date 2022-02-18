@@ -7,18 +7,13 @@ pragma solidity ^0.8.0;
  * @notice Creating a Bond involves the two steps of deploying and initialising.
  */
 interface BondCreator {
-    /**
-     * @@notice The identity of a Bond.
-     */
     struct BondIdentity {
         /** Description of the purpose of the Bond. */
         string name;
         /** Abbreviation to identify the Bond. */
         string symbol;
     }
-    /**
-     * @notice Configuration settings for creating a new Bond.
-     */
+
     struct BondSettings {
         /** Number of tokens to create, which get swapped for collateral tokens by depositing. */
         uint256 debtTokens;
