@@ -93,7 +93,7 @@ contract BondMediator is
         address bond = _creator.createBond(
             id,
             BondCreator.BondSettings({
-                debtTokens: debtTokens,
+                debtTokenAmount: debtTokens,
                 collateralTokens: whitelistedCollateralAddress(
                     collateralTokenSymbol
                 ),

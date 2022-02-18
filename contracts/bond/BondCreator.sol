@@ -16,7 +16,7 @@ interface BondCreator {
 
     struct BondSettings {
         /** Number of tokens to create, which get swapped for collateral tokens by depositing. */
-        uint256 debtTokens;
+        uint256 debtTokenAmount;
         /** Token contract for the collateral that is swapped for debt tokens during deposit. */
         address collateralTokens;
         /**

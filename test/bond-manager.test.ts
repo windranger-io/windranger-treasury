@@ -426,7 +426,7 @@ describe('Bond Manager contract', () => {
             creator.createBond(
                 {name: 'name', symbol: 'symbol'},
                 {
-                    debtTokens: 100n,
+                    debtTokenAmount: 100n,
                     collateralTokens: collateralTokens.address,
                     expiryTimestamp: 0n,
                     minimumDeposit: 1n,

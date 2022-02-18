@@ -45,7 +45,7 @@ describe('Bond Factory contract', () => {
                 bonds.createBond(
                     {name: bondName, symbol: bondSymbol},
                     {
-                        debtTokens: debtTokenAmount,
+                        debtTokenAmount: debtTokenAmount,
                         collateralTokens: collateralTokens.address,
                         expiryTimestamp: expiryTimestamp,
                         minimumDeposit: minimumDeposit,
@@ -76,7 +76,7 @@ describe('Bond Factory contract', () => {
                 bonds.createBond(
                     {name: 'Named bond', symbol: 'AA00AA'},
                     {
-                        debtTokens: 101n,
+                        debtTokenAmount: 101n,
                         collateralTokens: collateralTokens.address,
                         expiryTimestamp: 0n,
                         minimumDeposit: 0n,

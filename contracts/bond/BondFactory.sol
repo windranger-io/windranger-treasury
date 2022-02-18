@@ -42,7 +42,7 @@ contract BondFactory is
             address(bond),
             id.name,
             id.symbol,
-            config.debtTokens,
+            config.debtTokenAmount,
             _msgSender(),
             config.treasury,
             config.expiryTimestamp,
@@ -53,7 +53,7 @@ contract BondFactory is
         bond.initialize(
             id.name,
             id.symbol,
-            config.debtTokens,
+            config.debtTokenAmount,
             config.collateralTokens,
             config.treasury,
             config.expiryTimestamp,
