@@ -169,7 +169,7 @@ describe('Bond Mediator contract', () => {
             expect(await mediator.paused()).is.false
         })
 
-        it('only bond factory admin', async () => {
+        it('only bond admin', async () => {
             await expect(mediator.connect(nonAdmin).pause()).to.be.revertedWith(
                 accessControlRevertMessage(nonAdmin, BOND_ADMIN)
             )

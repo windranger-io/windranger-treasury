@@ -378,7 +378,7 @@ describe('Bond Factory contract', () => {
             expect(await bonds.paused()).is.false
         })
 
-        it('only bond factory admin', async () => {
+        it('only bond admin', async () => {
             await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
                 accessControlRevertMessage(nonAdmin, BOND_ADMIN)
             )
