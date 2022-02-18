@@ -19,6 +19,7 @@ import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
 import {BOND_ADMIN} from './contracts/bond/roles'
+import {successfulTransaction} from './framework/transaction'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -88,9 +89,28 @@ describe('Bond Factory contract', () => {
                 receipt
             )
         })
+        it('only when not paused', async () => {
+            await successfulTransaction(bonds.pause())
+            expect(await bonds.paused()).is.true
+
+            await expect(
+                bonds.createBond(
+                    'Named bond',
+                    'AA00AA',
+                    101n,
+                    'BEEP',
+                    0n,
+                    0n,
+                    ''
+                )
+            ).to.be.revertedWith('Pausable: paused')
+        })
     })
 
     describe('collateral whitelist', () => {
+        before(async () => {
+            await bonds.unpause()
+        })
         describe('add', () => {
             it('new token', async () => {
                 const symbol = 'EEK'
@@ -140,9 +160,28 @@ describe('Bond Factory contract', () => {
                     accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
+
+            it('only when not paused', async () => {
+                await successfulTransaction(bonds.pause())
+                expect(await bonds.paused()).is.true
+                const symbol = 'EEK'
+                const tokens = await deployContract<ERC20>(
+                    'ERC20',
+                    'Another erc20 Token',
+                    symbol
+                )
+                expect(await tokens.symbol()).equals(symbol)
+
+                await expect(
+                    bonds.whitelistCollateral(tokens.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
 
         describe('update', () => {
+            before(async () => {
+                await bonds.unpause()
+            })
             it('cannot have identical value', async () => {
                 await expect(
                     bonds.updateWhitelistedCollateral(collateralTokens.address)
@@ -203,9 +242,28 @@ describe('Bond Factory contract', () => {
                 )
                 expect(updatedAddress).not.equals(startingAddress)
             })
+
+            it('only when not paused', async () => {
+                await successfulTransaction(bonds.pause())
+                expect(await bonds.paused()).is.true
+                const symbol = 'EEK'
+                const tokens = await deployContract<ERC20>(
+                    'ERC20',
+                    'Another erc20 Token',
+                    symbol
+                )
+                expect(await tokens.symbol()).equals(symbol)
+
+                await expect(
+                    bonds.updateWhitelistedCollateral(tokens.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
 
         describe('remove', () => {
+            before(async () => {
+                await bonds.unpause()
+            })
             it('entry', async () => {
                 expect(await bonds.isCollateralWhitelisted(collateralSymbol)).is
                     .true
@@ -235,6 +293,15 @@ describe('Bond Factory contract', () => {
                     accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
+
+            it('only when not paused', async () => {
+                await successfulTransaction(bonds.pause())
+                expect(await bonds.paused()).is.true
+                const symbol = 'EEK'
+                await expect(
+                    bonds.removeWhitelistedCollateral(symbol)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
     })
 
@@ -248,6 +315,9 @@ describe('Bond Factory contract', () => {
         })
 
         describe('update', () => {
+            before(async () => {
+                await bonds.unpause()
+            })
             beforeEach(async () => {
                 if ((await bonds.treasury()) !== treasury) {
                     await bonds.setTreasury(treasury)
@@ -283,6 +353,41 @@ describe('Bond Factory contract', () => {
                     accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
             })
+
+            it('only when not paused', async () => {
+                await successfulTransaction(bonds.pause())
+                expect(await bonds.paused()).is.true
+                await expect(bonds.setTreasury(treasury)).to.be.revertedWith(
+                    'Pausable: paused'
+                )
+            })
+        })
+    })
+
+    describe('unpause', () => {
+        before(async () => {
+            await bonds.unpause()
+        })
+        it('changes state', async () => {
+            await bonds.pause()
+
+            expect(await bonds.paused()).is.true
+
+            await bonds.unpause()
+
+            expect(await bonds.paused()).is.false
+        })
+
+        it('only bond admin', async () => {
+            await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
+                accessControlRevertMessage(nonAdmin, BOND_ADMIN)
+            )
+        })
+
+        it('only when paused', async () => {
+            await expect(bonds.unpause()).to.be.revertedWith(
+                'Pausable: not paused'
+            )
         })
     })
 
