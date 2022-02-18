@@ -17,8 +17,8 @@ interface BondCreator {
     struct BondSettings {
         /** Number of tokens to create, which get swapped for collateral tokens by depositing. */
         uint256 debtTokens;
-        /** Abbreviation of the collateral token that are swapped for debt tokens in deposit. */
-        string collateralTokenSymbol;
+        /** Token contract for the collateral that is swapped for debt tokens during deposit. */
+        address collateralTokens;
         /**
          * Unix timestamp for when the Bond is expired and anyone can move the remaining collateral to the Treasury,
          * then petitions may be made for redemption.

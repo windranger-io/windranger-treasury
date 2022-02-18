@@ -43,11 +43,7 @@ describe('Bond Manager contract', () => {
         treasury = (await signer(3)).address
         curator = await deployContractWithProxy<BondManager>('BondManager')
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        collateralSymbol = await collateralTokens.symbol()
-        creator = await deployContractWithProxy<BondFactory>(
-            'BondFactory',
-            collateralTokens.address
-        )
+        creator = await deployContractWithProxy<BondFactory>('BondFactory')
     })
 
     describe('add bond', () => {
@@ -431,7 +427,7 @@ describe('Bond Manager contract', () => {
                 {name: 'name', symbol: 'symbol'},
                 {
                     debtTokens: 100n,
-                    collateralTokenSymbol: collateralSymbol,
+                    collateralTokens: collateralTokens.address,
                     expiryTimestamp: 0n,
                     minimumDeposit: 1n,
                     treasury: treasury,
@@ -455,6 +451,5 @@ describe('Bond Manager contract', () => {
     let nonBondAggregator: SignerWithAddress
     let curator: BondManager
     let collateralTokens: ExtendedERC20
-    let collateralSymbol: string
     let creator: BondFactory
 })
