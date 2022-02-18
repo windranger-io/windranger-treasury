@@ -177,7 +177,6 @@ export function verifySlashEvent(
 }
 
 /**
- *
  * Verifies the content for withdrawing the left over collateral (flush of remaining collateral assets) event.
  */
 export function verifyWithdrawCollateralEvent(

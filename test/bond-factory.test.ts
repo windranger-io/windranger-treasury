@@ -11,7 +11,6 @@ import {
     BondFactory,
     Box,
     ERC20PresetMinterPauser
-    // ERC20PresetMinterPauser
 } from '../typechain-types'
 import {
     deployContract,
