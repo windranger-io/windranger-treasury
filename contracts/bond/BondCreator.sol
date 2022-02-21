@@ -7,23 +7,18 @@ pragma solidity ^0.8.0;
  * @notice Creating a Bond involves the two steps of deploying and initialising.
  */
 interface BondCreator {
-    /**
-     * @@notice The identity of a Bond.
-     */
     struct BondIdentity {
         /** Description of the purpose of the Bond. */
         string name;
         /** Abbreviation to identify the Bond. */
         string symbol;
     }
-    /**
-     * @notice Configuration settings for creating a new Bond.
-     */
+
     struct BondSettings {
         /** Number of tokens to create, which get swapped for collateral tokens by depositing. */
-        uint256 debtTokens;
-        /** Abbreviation of the collateral token that are swapped for debt tokens in deposit. */
-        string collateralTokenSymbol;
+        uint256 debtTokenAmount;
+        /** Token contract for the collateral that is swapped for debt tokens during deposit. */
+        address collateralTokens;
         /**
          * Unix timestamp for when the Bond is expired and anyone can move the remaining collateral to the Treasury,
          * then petitions may be made for redemption.
