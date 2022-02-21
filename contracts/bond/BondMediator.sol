@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
+import "./CollateralWhitelist.sol";
 import "./Roles.sol";
 import "../Version.sol";
 
@@ -19,6 +20,7 @@ import "../Version.sol";
  */
 contract BondMediator is
     BondAccessControl,
+    CollateralWhitelist,
     PausableUpgradeable,
     UUPSUpgradeable,
     Version
@@ -35,31 +37,35 @@ contract BondMediator is
      * @param factory A deployed BondCreator contract to use when creating bonds.
      * @param manager A deployed BondCurator contract to register created bonds with,
      * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
+     * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
      */
     function initialize(
         address factory,
         address manager,
-        address erc20CapableTreasury
+        address erc20CapableTreasury,
+        address erc20CollateralTokens
     ) external virtual initializer {
         require(
             AddressUpgradeable.isContract(factory),
-            "Mediator: creator not a contract"
+            "BM: creator not a contract"
         );
         require(
             AddressUpgradeable.isContract(manager),
-            "Mediator: curator not a contract"
+            "BM: curator not a contract"
         );
         require(
             erc20CapableTreasury != address(0),
-            "Mediator: treasury address zero"
+            "BM: treasury address is zero"
         );
 
         __BondAccessControl_init();
+        __CollateralWhitelist_init();
         __UUPSUpgradeable_init();
 
         _treasury = erc20CapableTreasury;
         _creator = BondCreator(factory);
         _curator = BondCurator(manager);
+        _whitelistCollateral(erc20CollateralTokens);
     }
 
     /**
@@ -76,6 +82,10 @@ contract BondMediator is
         uint256 minimumDeposit,
         string calldata data
     ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
+        require(
+            isCollateralWhitelisted(collateralTokenSymbol),
+            "BM: collateral not whitelisted"
+        );
         BondCreator.BondIdentity memory id = BondCreator.BondIdentity({
             name: name,
             symbol: symbol
@@ -83,8 +93,10 @@ contract BondMediator is
         address bond = _creator.createBond(
             id,
             BondCreator.BondSettings({
-                debtTokens: debtTokens,
-                collateralTokenSymbol: collateralTokenSymbol,
+                debtTokenAmount: debtTokens,
+                collateralTokens: whitelistedCollateralAddress(
+                    collateralTokenSymbol
+                ),
                 treasury: _treasury,
                 expiryTimestamp: expiryTimestamp,
                 minimumDeposit: minimumDeposit,
@@ -116,9 +128,55 @@ contract BondMediator is
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        require(replacement != address(0), "Mediator: treasury address zero");
-        require(_treasury != replacement, "Mediator: same treasury address");
+        require(replacement != address(0), "BM: treasury address is zero");
+        require(_treasury != replacement, "BM: identical treasury address");
         _treasury = replacement;
+    }
+
+    /**
+     * @notice Permits the owner to update the address of already whitelisted collateral token.
+     *
+     * @dev Only applies for bonds created after the update, previously created bonds remain unchanged.
+     *
+     * @param erc20CollateralTokens Must already be whitelisted and must not be address zero.
+     */
+    function updateWhitelistedCollateral(address erc20CollateralTokens)
+        external
+        whenNotPaused
+        onlyRole(Roles.BOND_ADMIN)
+    {
+        _updateWhitelistedCollateral(erc20CollateralTokens);
+    }
+
+    /**
+     * @notice Permits the owner to remove a collateral token from being accepted in future bonds.
+     *
+     * @dev Only applies for bonds created after the removal, previously created bonds remain unchanged.
+     *
+     * @param symbol Symbol must exist in the collateral whitelist.
+     */
+    function removeWhitelistedCollateral(string calldata symbol)
+        external
+        whenNotPaused
+        onlyRole(Roles.BOND_ADMIN)
+    {
+        _removeWhitelistedCollateral(symbol);
+    }
+
+    /**
+     * @notice Adds an ERC20 token to the collateral whitelist.
+     *
+     * @dev When a bond is created, the tokens used as collateral must have been whitelisted.
+     *
+     * @param erc20CollateralTokens Whitelists the token from now onwards.
+     *      On bond creation the tokens address used is retrieved by symbol from the whitelist.
+     */
+    function whitelistCollateral(address erc20CollateralTokens)
+        external
+        whenNotPaused
+        onlyRole(Roles.BOND_ADMIN)
+    {
+        _whitelistCollateral(erc20CollateralTokens);
     }
 
     /**

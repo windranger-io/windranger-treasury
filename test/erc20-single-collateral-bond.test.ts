@@ -64,10 +64,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             admin.address
         )) as ExtendedERC20
         collateralSymbol = await collateralTokens.symbol()
-        bonds = await deployContractWithProxy<BondFactory>(
-            'BondFactory',
-            collateralTokens.address
-        )
+        bonds = await deployContractWithProxy<BondFactory>('BondFactory')
     })
 
     describe('allow redemption', () => {
@@ -410,8 +407,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 bonds.createBond(
                     {name: 'Special Debt Certificate', symbol: 'SDC001'},
                     {
-                        debtTokens: 500n,
-                        collateralTokenSymbol: collateralSymbol,
+                        debtTokenAmount: 500n,
+                        collateralTokens: collateralTokens.address,
                         expiryTimestamp: Date.now() + ONE_DAY_MS,
                         minimumDeposit: MINIMUM_DEPOSIT,
                         treasury: treasury,
@@ -1719,14 +1716,14 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
     async function createBond(
         factory: BondFactory,
-        debtTokens: BigNumberish
+        debtTokenAmount: BigNumberish
     ): Promise<ERC20SingleCollateralBond> {
         const receipt = await execute(
             factory.createBond(
                 {name: 'Special Debt Certificate', symbol: 'SDC001'},
                 {
-                    debtTokens: debtTokens,
-                    collateralTokenSymbol: collateralSymbol,
+                    debtTokenAmount: debtTokenAmount,
+                    collateralTokens: collateralTokens.address,
                     expiryTimestamp: BOND_EXPIRY,
                     minimumDeposit: MINIMUM_DEPOSIT,
                     treasury: treasury,
