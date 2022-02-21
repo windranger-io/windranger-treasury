@@ -22,9 +22,9 @@ abstract contract TokenSweep {
      * @param newBeneficiary The address of the beneficiary
      */
     function _setBeneficiary(address newBeneficiary) internal {
-        require(newBeneficiary != address(0), "TokenSweep: beneficiary-zero");
-        require(newBeneficiary != address(this), "TokenSweep: self-address");
-        require(newBeneficiary != _beneficiary, "TokenSweep: beneficiary-same");
+        require(newBeneficiary != address(0), "TokenSweep: beneficiary zero");
+        require(newBeneficiary != address(this), "TokenSweep: self address");
+        require(newBeneficiary != _beneficiary, "TokenSweep: beneficiary same");
 
         _beneficiary = newBeneficiary;
         emit BeneficiaryUpdate(newBeneficiary);

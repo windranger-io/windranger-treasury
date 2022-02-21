@@ -14,8 +14,8 @@ abstract contract SweepERC20 is TokenSweep {
      * @notice Sweep the erc20 tokens to the beneficiary address
      **/
     function _sweepERC20Tokens(address token, uint256 amount) internal {
-        require(token != address(this), "SweepERC20: self-transfer");
-        require(token != address(0), "SweepERC20: null-token");
+        require(token != address(this), "SweepERC20: self transfer");
+        require(token != address(0), "SweepERC20: address zero");
 
         bool result = IERC20Upgradeable(token).transfer(_beneficiary, amount);
         require(result, "SweepERC20: transfer failed");

@@ -13,8 +13,8 @@ abstract contract SweepERC721 is TokenSweep {
      * @notice Sweep the erc721 tokens to the beneficiary address
      **/
     function _sweepERC721Tokens(address token, uint256 tokenId) internal {
-        require(token != address(this), "SweepERC721: self-transfer");
-        require(token != address(0), "SweepERC721: null-token");
+        require(token != address(this), "SweepERC721: self transfer");
+        require(token != address(0), "SweepERC721: address zero");
 
         IERC721Upgradeable(token).safeTransferFrom(
             address(this),

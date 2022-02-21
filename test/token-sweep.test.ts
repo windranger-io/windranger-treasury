@@ -64,13 +64,13 @@ describe('Token Sweep contracts', () => {
         it('cannot set zero address as beneficiary', async () => {
             await expect(
                 erc20SweepHarness.setBeneficiary(ADDRESS_ZERO)
-            ).to.be.revertedWith('TokenSweep: beneficiary-zero')
+            ).to.be.revertedWith('TokenSweep: beneficiary zero')
         })
 
         it('cannot set self as beneficiary', async () => {
             await expect(
                 erc20SweepHarness.setBeneficiary(erc20SweepHarness.address)
-            ).to.be.revertedWith('TokenSweep: self-address')
+            ).to.be.revertedWith('TokenSweep: self address')
         })
 
         it('cannot update to self', async () => {
@@ -78,7 +78,7 @@ describe('Token Sweep contracts', () => {
             await erc20SweepHarness.setBeneficiary(randomAddress)
             await expect(
                 erc20SweepHarness.setBeneficiary(randomAddress)
-            ).to.be.revertedWith('TokenSweep: beneficiary-same')
+            ).to.be.revertedWith('TokenSweep: beneficiary same')
         })
     })
 
@@ -95,7 +95,7 @@ describe('Token Sweep contracts', () => {
                     ADDRESS_ZERO,
                     ERC20_TOKEN_AMOUNT
                 )
-            ).to.be.revertedWith('SweepERC20: null-token')
+            ).to.be.revertedWith('SweepERC20: address zero')
         })
 
         it('cannot sweep with self address as token', async () => {
@@ -104,7 +104,7 @@ describe('Token Sweep contracts', () => {
                     erc20SweepHarness.address,
                     ERC20_TOKEN_AMOUNT
                 )
-            ).to.be.revertedWith('SweepERC20: self-transfer')
+            ).to.be.revertedWith('SweepERC20: self transfer')
         })
 
         async function sweepERC20Tokens(
@@ -145,7 +145,7 @@ describe('Token Sweep contracts', () => {
         it('cannot sweep with zero address as token', async () => {
             await expect(
                 erc721SweepHarness.sweepERC721Tokens(ADDRESS_ZERO, 0)
-            ).to.be.revertedWith('SweepERC721: null-token')
+            ).to.be.revertedWith('SweepERC721: address zero')
         })
 
         it('cannot sweep with self address as token', async () => {
@@ -154,7 +154,7 @@ describe('Token Sweep contracts', () => {
                     erc721SweepHarness.address,
                     0
                 )
-            ).to.be.revertedWith('SweepERC721: self-transfer')
+            ).to.be.revertedWith('SweepERC721: self transfer')
         })
 
         async function sweepERC721Tokens(
