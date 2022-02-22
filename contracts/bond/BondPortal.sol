@@ -20,6 +20,8 @@ import "../Version.sol";
  *      a single function to create and setup a bond for management and access control.
  */
 interface BondPortal {
+    event CreateDao(uint256 id, address treasury);
+
     /**
      * @notice Initialises a new DAO with essential configuration.
      *

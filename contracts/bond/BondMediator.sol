@@ -77,14 +77,18 @@ contract BondMediator is
             "BM: treasury address is zero"
         );
 
-        //TODO event!
-        //TODO move the whitelist into the DaoConfig
         _daoConfigLastId++;
+
+        emit CreateDao(_daoConfigLastId, erc20CapableTreasury);
+
         _daoConfig[_daoConfigLastId] = DaoBondConfig({
             treasury: erc20CapableTreasury
         });
 
+        // TODO remove this - no local treasury
         _treasury = erc20CapableTreasury;
+
+        //TODO move the whitelist into the DaoConfig too
         _whitelistCollateral(erc20CollateralTokens);
 
         return _daoConfigLastId;
