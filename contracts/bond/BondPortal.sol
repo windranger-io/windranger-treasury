@@ -16,8 +16,7 @@ import "../Version.sol";
 /**
  * @title Entry point for the Bond family of contract.
  *
- * @dev Orchestrates the various Bond contracts to provide a single function to aggregate the various calls,
- *      a single function to create and setup a bond for management and access control.
+ * @dev Orchestrates the various Bond contracts to provide a single function to aggregate the various calls.
  */
 interface BondPortal {
     event CreateDao(uint256 id, address treasury);
