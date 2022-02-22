@@ -83,12 +83,8 @@ contract BondMediator is
         uint256 minimumDeposit,
         string calldata data
     ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
-        string memory collateralTokenSymbol = IERC20MetadataUpgradeable(
-            collateralTokens
-        ).symbol();
-
         require(
-            isCollateralWhitelisted(collateralTokenSymbol),
+            isCollateralWhitelisted(collateralTokens),
             "BM: collateral not whitelisted"
         );
         BondCreator.BondIdentity memory id = BondCreator.BondIdentity({
@@ -156,14 +152,14 @@ contract BondMediator is
      *
      * @dev Only applies for bonds created after the removal, previously created bonds remain unchanged.
      *
-     * @param symbol Symbol must exist in the collateral whitelist.
+     * @param erc20CollateralTokens token to remove from whitelist
      */
-    function removeWhitelistedCollateral(string calldata symbol)
+    function removeWhitelistedCollateral(address erc20CollateralTokens)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        _removeWhitelistedCollateral(symbol);
+        _removeWhitelistedCollateral(erc20CollateralTokens);
     }
 
     /**
