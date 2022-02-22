@@ -12,6 +12,7 @@ import {
     BondManager,
     BondMediator,
     Box,
+    ERC20,
     ERC20PresetMinterPauser
 } from '../typechain-types'
 import {
@@ -42,6 +43,11 @@ describe('Bond Mediator contract', () => {
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
+        nonWhitelistCollateralTokens = await deployContract<ERC20>(
+            '@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20',
+            'Name',
+            'SYMBOL'
+        )
         curator = await deployContractWithProxy<BondManager>('BondManager')
         creator = await deployContractWithProxy<BondFactory>('BondFactory')
         mediator = await deployContractWithProxy<BondMediator>(
@@ -272,7 +278,7 @@ describe('Bond Mediator contract', () => {
                         'Named bond',
                         'AA00AA',
                         101n,
-                        'Not Whitelisted',
+                        nonWhitelistCollateralTokens.address,
                         0n,
                         0n,
                         ''
@@ -288,7 +294,7 @@ describe('Bond Mediator contract', () => {
                             'Bond Name',
                             'Bond Symbol',
                             1n,
-                            'Collateral Symbol',
+                            collateralTokens.address,
                             0n,
                             100n,
                             ''
@@ -311,7 +317,7 @@ describe('Bond Mediator contract', () => {
                         bondName,
                         bondSymbol,
                         debtTokens,
-                        collateralSymbol,
+                        collateralTokens.address,
                         expiryTimestamp,
                         minimumDeposit,
                         metaData
@@ -369,7 +375,7 @@ describe('Bond Mediator contract', () => {
                         'Bond Name',
                         'Bond Symbol',
                         1n,
-                        'Collateral Symbol',
+                        collateralTokens.address,
                         0n,
                         100n,
                         ''
@@ -470,6 +476,7 @@ describe('Bond Mediator contract', () => {
     let treasury: string
     let nonAdmin: SignerWithAddress
     let collateralTokens: ExtendedERC20
+    let nonWhitelistCollateralTokens: ExtendedERC20
     let collateralSymbol: string
     let mediator: BondMediator
     let curator: BondManager

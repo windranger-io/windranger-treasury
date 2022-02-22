@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./BondAccessControl.sol";
@@ -77,11 +78,15 @@ contract BondMediator is
         string calldata name,
         string calldata symbol,
         uint256 debtTokens,
-        string calldata collateralTokenSymbol,
+        address collateralTokens,
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
         string calldata data
     ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
+        string memory collateralTokenSymbol = IERC20MetadataUpgradeable(
+            collateralTokens
+        ).symbol();
+
         require(
             isCollateralWhitelisted(collateralTokenSymbol),
             "BM: collateral not whitelisted"
@@ -94,9 +99,7 @@ contract BondMediator is
             id,
             BondCreator.BondSettings({
                 debtTokenAmount: debtTokens,
-                collateralTokens: whitelistedCollateralAddress(
-                    collateralTokenSymbol
-                ),
+                collateralTokens: collateralTokens,
                 treasury: _treasury,
                 expiryTimestamp: expiryTimestamp,
                 minimumDeposit: minimumDeposit,
