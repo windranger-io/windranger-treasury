@@ -25,6 +25,18 @@ abstract contract CollateralWhitelist is Initializable {
         return _whitelist.contains(erc20);
     }
 
+    /**
+     * @notice Returns a list of the whitelisted tokens' symbols
+     */
+    function getWhitelistSymbols() public view returns (string[] memory) {
+        address[] memory keys = _whitelist.values();
+        string[] memory symbols = new string[](keys.length);
+        for (uint256 i = 0; i < keys.length; i++) {
+            symbols[i] = _symbols[keys[i]];
+        }
+        return symbols;
+    }
+
     function __CollateralWhitelist_init() internal onlyInitializing {}
 
     /**
@@ -64,10 +76,11 @@ abstract contract CollateralWhitelist is Initializable {
             isCollateralWhitelisted(erc20CollateralTokens),
             "Whitelist: not whitelisted"
         );
-        //        require(
-        //            _whitelist[symbol] != erc20CollateralTokens,
-        //            "Whitelist: identical address"
-        //        );
+        bytes32 storedSymbolHash = keccak256(
+            abi.encodePacked(_symbols[erc20CollateralTokens])
+        );
+        bytes32 symbolHash = keccak256(abi.encodePacked(symbol));
+        require(storedSymbolHash != symbolHash, "Whitelist: same symbol");
         _whitelist.add(erc20CollateralTokens);
 
         _symbols[erc20CollateralTokens] = symbol;
