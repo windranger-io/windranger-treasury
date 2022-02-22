@@ -58,11 +58,7 @@ describe('Bond Mediator contract', () => {
             curator.address
         )
 
-        // TODO will have to change - need the ID for later on, maybe encapsulate?
-        const receipt = await successfulTransaction(
-            mediator.createDao(treasury, collateralTokens.address)
-        )
-        daoId = createDaoEvents(events('CreateDao', receipt))[0].id.toBigInt()
+        daoId = await createDao(mediator, treasury, collateralTokens)
 
         await curator.grantRole(BOND_AGGREGATOR.hex, mediator.address)
     })
@@ -489,3 +485,20 @@ describe('Bond Mediator contract', () => {
     let creator: BondFactory
     let daoId: bigint
 })
+
+async function createDao(
+    mediator: BondMediator,
+    treasury: string,
+    collateralTokens: ExtendedERC20
+): Promise<bigint> {
+    const receipt = await successfulTransaction(
+        mediator.createDao(treasury, collateralTokens.address)
+    )
+
+    const creationEvents = createDaoEvents(events('CreateDao', receipt))
+
+    expect(creationEvents).is.not.undefined
+    expect(creationEvents).has.length(1)
+
+    return creationEvents[0].id.toBigInt()
+}
