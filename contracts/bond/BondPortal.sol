@@ -40,7 +40,7 @@ interface BondPortal {
     function createManagedBond(
         string calldata name,
         string calldata symbol,
-        uint256 debtAmount,
+        uint256 debtTokenAmount,
         address collateralTokens,
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
