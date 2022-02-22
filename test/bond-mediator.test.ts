@@ -12,7 +12,7 @@ import {
     BondManager,
     BondMediator,
     Box,
-    ERC20
+    ERC20PresetMinterPauser
 } from '../typechain-types'
 import {
     deployContract,
@@ -59,8 +59,8 @@ describe('Bond Mediator contract', () => {
         describe('add', () => {
             it('new token', async () => {
                 const symbol = 'EEK'
-                const tokens = await deployContract<ERC20>(
-                    'ERC20',
+                const tokens = await deployContract<ERC20PresetMinterPauser>(
+                    'ERC20PresetMinterPauser',
                     'Another erc20 Token',
                     symbol
                 )
@@ -110,8 +110,8 @@ describe('Bond Mediator contract', () => {
                 await successfulTransaction(mediator.pause())
                 expect(await mediator.paused()).is.true
                 const symbol = 'EEK'
-                const tokens = await deployContract<ERC20>(
-                    'ERC20',
+                const tokens = await deployContract<ERC20PresetMinterPauser>(
+                    'ERC20PresetMinterPauser',
                     'Another erc20 Token',
                     symbol
                 )
@@ -197,8 +197,8 @@ describe('Bond Mediator contract', () => {
                 await successfulTransaction(mediator.pause())
                 expect(await mediator.paused()).is.true
                 const symbol = 'EEK'
-                const tokens = await deployContract<ERC20>(
-                    'ERC20',
+                const tokens = await deployContract<ERC20PresetMinterPauser>(
+                    'ERC20PresetMinterPauser',
                     'Another erc20 Token',
                     symbol
                 )

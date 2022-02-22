@@ -29,11 +29,11 @@ import {
     verifyPartialCollateralEvent,
     verifyRedemptionEvent,
     verifySlashEvent,
-    verifyTransferEvents,
     verifyWithdrawCollateralEvent
 } from './contracts/bond/verify-single-collateral-bond-events'
 import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
+import {verifyERC20TransferEvents} from './contracts/common/verify-erc20-transfer'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
@@ -833,7 +833,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: collateralSymbol,
             amount: collateralAmount
         })
-        verifyTransferEvents(depositOne, [
+        verifyERC20TransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -859,7 +859,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        verifyTransferEvents(slashReceipt, [
+        verifyERC20TransferEvents(slashReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -888,7 +888,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledge},
             {symbol: collateralSymbol, amount: ZERO}
         )
-        verifyTransferEvents(redeemOneReceipt, [
+        verifyERC20TransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -928,7 +928,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledge
         })
-        verifyTransferEvents(depositOne, [
+        verifyERC20TransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -958,7 +958,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        verifyTransferEvents(slashReceipt, [
+        verifyERC20TransferEvents(slashReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1002,7 +1002,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledge},
             {symbol: collateralSymbol, amount: pledge - slashedCollateral}
         )
-        verifyTransferEvents(redeemOneReceipt, [
+        verifyERC20TransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -1057,7 +1057,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeOne
         })
-        verifyTransferEvents(depositOne, [
+        verifyERC20TransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -1080,7 +1080,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: collateralSymbol,
             amount: collateralAmount
         })
-        verifyTransferEvents(depositTwo, [
+        verifyERC20TransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
                 to: bond.address,
@@ -1115,7 +1115,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOne}
         )
-        verifyTransferEvents(redeemOneReceipt, [
+        verifyERC20TransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -1136,7 +1136,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwo}
         )
-        verifyTransferEvents(redeemTwoReceipt, [
+        verifyERC20TransferEvents(redeemTwoReceipt, [
             {
                 from: guarantorTwo.address,
                 to: ADDRESS_ZERO,
@@ -1191,7 +1191,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: collateralSymbol,
             amount: ONE
         })
-        verifyTransferEvents(withdrawReceipt, [
+        verifyERC20TransferEvents(withdrawReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1237,7 +1237,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeOne
         })
-        verifyTransferEvents(depositOne, [
+        verifyERC20TransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -1256,7 +1256,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
-        verifyTransferEvents(depositTwo, [
+        verifyERC20TransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
                 to: bond.address,
@@ -1300,7 +1300,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOne}
         )
-        verifyTransferEvents(redeemOneReceipt, [
+        verifyERC20TransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -1321,7 +1321,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwo}
         )
-        verifyTransferEvents(redeemTwoReceipt, [
+        verifyERC20TransferEvents(redeemTwoReceipt, [
             {
                 from: guarantorTwo.address,
                 to: ADDRESS_ZERO,
@@ -1370,7 +1370,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeOne
         })
-        verifyTransferEvents(depositOne, [
+        verifyERC20TransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -1389,7 +1389,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
-        verifyTransferEvents(depositTwo, [
+        verifyERC20TransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
                 to: bond.address,
@@ -1420,7 +1420,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        verifyTransferEvents(slashReceipt, [
+        verifyERC20TransferEvents(slashReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1435,7 +1435,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: collateralSymbol,
             amount: collateral - slashedCollateral
         })
-        verifyTransferEvents(expireReceipt, [
+        verifyERC20TransferEvents(expireReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1492,7 +1492,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeOne
         })
-        verifyTransferEvents(depositOne, [
+        verifyERC20TransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
                 to: bond.address,
@@ -1511,7 +1511,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeTwo
         })
-        verifyTransferEvents(depositTwo, [
+        verifyERC20TransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
                 to: bond.address,
@@ -1530,7 +1530,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: debtSymbol,
             amount: pledgeThree
         })
-        verifyTransferEvents(depositThree, [
+        verifyERC20TransferEvents(depositThree, [
             {
                 from: guarantorThree.address,
                 to: bond.address,
@@ -1558,7 +1558,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             symbol: collateralSymbol,
             amount: slashedCollateral
         })
-        verifyTransferEvents(slashReceipt, [
+        verifyERC20TransferEvents(slashReceipt, [
             {
                 from: bond.address,
                 to: treasury,
@@ -1593,7 +1593,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeOne},
             {symbol: collateralSymbol, amount: pledgeOneSlashed}
         )
-        verifyTransferEvents(redeemOneReceipt, [
+        verifyERC20TransferEvents(redeemOneReceipt, [
             {
                 from: guarantorOne.address,
                 to: ADDRESS_ZERO,
@@ -1614,7 +1614,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeTwo},
             {symbol: collateralSymbol, amount: pledgeTwoSlashed}
         )
-        verifyTransferEvents(redeemTwoReceipt, [
+        verifyERC20TransferEvents(redeemTwoReceipt, [
             {
                 from: guarantorTwo.address,
                 to: ADDRESS_ZERO,
@@ -1635,7 +1635,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {symbol: debtSymbol, amount: pledgeThree},
             {symbol: collateralSymbol, amount: pledgeThreeSlashed}
         )
-        verifyTransferEvents(redeemThreeReceipt, [
+        verifyERC20TransferEvents(redeemThreeReceipt, [
             {
                 from: guarantorThree.address,
                 to: ADDRESS_ZERO,

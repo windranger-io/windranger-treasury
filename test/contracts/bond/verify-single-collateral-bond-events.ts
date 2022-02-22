@@ -1,5 +1,5 @@
 import {BigNumber, ContractReceipt} from 'ethers'
-import {event, events} from '../../framework/events'
+import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {
     allowRedemptionEvent,
@@ -9,10 +9,8 @@ import {
     partialCollateralEvent,
     redemptionEvent,
     slashEvent,
-    transferEvents,
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
-import {verifyOrderedEvents} from '../../framework/verify'
 
 /**
  * Expected balance combination of a symbol and amount (value).
@@ -43,7 +41,6 @@ export type ActualTokenTransferEvent = {
 export type ExpectAllowRedemptionEvent = {
     authorizer: string
 }
-
 /**
  * Verifies the content for a Allow Redemption event.
  */
@@ -180,25 +177,6 @@ export function verifySlashEvent(
 }
 
 /**
- * Verifies the content matches at least one of the Transfer events.
- */
-export function verifyTransferEvents(
-    receipt: ContractReceipt,
-    expectedTransfers: ExpectTokenTransferEvent[]
-): void {
-    const actualTransfers = transferEvents(events('Transfer', receipt))
-
-    verifyOrderedEvents(
-        actualTransfers,
-        expectedTransfers,
-        (
-            actual: ActualTokenTransferEvent,
-            expected: ExpectTokenTransferEvent
-        ) => deepEqualsTokenTransfer(actual, expected)
-    )
-}
-
-/**
  * Verifies the content for withdrawing the left over collateral (flush of remaining collateral assets) event.
  */
 export function verifyWithdrawCollateralEvent(
@@ -214,16 +192,5 @@ export function verifyWithdrawCollateralEvent(
     )
     expect(onlyTransferEvent.collateralAmount, 'Transfer amount').equals(
         transfer.amount
-    )
-}
-
-function deepEqualsTokenTransfer(
-    actual: ActualTokenTransferEvent,
-    expected: ExpectTokenTransferEvent
-): boolean {
-    return (
-        actual.to === expected.to &&
-        actual.from === expected.from &&
-        actual.value.toBigInt() === expected.amount
     )
 }

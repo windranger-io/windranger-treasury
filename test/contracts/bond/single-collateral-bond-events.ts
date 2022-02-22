@@ -10,7 +10,6 @@ import {
     SlashEvent,
     WithdrawCollateralEvent
 } from '../../../typechain-types/ERC20SingleCollateralBond'
-import {TransferEvent} from '../../../typechain-types/IERC20'
 
 export type ActualAllowRedemptionEvent = {authorizer: string}
 
@@ -169,31 +168,6 @@ export function slashEvent(event: Event): ActualSlashEvent {
     expect(args?.collateralAmount).is.not.undefined
 
     return slash.args
-}
-
-/**
- * Shape check and conversion for a TransferEvents.
- */
-export function transferEvents(events: Event[]): ActualTransferEvents[] {
-    const converted: {
-        from: string
-        to: string
-        value: BigNumber
-    }[] = []
-
-    for (let i = 0; i < events.length; i++) {
-        const transfer = events[i] as TransferEvent
-        expect(transfer.args).is.not.undefined
-
-        const args = events[i].args
-        expect(args?.from).is.not.undefined
-        expect(args?.to).is.not.undefined
-        expect(args?.value).is.not.undefined
-
-        converted.push(transfer.args)
-    }
-
-    return converted
 }
 
 /**
