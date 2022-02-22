@@ -19,7 +19,7 @@ abstract contract CollateralWhitelist is Initializable {
      * @return When present in the whitelist, the token address, otherwise address zero.
      */
     function whitelistedCollateralAddress(string calldata symbol)
-        public
+        external
         view
         returns (address)
     {
