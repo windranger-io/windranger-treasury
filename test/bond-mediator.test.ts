@@ -30,6 +30,8 @@ import {verifyOwnershipTransferredEventLogs} from './contracts/ownable/verify-ow
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
+import {createDaoEvents} from './contracts/bond/bond-portal-events'
+import {events} from './framework/events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -56,8 +58,11 @@ describe('Bond Mediator contract', () => {
             curator.address
         )
 
-        // TODO will have to change - need the ID for later on
-        await mediator.createDao(treasury, collateralTokens.address)
+        // TODO will have to change - need the ID for later on, maybe encapsulate?
+        const receipt = await successfulTransaction(
+            mediator.createDao(treasury, collateralTokens.address)
+        )
+        daoId = createDaoEvents(events('CreateDao', receipt))[0].id.toBigInt()
 
         await curator.grantRole(BOND_AGGREGATOR.hex, mediator.address)
     })
@@ -482,4 +487,5 @@ describe('Bond Mediator contract', () => {
     let mediator: BondMediator
     let curator: BondManager
     let creator: BondFactory
+    let daoId: bigint
 })
