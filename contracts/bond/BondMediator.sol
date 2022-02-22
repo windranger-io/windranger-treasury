@@ -26,10 +26,16 @@ contract BondMediator is
     UUPSUpgradeable,
     Version
 {
+    struct DaoBondConfig {
+        address treasury;
+    }
+
     BondCreator private _creator;
     BondCurator private _curator;
 
     address private _treasury;
+    uint256 private _daoConfigLastId;
+    mapping(uint256 => DaoBondConfig) private _daoConfig;
 
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
@@ -37,15 +43,12 @@ contract BondMediator is
      *
      * @param factory A deployed BondCreator contract to use when creating bonds.
      * @param manager A deployed BondCurator contract to register created bonds with,
-     * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
-     * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
      */
-    function initialize(
-        address factory,
-        address manager,
-        address erc20CapableTreasury,
-        address erc20CollateralTokens
-    ) external virtual initializer {
+    function initialize(address factory, address manager)
+        external
+        virtual
+        initializer
+    {
         require(
             AddressUpgradeable.isContract(factory),
             "BM: creator not a contract"
@@ -54,19 +57,42 @@ contract BondMediator is
             AddressUpgradeable.isContract(manager),
             "BM: curator not a contract"
         );
-        require(
-            erc20CapableTreasury != address(0),
-            "BM: treasury address is zero"
-        );
 
         __BondAccessControl_init();
         __CollateralWhitelist_init();
         __UUPSUpgradeable_init();
 
-        _treasury = erc20CapableTreasury;
         _creator = BondCreator(factory);
         _curator = BondCurator(manager);
+    }
+
+    /**
+     * @notice Initialises a new DAO with essential configuration.
+     *
+     * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
+     * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
+     * @return ID for the created DAO.
+     */
+    function createDao(
+        address erc20CapableTreasury,
+        address erc20CollateralTokens
+    ) external returns (uint256) {
+        require(
+            erc20CapableTreasury != address(0),
+            "BM: treasury address is zero"
+        );
+
+        //TODO event!
+        //TODO move the whitelist into the DaoConfig
+        _daoConfigLastId++;
+        _daoConfig[_daoConfigLastId] = DaoBondConfig({
+            treasury: erc20CapableTreasury
+        });
+
+        _treasury = erc20CapableTreasury;
         _whitelistCollateral(erc20CollateralTokens);
+
+        return _daoConfigLastId;
     }
 
     /**
@@ -83,6 +109,8 @@ contract BondMediator is
         uint256 minimumDeposit,
         string calldata data
     ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
+        // TODO check dao ID exists
+
         string memory collateralTokenSymbol = IERC20MetadataUpgradeable(
             collateralTokens
         ).symbol();

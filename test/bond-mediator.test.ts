@@ -53,10 +53,11 @@ describe('Bond Mediator contract', () => {
         mediator = await deployContractWithProxy<BondMediator>(
             'BondMediator',
             creator.address,
-            curator.address,
-            treasury,
-            collateralTokens.address
+            curator.address
         )
+
+        // TODO will have to change
+        await mediator.createDao(treasury, collateralTokens.address)
 
         await curator.grantRole(BOND_AGGREGATOR.hex, mediator.address)
     })
