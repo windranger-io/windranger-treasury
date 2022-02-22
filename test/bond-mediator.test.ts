@@ -56,7 +56,7 @@ describe('Bond Mediator contract', () => {
             curator.address
         )
 
-        // TODO will have to change
+        // TODO will have to change - need the ID for later on
         await mediator.createDao(treasury, collateralTokens.address)
 
         await curator.grantRole(BOND_AGGREGATOR.hex, mediator.address)

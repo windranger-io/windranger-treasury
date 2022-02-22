@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
+import "./BondPortal.sol";
 import "./CollateralWhitelist.sol";
 import "./Roles.sol";
 import "../Version.sol";
@@ -21,6 +22,7 @@ import "../Version.sol";
  */
 contract BondMediator is
     BondAccessControl,
+    BondPortal,
     CollateralWhitelist,
     PausableUpgradeable,
     UUPSUpgradeable,
@@ -66,17 +68,10 @@ contract BondMediator is
         _curator = BondCurator(manager);
     }
 
-    /**
-     * @notice Initialises a new DAO with essential configuration.
-     *
-     * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
-     * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
-     * @return ID for the created DAO.
-     */
     function createDao(
         address erc20CapableTreasury,
         address erc20CollateralTokens
-    ) external returns (uint256) {
+    ) external override returns (uint256) {
         require(
             erc20CapableTreasury != address(0),
             "BM: treasury address is zero"
@@ -95,20 +90,21 @@ contract BondMediator is
         return _daoConfigLastId;
     }
 
-    /**
-     * @notice Creates a new Bond, registering with the Bond Management contract.
-     *
-     * @dev Creates a new Bond with the BondCreator and registers it with the BondCurator.
-     */
     function createManagedBond(
         string calldata name,
         string calldata symbol,
-        uint256 debtTokens,
+        uint256 debtAmount,
         address collateralTokens,
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
         string calldata data
-    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
+    )
+        external
+        override
+        whenNotPaused
+        onlyRole(Roles.BOND_ADMIN)
+        returns (address)
+    {
         // TODO check dao ID exists
 
         string memory collateralTokenSymbol = IERC20MetadataUpgradeable(
@@ -126,7 +122,7 @@ contract BondMediator is
         address bond = _creator.createBond(
             id,
             BondCreator.BondSettings({
-                debtTokenAmount: debtTokens,
+                debtTokenAmount: debtAmount,
                 collateralTokens: collateralTokens,
                 treasury: _treasury,
                 expiryTimestamp: expiryTimestamp,
