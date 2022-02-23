@@ -424,12 +424,6 @@ describe('Bond Mediator contract', () => {
                     treasury
                 )
             })
-
-            it('invalid DAO id', async () => {
-                expect(
-                    await mediator.connect(nonAdmin).treasury(INVALID_DAO_ID)
-                ).equals(ADDRESS_ZERO)
-            })
         })
 
         describe('update', () => {
@@ -440,41 +434,13 @@ describe('Bond Mediator contract', () => {
             })
             afterEach(async () => {
                 if ((await mediator.treasury(daoId)) !== treasury) {
-                    await mediator.setTreasury(daoId, treasury)
+                    await mediator.setDaoTreasury(daoId, treasury)
                 }
-            })
-
-            it('to a valid address', async () => {
-                expect(await mediator.treasury(daoId)).equals(treasury)
-
-                await mediator.setTreasury(daoId, nonAdmin.address)
-
-                expect(await mediator.treasury(daoId)).equals(nonAdmin.address)
-            })
-
-            it('cannot be identical', async () => {
-                expect(await mediator.treasury(daoId)).equals(treasury)
-
-                await expect(
-                    mediator.setTreasury(daoId, treasury)
-                ).to.be.revertedWith('BM: identical treasury address')
-            })
-
-            it('cannot be zero', async () => {
-                await expect(
-                    mediator.setTreasury(daoId, ADDRESS_ZERO)
-                ).to.be.revertedWith('BM: treasury address is zero')
-            })
-
-            it('invalid DAO id', async () => {
-                await expect(
-                    mediator.setTreasury(INVALID_DAO_ID, treasury)
-                ).to.be.revertedWith('BM: invalid DAO Id')
             })
 
             it('only bond admin', async () => {
                 await expect(
-                    mediator.connect(nonAdmin).setTreasury(daoId, treasury)
+                    mediator.connect(nonAdmin).setDaoTreasury(daoId, treasury)
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
@@ -484,7 +450,7 @@ describe('Bond Mediator contract', () => {
                 await successfulTransaction(mediator.pause())
                 expect(await mediator.paused()).is.true
                 await expect(
-                    mediator.setTreasury(daoId, treasury)
+                    mediator.setDaoTreasury(daoId, treasury)
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
