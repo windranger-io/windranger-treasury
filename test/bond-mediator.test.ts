@@ -224,7 +224,7 @@ describe.only('Bond Mediator contract', () => {
                 await expect(
                     mediator
                         .connect(nonAdmin)
-                        .removeWhitelistedCollateral(collateralSymbol)
+                        .removeWhitelistedCollateral(collateralTokens.address)
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
@@ -233,9 +233,10 @@ describe.only('Bond Mediator contract', () => {
             it('only when not paused', async () => {
                 await successfulTransaction(mediator.pause())
                 expect(await mediator.paused()).is.true
-                const symbol = 'EEK'
                 await expect(
-                    mediator.removeWhitelistedCollateral(symbol)
+                    mediator.removeWhitelistedCollateral(
+                        collateralTokens.address
+                    )
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -247,7 +248,11 @@ describe.only('Bond Mediator contract', () => {
                 await mediator.unpause()
             }
 
-            if (!(await mediator.isCollateralWhitelisted(collateralSymbol))) {
+            if (
+                !(await mediator.isCollateralWhitelisted(
+                    collateralTokens.address
+                ))
+            ) {
                 await mediator.whitelistCollateral(collateralTokens.address)
             }
         })
