@@ -66,6 +66,11 @@ describe('Bond Mediator contract', () => {
 
     describe('collateral whitelist', () => {
         describe('add', () => {
+            after(async () => {
+                if (await mediator.paused()) {
+                    await mediator.unpause()
+                }
+            })
             it('new token', async () => {
                 const symbol = 'EEK'
                 const tokens = await deployContract<ERC20PresetMinterPauser>(
@@ -133,7 +138,7 @@ describe('Bond Mediator contract', () => {
         })
 
         describe('update', () => {
-            before(async () => {
+            after(async () => {
                 if (await mediator.paused()) {
                     await mediator.unpause()
                 }
@@ -222,7 +227,7 @@ describe('Bond Mediator contract', () => {
         })
 
         describe('remove', () => {
-            before(async () => {
+            after(async () => {
                 if (await mediator.paused()) {
                     await mediator.unpause()
                 }
@@ -269,11 +274,12 @@ describe('Bond Mediator contract', () => {
     })
 
     describe('managed bond', () => {
-        before(async () => {
+        after(async () => {
             if (await mediator.paused()) {
                 await mediator.unpause()
             }
-
+        })
+        before(async () => {
             if (!(await mediator.isCollateralWhitelisted(collateralSymbol))) {
                 await mediator.whitelistCollateral(collateralTokens.address)
             }
@@ -427,12 +433,12 @@ describe('Bond Mediator contract', () => {
         })
 
         describe('update', () => {
-            before(async () => {
+            after(async () => {
                 if (await mediator.paused()) {
                     await mediator.unpause()
                 }
             })
-            beforeEach(async () => {
+            afterEach(async () => {
                 if ((await mediator.treasury(daoId)) !== treasury) {
                     await mediator.setTreasury(daoId, treasury)
                 }
