@@ -39,6 +39,7 @@ interface BondPortal {
      * @dev Creates a new Bond with the BondCreator and registers it with the BondCurator.
      */
     function createManagedBond(
+        uint256 daoId,
         string calldata name,
         string calldata symbol,
         uint256 debtTokenAmount,

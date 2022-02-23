@@ -37,6 +37,7 @@ import {events} from './framework/events'
 chai.use(solidity)
 
 const ADDRESS_ZERO = constants.AddressZero
+const INVALID_DAO_ID = 0n
 
 describe('Bond Mediator contract', () => {
     before(async () => {
@@ -133,7 +134,9 @@ describe('Bond Mediator contract', () => {
 
         describe('update', () => {
             before(async () => {
-                await mediator.unpause()
+                if (await mediator.paused()) {
+                    await mediator.unpause()
+                }
             })
             it('cannot have identical value', async () => {
                 await expect(
@@ -220,7 +223,9 @@ describe('Bond Mediator contract', () => {
 
         describe('remove', () => {
             before(async () => {
-                await mediator.unpause()
+                if (await mediator.paused()) {
+                    await mediator.unpause()
+                }
             })
             it('entry', async () => {
                 expect(await mediator.isCollateralWhitelisted(collateralSymbol))
@@ -277,6 +282,7 @@ describe('Bond Mediator contract', () => {
             it('non-whitelisted collateral', async () => {
                 await expect(
                     mediator.createManagedBond(
+                        daoId,
                         'Named bond',
                         'AA00AA',
                         101n,
@@ -288,11 +294,27 @@ describe('Bond Mediator contract', () => {
                 ).to.be.revertedWith('BM: collateral not whitelisted')
             })
 
+            it('invalid DAO id', async () => {
+                await expect(
+                    mediator.createManagedBond(
+                        INVALID_DAO_ID,
+                        'Named bond',
+                        'AA00AA',
+                        101n,
+                        nonWhitelistCollateralTokens.address,
+                        0n,
+                        0n,
+                        ''
+                    )
+                ).to.be.revertedWith('BM: invalid DAO Id')
+            })
+
             it('only bond admin', async () => {
                 await expect(
                     mediator
                         .connect(nonAdmin)
                         .createManagedBond(
+                            daoId,
                             'Bond Name',
                             'Bond Symbol',
                             1n,
@@ -316,6 +338,7 @@ describe('Bond Mediator contract', () => {
 
                 const receipt = await successfulTransaction(
                     mediator.createManagedBond(
+                        daoId,
                         bondName,
                         bondSymbol,
                         debtTokens,
@@ -374,6 +397,7 @@ describe('Bond Mediator contract', () => {
                 expect(await mediator.paused()).is.true
                 await expect(
                     mediator.createManagedBond(
+                        daoId,
                         'Bond Name',
                         'Bond Symbol',
                         1n,
@@ -390,47 +414,61 @@ describe('Bond Mediator contract', () => {
     describe('treasury', () => {
         describe('retrieve', () => {
             it(' by non-owner', async () => {
-                expect(await mediator.connect(nonAdmin).treasury()).equals(
+                expect(await mediator.connect(nonAdmin).treasury(daoId)).equals(
                     treasury
                 )
+            })
+
+            it('invalid DAO id', async () => {
+                expect(
+                    await mediator.connect(nonAdmin).treasury(INVALID_DAO_ID)
+                ).equals(ADDRESS_ZERO)
             })
         })
 
         describe('update', () => {
             before(async () => {
-                await mediator.unpause()
+                if (await mediator.paused()) {
+                    await mediator.unpause()
+                }
             })
             beforeEach(async () => {
-                if ((await mediator.treasury()) !== treasury) {
-                    await mediator.setTreasury(treasury)
+                if ((await mediator.treasury(daoId)) !== treasury) {
+                    await mediator.setTreasury(daoId, treasury)
                 }
             })
 
             it('to a valid address', async () => {
-                expect(await mediator.treasury()).equals(treasury)
+                expect(await mediator.treasury(daoId)).equals(treasury)
 
-                await mediator.setTreasury(nonAdmin.address)
+                await mediator.setTreasury(daoId, nonAdmin.address)
 
-                expect(await mediator.treasury()).equals(nonAdmin.address)
+                expect(await mediator.treasury(daoId)).equals(nonAdmin.address)
             })
 
             it('cannot be identical', async () => {
-                expect(await mediator.treasury()).equals(treasury)
+                expect(await mediator.treasury(daoId)).equals(treasury)
 
-                await expect(mediator.setTreasury(treasury)).to.be.revertedWith(
-                    'BM: identical treasury address'
-                )
+                await expect(
+                    mediator.setTreasury(daoId, treasury)
+                ).to.be.revertedWith('BM: identical treasury address')
             })
 
             it('cannot be zero', async () => {
                 await expect(
-                    mediator.setTreasury(ADDRESS_ZERO)
+                    mediator.setTreasury(daoId, ADDRESS_ZERO)
                 ).to.be.revertedWith('BM: treasury address is zero')
+            })
+
+            it('invalid DAO id', async () => {
+                await expect(
+                    mediator.setTreasury(INVALID_DAO_ID, treasury)
+                ).to.be.revertedWith('BM: invalid DAO Id')
             })
 
             it('only bond admin', async () => {
                 await expect(
-                    mediator.connect(nonAdmin).setTreasury(treasury)
+                    mediator.connect(nonAdmin).setTreasury(daoId, treasury)
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
@@ -439,16 +477,18 @@ describe('Bond Mediator contract', () => {
             it('only when not paused', async () => {
                 await successfulTransaction(mediator.pause())
                 expect(await mediator.paused()).is.true
-                await expect(mediator.setTreasury(treasury)).to.be.revertedWith(
-                    'Pausable: paused'
-                )
+                await expect(
+                    mediator.setTreasury(daoId, treasury)
+                ).to.be.revertedWith('Pausable: paused')
             })
         })
     })
 
     describe('unpause', () => {
         before(async () => {
-            await mediator.unpause()
+            if (await mediator.paused()) {
+                await mediator.unpause()
+            }
         })
 
         it('changes state', async () => {

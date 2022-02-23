@@ -29,13 +29,13 @@ contract BondMediator is
     Version
 {
     struct DaoBondConfig {
+        /// Address zero is an invalid address, can be used to identify null structs
         address treasury;
     }
 
     BondCreator private _creator;
     BondCurator private _curator;
 
-    address private _treasury;
     uint256 private _daoConfigLastId;
     mapping(uint256 => DaoBondConfig) private _daoConfig;
 
@@ -85,9 +85,6 @@ contract BondMediator is
             treasury: erc20CapableTreasury
         });
 
-        // TODO remove this - no local treasury
-        _treasury = erc20CapableTreasury;
-
         //TODO move the whitelist into the DaoConfig too
         _whitelistCollateral(erc20CollateralTokens);
 
@@ -95,6 +92,7 @@ contract BondMediator is
     }
 
     function createManagedBond(
+        uint256 daoId,
         string calldata name,
         string calldata symbol,
         uint256 debtTokenAmount,
@@ -109,7 +107,7 @@ contract BondMediator is
         onlyRole(Roles.BOND_ADMIN)
         returns (address)
     {
-        // TODO check dao ID exists
+        require(_isValidDaoId(daoId), "BM: invalid DAO Id");
 
         string memory collateralTokenSymbol = IERC20MetadataUpgradeable(
             collateralTokens
@@ -119,27 +117,18 @@ contract BondMediator is
             isCollateralWhitelisted(collateralTokenSymbol),
             "BM: collateral not whitelisted"
         );
-        BondCreator.BondIdentity memory id = BondCreator.BondIdentity({
-            name: name,
-            symbol: symbol
-        });
-        address bond = _creator.createBond(
-            id,
-            BondCreator.BondSettings({
-                debtTokenAmount: debtTokenAmount,
-                collateralTokens: collateralTokens,
-                treasury: _treasury,
-                expiryTimestamp: expiryTimestamp,
-                minimumDeposit: minimumDeposit,
-                data: data
-            })
+
+        BondCreator.BondSettings memory settings = _bondSettings(
+            daoId,
+            debtTokenAmount,
+            collateralTokens,
+            expiryTimestamp,
+            minimumDeposit,
+            data
         );
+        BondCreator.BondIdentity memory id = _bondIdentity(name, symbol);
 
-        OwnableUpgradeable(bond).transferOwnership(address(_curator));
-
-        _curator.addBond(bond);
-
-        return bond;
+        return _managedBond(id, settings);
     }
 
     /**
@@ -154,14 +143,18 @@ contract BondMediator is
      *
      * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
      */
-    function setTreasury(address replacement)
+    function setTreasury(uint256 daoId, address replacement)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
+        require(_isValidDaoId(daoId), "BM: invalid DAO Id");
         require(replacement != address(0), "BM: treasury address is zero");
-        require(_treasury != replacement, "BM: identical treasury address");
-        _treasury = replacement;
+        require(
+            _daoConfig[daoId].treasury != replacement,
+            "BM: identical treasury address"
+        );
+        _daoConfig[daoId].treasury = replacement;
     }
 
     /**
@@ -225,8 +218,8 @@ contract BondMediator is
         return address(_curator);
     }
 
-    function treasury() external view returns (address) {
-        return _treasury;
+    function treasury(uint256 daoId) external view returns (address) {
+        return _daoConfig[daoId].treasury;
     }
 
     /**
@@ -239,4 +232,44 @@ contract BondMediator is
         override
         onlyRole(Roles.SYSTEM_ADMIN)
     {}
+
+    function _bondIdentity(string calldata name, string calldata symbol)
+        private
+        returns (BondCreator.BondIdentity memory)
+    {
+        return BondCreator.BondIdentity({name: name, symbol: symbol});
+    }
+
+    function _bondSettings(
+        uint256 daoId,
+        uint256 debtTokenAmount,
+        address collateralTokens,
+        uint256 expiryTimestamp,
+        uint256 minimumDeposit,
+        string calldata data
+    ) private returns (BondCreator.BondSettings memory) {
+        return
+            BondCreator.BondSettings({
+                debtTokenAmount: debtTokenAmount,
+                collateralTokens: collateralTokens,
+                treasury: _daoConfig[daoId].treasury,
+                expiryTimestamp: expiryTimestamp,
+                minimumDeposit: minimumDeposit,
+                data: data
+            });
+    }
+
+    function _isValidDaoId(uint256 id) private returns (bool) {
+        return id <= _daoConfigLastId && _daoConfig[id].treasury != address(0);
+    }
+
+    function _managedBond(
+        BondCreator.BondIdentity memory id,
+        BondCreator.BondSettings memory settings
+    ) private returns (address) {
+        address bond = _creator.createBond(id, settings);
+        OwnableUpgradeable(bond).transferOwnership(address(_curator));
+        _curator.addBond(bond);
+        return bond;
+    }
 }
