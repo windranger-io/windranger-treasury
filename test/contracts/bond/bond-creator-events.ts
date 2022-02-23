@@ -1,6 +1,6 @@
 import {BigNumber, Event} from 'ethers'
-import {CreateBondEvent} from '../../../typechain-types/BondFactory'
 import {expect} from 'chai'
+import {CreateBondEvent} from '../../../typechain-types/BondCreator'
 
 export type ActualCreateBondEvent = {
     bond: string

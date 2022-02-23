@@ -1,7 +1,7 @@
 import {Event} from 'ethers'
 import {expect} from 'chai'
-import {AddBondEvent} from '../../../typechain-types/BondManager'
 import {Result} from '@ethersproject/abi'
+import {AddBondEvent} from '../../../typechain-types/BondCurator'
 
 export type ActualAddBondEvent = {
     bond: string
