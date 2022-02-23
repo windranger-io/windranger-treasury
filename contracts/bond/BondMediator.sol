@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
+import "./BondPortal.sol";
 import "./CollateralWhitelist.sol";
 import "./Roles.sol";
 import "../Version.sol";
@@ -21,15 +22,22 @@ import "../Version.sol";
  */
 contract BondMediator is
     BondAccessControl,
+    BondPortal,
     CollateralWhitelist,
     PausableUpgradeable,
     UUPSUpgradeable,
     Version
 {
+    struct DaoBondConfig {
+        /// Address zero is an invalid address, can be used to identify null structs
+        address treasury;
+    }
+
     BondCreator private _creator;
     BondCurator private _curator;
 
-    address private _treasury;
+    uint256 private _daoConfigLastId;
+    mapping(uint256 => DaoBondConfig) private _daoConfig;
 
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
@@ -37,15 +45,12 @@ contract BondMediator is
      *
      * @param factory A deployed BondCreator contract to use when creating bonds.
      * @param manager A deployed BondCurator contract to register created bonds with,
-     * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
-     * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
      */
-    function initialize(
-        address factory,
-        address manager,
-        address erc20CapableTreasury,
-        address erc20CollateralTokens
-    ) external virtual initializer {
+    function initialize(address factory, address manager)
+        external
+        virtual
+        initializer
+    {
         require(
             AddressUpgradeable.isContract(factory),
             "BM: creator not a contract"
@@ -54,60 +59,72 @@ contract BondMediator is
             AddressUpgradeable.isContract(manager),
             "BM: curator not a contract"
         );
-        require(
-            erc20CapableTreasury != address(0),
-            "BM: treasury address is zero"
-        );
 
         __BondAccessControl_init();
         __CollateralWhitelist_init();
         __UUPSUpgradeable_init();
 
-        _treasury = erc20CapableTreasury;
         _creator = BondCreator(factory);
         _curator = BondCurator(manager);
-        _whitelistCollateral(erc20CollateralTokens);
     }
 
-    /**
-     * @notice Creates a new Bond, registering with the Bond Management contract.
-     *
-     * @dev Creates a new Bond with the BondCreator and registers it with the BondCurator.
-     */
+    function createDao(
+        address erc20CapableTreasury,
+        address erc20CollateralTokens
+    ) external override returns (uint256) {
+        require(
+            erc20CapableTreasury != address(0),
+            "BM: treasury address is zero"
+        );
+
+        _daoConfigLastId++;
+
+        emit CreateDao(_daoConfigLastId, erc20CapableTreasury);
+
+        _daoConfig[_daoConfigLastId] = DaoBondConfig({
+            treasury: erc20CapableTreasury
+        });
+
+        //TODO move the whitelist into the DaoConfig too
+        _whitelistCollateral(erc20CollateralTokens);
+
+        return _daoConfigLastId;
+    }
+
     function createManagedBond(
+        uint256 daoId,
         string calldata name,
         string calldata symbol,
-        uint256 debtTokens,
+        uint256 debtTokenAmount,
         address collateralTokens,
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
         string calldata data
-    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) returns (address) {
+    )
+        external
+        override
+        whenNotPaused
+        onlyRole(Roles.BOND_ADMIN)
+        returns (address)
+    {
+        require(_isValidDaoId(daoId), "BM: invalid DAO Id");
+
         require(
             isCollateralWhitelisted(collateralTokens),
             "BM: collateral not whitelisted"
         );
-        BondCreator.BondIdentity memory id = BondCreator.BondIdentity({
-            name: name,
-            symbol: symbol
-        });
-        address bond = _creator.createBond(
-            id,
-            BondCreator.BondSettings({
-                debtTokenAmount: debtTokens,
-                collateralTokens: collateralTokens,
-                treasury: _treasury,
-                expiryTimestamp: expiryTimestamp,
-                minimumDeposit: minimumDeposit,
-                data: data
-            })
+
+        BondCreator.BondSettings memory settings = _bondSettings(
+            daoId,
+            debtTokenAmount,
+            collateralTokens,
+            expiryTimestamp,
+            minimumDeposit,
+            data
         );
+        BondCreator.BondIdentity memory id = _bondIdentity(name, symbol);
 
-        OwnableUpgradeable(bond).transferOwnership(address(_curator));
-
-        _curator.addBond(bond);
-
-        return bond;
+        return _managedBond(id, settings);
     }
 
     /**
@@ -122,14 +139,18 @@ contract BondMediator is
      *
      * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
      */
-    function setTreasury(address replacement)
+    function setTreasury(uint256 daoId, address replacement)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
+        require(_isValidDaoId(daoId), "BM: invalid DAO Id");
         require(replacement != address(0), "BM: treasury address is zero");
-        require(_treasury != replacement, "BM: identical treasury address");
-        _treasury = replacement;
+        require(
+            _daoConfig[daoId].treasury != replacement,
+            "BM: identical treasury address"
+        );
+        _daoConfig[daoId].treasury = replacement;
     }
 
     /**
@@ -193,8 +214,8 @@ contract BondMediator is
         return address(_curator);
     }
 
-    function treasury() external view returns (address) {
-        return _treasury;
+    function treasury(uint256 daoId) external view returns (address) {
+        return _daoConfig[daoId].treasury;
     }
 
     /**
@@ -207,4 +228,44 @@ contract BondMediator is
         override
         onlyRole(Roles.SYSTEM_ADMIN)
     {}
+
+    function _bondIdentity(string calldata name, string calldata symbol)
+        private
+        returns (BondCreator.BondIdentity memory)
+    {
+        return BondCreator.BondIdentity({name: name, symbol: symbol});
+    }
+
+    function _bondSettings(
+        uint256 daoId,
+        uint256 debtTokenAmount,
+        address collateralTokens,
+        uint256 expiryTimestamp,
+        uint256 minimumDeposit,
+        string calldata data
+    ) private returns (BondCreator.BondSettings memory) {
+        return
+            BondCreator.BondSettings({
+                debtTokenAmount: debtTokenAmount,
+                collateralTokens: collateralTokens,
+                treasury: _daoConfig[daoId].treasury,
+                expiryTimestamp: expiryTimestamp,
+                minimumDeposit: minimumDeposit,
+                data: data
+            });
+    }
+
+    function _isValidDaoId(uint256 id) private returns (bool) {
+        return id <= _daoConfigLastId && _daoConfig[id].treasury != address(0);
+    }
+
+    function _managedBond(
+        BondCreator.BondIdentity memory id,
+        BondCreator.BondSettings memory settings
+    ) private returns (address) {
+        address bond = _creator.createBond(id, settings);
+        OwnableUpgradeable(bond).transferOwnership(address(_curator));
+        _curator.addBond(bond);
+        return bond;
+    }
 }
