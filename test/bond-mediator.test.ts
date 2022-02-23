@@ -36,7 +36,7 @@ chai.use(solidity)
 
 const ADDRESS_ZERO = constants.AddressZero
 
-describe.only('Bond Mediator contract', () => {
+describe('Bond Mediator contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
