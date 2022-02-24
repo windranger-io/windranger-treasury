@@ -33,8 +33,12 @@ abstract contract CollateralWhitelist is Initializable {
     /**
      * @notice Whether the symbol has been whitelisted.
      */
-    function isCollateralWhitelisted(address erc20) public view returns (bool) {
-        return _whitelist.contains(erc20);
+    function isCollateralWhitelisted(address erc20CollateralTokens)
+        public
+        view
+        returns (bool)
+    {
+        return _whitelist.contains(erc20CollateralTokens);
     }
 
     function __CollateralWhitelist_init() internal onlyInitializing {}
@@ -55,7 +59,10 @@ abstract contract CollateralWhitelist is Initializable {
             !isCollateralWhitelisted(erc20CollateralTokens),
             "Whitelist: already present"
         );
-        require(_whitelist.add(erc20CollateralTokens), "Whitelist: cannot add");
+        require(
+            _whitelist.add(erc20CollateralTokens),
+            "Whitelist: failed to add"
+        );
 
         _symbols[erc20CollateralTokens] = symbol;
     }
@@ -83,7 +90,10 @@ abstract contract CollateralWhitelist is Initializable {
         bytes32 symbolHash = keccak256(abi.encode(symbol));
 
         require(storedSymbolHash != symbolHash, "Whitelist: same symbol");
-        require(_whitelist.add(erc20CollateralTokens), "Whitelist: cannot add");
+        require(
+            _whitelist.add(erc20CollateralTokens),
+            "Whitelist: failed to add"
+        );
 
         _symbols[erc20CollateralTokens] = symbol;
     }
@@ -95,7 +105,7 @@ abstract contract CollateralWhitelist is Initializable {
      */
     function _removeWhitelistedCollateral(address erc20) internal {
         require(isCollateralWhitelisted(erc20), "Whitelist: not whitelisted");
-        require(_whitelist.remove(erc20), "Whitelist: cannot remove");
+        require(_whitelist.remove(erc20), "Whitelist: failed to remove");
         delete _symbols[erc20];
     }
 
