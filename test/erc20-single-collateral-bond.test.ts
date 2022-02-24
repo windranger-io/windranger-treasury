@@ -74,8 +74,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
             expect(await bond.redeemable()).is.false
 
             await bond.allowRedemption(redemptionReason)
-
             expect(await bond.redeemable()).is.true
+            expect(await bond.reason()).to.equal(redemptionReason)
         })
 
         it('only when not paused', async () => {
