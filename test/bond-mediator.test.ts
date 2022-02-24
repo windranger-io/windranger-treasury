@@ -11,7 +11,6 @@ import {
     BondFactory,
     BondManager,
     BondMediator,
-    Box,
     ERC20,
     ERC20PresetMinterPauser
 } from '../typechain-types'
@@ -36,7 +35,6 @@ import {events} from './framework/events'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-const ADDRESS_ZERO = constants.AddressZero
 const INVALID_DAO_ID = 0n
 
 describe('Bond Mediator contract', () => {

@@ -62,13 +62,13 @@ describe('DAO Bond Configuration contract', () => {
             it('cannot be an existing token', async () => {
                 await expect(
                     config.whitelistCollateral(DAO_ID, collateralTokens.address)
-                ).to.be.revertedWith('Whitelist: already present')
+                ).to.be.revertedWith('DAO Collateral: already present')
             })
 
             it('cannot have address zero', async () => {
                 await expect(
                     config.whitelistCollateral(DAO_ID, ADDRESS_ZERO)
-                ).to.be.revertedWith('Whitelist: zero address')
+                ).to.be.revertedWith('DAO Collateral: zero address')
             })
 
             it('cannot be a non-erc20 contract (without fallback)', async () => {
@@ -89,13 +89,13 @@ describe('DAO Bond Configuration contract', () => {
                         DAO_ID,
                         collateralTokens.address
                     )
-                ).to.be.revertedWith('Whitelist: identical address')
+                ).to.be.revertedWith('DAO Collateral: same address')
             })
 
             it('cannot have address zero', async () => {
                 await expect(
                     config.updateWhitelistedCollateral(DAO_ID, ADDRESS_ZERO)
-                ).to.be.revertedWith('Whitelist: zero address')
+                ).to.be.revertedWith('DAO Collateral: zero address')
             })
 
             it('cannot be a non-contract address', async () => {
@@ -187,7 +187,7 @@ describe('DAO Bond Configuration contract', () => {
 
                 await expect(
                     config.removeWhitelistedCollateral(DAO_ID, absentSymbol)
-                ).to.be.revertedWith('Whitelist: not whitelisted')
+                ).to.be.revertedWith('DAO Collateral: not whitelisted')
             })
         })
     })
@@ -221,19 +221,19 @@ describe('DAO Bond Configuration contract', () => {
 
                 await expect(
                     config.setDaoTreasury(DAO_ID, treasury)
-                ).to.be.revertedWith('DBC: identical treasury address')
+                ).to.be.revertedWith('DAO Treasury: identical address')
             })
 
             it('cannot be zero', async () => {
                 await expect(
                     config.setDaoTreasury(DAO_ID, ADDRESS_ZERO)
-                ).to.be.revertedWith('DBC: treasury address is zero')
+                ).to.be.revertedWith('DAO Treasury: address is zero')
             })
 
             it('invalid DAO id', async () => {
                 await expect(
                     config.setDaoTreasury(INVALID_DAO_ID, treasury)
-                ).to.be.revertedWith('DBC: invalid DAO Id')
+                ).to.be.revertedWith('DAO Treasury: invalid DAO Id')
             })
         })
     })

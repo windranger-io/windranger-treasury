@@ -55,7 +55,7 @@ abstract contract DaoBondConfiguration is Initializable {
     {
         require(
             erc20CapableTreasury != address(0),
-            "DBC: treasury address is zero"
+            "DAO Treasury: address is zero"
         );
 
         _daoConfigLastId++;
@@ -77,14 +77,14 @@ abstract contract DaoBondConfiguration is Initializable {
     function _setDaoTreasury(uint256 daoId, address replacementTreasury)
         internal
     {
-        require(_isValidDaoId(daoId), "DBC: invalid DAO Id");
+        require(_isValidDaoId(daoId), "DAO Treasury: invalid DAO Id");
         require(
             replacementTreasury != address(0),
-            "DBC: treasury address is zero"
+            "DAO Treasury: address is zero"
         );
         require(
             _daoConfig[daoId].treasury != replacementTreasury,
-            "DBC: identical treasury address"
+            "DAO Treasury: identical address"
         );
         _daoConfig[daoId].treasury = replacementTreasury;
     }
@@ -99,13 +99,16 @@ abstract contract DaoBondConfiguration is Initializable {
     function _whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
         internal
     {
-        _requireNonZeroAddress(erc20CollateralTokens);
+        require(
+            erc20CollateralTokens != address(0),
+            "DAO Collateral: zero address"
+        );
 
         string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
             .symbol();
         require(
             _daoConfig[daoId].whitelist[symbol] == address(0),
-            "Whitelist: already present"
+            "DAO Collateral: already present"
         );
         _daoConfig[daoId].whitelist[symbol] = erc20CollateralTokens;
     }
@@ -119,17 +122,20 @@ abstract contract DaoBondConfiguration is Initializable {
         uint256 daoId,
         address erc20CollateralTokens
     ) internal {
-        _requireNonZeroAddress(erc20CollateralTokens);
+        require(
+            erc20CollateralTokens != address(0),
+            "DAO Collateral: zero address"
+        );
 
         string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
             .symbol();
         require(
             isCollateralWhitelisted(daoId, symbol),
-            "Whitelist: not whitelisted"
+            "DAO Collateral: not whitelisted"
         );
         require(
             _daoConfig[daoId].whitelist[symbol] != erc20CollateralTokens,
-            "Whitelist: identical address"
+            "DAO Collateral: same address"
         );
         _daoConfig[daoId].whitelist[symbol] = erc20CollateralTokens;
     }
@@ -144,15 +150,8 @@ abstract contract DaoBondConfiguration is Initializable {
     {
         require(
             isCollateralWhitelisted(daoId, symbol),
-            "Whitelist: not whitelisted"
+            "DAO Collateral: not whitelisted"
         );
         delete _daoConfig[daoId].whitelist[symbol];
-    }
-
-    /**
-     * @dev Reverts when the address is the zero address.
-     */
-    function _requireNonZeroAddress(address examine) private pure {
-        require(examine != address(0), "Whitelist: zero address");
     }
 }
