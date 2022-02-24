@@ -68,37 +68,6 @@ abstract contract CollateralWhitelist is Initializable {
     }
 
     /**
-     * @notice Updates an already whitelisted address.
-     *
-     * @dev Reverts if the address is zero, is identical to the current address, or does not implement `symbol()`.
-     */
-    function _updateWhitelistedCollateral(address erc20CollateralTokens)
-        internal
-    {
-        _requireNonZeroAddress(erc20CollateralTokens);
-
-        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
-            .symbol();
-        require(
-            isCollateralWhitelisted(erc20CollateralTokens),
-            "Whitelist: not whitelisted"
-        );
-
-        bytes32 storedSymbolHash = keccak256(
-            abi.encode(_symbols[erc20CollateralTokens])
-        );
-        bytes32 symbolHash = keccak256(abi.encode(symbol));
-
-        require(storedSymbolHash != symbolHash, "Whitelist: same symbol");
-        require(
-            _whitelist.add(erc20CollateralTokens),
-            "Whitelist: failed to add"
-        );
-
-        _symbols[erc20CollateralTokens] = symbol;
-    }
-
-    /**
      * @notice Deletes a collateral token entry from the whitelist.
      *
      * @dev Expects the symbol to be an existing entry, otherwise reverts.

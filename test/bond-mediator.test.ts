@@ -134,69 +134,6 @@ describe('Bond Mediator contract', () => {
             })
         })
 
-        describe('update', () => {
-            after(async () => {
-                if (await mediator.paused()) {
-                    await mediator.unpause()
-                }
-            })
-            it('cannot have identical value', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(
-                        collateralTokens.address
-                    )
-                ).to.be.revertedWith('Whitelist: same symbol')
-            })
-
-            it('cannot have address zero', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(ADDRESS_ZERO)
-                ).to.be.revertedWith('Whitelist: zero address')
-            })
-
-            it('cannot be a non-contract address', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(admin)
-                ).to.be.revertedWith('function call to a non-contract account')
-            })
-
-            it('cannot be a non-erc20 contract (without fallback)', async () => {
-                const box = await deployContract<Box>('Box')
-
-                await expect(
-                    mediator.updateWhitelistedCollateral(box.address)
-                ).to.be.revertedWith(
-                    "function selector was not recognized and there's no fallback function"
-                )
-            })
-
-            it('only bond admin', async () => {
-                await expect(
-                    mediator
-                        .connect(nonAdmin)
-                        .updateWhitelistedCollateral(collateralTokens.address)
-                ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
-                )
-            })
-
-            it('only when not paused', async () => {
-                await successfulTransaction(mediator.pause())
-                expect(await mediator.paused()).is.true
-                const symbol = 'EEK'
-                const tokens = await deployContract<ERC20PresetMinterPauser>(
-                    'ERC20PresetMinterPauser',
-                    'Another erc20 Token',
-                    symbol
-                )
-                expect(await tokens.symbol()).equals(symbol)
-
-                await expect(
-                    mediator.updateWhitelistedCollateral(tokens.address)
-                ).to.be.revertedWith('Pausable: paused')
-            })
-        })
-
         describe('remove', () => {
             after(async () => {
                 if (await mediator.paused()) {

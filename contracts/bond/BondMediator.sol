@@ -154,21 +154,6 @@ contract BondMediator is
     }
 
     /**
-     * @notice Permits the owner to update the address of already whitelisted collateral token.
-     *
-     * @dev Only applies for bonds created after the update, previously created bonds remain unchanged.
-     *
-     * @param erc20CollateralTokens Must already be whitelisted and must not be address zero.
-     */
-    function updateWhitelistedCollateral(address erc20CollateralTokens)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
-        _updateWhitelistedCollateral(erc20CollateralTokens);
-    }
-
-    /**
      * @notice Permits the owner to remove a collateral token from being accepted in future bonds.
      *
      * @dev Only applies for bonds created after the removal, previously created bonds remain unchanged.
