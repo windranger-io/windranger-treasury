@@ -50,7 +50,7 @@ const BOND_EXPIRY = 750000n
 const MINIMUM_DEPOSIT = 100n
 
 describe('ERC20 Single Collateral Bond contract', () => {
-    const redemptionReason = 'test reason'
+    const redemptionReason = 'test reason string'
     before(async () => {
         admin = await signer(0)
         treasury = (await signer(1)).address
