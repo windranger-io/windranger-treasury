@@ -66,7 +66,7 @@ contract ERC20SingleCollateralBond is
 
     address private _treasury;
 
-    event AllowRedemption(address authorizer);
+    event AllowRedemption(address authorizer, string reason);
     event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
     event Deposit(
         address depositor,
@@ -144,15 +144,15 @@ contract ERC20SingleCollateralBond is
         _mint(debtAmount);
     }
 
-    function allowRedemption()
+    function allowRedemption(string calldata reason)
         external
         override
         whenNotPaused
         whenNotRedeemable
         onlyOwner
     {
-        _allowRedemption();
-        emit AllowRedemption(_msgSender());
+        _allowRedemption(reason);
+        emit AllowRedemption(_msgSender(), reason);
 
         if (_hasDebtTokensRemaining()) {
             _debtTokensRedemptionExcess = _debtTokensRemaining();

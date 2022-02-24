@@ -11,6 +11,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 abstract contract Redeemable is Initializable {
     bool private _redeemable;
 
+    string private _reason;
+
     /**
      * @notice Makes a function callable only when the contract is not redeemable.
      *
@@ -42,6 +44,10 @@ abstract contract Redeemable is Initializable {
     }
 
     //slither-disable-next-line naming-convention
+    function reason() external view returns (string memory) {
+        return _reason;
+    }
+
     function __Redeemable_init() internal onlyInitializing {}
 
     /**
@@ -49,7 +55,8 @@ abstract contract Redeemable is Initializable {
      *
      * No affect if state is already transitioned.
      */
-    function _allowRedemption() internal {
+    function _allowRedemption(string memory reason) internal {
         _redeemable = true;
+        _reason = reason;
     }
 }
