@@ -218,21 +218,21 @@ describe('Bond Curator contract', () => {
                 )
 
                 await expect(
-                    curator.bondSlash(DAO_ID, bond.address, 77n)
+                    curator.bondSlash(DAO_ID, bond.address, 77n, bondSlashReason)
                 ).to.be.revertedWith('Bond: too large')
             })
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondSlash(DAO_ID, bond.address, 5n)
-                ).to.be.revertedWith('BondCurator: not managing')
+                    curator.bondSlash(DAO_ID, bond.address, 5n, bondSlashReason)
+                ).to.be.revertedWith('BondManager: not managing')
             })
 
             it('only bond admin', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondSlash(DAO_ID, bond.address, 5n)
+                        .bondSlash(DAO_ID, bond.address, 5n, bondSlashReason)
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
@@ -243,7 +243,7 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondSlash(DAO_ID, bond.address, 4n)
+                    curator.bondSlash(DAO_ID, bond.address, 4n, bondSlashReason)
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -506,4 +506,5 @@ describe('Bond Curator contract', () => {
     let curator: BondCuratorBox
     let collateralTokens: ExtendedERC20
     let creator: BondFactory
+    const bondSlashReason = 'example slash reason'
 })
