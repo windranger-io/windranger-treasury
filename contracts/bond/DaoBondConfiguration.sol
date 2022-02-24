@@ -50,10 +50,6 @@ abstract contract DaoBondConfiguration is
         return _daoConfig[id].treasury;
     }
 
-    function _isValidDaoId(uint256 id) internal returns (bool) {
-        return id <= _daoConfigLastId && _daoConfig[id].treasury != address(0);
-    }
-
     function _setDaoTreasury(uint256 daoId, address replacementTreasury)
         internal
     {
@@ -76,5 +72,14 @@ abstract contract DaoBondConfiguration is
         returns (mapping(string => address) storage)
     {
         return _daoConfig[daoId].whitelist;
+    }
+
+    function _isValidDaoId(uint256 daoId)
+        internal
+        view
+        override
+        returns (bool)
+    {
+        return _daoConfig[daoId].treasury != address(0);
     }
 }

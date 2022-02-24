@@ -14,7 +14,6 @@ import {
 } from '../typechain-types'
 import {deployContract, signer} from './framework/contracts'
 import {constants} from 'ethers'
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
 // Wires up Waffle with Chai
@@ -28,7 +27,6 @@ describe('DAO Bond Collateral Whitelist contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
-        nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         collateralSymbol = await collateralTokens.symbol()
         config = await deployContract<DaoBondConfigurationBox>(
@@ -80,6 +78,15 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                     "function selector was not recognized and there's no fallback function"
                 )
             })
+
+            it('invalid DAO id', async () => {
+                await expect(
+                    config.whitelistCollateral(
+                        INVALID_DAO_ID,
+                        collateralTokens.address
+                    )
+                ).to.be.revertedWith('DAO Collateral: invalid DAO id')
+            })
         })
 
         describe('update', () => {
@@ -112,6 +119,15 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 ).to.be.revertedWith(
                     "function selector was not recognized and there's no fallback function"
                 )
+            })
+
+            it('invalid DAO id', async () => {
+                await expect(
+                    config.updateWhitelistedCollateral(
+                        INVALID_DAO_ID,
+                        collateralTokens.address
+                    )
+                ).to.be.revertedWith('DAO Collateral: invalid DAO id')
             })
 
             it('existing address', async () => {
@@ -189,12 +205,20 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                     config.removeWhitelistedCollateral(DAO_ID, absentSymbol)
                 ).to.be.revertedWith('DAO Collateral: not whitelisted')
             })
+
+            it('invalid DAO id', async () => {
+                await expect(
+                    config.removeWhitelistedCollateral(
+                        INVALID_DAO_ID,
+                        collateralSymbol
+                    )
+                ).to.be.revertedWith('DAO Collateral: invalid DAO id')
+            })
         })
     })
 
     let admin: string
     let treasury: string
-    let nonAdmin: SignerWithAddress
     let config: DaoBondConfigurationBox
     let collateralTokens: ExtendedERC20
     let collateralSymbol: string

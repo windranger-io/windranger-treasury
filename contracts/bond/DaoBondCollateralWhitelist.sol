@@ -29,8 +29,6 @@ abstract contract DaoBondCollateralWhitelist {
         return _daoCollateralWhitelist(daoId)[symbol] != address(0);
     }
 
-    //TODO valid DAO Id for whitelist
-
     /**
      * @notice Performs whitelisting of the ERC20 collateral token.
      *
@@ -41,6 +39,7 @@ abstract contract DaoBondCollateralWhitelist {
     function _whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
         internal
     {
+        require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
         require(
             erc20CollateralTokens != address(0),
             "DAO Collateral: zero address"
@@ -64,6 +63,7 @@ abstract contract DaoBondCollateralWhitelist {
         uint256 daoId,
         address erc20CollateralTokens
     ) internal {
+        require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
         require(
             erc20CollateralTokens != address(0),
             "DAO Collateral: zero address"
@@ -90,6 +90,7 @@ abstract contract DaoBondCollateralWhitelist {
     function _removeWhitelistedCollateral(uint256 daoId, string memory symbol)
         internal
     {
+        require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
         require(
             isCollateralWhitelisted(daoId, symbol),
             "DAO Collateral: not whitelisted"
@@ -108,4 +109,12 @@ abstract contract DaoBondCollateralWhitelist {
         view
         virtual
         returns (mapping(string => address) storage);
+
+    /**
+     * @notice Whether a given DAO is currently associated with a live DAO.
+     *
+     * @dev At any moment, expect a range of IDs that have been assigned, with the possibility some DAOs within being
+     *          deleted.
+     */
+    function _isValidDaoId(uint256 daoId) internal view virtual returns (bool);
 }

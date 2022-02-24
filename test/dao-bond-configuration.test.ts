@@ -6,12 +6,7 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {
-    BitDAO,
-    Box,
-    DaoBondConfigurationBox,
-    ERC20PresetMinterPauser
-} from '../typechain-types'
+import {BitDAO, DaoBondConfigurationBox} from '../typechain-types'
 import {deployContract, signer} from './framework/contracts'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
