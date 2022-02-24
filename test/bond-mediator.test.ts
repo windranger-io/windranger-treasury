@@ -45,7 +45,6 @@ describe('Bond Mediator contract', () => {
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        collateralSymbol = await collateralTokens.symbol()
         nonWhitelistCollateralTokens = await deployContract<ERC20>(
             '@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20',
             'Name',
@@ -252,6 +251,27 @@ describe('Bond Mediator contract', () => {
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
+        describe('get all whitelist', () => {
+            after(async () => {
+                if (await mediator.paused()) {
+                    await mediator.unpause()
+                }
+            })
+            it('get all whitelisted collateral', async () => {
+                expect((await mediator.whitelistSymbols()).length).to.equal(1)
+                const exampleCollateralErc20 = await deployContract<ERC20>(
+                    '@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20',
+                    'Name',
+                    'SYMBOL1'
+                )
+                await successfulTransaction(
+                    mediator.whitelistCollateral(exampleCollateralErc20.address)
+                )
+                const result: string[] = await mediator.whitelistSymbols()
+                expect(result.length).to.equal(2)
+                expect(result).to.deep.equal(['EEK', 'SYMBOL1'])
+            })
+        })
     })
 
     describe('managed bond', () => {
@@ -265,6 +285,8 @@ describe('Bond Mediator contract', () => {
                     collateralTokens.address
                 ))
             ) {
+                // eslint-disable-next-line no-console
+                console.log('whitelisting ', collateralTokens.address)
                 await mediator.whitelistCollateral(collateralTokens.address)
             }
         })
@@ -325,6 +347,10 @@ describe('Bond Mediator contract', () => {
                 const expiryTimestamp = 9999n
                 const minimumDeposit = 1n
                 const metaData = 'meh'
+
+                await successfulTransaction(
+                    mediator.whitelistCollateral(collateralTokens.address)
+                )
 
                 const receipt = await successfulTransaction(
                     mediator.createManagedBond(

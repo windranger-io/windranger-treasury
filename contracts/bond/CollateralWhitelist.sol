@@ -5,8 +5,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title Whitelist for collateral tokens.
  *
@@ -30,7 +28,7 @@ abstract contract CollateralWhitelist is Initializable {
     /**
      * @notice Returns a list of the whitelisted tokens' symbols
      */
-    function getWhitelistSymbols() public view returns (string[] memory) {
+    function whitelistSymbols() public view returns (string[] memory) {
         address[] memory keys = _whitelist.values();
         string[] memory symbols = new string[](keys.length);
         for (uint256 i = 0; i < keys.length; i++) {
@@ -49,7 +47,6 @@ abstract contract CollateralWhitelist is Initializable {
      * Reverts if address is zero or the symbol already has a mapped address, or does not implement `symbol()`.
      */
     function _whitelistCollateral(address erc20CollateralTokens) internal {
-        console.log("adding ", erc20CollateralTokens);
         _requireNonZeroAddress(erc20CollateralTokens);
 
         string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
@@ -79,13 +76,12 @@ abstract contract CollateralWhitelist is Initializable {
             isCollateralWhitelisted(erc20CollateralTokens),
             "Whitelist: not whitelisted"
         );
-        console.log("gas 1 ", gasleft());
+
         bytes32 storedSymbolHash = keccak256(
             abi.encode(_symbols[erc20CollateralTokens])
         );
-        console.log("gas 1a ", gasleft());
         bytes32 symbolHash = keccak256(abi.encode(symbol));
-        console.log("gas 2 ", gasleft());
+
         require(storedSymbolHash != symbolHash, "Whitelist: same symbol");
         _whitelist.add(erc20CollateralTokens);
 
