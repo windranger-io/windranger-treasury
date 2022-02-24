@@ -28,4 +28,23 @@ contract DaoBondConfigurationBox is DaoBondConfiguration {
     {
         _setDaoTreasury(daoId, replacementTreasury);
     }
+
+    function whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
+        external
+    {
+        _whitelistCollateral(daoId, erc20CollateralTokens);
+    }
+
+    function removeWhitelistedCollateral(uint256 daoId, string memory symbol)
+        external
+    {
+        _removeWhitelistedCollateral(daoId, symbol);
+    }
+
+    function updateWhitelistedCollateral(
+        uint256 daoId,
+        address erc20CollateralTokens
+    ) external {
+        _updateWhitelistedCollateral(daoId, erc20CollateralTokens);
+    }
 }

@@ -71,49 +71,6 @@ describe('Bond Mediator contract', () => {
                     await mediator.unpause()
                 }
             })
-            it('new token', async () => {
-                const symbol = 'EEK'
-                const tokens = await deployContract<ERC20PresetMinterPauser>(
-                    'ERC20PresetMinterPauser',
-                    'Another erc20 Token',
-                    symbol
-                )
-                expect(await tokens.symbol()).equals(symbol)
-
-                await mediator.whitelistCollateral(daoId, tokens.address)
-
-                expect(await mediator.isCollateralWhitelisted(daoId, symbol)).is
-                    .true
-                expect(
-                    await mediator.whitelistedCollateralAddress(daoId, symbol)
-                ).equals(tokens.address)
-            })
-
-            it('cannot be an existing token', async () => {
-                await expect(
-                    mediator.whitelistCollateral(
-                        daoId,
-                        collateralTokens.address
-                    )
-                ).to.be.revertedWith('Whitelist: already present')
-            })
-
-            it('cannot have address zero', async () => {
-                await expect(
-                    mediator.whitelistCollateral(daoId, ADDRESS_ZERO)
-                ).to.be.revertedWith('Whitelist: zero address')
-            })
-
-            it('cannot be a non-erc20 contract (without fallback)', async () => {
-                const box = await deployContract<Box>('Box')
-
-                await expect(
-                    mediator.whitelistCollateral(daoId, box.address)
-                ).to.be.revertedWith(
-                    "function selector was not recognized and there's no fallback function"
-                )
-            })
-
             it('only bond admin', async () => {
                 await expect(
                     mediator
@@ -146,36 +103,6 @@ describe('Bond Mediator contract', () => {
                 if (await mediator.paused()) {
                     await mediator.unpause()
                 }
-            })
-            it('cannot have identical value', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(
-                        daoId,
-                        collateralTokens.address
-                    )
-                ).to.be.revertedWith('Whitelist: identical address')
-            })
-
-            it('cannot have address zero', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(daoId, ADDRESS_ZERO)
-                ).to.be.revertedWith('Whitelist: zero address')
-            })
-
-            it('cannot be a non-contract address', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(daoId, admin)
-                ).to.be.revertedWith('function call to a non-contract account')
-            })
-
-            it('cannot be a non-erc20 contract (without fallback)', async () => {
-                const box = await deployContract<Box>('Box')
-
-                await expect(
-                    mediator.updateWhitelistedCollateral(daoId, box.address)
-                ).to.be.revertedWith(
-                    "function selector was not recognized and there's no fallback function"
-                )
             })
 
             it('only bond admin', async () => {
