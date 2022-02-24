@@ -59,7 +59,7 @@ interface SingleCollateralBond {
      * @param amount The number of bonded collateral token to transfer from the Bond to the Treasury.
      *          Must be in the range of one to the number of collateral tokens held by the Bond.
      */
-    function slash(uint256 amount) external;
+    function slash(uint256 amount, string calldata reason) external;
 
     /**
      * @notice Replaces any stored metadata.

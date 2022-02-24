@@ -93,7 +93,11 @@ contract ERC20SingleCollateralBond is
         string collateralSymbol,
         uint256 collateralAmount
     );
-    event Slash(string collateralSymbol, uint256 collateralAmount);
+    event Slash(
+        string collateralSymbol,
+        uint256 collateralAmount,
+        string reason
+    );
     event WithdrawCollateral(
         address treasury,
         string collateralSymbol,
@@ -278,7 +282,7 @@ contract ERC20SingleCollateralBond is
         _unpause();
     }
 
-    function slash(uint256 amount)
+    function slash(uint256 amount, string calldata reason)
         external
         override
         whenNotPaused
@@ -291,7 +295,7 @@ contract ERC20SingleCollateralBond is
         _collateral -= amount;
         _collateralSlashed += amount;
 
-        emit Slash(_collateralTokens.symbol(), amount);
+        emit Slash(_collateralTokens.symbol(), amount, reason);
 
         bool transferred = _collateralTokens.transfer(_treasury, amount);
         require(transferred, "Bond: collateral transfer failed");
