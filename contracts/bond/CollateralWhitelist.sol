@@ -19,22 +19,22 @@ abstract contract CollateralWhitelist is Initializable {
     mapping(address => string) private _symbols;
 
     /**
-     * @notice Whether the symbol has been whitelisted.
-     */
-    function isCollateralWhitelisted(address erc20) public view returns (bool) {
-        return _whitelist.contains(erc20);
-    }
-
-    /**
      * @notice Returns a list of the whitelisted tokens' symbols
      */
-    function whitelistSymbols() public view returns (string[] memory) {
+    function whitelistSymbols() external view returns (string[] memory) {
         address[] memory keys = _whitelist.values();
         string[] memory symbols = new string[](keys.length);
         for (uint256 i = 0; i < keys.length; i++) {
             symbols[i] = _symbols[keys[i]];
         }
         return symbols;
+    }
+
+    /**
+     * @notice Whether the symbol has been whitelisted.
+     */
+    function isCollateralWhitelisted(address erc20) public view returns (bool) {
+        return _whitelist.contains(erc20);
     }
 
     function __CollateralWhitelist_init() internal onlyInitializing {}
@@ -55,7 +55,7 @@ abstract contract CollateralWhitelist is Initializable {
             !isCollateralWhitelisted(erc20CollateralTokens),
             "Whitelist: already present"
         );
-        _whitelist.add(erc20CollateralTokens);
+        require(_whitelist.add(erc20CollateralTokens), "Whitelist: cannot add");
 
         _symbols[erc20CollateralTokens] = symbol;
     }
@@ -83,7 +83,7 @@ abstract contract CollateralWhitelist is Initializable {
         bytes32 symbolHash = keccak256(abi.encode(symbol));
 
         require(storedSymbolHash != symbolHash, "Whitelist: same symbol");
-        _whitelist.add(erc20CollateralTokens);
+        require(_whitelist.add(erc20CollateralTokens), "Whitelist: cannot add");
 
         _symbols[erc20CollateralTokens] = symbol;
     }
@@ -95,7 +95,7 @@ abstract contract CollateralWhitelist is Initializable {
      */
     function _removeWhitelistedCollateral(address erc20) internal {
         require(isCollateralWhitelisted(erc20), "Whitelist: not whitelisted");
-        _whitelist.remove(erc20);
+        require(_whitelist.remove(erc20), "Whitelist: cannot remove");
         delete _symbols[erc20];
     }
 

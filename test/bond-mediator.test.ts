@@ -535,7 +535,6 @@ describe('Bond Mediator contract', () => {
     let nonAdmin: SignerWithAddress
     let collateralTokens: ExtendedERC20
     let nonWhitelistCollateralTokens: ExtendedERC20
-    let collateralSymbol: string
     let mediator: BondMediator
     let curator: BondManager
     let creator: BondFactory
