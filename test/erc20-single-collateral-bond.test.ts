@@ -50,6 +50,7 @@ const BOND_EXPIRY = 750000n
 const MINIMUM_DEPOSIT = 100n
 
 describe('ERC20 Single Collateral Bond contract', () => {
+    const redemptionReason = 'test reason'
     before(async () => {
         admin = await signer(0)
         treasury = (await signer(1)).address
@@ -72,7 +73,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             bond = await createBond(bonds, ONE)
             expect(await bond.redeemable()).is.false
 
-            await bond.allowRedemption()
+            await bond.allowRedemption(redemptionReason)
 
             expect(await bond.redeemable()).is.true
         })
@@ -81,25 +82,25 @@ describe('ERC20 Single Collateral Bond contract', () => {
             bond = await createBond(bonds, ONE)
             await bond.pause()
 
-            await expect(bond.allowRedemption()).to.be.revertedWith(
-                'Pausable: paused'
-            )
+            await expect(
+                bond.allowRedemption(redemptionReason)
+            ).to.be.revertedWith('Pausable: paused')
         })
 
         it('only when not redeemable', async () => {
             bond = await createBond(bonds, ONE)
-            await bond.allowRedemption()
+            await bond.allowRedemption(redemptionReason)
 
-            await expect(bond.allowRedemption()).to.be.revertedWith(
-                'whenNotRedeemable: redeemable'
-            )
+            await expect(
+                bond.allowRedemption(redemptionReason)
+            ).to.be.revertedWith('whenNotRedeemable: redeemable')
         })
 
         it('only owner', async () => {
             bond = await createBond(bonds, ONE)
 
             await expect(
-                bond.connect(guarantorOne).allowRedemption()
+                bond.connect(guarantorOne).allowRedemption(redemptionReason)
             ).to.be.revertedWith('Ownable: caller is not the owner')
         })
     })
@@ -134,7 +135,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 {signer: guarantorOne, pledge: pledge}
             ])
             await depositBond(guarantorOne, pledge)
-            await bond.allowRedemption()
+            await bond.allowRedemption(redemptionReason)
             expect(await bond.collateral()).equals(pledge)
 
             await redeem(guarantorOne, redemptionOne)
@@ -209,7 +210,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 {signer: guarantorOne, pledge: pledge}
             ])
             await depositBond(guarantorOne, pledge)
-            await bond.allowRedemption()
+            await bond.allowRedemption(redemptionReason)
             expect(await bond.debtTokens()).equals(initialSupply - pledge)
 
             await redeem(guarantorOne, pledge)
@@ -250,7 +251,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             ])
             await depositBond(guarantorOne, pledgeOne)
             await depositBond(guarantorOne, pledgeTwo)
-            await allowRedemption()
+            await allowRedemption(redemptionReason)
             expect(await bond.debtTokensOutstanding()).equals(pledgeTotal)
 
             await redeem(guarantorOne, pledgeOne)
@@ -311,7 +312,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
-            await allowRedemption()
+            await allowRedemption(redemptionReason)
 
             await expect(
                 bond.connect(guarantorOne).deposit(pledge)
@@ -359,7 +360,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 {signer: guarantorOne, pledge: pledge}
             ])
             await depositBond(guarantorOne, pledge)
-            await bond.allowRedemption()
+            await bond.allowRedemption(redemptionReason)
             expect(await bond.paused()).is.false
             expect(await bond.redeemable()).is.true
 
@@ -592,7 +593,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 {signer: guarantorOne, pledge: pledge}
             ])
             await depositBond(guarantorOne, pledge)
-            await allowRedemption()
+            await allowRedemption(redemptionReason)
 
             await expect(redeem(guarantorOne, ZERO)).to.be.revertedWith(
                 'Bond: too small'
@@ -686,7 +687,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 {signer: guarantorOne, pledge: pledge}
             ])
             await depositBond(guarantorOne, pledge)
-            await allowRedemption()
+            await allowRedemption(redemptionReason)
 
             await expect(bond.slash(pledge)).to.be.revertedWith(
                 'whenNotRedeemable: redeemable'
@@ -769,7 +770,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 {signer: guarantorOne, pledge: MINIMUM_DEPOSIT}
             ])
             await depositBond(guarantorOne, MINIMUM_DEPOSIT)
-            await allowRedemption()
+            await allowRedemption(redemptionReason)
             await redeem(guarantorOne, MINIMUM_DEPOSIT)
 
             await expect(bond.withdrawCollateral()).to.be.revertedWith(
@@ -779,7 +780,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('only when not paused', async () => {
             bond = await createBond(bonds, ONE)
-            await allowRedemption()
+            await allowRedemption(redemptionReason)
             await bond.pause()
 
             await expect(bond.withdrawCollateral()).to.be.revertedWith(
@@ -797,7 +798,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('only owner', async () => {
             bond = await createBond(bonds, ONE)
-            await allowRedemption()
+            await allowRedemption(redemptionReason)
 
             await expect(
                 bond.connect(guarantorOne).withdrawCollateral()
@@ -875,7 +876,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         ])
 
         // Bond redemption allowed by Owner
-        const allowRedemptionReceipt = await allowRedemption()
+        const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
             authorizer: admin.address
         })
@@ -978,7 +979,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         ])
 
         // Bond redemption allowed by Owner
-        const allowRedemptionReceipt = await allowRedemption()
+        const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
             authorizer: admin.address
         })
@@ -1102,7 +1103,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         ])
 
         // Bond redemption allowed by Owner
-        const allowRedemptionReceipt = await allowRedemption()
+        const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
             authorizer: admin.address
         })
@@ -1169,7 +1170,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         ])
         await depositBond(guarantorOne, pledge)
         await slashCollateral(slashedCollateral)
-        await allowRedemption()
+        await allowRedemption(redemptionReason)
         await redeem(guarantorOne, pledge)
         const pledgeSlashedFloored = pledgeSlashed - ONE
 
@@ -1282,7 +1283,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         ])
 
         // Bond redemption allowed by Owner
-        const allowRedemptionReceipt = await allowRedemption()
+        const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
             authorizer: admin.address
         })
@@ -1580,7 +1581,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         ])
 
         // Bond redemption allowed by Owner
-        const allowRedemptionReceipt = await allowRedemption()
+        const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
             authorizer: admin.address
         })
@@ -1677,8 +1678,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         return successfulTransaction(bond.slash(amount))
     }
 
-    async function allowRedemption(): Promise<ContractReceipt> {
-        return successfulTransaction(bond.allowRedemption())
+    async function allowRedemption(reason: string): Promise<ContractReceipt> {
+        return successfulTransaction(bond.allowRedemption(reason))
     }
 
     async function withdrawCollateral(): Promise<ContractReceipt> {
