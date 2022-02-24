@@ -285,8 +285,6 @@ describe('Bond Mediator contract', () => {
                     collateralTokens.address
                 ))
             ) {
-                // eslint-disable-next-line no-console
-                console.log('whitelisting ', collateralTokens.address)
                 await mediator.whitelistCollateral(collateralTokens.address)
             }
         })
