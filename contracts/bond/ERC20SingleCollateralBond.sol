@@ -144,15 +144,15 @@ contract ERC20SingleCollateralBond is
         _mint(debtAmount);
     }
 
-    function allowRedemption(string calldata reason)
+    function allowRedemption(string calldata redemptionReason)
         external
         override
         whenNotPaused
         whenNotRedeemable
         onlyOwner
     {
-        _allowRedemption(reason);
-        emit AllowRedemption(_msgSender(), reason);
+        _allowRedemption(redemptionReason);
+        emit AllowRedemption(_msgSender(), redemptionReason);
 
         if (_hasDebtTokensRemaining()) {
             _debtTokensRedemptionExcess = _debtTokensRemaining();

@@ -115,7 +115,6 @@ describe('Bond Curator contract', () => {
         })
 
         describe('allow redemption', () => {
-            const redemptionReason = 'test string'
             it('delegates', async () => {
                 expect(await bond.redeemable()).is.false
                 await successfulTransaction(
@@ -490,4 +489,5 @@ describe('Bond Curator contract', () => {
     let curator: BondCuratorBox
     let collateralTokens: ExtendedERC20
     let creator: BondFactory
+    const redemptionReason = 'test redemption reason string'
 })
