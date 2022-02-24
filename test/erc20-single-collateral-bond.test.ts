@@ -863,7 +863,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         )
         verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
-            amount: slashedCollateral
+            amount: slashedCollateral,
+            reason: bondSlashReason
         })
         verifyERC20TransferEvents(slashReceipt, [
             {
@@ -966,7 +967,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         )
         verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
-            amount: slashedCollateral
+            amount: slashedCollateral,
+            reason: bondSlashReason
         })
         verifyERC20TransferEvents(slashReceipt, [
             {
@@ -1434,7 +1436,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         )
         verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
-            amount: slashedCollateral
+            amount: slashedCollateral,
+            reason: bondSlashReason
         })
         verifyERC20TransferEvents(slashReceipt, [
             {
@@ -1575,7 +1578,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         )
         verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
-            amount: slashedCollateral
+            amount: slashedCollateral,
+            reason: bondSlashReason
         })
         verifyERC20TransferEvents(slashReceipt, [
             {

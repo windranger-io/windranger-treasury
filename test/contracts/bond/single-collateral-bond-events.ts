@@ -52,6 +52,7 @@ export type ActualRedemptionEvent = {
 export type ActualSlashEvent = {
     collateralSymbol: string
     collateralAmount: BigNumber
+    reason: string
 }
 
 export type ActualTransferEvents = {
@@ -175,6 +176,8 @@ export function slashEvent(event: Event): ActualSlashEvent {
     const args = slash.args
     expect(args?.collateralSymbol).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
+
+    expect(args?.reason).is.not.undefined
 
     return slash.args
 }

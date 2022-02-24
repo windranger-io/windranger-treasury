@@ -20,6 +20,12 @@ export type ExpectTokenBalance = {
     amount: bigint
 }
 
+export type ExpectSlashEvent = {
+    reason: string
+    symbol: string
+    amount: bigint
+}
+
 export type ExpectTokenTransferEvent = {
     from: string
     to: string
@@ -167,14 +173,17 @@ export function verifyRedemptionEvent(
  */
 export function verifySlashEvent(
     receipt: ContractReceipt,
-    collateral: ExpectTokenBalance
+    expectedSlashEvent: ExpectSlashEvent
 ): void {
     const onlySlashEvent = slashEvent(event('Slash', receipt))
     expect(onlySlashEvent.collateralSymbol, 'Slash symbol').equals(
-        collateral.symbol
+        expectedSlashEvent.symbol
     )
     expect(onlySlashEvent.collateralAmount, 'Slash amount').equals(
-        collateral.amount
+        expectedSlashEvent.amount
+    )
+    expect(onlySlashEvent.reason, 'Slash reason').equals(
+        expectedSlashEvent.reason
     )
 }
 
