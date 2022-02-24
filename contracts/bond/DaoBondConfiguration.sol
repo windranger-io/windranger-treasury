@@ -2,18 +2,45 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 
 abstract contract DaoBondConfiguration is Initializable {
     struct DaoBondConfig {
-        /// Address zero is an invalid address, can be used to identify null structs
+        // Address zero is an invalid address, can be used to identify null structs
         address treasury;
+        // Token symbols to ERC20 Token contract addresses
+        mapping(string => address) whitelist;
     }
 
     mapping(uint256 => DaoBondConfig) private _daoConfig;
     uint256 private _daoConfigLastId;
 
+    /**
+     * @notice The whitelisted ERC20 token address associated for a symbol.
+     *
+     * @return When present in the whitelist, the token address, otherwise address zero.
+     */
+    function whitelistedCollateralAddress(uint256 daoId, string calldata symbol)
+        external
+        view
+        returns (address)
+    {
+        return _daoConfig[daoId].whitelist[symbol];
+    }
+
     function treasury(uint256 daoId) external view returns (address) {
         return _daoConfig[daoId].treasury;
+    }
+
+    /**
+     * @notice Whether the symbol has been whitelisted.
+     */
+    function isCollateralWhitelisted(uint256 daoId, string memory symbol)
+        public
+        view
+        returns (bool)
+    {
+        return _daoConfig[daoId].whitelist[symbol] != address(0);
     }
 
     /**
@@ -33,9 +60,8 @@ abstract contract DaoBondConfiguration is Initializable {
 
         _daoConfigLastId++;
 
-        _daoConfig[_daoConfigLastId] = DaoBondConfig({
-            treasury: erc20CapableTreasury
-        });
+        DaoBondConfig storage config = _daoConfig[_daoConfigLastId];
+        config.treasury = erc20CapableTreasury;
 
         return _daoConfigLastId;
     }
@@ -61,5 +87,72 @@ abstract contract DaoBondConfiguration is Initializable {
             "DBC: identical treasury address"
         );
         _daoConfig[daoId].treasury = replacementTreasury;
+    }
+
+    /**
+     * @notice Performs whitelisting of the ERC20 collateral token.
+     *
+     * @dev Whitelists the collateral token, expecting the symbol is not already whitelisted.
+     *
+     * Reverts if address is zero or the symbol already has a mapped address, or does not implement `symbol()`.
+     */
+    function _whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
+        internal
+    {
+        _requireNonZeroAddress(erc20CollateralTokens);
+
+        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
+            .symbol();
+        require(
+            _daoConfig[daoId].whitelist[symbol] == address(0),
+            "Whitelist: already present"
+        );
+        _daoConfig[daoId].whitelist[symbol] = erc20CollateralTokens;
+    }
+
+    /**
+     * @notice Updates an already whitelisted address.
+     *
+     * @dev Reverts if the address is zero, is identical to the current address, or does not implement `symbol()`.
+     */
+    function _updateWhitelistedCollateral(
+        uint256 daoId,
+        address erc20CollateralTokens
+    ) internal {
+        _requireNonZeroAddress(erc20CollateralTokens);
+
+        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
+            .symbol();
+        require(
+            isCollateralWhitelisted(daoId, symbol),
+            "Whitelist: not whitelisted"
+        );
+        require(
+            _daoConfig[daoId].whitelist[symbol] != erc20CollateralTokens,
+            "Whitelist: identical address"
+        );
+        _daoConfig[daoId].whitelist[symbol] = erc20CollateralTokens;
+    }
+
+    /**
+     * @notice Deletes a collateral token entry from the whitelist.
+     *
+     * @dev Expects the symbol to be an existing entry, otherwise reverts.
+     */
+    function _removeWhitelistedCollateral(uint256 daoId, string memory symbol)
+        internal
+    {
+        require(
+            isCollateralWhitelisted(daoId, symbol),
+            "Whitelist: not whitelisted"
+        );
+        delete _daoConfig[daoId].whitelist[symbol];
+    }
+
+    /**
+     * @dev Reverts when the address is the zero address.
+     */
+    function _requireNonZeroAddress(address examine) private pure {
+        require(examine != address(0), "Whitelist: zero address");
     }
 }
