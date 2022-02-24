@@ -11,7 +11,10 @@ import {
     WithdrawCollateralEvent
 } from '../../../typechain-types/ERC20SingleCollateralBond'
 
-export type ActualAllowRedemptionEvent = {authorizer: string}
+export type ActualAllowRedemptionEvent = {
+    authorizer: string
+    reason: string
+}
 
 export type ActualDebtIssueEvent = {
     receiver: string
@@ -73,7 +76,13 @@ export function allowRedemptionEvent(event: Event): ActualAllowRedemptionEvent {
     const args = redemption.args
     expect(args?.authorizer).is.not.undefined
 
-    return redemption.args
+    expect(args?.reason).is.not.undefined
+
+    const actualEvent: ActualAllowRedemptionEvent = {
+        authorizer: redemption.args.authorizer,
+        reason: redemption.args.reason
+    }
+    return actualEvent
 }
 
 /**

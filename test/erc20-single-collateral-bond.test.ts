@@ -878,7 +878,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
-            authorizer: admin.address
+            authorizer: admin.address,
+            reason: redemptionReason
         })
 
         // Guarantor One redeem their bond, partial conversion (slashed)
@@ -981,7 +982,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
-            authorizer: admin.address
+            authorizer: admin.address,
+            reason: redemptionReason
         })
         verifyPartialCollateralEvent(
             allowRedemptionReceipt,
@@ -1105,7 +1107,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
-            authorizer: admin.address
+            authorizer: admin.address,
+            reason: redemptionReason
         })
 
         // Guarantor One redeem their bond, full conversion
@@ -1285,7 +1288,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
-            authorizer: admin.address
+            authorizer: admin.address,
+            reason: redemptionReason
         })
         verifyPartialCollateralEvent(
             allowRedemptionReceipt,
@@ -1583,7 +1587,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Bond redemption allowed by Owner
         const allowRedemptionReceipt = await allowRedemption(redemptionReason)
         verifyAllowRedemptionEvent(allowRedemptionReceipt, {
-            authorizer: admin.address
+            authorizer: admin.address,
+            reason: redemptionReason
         })
 
         // Guarantor One redeem their bond, partial conversion (slashed)
