@@ -25,7 +25,6 @@ describe('DAO Bond Configuration contract', () => {
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        collateralSymbol = await collateralTokens.symbol()
         config = await deployContract<DaoBondConfigurationBox>(
             'DaoBondConfigurationBox'
         )
@@ -33,8 +32,6 @@ describe('DAO Bond Configuration contract', () => {
         await config.daoBondConfiguration(treasury)
         await config.whitelistCollateral(DAO_ID, collateralTokens.address)
     })
-
-    // TODO test the DAO Bond Config specific functions
 
     describe('treasury', () => {
         describe('retrieve', () => {
@@ -87,5 +84,4 @@ describe('DAO Bond Configuration contract', () => {
     let nonAdmin: SignerWithAddress
     let config: DaoBondConfigurationBox
     let collateralTokens: ExtendedERC20
-    let collateralSymbol: string
 })
