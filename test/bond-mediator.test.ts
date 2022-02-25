@@ -25,7 +25,7 @@ import {successfulTransaction} from './framework/transaction'
 import {addBondEventLogs} from './contracts/bond/bond-curator-events'
 import {eventLog} from './framework/event-logs'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
-import {constants} from 'ethers'
+import {constants, Wallet} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from './contracts/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
@@ -45,7 +45,6 @@ describe('Bond Mediator contract', () => {
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        collateralSymbol = await collateralTokens.symbol()
         nonWhitelistCollateralTokens = await deployContract<ERC20>(
             '@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20',
             'Name',
@@ -82,10 +81,8 @@ describe('Bond Mediator contract', () => {
 
                 await mediator.whitelistCollateral(tokens.address)
 
-                expect(await mediator.isCollateralWhitelisted(symbol)).is.true
-                expect(
-                    await mediator.whitelistedCollateralAddress(symbol)
-                ).equals(tokens.address)
+                expect(await mediator.isCollateralWhitelisted(tokens.address))
+                    .is.true
             })
 
             it('cannot be an existing token', async () => {
@@ -137,95 +134,6 @@ describe('Bond Mediator contract', () => {
             })
         })
 
-        describe('update', () => {
-            after(async () => {
-                if (await mediator.paused()) {
-                    await mediator.unpause()
-                }
-            })
-            it('cannot have identical value', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(
-                        collateralTokens.address
-                    )
-                ).to.be.revertedWith('Whitelist: identical address')
-            })
-
-            it('cannot have address zero', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(ADDRESS_ZERO)
-                ).to.be.revertedWith('Whitelist: zero address')
-            })
-
-            it('cannot be a non-contract address', async () => {
-                await expect(
-                    mediator.updateWhitelistedCollateral(admin)
-                ).to.be.revertedWith('function call to a non-contract account')
-            })
-
-            it('cannot be a non-erc20 contract (without fallback)', async () => {
-                const box = await deployContract<Box>('Box')
-
-                await expect(
-                    mediator.updateWhitelistedCollateral(box.address)
-                ).to.be.revertedWith(
-                    "function selector was not recognized and there's no fallback function"
-                )
-            })
-
-            it('only bond admin', async () => {
-                await expect(
-                    mediator
-                        .connect(nonAdmin)
-                        .updateWhitelistedCollateral(collateralTokens.address)
-                ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
-                )
-            })
-
-            it('existing address', async () => {
-                const startingAddress =
-                    await mediator.whitelistedCollateralAddress(
-                        collateralSymbol
-                    )
-                expect(startingAddress).equals(collateralTokens.address)
-                const altCollateralTokens = await deployContract<BitDAO>(
-                    'BitDAO',
-                    admin
-                )
-                expect(await altCollateralTokens.symbol()).equals(
-                    collateralSymbol
-                )
-                expect(altCollateralTokens.address).not.equals(startingAddress)
-
-                await mediator.updateWhitelistedCollateral(
-                    altCollateralTokens.address
-                )
-
-                const updatedAddress =
-                    await mediator.whitelistedCollateralAddress(
-                        collateralSymbol
-                    )
-                expect(updatedAddress).not.equals(startingAddress)
-            })
-
-            it('only when not paused', async () => {
-                await successfulTransaction(mediator.pause())
-                expect(await mediator.paused()).is.true
-                const symbol = 'EEK'
-                const tokens = await deployContract<ERC20PresetMinterPauser>(
-                    'ERC20PresetMinterPauser',
-                    'Another erc20 Token',
-                    symbol
-                )
-                expect(await tokens.symbol()).equals(symbol)
-
-                await expect(
-                    mediator.updateWhitelistedCollateral(tokens.address)
-                ).to.be.revertedWith('Pausable: paused')
-            })
-        })
-
         describe('remove', () => {
             after(async () => {
                 if (await mediator.paused()) {
@@ -233,22 +141,30 @@ describe('Bond Mediator contract', () => {
                 }
             })
             it('entry', async () => {
-                expect(await mediator.isCollateralWhitelisted(collateralSymbol))
-                    .is.true
+                expect(
+                    await mediator.isCollateralWhitelisted(
+                        collateralTokens.address
+                    )
+                ).is.true
 
-                await mediator.removeWhitelistedCollateral(collateralSymbol)
+                await mediator.removeWhitelistedCollateral(
+                    collateralTokens.address
+                )
 
-                expect(await mediator.isCollateralWhitelisted(collateralSymbol))
-                    .is.false
+                expect(
+                    await mediator.isCollateralWhitelisted(
+                        collateralTokens.address
+                    )
+                ).is.false
             })
 
             it('non-existent entry', async () => {
-                const absentSymbol = 'A value not in the whitelist'
-                expect(await mediator.isCollateralWhitelisted(absentSymbol)).is
+                const absentAddress = Wallet.createRandom().address
+                expect(await mediator.isCollateralWhitelisted(absentAddress)).is
                     .false
 
                 await expect(
-                    mediator.removeWhitelistedCollateral(absentSymbol)
+                    mediator.removeWhitelistedCollateral(absentAddress)
                 ).to.be.revertedWith('Whitelist: not whitelisted')
             })
 
@@ -256,7 +172,7 @@ describe('Bond Mediator contract', () => {
                 await expect(
                     mediator
                         .connect(nonAdmin)
-                        .removeWhitelistedCollateral(collateralSymbol)
+                        .removeWhitelistedCollateral(collateralTokens.address)
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
@@ -265,10 +181,32 @@ describe('Bond Mediator contract', () => {
             it('only when not paused', async () => {
                 await successfulTransaction(mediator.pause())
                 expect(await mediator.paused()).is.true
-                const symbol = 'EEK'
                 await expect(
-                    mediator.removeWhitelistedCollateral(symbol)
+                    mediator.removeWhitelistedCollateral(
+                        collateralTokens.address
+                    )
                 ).to.be.revertedWith('Pausable: paused')
+            })
+        })
+        describe('get all whitelist', () => {
+            after(async () => {
+                if (await mediator.paused()) {
+                    await mediator.unpause()
+                }
+            })
+            it('get all whitelisted collateral', async () => {
+                expect((await mediator.whitelistSymbols()).length).to.equal(1)
+                const exampleCollateralErc20 = await deployContract<ERC20>(
+                    '@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20',
+                    'Name',
+                    'SYMBOL1'
+                )
+                await successfulTransaction(
+                    mediator.whitelistCollateral(exampleCollateralErc20.address)
+                )
+                const result: string[] = await mediator.whitelistSymbols()
+                expect(result.length).to.equal(2)
+                expect(result).to.deep.equal(['EEK', 'SYMBOL1'])
             })
         })
     })
@@ -278,9 +216,12 @@ describe('Bond Mediator contract', () => {
             if (await mediator.paused()) {
                 await mediator.unpause()
             }
-        })
-        before(async () => {
-            if (!(await mediator.isCollateralWhitelisted(collateralSymbol))) {
+
+            if (
+                !(await mediator.isCollateralWhitelisted(
+                    collateralTokens.address
+                ))
+            ) {
                 await mediator.whitelistCollateral(collateralTokens.address)
             }
         })
@@ -341,6 +282,10 @@ describe('Bond Mediator contract', () => {
                 const expiryTimestamp = 9999n
                 const minimumDeposit = 1n
                 const metaData = 'meh'
+
+                await successfulTransaction(
+                    mediator.whitelistCollateral(collateralTokens.address)
+                )
 
                 const receipt = await successfulTransaction(
                     mediator.createManagedBond(
@@ -491,7 +436,6 @@ describe('Bond Mediator contract', () => {
     let nonAdmin: SignerWithAddress
     let collateralTokens: ExtendedERC20
     let nonWhitelistCollateralTokens: ExtendedERC20
-    let collateralSymbol: string
     let mediator: BondMediator
     let curator: BondManager
     let creator: BondFactory

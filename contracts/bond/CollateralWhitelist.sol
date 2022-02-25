@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
 /**
  * @title Whitelist for collateral tokens.
@@ -10,31 +11,34 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * @notice Encapsulation of a ERC20 collateral tokens whitelist, indexed by their symbol.
  */
 abstract contract CollateralWhitelist is Initializable {
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
+
+    EnumerableSetUpgradeable.AddressSet private _whitelist;
+
     // Token symbols to ERC20 Token contract addresses
-    mapping(string => address) private _whitelist;
+    mapping(address => string) private _symbols;
 
     /**
-     * @notice The whitelisted ERC20 token address associated for a symbol.
-     *
-     * @return When present in the whitelist, the token address, otherwise address zero.
+     * @notice Returns a list of the whitelisted tokens' symbols
      */
-    function whitelistedCollateralAddress(string calldata symbol)
-        external
-        view
-        returns (address)
-    {
-        return _whitelist[symbol];
+    function whitelistSymbols() external view returns (string[] memory) {
+        address[] memory keys = _whitelist.values();
+        string[] memory symbols = new string[](keys.length);
+        for (uint256 i = 0; i < keys.length; i++) {
+            symbols[i] = _symbols[keys[i]];
+        }
+        return symbols;
     }
 
     /**
      * @notice Whether the symbol has been whitelisted.
      */
-    function isCollateralWhitelisted(string memory symbol)
+    function isCollateralWhitelisted(address erc20CollateralTokens)
         public
         view
         returns (bool)
     {
-        return _whitelist[symbol] != address(0);
+        return _whitelist.contains(erc20CollateralTokens);
     }
 
     function __CollateralWhitelist_init() internal onlyInitializing {}
@@ -51,28 +55,16 @@ abstract contract CollateralWhitelist is Initializable {
 
         string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
             .symbol();
-        require(_whitelist[symbol] == address(0), "Whitelist: already present");
-        _whitelist[symbol] = erc20CollateralTokens;
-    }
-
-    /**
-     * @notice Updates an already whitelisted address.
-     *
-     * @dev Reverts if the address is zero, is identical to the current address, or does not implement `symbol()`.
-     */
-    function _updateWhitelistedCollateral(address erc20CollateralTokens)
-        internal
-    {
-        _requireNonZeroAddress(erc20CollateralTokens);
-
-        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
-            .symbol();
-        require(isCollateralWhitelisted(symbol), "Whitelist: not whitelisted");
         require(
-            _whitelist[symbol] != erc20CollateralTokens,
-            "Whitelist: identical address"
+            !isCollateralWhitelisted(erc20CollateralTokens),
+            "Whitelist: already present"
         );
-        _whitelist[symbol] = erc20CollateralTokens;
+        require(
+            _whitelist.add(erc20CollateralTokens),
+            "Whitelist: failed to add"
+        );
+
+        _symbols[erc20CollateralTokens] = symbol;
     }
 
     /**
@@ -80,9 +72,10 @@ abstract contract CollateralWhitelist is Initializable {
      *
      * @dev Expects the symbol to be an existing entry, otherwise reverts.
      */
-    function _removeWhitelistedCollateral(string memory symbol) internal {
-        require(isCollateralWhitelisted(symbol), "Whitelist: not whitelisted");
-        delete _whitelist[symbol];
+    function _removeWhitelistedCollateral(address erc20) internal {
+        require(isCollateralWhitelisted(erc20), "Whitelist: not whitelisted");
+        require(_whitelist.remove(erc20), "Whitelist: failed to remove");
+        delete _symbols[erc20];
     }
 
     /**

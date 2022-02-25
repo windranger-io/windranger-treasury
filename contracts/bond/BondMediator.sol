@@ -94,12 +94,8 @@ contract BondMediator is
     {
         require(_isValidDaoId(daoId), "BM: invalid DAO Id");
 
-        string memory collateralTokenSymbol = IERC20MetadataUpgradeable(
-            collateralTokens
-        ).symbol();
-
         require(
-            isCollateralWhitelisted(collateralTokenSymbol),
+            isCollateralWhitelisted(collateralTokens),
             "BM: collateral not whitelisted"
         );
 
@@ -137,33 +133,18 @@ contract BondMediator is
     }
 
     /**
-     * @notice Permits the owner to update the address of already whitelisted collateral token.
-     *
-     * @dev Only applies for bonds created after the update, previously created bonds remain unchanged.
-     *
-     * @param erc20CollateralTokens Must already be whitelisted and must not be address zero.
-     */
-    function updateWhitelistedCollateral(address erc20CollateralTokens)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
-        _updateWhitelistedCollateral(erc20CollateralTokens);
-    }
-
-    /**
      * @notice Permits the owner to remove a collateral token from being accepted in future bonds.
      *
      * @dev Only applies for bonds created after the removal, previously created bonds remain unchanged.
      *
-     * @param symbol Symbol must exist in the collateral whitelist.
+     * @param erc20CollateralTokens token to remove from whitelist
      */
-    function removeWhitelistedCollateral(string calldata symbol)
+    function removeWhitelistedCollateral(address erc20CollateralTokens)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        _removeWhitelistedCollateral(symbol);
+        _removeWhitelistedCollateral(erc20CollateralTokens);
     }
 
     /**
