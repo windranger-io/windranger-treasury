@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 
 abstract contract DaoBondCollateralWhitelist {
@@ -104,6 +103,7 @@ abstract contract DaoBondCollateralWhitelist {
      * @dev Although a view modifier, the underlying storage may be altered, as in this case the view restriction
      *         applies to the reference rather than the addresses.
      */
+    //slither-disable-next-line dead-code
     function _daoCollateralWhitelist(uint256 daoId)
         internal
         view
@@ -116,5 +116,6 @@ abstract contract DaoBondCollateralWhitelist {
      * @dev At any moment, expect a range of IDs that have been assigned, with the possibility some DAOs within being
      *          deleted.
      */
+    //slither-disable-next-line dead-code
     function _isValidDaoId(uint256 daoId) internal view virtual returns (bool);
 }
