@@ -10,11 +10,13 @@ import {
     BitDAO,
     Box,
     DaoBondConfigurationBox,
+    ERC20,
     ERC20PresetMinterPauser
 } from '../typechain-types'
 import {deployContract, signer} from './framework/contracts'
-import {constants} from 'ethers'
+import {constants, Wallet} from 'ethers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
+import {successfulTransaction} from './framework/transaction'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -28,7 +30,6 @@ describe('DAO Bond Collateral Whitelist contract', () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        collateralSymbol = await collateralTokens.symbol()
         config = await deployContract<DaoBondConfigurationBox>(
             'DaoBondConfigurationBox'
         )
@@ -50,11 +51,9 @@ describe('DAO Bond Collateral Whitelist contract', () => {
 
                 await config.whitelistCollateral(DAO_ID, tokens.address)
 
-                expect(await config.isCollateralWhitelisted(DAO_ID, symbol)).is
-                    .true
                 expect(
-                    await config.whitelistedCollateralAddress(DAO_ID, symbol)
-                ).equals(tokens.address)
+                    await config.isCollateralWhitelisted(DAO_ID, tokens.address)
+                ).is.true
             })
 
             it('cannot be an existing token', async () => {
@@ -89,74 +88,26 @@ describe('DAO Bond Collateral Whitelist contract', () => {
             })
         })
 
-        describe('update', () => {
-            it('cannot have identical value', async () => {
-                await expect(
-                    config.updateWhitelistedCollateral(
+        describe('get all', () => {
+            it('entries', async () => {
+                const startingList = await config.whitelistSymbols(DAO_ID)
+                const specialSymbol = 'SYMBOL_FOR_GET_ALL_WHITELIST'
+                expect(startingList).does.not.contain(specialSymbol)
+
+                const exampleCollateralErc20 = await deployContract<ERC20>(
+                    '@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20',
+                    'Name',
+                    specialSymbol
+                )
+                await successfulTransaction(
+                    config.whitelistCollateral(
                         DAO_ID,
-                        collateralTokens.address
+                        exampleCollateralErc20.address
                     )
-                ).to.be.revertedWith('DAO Collateral: same address')
-            })
-
-            it('cannot have address zero', async () => {
-                await expect(
-                    config.updateWhitelistedCollateral(DAO_ID, ADDRESS_ZERO)
-                ).to.be.revertedWith('DAO Collateral: zero address')
-            })
-
-            it('cannot be a non-contract address', async () => {
-                await expect(
-                    config.updateWhitelistedCollateral(DAO_ID, admin)
-                ).to.be.revertedWith('function call to a non-contract account')
-            })
-
-            it('cannot be a non-erc20 contract (without fallback)', async () => {
-                const box = await deployContract<Box>('Box')
-
-                await expect(
-                    config.updateWhitelistedCollateral(DAO_ID, box.address)
-                ).to.be.revertedWith(
-                    "function selector was not recognized and there's no fallback function"
                 )
-            })
-
-            it('invalid DAO id', async () => {
-                await expect(
-                    config.updateWhitelistedCollateral(
-                        INVALID_DAO_ID,
-                        collateralTokens.address
-                    )
-                ).to.be.revertedWith('DAO Collateral: invalid DAO id')
-            })
-
-            it('existing address', async () => {
-                const startingAddress =
-                    await config.whitelistedCollateralAddress(
-                        DAO_ID,
-                        collateralSymbol
-                    )
-                expect(startingAddress).equals(collateralTokens.address)
-                const altCollateralTokens = await deployContract<BitDAO>(
-                    'BitDAO',
-                    admin
-                )
-                expect(await altCollateralTokens.symbol()).equals(
-                    collateralSymbol
-                )
-                expect(altCollateralTokens.address).not.equals(startingAddress)
-
-                await config.updateWhitelistedCollateral(
-                    DAO_ID,
-                    altCollateralTokens.address
-                )
-
-                const updatedAddress =
-                    await config.whitelistedCollateralAddress(
-                        DAO_ID,
-                        collateralSymbol
-                    )
-                expect(updatedAddress).not.equals(startingAddress)
+                const result: string[] = await config.whitelistSymbols(DAO_ID)
+                expect(result.length).to.equal(startingList.length + 1)
+                expect(result).to.contain(specialSymbol)
             })
         })
 
@@ -165,7 +116,7 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 if (
                     !(await config.isCollateralWhitelisted(
                         DAO_ID,
-                        collateralSymbol
+                        collateralTokens.address
                     ))
                 ) {
                     await config.whitelistCollateral(
@@ -178,31 +129,31 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 expect(
                     await config.isCollateralWhitelisted(
                         DAO_ID,
-                        collateralSymbol
+                        collateralTokens.address
                     )
                 ).is.true
 
                 await config.removeWhitelistedCollateral(
                     DAO_ID,
-                    collateralSymbol
+                    collateralTokens.address
                 )
 
                 expect(
                     await config.isCollateralWhitelisted(
                         DAO_ID,
-                        collateralSymbol
+                        collateralTokens.address
                     )
                 ).is.false
             })
 
             it('non-existent entry', async () => {
-                const absentSymbol = 'A value not in the whitelist'
+                const absentAddress = Wallet.createRandom().address
                 expect(
-                    await config.isCollateralWhitelisted(DAO_ID, absentSymbol)
+                    await config.isCollateralWhitelisted(DAO_ID, absentAddress)
                 ).is.false
 
                 await expect(
-                    config.removeWhitelistedCollateral(DAO_ID, absentSymbol)
+                    config.removeWhitelistedCollateral(DAO_ID, absentAddress)
                 ).to.be.revertedWith('DAO Collateral: not whitelisted')
             })
 
@@ -210,7 +161,7 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 await expect(
                     config.removeWhitelistedCollateral(
                         INVALID_DAO_ID,
-                        collateralSymbol
+                        collateralTokens.address
                     )
                 ).to.be.revertedWith('DAO Collateral: invalid DAO id')
             })
@@ -221,5 +172,4 @@ describe('DAO Bond Collateral Whitelist contract', () => {
     let treasury: string
     let config: DaoBondConfigurationBox
     let collateralTokens: ExtendedERC20
-    let collateralSymbol: string
 })

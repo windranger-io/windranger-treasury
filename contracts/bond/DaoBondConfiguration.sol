@@ -1,19 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "./DaoBondCollateralWhitelist.sol";
 
-abstract contract DaoBondConfiguration is
-    DaoBondCollateralWhitelist,
-    Initializable
-{
+abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
     struct DaoBondConfig {
         // Address zero is an invalid address, can be used to identify null structs
         address treasury;
-        // Token symbols to ERC20 Token contract addresses
-        mapping(string => address) whitelist;
+        CollateralWhitelist whitelist;
     }
 
     mapping(uint256 => DaoBondConfig) private _daoConfig;
@@ -27,7 +21,9 @@ abstract contract DaoBondConfiguration is
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
      */
-    function __DaoBondConfiguration_init() internal onlyInitializing {}
+    function __DaoBondConfiguration_init() internal onlyInitializing {
+        __DaoBondCollateralWhitelist_init();
+    }
 
     function _daoBondConfiguration(address erc20CapableTreasury)
         internal
@@ -69,7 +65,7 @@ abstract contract DaoBondConfiguration is
         internal
         view
         override
-        returns (mapping(string => address) storage)
+        returns (CollateralWhitelist storage)
     {
         return _daoConfig[daoId].whitelist;
     }
