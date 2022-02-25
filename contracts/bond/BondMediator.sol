@@ -11,7 +11,6 @@ import "./BondCreator.sol";
 import "./BondCurator.sol";
 import "./BondPortal.sol";
 import "./DaoBondConfiguration.sol";
-import "./CollateralWhitelist.sol";
 import "./Roles.sol";
 import "../Version.sol";
 
@@ -24,7 +23,6 @@ import "../Version.sol";
 contract BondMediator is
     BondAccessControl,
     BondPortal,
-    CollateralWhitelist,
     DaoBondConfiguration,
     PausableUpgradeable,
     UUPSUpgradeable,
@@ -55,23 +53,21 @@ contract BondMediator is
         );
 
         __BondAccessControl_init();
-        __CollateralWhitelist_init();
+        __DaoBondConfiguration_init();
         __UUPSUpgradeable_init();
 
         _creator = BondCreator(factory);
         _curator = BondCurator(manager);
     }
 
-    function createDao(
-        address erc20CapableTreasury,
-        address erc20CollateralTokens
-    ) external override returns (uint256) {
+    function createDao(address erc20CapableTreasury)
+        external
+        override
+        returns (uint256)
+    {
         uint256 id = _daoBondConfiguration(erc20CapableTreasury);
 
         emit CreateDao(id, erc20CapableTreasury);
-
-        //TODO move the whitelist into the DaoConfig too
-        _whitelistCollateral(erc20CollateralTokens);
 
         return id;
     }
@@ -95,7 +91,7 @@ contract BondMediator is
         require(_isValidDaoId(daoId), "BM: invalid DAO Id");
 
         require(
-            isCollateralWhitelisted(collateralTokens),
+            isCollateralWhitelisted(daoId, collateralTokens),
             "BM: collateral not whitelisted"
         );
 
@@ -138,13 +134,13 @@ contract BondMediator is
      * @dev Only applies for bonds created after the removal, previously created bonds remain unchanged.
      *
      * @param erc20CollateralTokens token to remove from whitelist
+     * @param daoId The DAO who is having the collateral token removed from their whitelist.
      */
-    function removeWhitelistedCollateral(address erc20CollateralTokens)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
-        _removeWhitelistedCollateral(erc20CollateralTokens);
+    function removeWhitelistedCollateral(
+        uint256 daoId,
+        address erc20CollateralTokens
+    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+        _removeWhitelistedCollateral(daoId, erc20CollateralTokens);
     }
 
     /**
@@ -152,15 +148,16 @@ contract BondMediator is
      *
      * @dev When a bond is created, the tokens used as collateral must have been whitelisted.
      *
+     * @param daoId The DAO who is having the collateral token whitelisted.
      * @param erc20CollateralTokens Whitelists the token from now onwards.
      *      On bond creation the tokens address used is retrieved by symbol from the whitelist.
      */
-    function whitelistCollateral(address erc20CollateralTokens)
+    function whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        _whitelistCollateral(erc20CollateralTokens);
+        _whitelistCollateral(daoId, erc20CollateralTokens);
     }
 
     /**

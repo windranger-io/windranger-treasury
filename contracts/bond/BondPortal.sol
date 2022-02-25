@@ -9,7 +9,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
-import "./CollateralWhitelist.sol";
 import "./Roles.sol";
 import "../Version.sol";
 
@@ -25,13 +24,9 @@ interface BondPortal {
      * @notice Initialises a new DAO with essential configuration.
      *
      * @param erc20CapableTreasury Treasury that receives forfeited collateral. Must not be address zero.
-     * @param erc20CollateralTokens Collateral token contract. Must not be address zero.
      * @return ID for the created DAO.
      */
-    function createDao(
-        address erc20CapableTreasury,
-        address erc20CollateralTokens
-    ) external returns (uint256);
+    function createDao(address erc20CapableTreasury) external returns (uint256);
 
     /**
      * @notice Creates a new Bond, registering with the Bond Management contract.

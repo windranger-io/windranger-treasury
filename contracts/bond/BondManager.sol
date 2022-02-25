@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "./BondAccessControl.sol";
 import "./BondCurator.sol";
-import "./CollateralWhitelist.sol";
 import "./Roles.sol";
 import "./SingleCollateralBond.sol";
 import "../Version.sol";
