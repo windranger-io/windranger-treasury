@@ -1,5 +1,5 @@
 {
-  "detectors_to_exclude": "solc-version,naming-convention",
+  "detectors_to_exclude": "solc-version",
   "exclude_informational": false,
   "exclude_low": false,
   "exclude_medium": false,

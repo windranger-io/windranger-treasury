@@ -49,6 +49,7 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
         return _isDaoCollateralWhitelisted(daoId, erc20CollateralTokens);
     }
 
+    //slither-disable-next-line naming-convention
     function __DaoBondCollateralWhitelist_init() internal onlyInitializing {}
 
     /**

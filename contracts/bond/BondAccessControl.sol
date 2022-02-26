@@ -14,6 +14,7 @@ abstract contract BondAccessControl is AccessControlUpgradeable {
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
      */
+    //slither-disable-next-line naming-convention
     function __BondAccessControl_init() internal onlyInitializing {
         __AccessControl_init();
 

@@ -18,7 +18,7 @@ abstract contract SweepERC721 is TokenSweep {
 
         IERC721Upgradeable(token).safeTransferFrom(
             address(this),
-            _beneficiary,
+            tokenSweepBeneficiary(),
             tokenId
         );
     }

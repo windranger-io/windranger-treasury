@@ -41,6 +41,7 @@ abstract contract Redeemable is Initializable {
         return _redeemable;
     }
 
+    //slither-disable-next-line naming-convention
     function __Redeemable_init() internal onlyInitializing {}
 
     /**
