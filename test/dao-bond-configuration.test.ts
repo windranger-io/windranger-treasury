@@ -30,13 +30,13 @@ describe('DAO Bond Configuration contract', () => {
         )
 
         await config.daoBondConfiguration(treasury)
-        await config.whitelistCollateral(DAO_ID, collateralTokens.address)
+        await config.whitelistDaoCollateral(DAO_ID, collateralTokens.address)
     })
 
     describe('treasury', () => {
         describe('retrieve', () => {
             it('invalid DAO id', async () => {
-                expect(await config.treasury(INVALID_DAO_ID)).equals(
+                expect(await config.daoTreasury(INVALID_DAO_ID)).equals(
                     ADDRESS_ZERO
                 )
             })
@@ -44,21 +44,23 @@ describe('DAO Bond Configuration contract', () => {
 
         describe('update', () => {
             afterEach(async () => {
-                if ((await config.treasury(DAO_ID)) !== treasury) {
+                if ((await config.daoTreasury(DAO_ID)) !== treasury) {
                     await config.setDaoTreasury(DAO_ID, treasury)
                 }
             })
 
             it('to a valid address', async () => {
-                expect(await config.treasury(DAO_ID)).equals(treasury)
+                expect(await config.daoTreasury(DAO_ID)).equals(treasury)
 
                 await config.setDaoTreasury(DAO_ID, nonAdmin.address)
 
-                expect(await config.treasury(DAO_ID)).equals(nonAdmin.address)
+                expect(await config.daoTreasury(DAO_ID)).equals(
+                    nonAdmin.address
+                )
             })
 
             it('cannot be identical', async () => {
-                expect(await config.treasury(DAO_ID)).equals(treasury)
+                expect(await config.daoTreasury(DAO_ID)).equals(treasury)
 
                 await expect(
                     config.setDaoTreasury(DAO_ID, treasury)
