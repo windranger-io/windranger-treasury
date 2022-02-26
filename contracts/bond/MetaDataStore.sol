@@ -23,6 +23,7 @@ abstract contract MetaDataStore is Initializable {
         return _metaData;
     }
 
+    //slither-disable-next-line naming-convention
     function __MetaDataStore_init(string calldata data)
         internal
         onlyInitializing

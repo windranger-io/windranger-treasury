@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAut
 
 contract SweepERC721TokensHarness is SweepERC721 {
     function setBeneficiary(address beneficiary) external {
-        _setBeneficiary(beneficiary);
+        _setTokenSweepBeneficiary(beneficiary);
     }
 
     function sweepERC721Tokens(address token, uint256 tokenId) external {

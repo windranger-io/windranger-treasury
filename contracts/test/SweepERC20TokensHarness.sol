@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"
 
 contract SweepERC20TokensHarness is SweepERC20 {
     function setBeneficiary(address beneficiary) external {
-        _setBeneficiary(beneficiary);
+        _setTokenSweepBeneficiary(beneficiary);
     }
 
     function sweepERC20Tokens(address token, uint256 amount) external {

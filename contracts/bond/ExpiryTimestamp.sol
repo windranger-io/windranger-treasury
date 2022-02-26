@@ -35,6 +35,7 @@ abstract contract ExpiryTimestamp is Initializable {
      *
      * @param timestamp expiry without any restriction e.g. it has not yet passed.
      */
+    //slither-disable-next-line naming-convention
     function __ExpiryTimestamp_init(uint256 timestamp)
         internal
         onlyInitializing

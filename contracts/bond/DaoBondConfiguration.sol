@@ -21,6 +21,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
      */
+    //slither-disable-next-line naming-convention
     function __DaoBondConfiguration_init() internal onlyInitializing {
         __DaoBondCollateralWhitelist_init();
     }
