@@ -30,6 +30,7 @@ import {accessControlRevertMessage} from './contracts/bond/bond-access-control-m
 import {createDaoEvents} from './contracts/bond/bond-portal-events'
 import {events} from './framework/events'
 import {createBondEventLogs} from './contracts/bond/bond-creator-events'
+import {verifyCollateralAddedEvents} from './contracts/bond/verify-whitelist-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -72,6 +73,24 @@ describe('Bond Mediator contract', () => {
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonAdmin, BOND_ADMIN)
                 )
+            })
+
+            it('event fires', async () => {
+                const symbol = 'EEK'
+                const tokens = await deployContract<ERC20PresetMinterPauser>(
+                    'ERC20PresetMinterPauser',
+                    'Another erc20 Token',
+                    symbol
+                )
+                const receipt = await successfulTransaction(
+                    mediator.whitelistCollateral('1', tokens.address)
+                )
+                verifyCollateralAddedEvents(receipt, [
+                    {
+                        address: tokens.address,
+                        symbol
+                    }
+                ])
             })
 
             it('only when not paused', async () => {
