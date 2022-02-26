@@ -51,6 +51,12 @@ describe('Bond Manager contract', () => {
     })
 
     describe('add bond', () => {
+        after(async () => {
+            if (await curator.paused()) {
+                await successfulTransaction(curator.unpause())
+            }
+        })
+
         it('only Bond Aggregator', async () => {
             await expect(
                 curator
@@ -78,18 +84,18 @@ describe('Bond Manager contract', () => {
             ).to.be.revertedWith('BondManager: not bond owner')
         })
 
-        it('only when not paused', async () => {
+        it('only to chosen DAO Id', async () => {
+            const beforeCountOther = await curator.bondCount(INVALID_DAO_ID)
+            const beforeCountChosen = await curator.bondCount(DAO_ID)
             const bond = await createBond()
-            expect(await curator.paused()).is.false
-            await successfulTransaction(curator.pause())
-            expect(await curator.paused()).is.true
+            await successfulTransaction(curator.addBond(DAO_ID, bond.address))
 
-            await expect(
-                curator.addBond(DAO_ID, bond.address)
-            ).to.be.revertedWith('Pausable: paused')
-
-            await successfulTransaction(curator.unpause())
-            expect(await curator.paused()).is.false
+            expect(await curator.bondCount(DAO_ID)).equals(
+                beforeCountChosen.add(1n)
+            )
+            expect(await curator.bondCount(INVALID_DAO_ID)).equals(
+                beforeCountOther
+            )
         })
 
         it('when valid', async () => {
@@ -105,6 +111,17 @@ describe('Bond Manager contract', () => {
             const expectedAddBondEvents = [{bond: bond.address}]
             verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
             verifyAddBondEvents(receipt, expectedAddBondEvents)
+        })
+
+        it('only when not paused', async () => {
+            const bond = await createBond()
+            expect(await curator.paused()).is.false
+            await successfulTransaction(curator.pause())
+            expect(await curator.paused()).is.true
+
+            await expect(
+                curator.addBond(DAO_ID, bond.address)
+            ).to.be.revertedWith('Pausable: paused')
         })
     })
 
