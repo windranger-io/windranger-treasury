@@ -27,93 +27,93 @@ contract BondManager is
 {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
-    EnumerableSetUpgradeable.AddressSet private _bonds;
+    mapping(uint256 => EnumerableSetUpgradeable.AddressSet) private _bonds;
 
-    function addBond(address bond)
+    function addBond(uint256 daoId, address bond)
         external
         override
         whenNotPaused
         onlyRole(Roles.BOND_AGGREGATOR)
     {
-        require(!_bonds.contains(bond), "BondManager: already managing");
+        require(!_bonds[daoId].contains(bond), "BondManager: already managing");
 
-        emit AddBond(bond);
+        emit AddBond(daoId, bond);
 
         require(
             OwnableUpgradeable(bond).owner() == address(this),
             "BondManager: not bond owner"
         );
 
-        bool added = _bonds.add(bond);
+        bool added = _bonds[daoId].add(bond);
         require(added, "BondManager: failed to add");
     }
 
-    function bondAllowRedemption(address bond)
+    function bondAllowRedemption(uint256 daoId, address bond)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        _requireManagingBond(bond);
+        _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).allowRedemption();
     }
 
-    function bondPause(address bond)
+    function bondPause(uint256 daoId, address bond)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        _requireManagingBond(bond);
+        _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).pause();
     }
 
-    function bondSlash(address bond, uint256 amount)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
-        _requireManagingBond(bond);
+    function bondSlash(
+        uint256 daoId,
+        address bond,
+        uint256 amount
+    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+        _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).slash(amount);
     }
 
-    function bondSetMetaData(address bond, string calldata data)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
-        _requireManagingBond(bond);
+    function bondSetMetaData(
+        uint256 daoId,
+        address bond,
+        string calldata data
+    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+        _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).setMetaData(data);
     }
 
-    function bondSetTreasury(address bond, address replacement)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
-        _requireManagingBond(bond);
+    function bondSetTreasury(
+        uint256 daoId,
+        address bond,
+        address replacement
+    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+        _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).setTreasury(replacement);
     }
 
-    function bondUnpause(address bond)
+    function bondUnpause(uint256 daoId, address bond)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        _requireManagingBond(bond);
+        _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).unpause();
     }
 
-    function bondWithdrawCollateral(address bond)
+    function bondWithdrawCollateral(uint256 daoId, address bond)
         external
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        _requireManagingBond(bond);
+        _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).withdrawCollateral();
     }
@@ -142,17 +142,21 @@ contract BondManager is
         _unpause();
     }
 
-    function bondAt(uint256 index) external view returns (address) {
+    function bondAt(uint256 daoId, uint256 index)
+        external
+        view
+        returns (address)
+    {
         require(
-            index < EnumerableSetUpgradeable.length(_bonds),
+            index < EnumerableSetUpgradeable.length(_bonds[daoId]),
             "BondManager: too large"
         );
 
-        return EnumerableSetUpgradeable.at(_bonds, index);
+        return EnumerableSetUpgradeable.at(_bonds[daoId], index);
     }
 
-    function bondCount() external view returns (uint256) {
-        return EnumerableSetUpgradeable.length(_bonds);
+    function bondCount(uint256 daoId) external view returns (uint256) {
+        return EnumerableSetUpgradeable.length(_bonds[daoId]);
     }
 
     /**
@@ -166,7 +170,7 @@ contract BondManager is
         onlyRole(Roles.SYSTEM_ADMIN)
     {}
 
-    function _requireManagingBond(address bond) private view {
-        require(_bonds.contains(bond), "BondManager: not managing");
+    function _requireManagingBond(uint256 daoId, address bond) private view {
+        require(_bonds[daoId].contains(bond), "BondManager: not managing");
     }
 }

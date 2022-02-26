@@ -95,7 +95,7 @@ contract BondMediator is
             "BM: collateral not whitelisted"
         );
 
-        BondCreator.BondSettings memory settings = _bondSettings(
+        BondCreator.BondSettings memory bondSettings = _bondSettings(
             daoId,
             debtTokenAmount,
             collateralTokens,
@@ -103,9 +103,9 @@ contract BondMediator is
             minimumDeposit,
             data
         );
-        BondCreator.BondIdentity memory id = _bondIdentity(name, symbol);
+        BondCreator.BondIdentity memory bondId = _bondIdentity(name, symbol);
 
-        return _managedBond(id, settings);
+        return _managedBond(daoId, bondId, bondSettings);
     }
 
     /**
@@ -213,12 +213,13 @@ contract BondMediator is
     }
 
     function _managedBond(
-        BondCreator.BondIdentity memory id,
-        BondCreator.BondSettings memory settings
+        uint256 daoId,
+        BondCreator.BondIdentity memory bondId,
+        BondCreator.BondSettings memory bondSettings
     ) private returns (address) {
-        address bond = _creator.createBond(id, settings);
+        address bond = _creator.createBond(bondId, bondSettings);
         OwnableUpgradeable(bond).transferOwnership(address(_curator));
-        _curator.addBond(bond);
+        _curator.addBond(daoId, bond);
         return bond;
     }
 }

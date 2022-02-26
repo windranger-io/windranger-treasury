@@ -223,8 +223,10 @@ describe('Bond Mediator contract', () => {
                 expect(addBondEvents.length).to.equal(1)
 
                 const createdBondAddress = addBondEvents[0].bond
-                expect(await curator.bondCount()).equals(1)
-                expect(await curator.bondAt(0)).equals(createdBondAddress)
+                expect(await curator.bondCount(daoId)).equals(1)
+                expect(await curator.bondAt(daoId, 0)).equals(
+                    createdBondAddress
+                )
 
                 const bond = await erc20SingleCollateralBondContractAt(
                     createdBondAddress
