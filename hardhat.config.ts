@@ -35,13 +35,13 @@ export default {
     networks: {
         hardhat: {
             chainId: 33133,
-            allowUnlimitedContractSize: true,
+            allowUnlimitedContractSize: false,
             loggingEnabled: false
         },
         local: {
             url: 'http://localhost:8545',
             chainId: 33133,
-            allowUnlimitedContractSize: true,
+            allowUnlimitedContractSize: false,
             loggingEnabled: true
         }
     },
