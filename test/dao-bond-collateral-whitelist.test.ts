@@ -35,7 +35,7 @@ describe('DAO Bond Collateral Whitelist contract', () => {
         )
 
         await config.daoBondConfiguration(treasury)
-        await config.whitelistCollateral(DAO_ID, collateralTokens.address)
+        await config.whitelistDaoCollateral(DAO_ID, collateralTokens.address)
     })
 
     describe('collateral whitelist', () => {
@@ -49,22 +49,25 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 )
                 expect(await tokens.symbol()).equals(symbol)
 
-                await config.whitelistCollateral(DAO_ID, tokens.address)
+                await config.whitelistDaoCollateral(DAO_ID, tokens.address)
 
                 expect(
-                    await config.isCollateralWhitelisted(DAO_ID, tokens.address)
+                    await config.isAllowedDaoCollateral(DAO_ID, tokens.address)
                 ).is.true
             })
 
             it('cannot be an existing token', async () => {
                 await expect(
-                    config.whitelistCollateral(DAO_ID, collateralTokens.address)
+                    config.whitelistDaoCollateral(
+                        DAO_ID,
+                        collateralTokens.address
+                    )
                 ).to.be.revertedWith('DAO Collateral: already present')
             })
 
             it('cannot have address zero', async () => {
                 await expect(
-                    config.whitelistCollateral(DAO_ID, ADDRESS_ZERO)
+                    config.whitelistDaoCollateral(DAO_ID, ADDRESS_ZERO)
                 ).to.be.revertedWith('DAO Collateral: zero address')
             })
 
@@ -72,7 +75,7 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 const box = await deployContract<Box>('Box')
 
                 await expect(
-                    config.whitelistCollateral(DAO_ID, box.address)
+                    config.whitelistDaoCollateral(DAO_ID, box.address)
                 ).to.be.revertedWith(
                     "function selector was not recognized and there's no fallback function"
                 )
@@ -80,7 +83,7 @@ describe('DAO Bond Collateral Whitelist contract', () => {
 
             it('invalid DAO id', async () => {
                 await expect(
-                    config.whitelistCollateral(
+                    config.whitelistDaoCollateral(
                         INVALID_DAO_ID,
                         collateralTokens.address
                     )
@@ -90,7 +93,7 @@ describe('DAO Bond Collateral Whitelist contract', () => {
 
         describe('get all', () => {
             it('entries', async () => {
-                const startingList = await config.whitelistedCollateralSymbols(
+                const startingList = await config.daoCollateralSymbolWhitelist(
                     DAO_ID
                 )
                 const specialSymbol = 'SYMBOL_FOR_GET_ALL_WHITELIST'
@@ -102,13 +105,13 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                     specialSymbol
                 )
                 await successfulTransaction(
-                    config.whitelistCollateral(
+                    config.whitelistDaoCollateral(
                         DAO_ID,
                         exampleCollateralErc20.address
                     )
                 )
                 const result: string[] =
-                    await config.whitelistedCollateralSymbols(DAO_ID)
+                    await config.daoCollateralSymbolWhitelist(DAO_ID)
                 expect(result.length).to.equal(startingList.length + 1)
                 expect(result).to.contain(specialSymbol)
             })
@@ -117,12 +120,12 @@ describe('DAO Bond Collateral Whitelist contract', () => {
         describe('remove', () => {
             after(async () => {
                 if (
-                    !(await config.isCollateralWhitelisted(
+                    !(await config.isAllowedDaoCollateral(
                         DAO_ID,
                         collateralTokens.address
                     ))
                 ) {
-                    await config.whitelistCollateral(
+                    await config.whitelistDaoCollateral(
                         DAO_ID,
                         collateralTokens.address
                     )
@@ -130,19 +133,19 @@ describe('DAO Bond Collateral Whitelist contract', () => {
             })
             it('entry', async () => {
                 expect(
-                    await config.isCollateralWhitelisted(
+                    await config.isAllowedDaoCollateral(
                         DAO_ID,
                         collateralTokens.address
                     )
                 ).is.true
 
-                await config.removeWhitelistedCollateral(
+                await config.removeWhitelistedDaoCollateral(
                     DAO_ID,
                     collateralTokens.address
                 )
 
                 expect(
-                    await config.isCollateralWhitelisted(
+                    await config.isAllowedDaoCollateral(
                         DAO_ID,
                         collateralTokens.address
                     )
@@ -152,17 +155,17 @@ describe('DAO Bond Collateral Whitelist contract', () => {
             it('non-existent entry', async () => {
                 const absentAddress = Wallet.createRandom().address
                 expect(
-                    await config.isCollateralWhitelisted(DAO_ID, absentAddress)
+                    await config.isAllowedDaoCollateral(DAO_ID, absentAddress)
                 ).is.false
 
                 await expect(
-                    config.removeWhitelistedCollateral(DAO_ID, absentAddress)
+                    config.removeWhitelistedDaoCollateral(DAO_ID, absentAddress)
                 ).to.be.revertedWith('DAO Collateral: not whitelisted')
             })
 
             it('invalid DAO id', async () => {
                 await expect(
-                    config.removeWhitelistedCollateral(
+                    config.removeWhitelistedDaoCollateral(
                         INVALID_DAO_ID,
                         collateralTokens.address
                     )

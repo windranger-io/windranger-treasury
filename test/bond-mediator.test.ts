@@ -102,7 +102,7 @@ describe('Bond Mediator contract', () => {
                     await mediator.unpause()
                 }
                 if (
-                    !(await mediator.isCollateralWhitelisted(
+                    !(await mediator.isAllowedDaoCollateral(
                         daoId,
                         collateralTokens.address
                     ))
@@ -284,9 +284,9 @@ describe('Bond Mediator contract', () => {
     describe('treasury', () => {
         describe('retrieve', () => {
             it(' by non-owner', async () => {
-                expect(await mediator.connect(nonAdmin).treasury(daoId)).equals(
-                    treasury
-                )
+                expect(
+                    await mediator.connect(nonAdmin).daoTreasury(daoId)
+                ).equals(treasury)
             })
         })
 

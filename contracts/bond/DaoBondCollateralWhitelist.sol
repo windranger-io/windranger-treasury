@@ -23,15 +23,15 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
      *
      * @param daoId Internal ID of the DAO whose collateral symbol list is wanted.
      */
-    function whitelistedCollateralSymbols(uint256 daoId)
+    function daoCollateralSymbolWhitelist(uint256 daoId)
         external
         view
         returns (string[] memory)
     {
-        address[] memory keys = _collateralWhitelist(daoId).tokens.values();
+        address[] memory keys = _daoCollateralWhitelist(daoId).tokens.values();
         string[] memory symbols = new string[](keys.length);
         for (uint256 i = 0; i < keys.length; i++) {
-            symbols[i] = _collateralWhitelist(daoId).symbols[keys[i]];
+            symbols[i] = _daoCollateralWhitelist(daoId).symbols[keys[i]];
         }
         return symbols;
     }
@@ -42,11 +42,11 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
      * @param daoId Internal ID of the DAO whose collateral whitelist list will be checked.
      * @return When present in the whitelist, the token address, otherwise address zero.
      */
-    function isCollateralWhitelisted(
+    function isAllowedDaoCollateral(
         uint256 daoId,
         address erc20CollateralTokens
     ) public view returns (bool) {
-        return _isCollateralWhitelisted(daoId, erc20CollateralTokens);
+        return _isDaoCollateralWhitelisted(daoId, erc20CollateralTokens);
     }
 
     function __DaoBondCollateralWhitelist_init() internal onlyInitializing {}
@@ -59,24 +59,25 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
      * @param daoId Internal ID of the DAO whose collateral whitelist will be updated.
      * @param  erc20CollateralTokens IERC20MetadataUpgradeable contract to whitelist.
      */
-    function _whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
-        internal
-    {
+    function _whitelistDaoCollateral(
+        uint256 daoId,
+        address erc20CollateralTokens
+    ) internal {
         require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
         require(
             erc20CollateralTokens != address(0),
             "DAO Collateral: zero address"
         );
         require(
-            !_isCollateralWhitelisted(daoId, erc20CollateralTokens),
+            !_isDaoCollateralWhitelisted(daoId, erc20CollateralTokens),
             "DAO Collateral: already present"
         );
         require(
-            _collateralWhitelist(daoId).tokens.add(erc20CollateralTokens),
+            _daoCollateralWhitelist(daoId).tokens.add(erc20CollateralTokens),
             "DAO Collateral: failed to add"
         );
 
-        _collateralWhitelist(daoId).symbols[
+        _daoCollateralWhitelist(daoId).symbols[
             erc20CollateralTokens
         ] = IERC20MetadataUpgradeable(erc20CollateralTokens).symbol();
     }
@@ -89,20 +90,20 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
      * @param daoId Internal ID of the DAO whose collateral whitelist will be updated.
      * @param  erc20CollateralTokens ERC20 contract to remove from the whitelist.
      */
-    function _removeWhitelistedCollateral(
+    function _removeWhitelistedDaoCollateral(
         uint256 daoId,
         address erc20CollateralTokens
     ) internal {
         require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
         require(
-            _isCollateralWhitelisted(daoId, erc20CollateralTokens),
+            _isDaoCollateralWhitelisted(daoId, erc20CollateralTokens),
             "DAO Collateral: not whitelisted"
         );
         require(
-            _collateralWhitelist(daoId).tokens.remove(erc20CollateralTokens),
+            _daoCollateralWhitelist(daoId).tokens.remove(erc20CollateralTokens),
             "DAO Collateral: failed to remove"
         );
-        delete _collateralWhitelist(daoId).symbols[erc20CollateralTokens];
+        delete _daoCollateralWhitelist(daoId).symbols[erc20CollateralTokens];
     }
 
     /**
@@ -114,7 +115,7 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
      * @param daoId Internal ID of the DAO whose collateral whitelist will be retrieved.
      */
     //slither-disable-next-line dead-code
-    function _collateralWhitelist(uint256 daoId)
+    function _daoCollateralWhitelist(uint256 daoId)
         internal
         view
         virtual
@@ -137,11 +138,13 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
      * @param daoId Internal ID of the DAO whose whitelist will be checked.
      * @param  erc20CollateralTokens address to determine whitelist membership.
      */
-    function _isCollateralWhitelisted(
+    function _isDaoCollateralWhitelisted(
         uint256 daoId,
         address erc20CollateralTokens
     ) private view returns (bool) {
         return
-            _collateralWhitelist(daoId).tokens.contains(erc20CollateralTokens);
+            _daoCollateralWhitelist(daoId).tokens.contains(
+                erc20CollateralTokens
+            );
     }
 }

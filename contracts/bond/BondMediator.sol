@@ -91,7 +91,7 @@ contract BondMediator is
         require(_isValidDaoId(daoId), "BM: invalid DAO Id");
 
         require(
-            isCollateralWhitelisted(daoId, collateralTokens),
+            isAllowedDaoCollateral(daoId, collateralTokens),
             "BM: collateral not whitelisted"
         );
 
@@ -140,7 +140,7 @@ contract BondMediator is
         uint256 daoId,
         address erc20CollateralTokens
     ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
-        _removeWhitelistedCollateral(daoId, erc20CollateralTokens);
+        _removeWhitelistedDaoCollateral(daoId, erc20CollateralTokens);
     }
 
     /**
@@ -157,7 +157,7 @@ contract BondMediator is
         whenNotPaused
         onlyRole(Roles.BOND_ADMIN)
     {
-        _whitelistCollateral(daoId, erc20CollateralTokens);
+        _whitelistDaoCollateral(daoId, erc20CollateralTokens);
     }
 
     /**

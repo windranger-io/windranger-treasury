@@ -13,7 +13,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
     mapping(uint256 => DaoBondConfig) private _daoConfig;
     uint256 private _daoConfigLastId;
 
-    function treasury(uint256 daoId) external view returns (address) {
+    function daoTreasury(uint256 daoId) external view returns (address) {
         return _daoConfig[daoId].treasury;
     }
 
@@ -42,8 +42,8 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         return _daoConfigLastId;
     }
 
-    function _daoTreasury(uint256 id) internal returns (address) {
-        return _daoConfig[id].treasury;
+    function _daoTreasury(uint256 daoId) internal returns (address) {
+        return _daoConfig[daoId].treasury;
     }
 
     function _setDaoTreasury(uint256 daoId, address replacementTreasury)
@@ -61,7 +61,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         _daoConfig[daoId].treasury = replacementTreasury;
     }
 
-    function _collateralWhitelist(uint256 daoId)
+    function _daoCollateralWhitelist(uint256 daoId)
         internal
         view
         override
