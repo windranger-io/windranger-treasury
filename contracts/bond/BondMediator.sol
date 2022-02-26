@@ -54,6 +54,7 @@ contract BondMediator is
 
         __BondAccessControl_init();
         __DaoBondConfiguration_init();
+        __Pausable_init();
         __UUPSUpgradeable_init();
 
         _creator = BondCreator(factory);
