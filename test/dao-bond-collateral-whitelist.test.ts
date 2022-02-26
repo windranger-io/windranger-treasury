@@ -90,7 +90,9 @@ describe('DAO Bond Collateral Whitelist contract', () => {
 
         describe('get all', () => {
             it('entries', async () => {
-                const startingList = await config.whitelistSymbols(DAO_ID)
+                const startingList = await config.whitelistedCollateralSymbols(
+                    DAO_ID
+                )
                 const specialSymbol = 'SYMBOL_FOR_GET_ALL_WHITELIST'
                 expect(startingList).does.not.contain(specialSymbol)
 
@@ -105,7 +107,8 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                         exampleCollateralErc20.address
                     )
                 )
-                const result: string[] = await config.whitelistSymbols(DAO_ID)
+                const result: string[] =
+                    await config.whitelistedCollateralSymbols(DAO_ID)
                 expect(result.length).to.equal(startingList.length + 1)
                 expect(result).to.contain(specialSymbol)
             })

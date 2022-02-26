@@ -61,7 +61,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         _daoConfig[daoId].treasury = replacementTreasury;
     }
 
-    function _daoCollateralWhitelist(uint256 daoId)
+    function _collateralWhitelist(uint256 daoId)
         internal
         view
         override
