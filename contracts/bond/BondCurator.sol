@@ -10,12 +10,13 @@ pragma solidity ^0.8.0;
  *      to be provided.
  */
 interface BondCurator {
-    event AddBond(address bond);
+    event AddBond(uint256 daiId, address bond);
 
     /**
      * @notice Before a Bond can be managed, it must first be added.
      *
+     * @param daoId The DAO to whom the bond belongs.
      * @param bond Deployed Bond contract, with the Owner set as the BondCurator.
      */
-    function addBond(address bond) external;
+    function addBond(uint256 daoId, address bond) external;
 }
