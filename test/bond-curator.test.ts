@@ -122,7 +122,11 @@ describe('Bond Curator contract', () => {
                 )
 
                 await successfulTransaction(
-                    curator.bondAllowRedemption(bond.address, redemptionReason)
+                    curator.bondAllowRedemption(
+                        DAO_ID,
+                        bond.address,
+                        redemptionReason
+                    )
                 )
 
                 expect(await bond.redeemable()).is.true
@@ -130,7 +134,11 @@ describe('Bond Curator contract', () => {
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondAllowRedemption(DAO_ID, bond.address, redemptionReason)
+                    curator.bondAllowRedemption(
+                        DAO_ID,
+                        bond.address,
+                        redemptionReason
+                    )
                 ).to.be.revertedWith('BondManager: not managing')
             })
 
@@ -138,7 +146,11 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondAllowRedemption(DAO_ID, bond.address, redemptionReason)
+                        .bondAllowRedemption(
+                            DAO_ID,
+                            bond.address,
+                            redemptionReason
+                        )
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
@@ -149,7 +161,11 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondAllowRedemption(DAO_ID, bond.address, redemptionReason)
+                    curator.bondAllowRedemption(
+                        DAO_ID,
+                        bond.address,
+                        redemptionReason
+                    )
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
