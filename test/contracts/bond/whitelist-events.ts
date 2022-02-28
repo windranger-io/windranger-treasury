@@ -10,7 +10,7 @@ export type ActualAddCollateralEvent = {
 /**
  * Shape check and conversion for a AddBondEvent.
  */
-export function addCollateralEvent(
+export function collateralAddedEvent(
     events: Event[]
 ): ActualAddCollateralEvent[] {
     const tokensAdded: ActualAddCollateralEvent[] = []
@@ -24,10 +24,8 @@ export function addCollateralEvent(
         expect(args?.collateralTokens).is.not.undefined
 
         const token: ActualAddCollateralEvent = {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            address: args?.collateralTokens,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            symbol: args?.symbol
+            address: collateral.args.collateralTokens,
+            symbol: collateral.args.symbol
         }
 
         tokensAdded.push(token)
