@@ -218,7 +218,12 @@ describe('Bond Curator contract', () => {
                 )
 
                 await expect(
-                    curator.bondSlash(DAO_ID, bond.address, 77n, bondSlashReason)
+                    curator.bondSlash(
+                        DAO_ID,
+                        bond.address,
+                        77n,
+                        bondSlashReason
+                    )
                 ).to.be.revertedWith('Bond: too large')
             })
 
