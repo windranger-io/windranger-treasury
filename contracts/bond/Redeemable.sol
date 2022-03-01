@@ -43,7 +43,6 @@ abstract contract Redeemable is Initializable {
         return _redeemable;
     }
 
-    //slither-disable-next-line naming-convention
     function reason() external view returns (string memory) {
         return _reason;
     }

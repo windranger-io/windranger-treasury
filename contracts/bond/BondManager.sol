@@ -48,11 +48,11 @@ contract BondManager is
         require(added, "BondManager: failed to add");
     }
 
-    function bondAllowRedemption(uint256 daoId, address bond, string calldata reason)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
+    function bondAllowRedemption(
+        uint256 daoId,
+        address bond,
+        string calldata reason
+    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).allowRedemption(reason);
