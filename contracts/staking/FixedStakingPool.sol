@@ -102,13 +102,6 @@ contract FixedStakingPool is Initializable, StakingAccessControl, StakingPool {
         emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
     }
 
-    // function initializeRewardTokens(address treasury, StakingPoolInfo.RewardToken[] calldata _rewardToken, address _stakingPool, uint256[] calldata amounts) internal {
-
-    //     for(uint256 i = 0; i < _rewardToken.length; i++) {
-    //         require(IERC20(_rewardToken[i].rewardToken).transferFrom(treasury, _stakingPool, amounts[i]), "Failed to transfer tokens");
-    //     }
-    // }
-
     function computeRewards(address receipient, uint256 rewardTokenIndex)
         external
         view
@@ -145,9 +138,4 @@ contract FixedStakingPool is Initializable, StakingAccessControl, StakingPool {
                         .rewardAmountRatio) / 1 ether
             );
     }
-
-    // function adminRewardsWithdraw() external onlyRole(Roles.DAO_ADMIN) {
-
-    //     stakingPoolInfo.rewardToken.transfer();
-    // }
 }
