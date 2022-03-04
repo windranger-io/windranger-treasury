@@ -55,6 +55,19 @@ abstract contract StakingPool {
         _;
     }
 
+    // function initializeRewardTokens(address treasury, StakingPoolInfo.RewardToken[] calldata _rewardToken, address _stakingPool, uint256[] calldata amounts) internal {
+
+    //     for(uint256 i = 0; i < _rewardToken.length; i++) {
+    //         require(IERC20(_rewardToken[i].rewardToken).transferFrom(treasury, _stakingPool, amounts[i]), "Failed to transfer tokens");
+    //     }
+
+    // }
+
+    // function adminRewardsWithdraw() external onlyRole(Roles.DAO_ADMIN) {
+
+    //     stakingPoolInfo.rewardToken.transfer();
+    // }
+
     function isReedemable() external view returns (bool) {
         // rewardsFinalized stakingPeriodComplete
         return _isRewardsFinalized() && _isStakingPeriodComplete();
