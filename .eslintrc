@@ -78,6 +78,11 @@
     "comma-spacing": ["error", { "before": false, "after": true }],
     "eol-last": "error",
 
-    "prettier/prettier": "error"
+    "prettier/prettier": "error",
+
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {"checksConditionals": true,"checksVoidReturn": false}
+    ]
   }
 }
