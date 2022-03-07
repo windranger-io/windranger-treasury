@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
 import "./Roles.sol";
 import "./StakingAccessControl.sol";
 
-contract DaoTreasuryWhitelist is Initializable, StakingAccessControl {
+contract DaoStakingCreatorWhitelist is Initializable, StakingAccessControl {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     // Treasury addresses
