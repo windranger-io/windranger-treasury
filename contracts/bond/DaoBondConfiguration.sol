@@ -6,9 +6,7 @@ import "../Dao.sol";
 
 abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist, Dao {
     struct DaoBondConfig {
-        // Address zero is an invalid address, can be used to identify null structs
-        address treasury;
-        string metaData;
+        DaoConfig dao;
         CollateralWhitelist whitelist;
     }
 
