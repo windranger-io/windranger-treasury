@@ -1,6 +1,7 @@
 import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {CreateBondEvent} from '../../../typechain-types/BondCreator'
+import {Result} from '@ethersproject/abi'
 
 export type ActualCreateBondEvent = {
     bond: string
@@ -31,4 +32,35 @@ export function createBondEvent(event: Event): ActualCreateBondEvent {
     expect(args?.data).is.not.undefined
 
     return create.args
+}
+
+/**
+ * Shape check and conversion for an event log entry for CreateBond.
+ */
+export function createBondEventLogs(events: Result[]): ActualCreateBondEvent[] {
+    const results: ActualCreateBondEvent[] = []
+
+    for (const event of events) {
+        expect(event?.bond).is.not.undefined
+        expect(event?.name).is.not.undefined
+        expect(event?.debtSymbol).is.not.undefined
+        expect(event?.debtAmount).is.not.undefined
+        expect(event?.creator).is.not.undefined
+        expect(event?.treasury).is.not.undefined
+        expect(event?.expiryTimestamp).is.not.undefined
+        expect(event?.data).is.not.undefined
+
+        results.push({
+            bond: String(event.bond),
+            name: String(event.name),
+            debtSymbol: String(event.debtSymbol),
+            debtAmount: BigNumber.from(event.debtAmount),
+            creator: String(event.creator),
+            treasury: String(event.treasury),
+            expiryTimestamp: BigNumber.from(event.expiryTimestamp),
+            data: String(event.data)
+        })
+    }
+
+    return results
 }

@@ -20,45 +20,25 @@ import "../Version.sol";
  * @dev Orchestrates a BondCreator and BondCurator to provide a single function to aggregate the various calls
  *      providing a single function to create and setup a bond for management with the curator.
  */
-contract BondMediator is
-    BondAccessControl,
-    BondPortal,
-    DaoBondConfiguration,
-    PausableUpgradeable,
-    UUPSUpgradeable,
-    Version
-{
+contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
     BondCreator private _creator;
-    BondCurator private _curator;
 
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
      *
      * @param factory A deployed BondCreator contract to use when creating bonds.
-     * @param manager A deployed BondCurator contract to register created bonds with,
      */
-    function initialize(address factory, address manager)
-        external
-        virtual
-        initializer
-    {
+    function initialize(address factory) external initializer {
         require(
             AddressUpgradeable.isContract(factory),
             "BM: creator not a contract"
         );
-        require(
-            AddressUpgradeable.isContract(manager),
-            "BM: curator not a contract"
-        );
 
-        __BondAccessControl_init();
+        __BondCurator_init();
         __DaoBondConfiguration_init();
-        __Pausable_init();
-        __UUPSUpgradeable_init();
 
         _creator = BondCreator(factory);
-        _curator = BondCurator(manager);
     }
 
     function createDao(address erc20CapableTreasury)
@@ -110,13 +90,6 @@ contract BondMediator is
     }
 
     /**
-     * @notice Pauses most side affecting functions.
-     */
-    function pause() external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
-        _pause();
-    }
-
-    /**
      * @notice Permits the owner to update the treasury address.
      *
      * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
@@ -161,37 +134,8 @@ contract BondMediator is
         _whitelistDaoCollateral(daoId, erc20CollateralTokens);
     }
 
-    /**
-     * @notice Resumes all paused side affecting functions.
-     */
-    function unpause() external whenPaused onlyRole(Roles.BOND_ADMIN) {
-        _unpause();
-    }
-
     function bondCreator() external view returns (address) {
         return address(_creator);
-    }
-
-    function bondCurator() external view returns (address) {
-        return address(_curator);
-    }
-
-    /**
-     * @notice Permits only the owner to perform proxy upgrades.
-     *
-     * @dev Only applicable when deployed as implementation to a UUPS proxy.
-     */
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyRole(Roles.SYSTEM_ADMIN)
-    {}
-
-    function _bondIdentity(string calldata name, string calldata symbol)
-        private
-        returns (BondCreator.BondIdentity memory)
-    {
-        return BondCreator.BondIdentity({name: name, symbol: symbol});
     }
 
     function _bondSettings(
@@ -219,8 +163,15 @@ contract BondMediator is
         BondCreator.BondSettings memory bondSettings
     ) private returns (address) {
         address bond = _creator.createBond(bondId, bondSettings);
-        OwnableUpgradeable(bond).transferOwnership(address(_curator));
-        _curator.addBond(daoId, bond);
+        _addBond(daoId, bond);
         return bond;
+    }
+
+    function _bondIdentity(string calldata name, string calldata symbol)
+        private
+        pure
+        returns (BondCreator.BondIdentity memory)
+    {
+        return BondCreator.BondIdentity({name: name, symbol: symbol});
     }
 }

@@ -19,11 +19,9 @@ abstract contract BondAccessControl is AccessControlUpgradeable {
         __AccessControl_init();
 
         _setRoleAdmin(Roles.BOND_ADMIN, Roles.DAO_ADMIN);
-        _setRoleAdmin(Roles.BOND_AGGREGATOR, Roles.DAO_ADMIN);
         _setRoleAdmin(Roles.DAO_ADMIN, Roles.DAO_ADMIN);
         _setRoleAdmin(Roles.SYSTEM_ADMIN, Roles.DAO_ADMIN);
         _setupRole(Roles.BOND_ADMIN, _msgSender());
-        _setupRole(Roles.BOND_AGGREGATOR, _msgSender());
         _setupRole(Roles.DAO_ADMIN, _msgSender());
         _setupRole(Roles.SYSTEM_ADMIN, _msgSender());
     }

@@ -43,10 +43,6 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         return _daoConfigLastId;
     }
 
-    function _daoTreasury(uint256 daoId) internal returns (address) {
-        return _daoConfig[daoId].treasury;
-    }
-
     function _setDaoTreasury(uint256 daoId, address replacementTreasury)
         internal
     {
@@ -69,6 +65,10 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         returns (CollateralWhitelist storage)
     {
         return _daoConfig[daoId].whitelist;
+    }
+
+    function _daoTreasury(uint256 daoId) internal view returns (address) {
+        return _daoConfig[daoId].treasury;
     }
 
     function _isValidDaoId(uint256 daoId)
