@@ -45,8 +45,7 @@ describe('Bond Curator contract', () => {
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         creator = await deployContractWithProxy<BondFactory>('BondFactory')
         curator = await deployContractWithProxy<BondCuratorBox>(
-            'BondCuratorBox',
-            creator.address
+            'BondCuratorBox'
         )
     })
 
@@ -91,19 +90,12 @@ describe('Bond Curator contract', () => {
         it('when valid', async () => {
             const bond = await createBond()
 
-            const receipt = await successfulTransaction(
-                curator.addBond(DAO_ID, bond.address)
-            )
+            await curator.addBond(DAO_ID, bond.address)
+
             const createdBondIndex = await curator.bondCount(DAO_ID)
             expect(
                 await curator.bondAt(DAO_ID, createdBondIndex.sub(1n))
             ).equals(bond.address)
-
-            const createBondEvents = createBondEventLogs(
-                eventLog('CreateBond', creator, receipt)
-            )
-            expect(createBondEvents.length).to.equal(1)
-            expect(createBondEvents[0].bond).to.equal(bond.address)
         })
 
         it('only when not paused', async () => {
@@ -121,8 +113,7 @@ describe('Bond Curator contract', () => {
     describe('bond', () => {
         beforeEach(async () => {
             curator = await deployContractWithProxy<BondCuratorBox>(
-                'BondCuratorBox',
-                creator.address
+                'BondCuratorBox'
             )
             bond = await createBond()
         })
