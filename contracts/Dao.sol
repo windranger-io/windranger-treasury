@@ -10,7 +10,12 @@ abstract contract Dao {
     mapping(uint256 => DaoConfig) private _daoConfig;
     uint256 private _daoConfigLastId;
 
-    function daoTreasury(uint256 daoId) external view returns (address) {
+    function daoTreasury(uint256 daoId)
+        external
+        view
+        virtual
+        returns (address)
+    {
         return _daoConfig[daoId].treasury;
     }
 

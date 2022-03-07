@@ -10,6 +10,7 @@ pragma solidity ^0.8.0;
 library Roles {
     bytes32 public constant SUPER_USER = "SUPER_USER";
     bytes32 public constant DAO_ADMIN = "DAO_ADMIN";
-    bytes32 public constant SYSTEM_ADMIN = "SYSTEM_ADMIN";
     bytes32 public constant DAO_MEEPLE = "DAO_MEEPLE";
+
+    bytes32 public constant SYSTEM_ADMIN = "SYSTEM_ADMIN";
 }
