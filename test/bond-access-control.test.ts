@@ -4,13 +4,7 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import chai, {expect} from 'chai'
-import {
-    BOND_ADMIN,
-    BOND_AGGREGATOR,
-    DAO_ADMIN,
-    Role,
-    SYSTEM_ADMIN
-} from './contracts/bond/roles'
+import {BOND_ADMIN, DAO_ADMIN, Role, SYSTEM_ADMIN} from './contracts/bond/roles'
 import {before} from 'mocha'
 import {deployContract, signer} from './framework/contracts'
 import {BondAccessControlBox} from '../typechain-types'
@@ -54,32 +48,6 @@ describe('Bond Access Control contract', () => {
 
         it('DAO Admin is the role admin', async () => {
             expect(await getRoleAdmin(BOND_ADMIN)).equals(DAO_ADMIN.hex)
-        })
-    })
-
-    describe('Bond Aggregator', () => {
-        it('add member', async () => {
-            expect(await hasRole(BOND_AGGREGATOR, memberOne)).is.false
-            expect(await hasRole(BOND_AGGREGATOR, admin)).is.true
-
-            await grantRole(BOND_AGGREGATOR, memberOne)
-
-            expect(await hasRole(BOND_AGGREGATOR, admin)).is.true
-            expect(await hasRole(BOND_AGGREGATOR, memberOne)).is.true
-        })
-
-        it('remove member', async () => {
-            expect(await hasRole(BOND_AGGREGATOR, admin)).is.true
-            expect(await hasRole(BOND_AGGREGATOR, memberOne)).is.true
-
-            await revokeRole(BOND_AGGREGATOR, memberOne)
-
-            expect(await hasRole(BOND_AGGREGATOR, admin)).is.true
-            expect(await hasRole(BOND_AGGREGATOR, memberOne)).is.false
-        })
-
-        it('DAO Admin is the role admin', async () => {
-            expect(await getRoleAdmin(BOND_AGGREGATOR)).equals(DAO_ADMIN.hex)
         })
     })
 

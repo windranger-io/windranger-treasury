@@ -9,7 +9,6 @@ import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
     BondFactory,
-    BondManager,
     BondMediator,
     ERC20,
     ERC20PresetMinterPauser
@@ -19,9 +18,8 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {BOND_ADMIN, BOND_AGGREGATOR} from './contracts/bond/roles'
+import {BOND_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
-import {addBondEventLogs} from './contracts/bond/bond-curator-events'
 import {eventLog} from './framework/event-logs'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
 import {constants} from 'ethers'
@@ -31,6 +29,7 @@ import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
 import {createDaoEvents} from './contracts/bond/bond-portal-events'
 import {events} from './framework/events'
+import {createBondEventLogs} from './contracts/bond/bond-creator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -48,18 +47,14 @@ describe('Bond Mediator contract', () => {
             'Name',
             'SYMBOL'
         )
-        curator = await deployContractWithProxy<BondManager>('BondManager')
         creator = await deployContractWithProxy<BondFactory>('BondFactory')
         mediator = await deployContractWithProxy<BondMediator>(
             'BondMediator',
-            creator.address,
-            curator.address
+            creator.address
         )
 
         daoId = await createDao(mediator, treasury)
         await mediator.whitelistCollateral(daoId, collateralTokens.address)
-
-        await curator.grantRole(BOND_AGGREGATOR.hex, mediator.address)
     })
 
     describe('collateral whitelist', () => {
@@ -217,14 +212,14 @@ describe('Bond Mediator contract', () => {
                     )
                 )
 
-                const addBondEvents = addBondEventLogs(
-                    eventLog('AddBond', curator, receipt)
+                const createBondEvents = createBondEventLogs(
+                    eventLog('CreateBond', creator, receipt)
                 )
-                expect(addBondEvents.length).to.equal(1)
+                expect(createBondEvents.length).to.equal(1)
 
-                const createdBondAddress = addBondEvents[0].bond
-                expect(await curator.bondCount(daoId)).equals(1)
-                expect(await curator.bondAt(daoId, 0)).equals(
+                const createdBondAddress = createBondEvents[0].bond
+                expect(await mediator.bondCount(daoId)).equals(1)
+                expect(await mediator.bondAt(daoId, 0)).equals(
                     createdBondAddress
                 )
 
@@ -241,10 +236,6 @@ describe('Bond Mediator contract', () => {
                         {
                             previousOwner: creator.address,
                             newOwner: mediator.address
-                        },
-                        {
-                            previousOwner: mediator.address,
-                            newOwner: curator.address
                         }
                     ],
                     bond,
@@ -351,7 +342,6 @@ describe('Bond Mediator contract', () => {
     let collateralTokens: ExtendedERC20
     let nonWhitelistCollateralTokens: ExtendedERC20
     let mediator: BondMediator
-    let curator: BondManager
     let creator: BondFactory
     let daoId: bigint
 })

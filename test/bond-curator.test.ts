@@ -9,7 +9,7 @@ import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
     BondFactory,
-    BondManager,
+    BondCuratorBox,
     ERC20SingleCollateralBond
 } from '../typechain-types'
 import {
@@ -19,35 +19,35 @@ import {
     signer
 } from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {constants} from 'ethers'
 import {successfulTransaction} from './framework/transaction'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
-import {createBondEvent} from './contracts/bond/bond-creator-events'
-import {event} from './framework/events'
 import {
-    verifyAddBondEvents,
-    verifyAddBondLogEvents
-} from './contracts/bond/verify-curator-events'
+    createBondEvent,
+    createBondEventLogs
+} from './contracts/bond/bond-creator-events'
+import {event} from './framework/events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {BOND_ADMIN, BOND_AGGREGATOR} from './contracts/bond/roles'
+import {BOND_ADMIN} from './contracts/bond/roles'
+import {eventLog} from './framework/event-logs'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-// TODO non valid Bond ID tests
 const INVALID_DAO_ID = 0n
 const DAO_ID = 1n
 
-describe('Bond Manager contract', () => {
+describe('Bond Curator contract', () => {
     before(async () => {
         admin = (await signer(0)).address
-        nonBondAggregator = await signer(1)
-        nonBondAdmin = await signer(2)
-        treasury = (await signer(3)).address
-        curator = await deployContractWithProxy<BondManager>('BondManager')
+        nonBondAdmin = await signer(1)
+        treasury = (await signer(2)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         creator = await deployContractWithProxy<BondFactory>('BondFactory')
+        curator = await deployContractWithProxy<BondCuratorBox>(
+            'BondCuratorBox',
+            creator.address
+        )
     })
 
     describe('add bond', () => {
@@ -57,23 +57,13 @@ describe('Bond Manager contract', () => {
             }
         })
 
-        it('only Bond Aggregator', async () => {
-            await expect(
-                curator
-                    .connect(nonBondAggregator)
-                    .addBond(DAO_ID, constants.AddressZero)
-            ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAggregator, BOND_AGGREGATOR)
-            )
-        })
-
         it('not already managing', async () => {
             const bond = await createBond()
             await successfulTransaction(curator.addBond(DAO_ID, bond.address))
 
             await expect(
                 curator.addBond(DAO_ID, bond.address)
-            ).to.be.revertedWith('BondManager: already managing')
+            ).to.be.revertedWith('BondCurator: already managing')
         })
 
         it('is the owner', async () => {
@@ -81,7 +71,7 @@ describe('Bond Manager contract', () => {
 
             await expect(
                 curator.addBond(DAO_ID, bond.address)
-            ).to.be.revertedWith('BondManager: not bond owner')
+            ).to.be.revertedWith('BondCurator: not bond owner')
         })
 
         it('only to chosen DAO Id', async () => {
@@ -108,9 +98,12 @@ describe('Bond Manager contract', () => {
             expect(
                 await curator.bondAt(DAO_ID, createdBondIndex.sub(1n))
             ).equals(bond.address)
-            const expectedAddBondEvents = [{bond: bond.address}]
-            verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
-            verifyAddBondEvents(receipt, expectedAddBondEvents)
+
+            const createBondEvents = createBondEventLogs(
+                eventLog('CreateBond', creator, receipt)
+            )
+            expect(createBondEvents.length).to.equal(1)
+            expect(createBondEvents[0].bond).to.equal(bond.address)
         })
 
         it('only when not paused', async () => {
@@ -127,7 +120,10 @@ describe('Bond Manager contract', () => {
 
     describe('bond', () => {
         beforeEach(async () => {
-            curator = await deployContractWithProxy<BondManager>('BondManager')
+            curator = await deployContractWithProxy<BondCuratorBox>(
+                'BondCuratorBox',
+                creator.address
+            )
             bond = await createBond()
         })
 
@@ -148,7 +144,7 @@ describe('Bond Manager contract', () => {
             it('only when managing', async () => {
                 await expect(
                     curator.bondAllowRedemption(DAO_ID, bond.address)
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
@@ -188,7 +184,7 @@ describe('Bond Manager contract', () => {
             it('only when managing', async () => {
                 await expect(
                     curator.bondPause(DAO_ID, bond.address)
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
@@ -225,7 +221,7 @@ describe('Bond Manager contract', () => {
             it('only when managing', async () => {
                 await expect(
                     curator.bondSlash(DAO_ID, bond.address, 5n)
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
@@ -269,7 +265,7 @@ describe('Bond Manager contract', () => {
             it('only when managing', async () => {
                 await expect(
                     curator.bondSetMetaData(DAO_ID, bond.address, 'meta')
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
@@ -313,7 +309,7 @@ describe('Bond Manager contract', () => {
             it('only when managing', async () => {
                 await expect(
                     curator.bondSetTreasury(DAO_ID, bond.address, bond.address)
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
@@ -357,7 +353,7 @@ describe('Bond Manager contract', () => {
             it('only when managing', async () => {
                 await expect(
                     curator.bondUnpause(DAO_ID, bond.address)
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
@@ -394,7 +390,7 @@ describe('Bond Manager contract', () => {
             it('only when managing', async () => {
                 await expect(
                     curator.bondWithdrawCollateral(DAO_ID, bond.address)
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
@@ -503,8 +499,7 @@ describe('Bond Manager contract', () => {
     let admin: string
     let treasury: string
     let nonBondAdmin: SignerWithAddress
-    let nonBondAggregator: SignerWithAddress
-    let curator: BondManager
+    let curator: BondCuratorBox
     let collateralTokens: ExtendedERC20
     let creator: BondFactory
 })

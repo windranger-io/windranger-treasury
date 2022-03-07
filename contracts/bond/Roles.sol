@@ -13,6 +13,5 @@ pragma solidity ^0.8.0;
 library Roles {
     bytes32 public constant DAO_ADMIN = "DAO_ADMIN";
     bytes32 public constant BOND_ADMIN = "BOND_ADMIN";
-    bytes32 public constant BOND_AGGREGATOR = "BOND_AGGREGATOR";
     bytes32 public constant SYSTEM_ADMIN = "SYSTEM_ADMIN";
 }
