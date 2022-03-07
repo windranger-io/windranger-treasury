@@ -11,20 +11,20 @@ contract DaoTreasuryWhitelist is Initializable, StakingAccessControl {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     // Treasury addresses
-    EnumerableSetUpgradeable.AddressSet public treasuries;
+    EnumerableSetUpgradeable.AddressSet internal _treasuries;
 
     function whitelistTreasury(address treasury)
         external
         onlyRole(Roles.SUPER_USER)
     {
-        require(treasuries.add(treasury), "cannot add whitelist");
+        require(_treasuries.add(treasury), "cannot add whitelist");
     }
 
     function removeTreasury(address treasury)
         external
         onlyRole(Roles.SUPER_USER)
     {
-        require(treasuries.remove(treasury), "cannot remove whitelist");
+        require(_treasuries.remove(treasury), "cannot remove whitelist");
     }
 
     function isWhitelistedTreasury(address treasury)
@@ -40,6 +40,6 @@ contract DaoTreasuryWhitelist is Initializable, StakingAccessControl {
         view
         returns (bool)
     {
-        return treasuries.contains(treasury);
+        return _treasuries.contains(treasury);
     }
 }
