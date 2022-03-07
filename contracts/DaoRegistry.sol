@@ -5,11 +5,7 @@ import "./Dao.sol";
 import "./staking/Roles.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-interface DaoWhitelist {
-    function daoTreasury(uint256 daoId) external view returns (address);
-}
-
-contract DaoRegistry is AccessControlUpgradeable, Dao, DaoWhitelist {
+contract DaoRegistry is AccessControlUpgradeable, Dao {
     // alternative way (outside of bonding) to create a DAO
     function createDao(address erc20CapableTreasury)
         external
@@ -21,7 +17,7 @@ contract DaoRegistry is AccessControlUpgradeable, Dao, DaoWhitelist {
     function daoTreasury(uint256 daoId)
         external
         view
-        override(Dao, DaoWhitelist)
+        override(Dao)
         returns (address)
     {
         return super._daoTreasury(daoId);
