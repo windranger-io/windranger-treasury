@@ -21,15 +21,11 @@ import {
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
-import {
-    createBondEvent,
-    createBondEventLogs
-} from './contracts/bond/bond-creator-events'
+import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {event} from './framework/events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
 import {BOND_ADMIN} from './contracts/bond/roles'
-import {eventLog} from './framework/event-logs'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
