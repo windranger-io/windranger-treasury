@@ -15,12 +15,6 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist, Dao {
 
     mapping(uint256 => DaoBondConfig) private _daoBondConfig;
 
-    // uint256 private _daoConfigLastId;
-
-    function highestDaoId() external view returns (uint256) {
-        return _daoConfigLastId;
-    }
-
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.

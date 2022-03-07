@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 abstract contract Dao {
     struct DaoConfig {
+        // Address zero is an invalid address, can be used to identify null structs
         address treasury;
     }
 
@@ -25,7 +26,7 @@ abstract contract Dao {
 
         _daoConfigLastId++;
 
-        DaoConfig storage config = _daoConfig[_daoConfigLastId];
+        DaoConfig storage config = _daoConfig[_daoConfigLastId]; // do we need to do this?
         config.treasury = erc20CapableTreasury;
 
         return _daoConfigLastId;
@@ -46,7 +47,7 @@ abstract contract Dao {
         _daoConfig[daoId].treasury = replacementTreasury;
     }
 
-    function _daoTreasury(uint256 daoId) internal returns (address) {
+    function _daoTreasury(uint256 daoId) internal view returns (address) {
         return _daoConfig[daoId].treasury;
     }
 
