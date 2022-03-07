@@ -13,7 +13,7 @@ import "../Version.sol";
 /**
  * @title Manages interactions with Bond contracts.
  *
- * @notice A central place to discover created Bonds and apply access control.
+ * @notice A central place to discover created Bonds and apply access control to them.
  *
  * @dev Owns of all Bonds it manages, guarding function accordingly allows finer access control to be provided.
  */
@@ -140,7 +140,7 @@ abstract contract BondCurator is
     }
 
     /**
-     * @notice Permits only the owner to perform proxy upgrades.
+     * @notice Permits only the relevant admins to perform proxy upgrades.
      *
      * @dev Only applicable when deployed as implementation to a UUPS proxy.
      */
