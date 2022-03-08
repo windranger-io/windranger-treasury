@@ -17,6 +17,10 @@ import {deployContract, signer} from './framework/contracts'
 import {constants, Wallet} from 'ethers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {successfulTransaction} from './framework/transaction'
+import {
+    verifyAddCollateralEvents,
+    verifyRemoveCollateralEvents
+} from './contracts/bond/verify-whitelist-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -49,7 +53,14 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 )
                 expect(await tokens.symbol()).equals(symbol)
 
-                await config.whitelistDaoCollateral(DAO_ID, tokens.address)
+                const receipt = await successfulTransaction(
+                    config.whitelistDaoCollateral(DAO_ID, tokens.address)
+                )
+                verifyAddCollateralEvents(receipt, [
+                    {
+                        address: tokens.address
+                    }
+                ])
 
                 expect(
                     await config.isAllowedDaoCollateral(DAO_ID, tokens.address)
@@ -139,10 +150,17 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                     )
                 ).is.true
 
-                await config.removeWhitelistedDaoCollateral(
-                    DAO_ID,
-                    collateralTokens.address
+                const receipt = await successfulTransaction(
+                    config.removeWhitelistedDaoCollateral(
+                        DAO_ID,
+                        collateralTokens.address
+                    )
                 )
+                verifyRemoveCollateralEvents(receipt, [
+                    {
+                        address: collateralTokens.address
+                    }
+                ])
 
                 expect(
                     await config.isAllowedDaoCollateral(

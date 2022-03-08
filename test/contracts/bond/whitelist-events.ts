@@ -1,13 +1,20 @@
 import {Event} from 'ethers'
 import {expect} from 'chai'
-import {AddCollateralEvent} from '../../../typechain-types/DaoBondCollateralWhitelist'
+import {
+    AddCollateralEvent,
+    RemoveCollateralEvent
+} from '../../../typechain-types/DaoBondCollateralWhitelist'
 
 export type ActualAddCollateralEvent = {
     address: string
 }
 
+export type ActualRemoveCollateralEvent = {
+    address: string
+}
+
 /**
- * Shape check and conversion for a AddBondEvent.
+ * Shape check and conversion for a AddCollateral event.
  */
 export function addCollateralEvent(
     events: Event[]
@@ -29,4 +36,29 @@ export function addCollateralEvent(
     }
 
     return tokensAdded
+}
+
+/**
+ * Shape check and conversion for a RemoveCollateral event.
+ */
+export function removeCollateralEvent(
+    events: Event[]
+): ActualRemoveCollateralEvent[] {
+    const tokensRemoved: ActualRemoveCollateralEvent[] = []
+
+    for (const event of events) {
+        const collateral = event as RemoveCollateralEvent
+        expect(event.args).is.not.undefined
+
+        const args = event.args
+        expect(args?.collateralTokens).is.not.undefined
+
+        const token: ActualAddCollateralEvent = {
+            address: collateral.args.collateralTokens
+        }
+
+        tokensRemoved.push(token)
+    }
+
+    return tokensRemoved
 }

@@ -15,8 +15,8 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
         mapping(address => string) symbols;
     }
 
-    event AddCollateral(address collateralTokens);
-    event RemoveCollateral(address collateralTokens);
+    event AddCollateral(address indexed collateralTokens);
+    event RemoveCollateral(address indexed collateralTokens);
 
     /**
      * @notice Returns a list of the whitelisted tokens' symbols.

@@ -1,17 +1,23 @@
 import {ContractReceipt} from 'ethers'
-import {ActualAddCollateralEvent, addCollateralEvent} from './whitelist-events'
+import {
+    ActualAddCollateralEvent,
+    ActualRemoveCollateralEvent,
+    addCollateralEvent,
+    removeCollateralEvent
+} from './whitelist-events'
 
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
 
-type ExpectedCollateralAddedEvent = {address: string}
+type ExpectedAddCollateralEvent = {address: string}
+type ExpectedRemoveCollateralEvent = {address: string}
 
 /**
  * Verifies the content for an Add Bond event.
  */
-export function verifyCollateralAddedEvents(
+export function verifyAddCollateralEvents(
     receipt: ContractReceipt,
-    collateralAddedEvents: ExpectedCollateralAddedEvent[]
+    collateralAddedEvents: ExpectedAddCollateralEvent[]
 ): void {
     const actualEvents = addCollateralEvent(events('AddCollateral', receipt))
 
@@ -20,14 +26,35 @@ export function verifyCollateralAddedEvents(
         collateralAddedEvents,
         (
             actual: ActualAddCollateralEvent,
-            expected: ExpectedCollateralAddedEvent
-        ) => deepEqualsCollateralAddedEvent(actual, expected)
+            expected: ExpectedAddCollateralEvent
+        ) => deepEqualsCollateralEvent(actual, expected)
     )
 }
 
-function deepEqualsCollateralAddedEvent(
-    actual: ActualAddCollateralEvent,
-    expected: ExpectedCollateralAddedEvent
+/**
+ * Verifies the content for an Remove Collateral event.
+ */
+export function verifyRemoveCollateralEvents(
+    receipt: ContractReceipt,
+    removeCollateralEvents: ExpectedRemoveCollateralEvent[]
+): void {
+    const actualEvents = removeCollateralEvent(
+        events('RemoveCollateral', receipt)
+    )
+
+    verifyOrderedEvents(
+        actualEvents,
+        removeCollateralEvents,
+        (
+            actual: ActualAddCollateralEvent,
+            expected: ExpectedAddCollateralEvent
+        ) => deepEqualsCollateralEvent(actual, expected)
+    )
+}
+
+function deepEqualsCollateralEvent(
+    actual: ActualAddCollateralEvent | ActualRemoveCollateralEvent,
+    expected: ExpectedAddCollateralEvent | ExpectedRemoveCollateralEvent
 ): boolean {
     return actual.address === expected.address
 }
