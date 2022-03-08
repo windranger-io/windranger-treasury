@@ -13,7 +13,7 @@ type ExpectedAddCollateralEvent = {address: string}
 type ExpectedRemoveCollateralEvent = {address: string}
 
 /**
- * Verifies the content for an Add Bond event.
+ * Verifies the content for an Add Collateral event.
  */
 export function verifyAddCollateralEvents(
     receipt: ContractReceipt,
@@ -32,7 +32,7 @@ export function verifyAddCollateralEvents(
 }
 
 /**
- * Verifies the content for an Remove Collateral event.
+ * Verifies the content for a Remove Collateral event.
  */
 export function verifyRemoveCollateralEvents(
     receipt: ContractReceipt,
