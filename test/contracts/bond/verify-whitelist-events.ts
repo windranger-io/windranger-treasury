@@ -1,13 +1,10 @@
 import {ContractReceipt} from 'ethers'
-import {
-    ActualAddCollateralEvent,
-    collateralAddedEvent
-} from './whitelist-events'
+import {ActualAddCollateralEvent, addCollateralEvent} from './whitelist-events'
 
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
 
-type ExpectedCollateralAddedEvent = {address: string; symbol: string}
+type ExpectedCollateralAddedEvent = {address: string}
 
 /**
  * Verifies the content for an Add Bond event.
@@ -16,9 +13,7 @@ export function verifyCollateralAddedEvents(
     receipt: ContractReceipt,
     collateralAddedEvents: ExpectedCollateralAddedEvent[]
 ): void {
-    const actualEvents = collateralAddedEvent(
-        events('CollateralAdded', receipt)
-    )
+    const actualEvents = addCollateralEvent(events('AddCollateral', receipt))
 
     verifyOrderedEvents(
         actualEvents,
@@ -34,7 +29,5 @@ function deepEqualsCollateralAddedEvent(
     actual: ActualAddCollateralEvent,
     expected: ExpectedCollateralAddedEvent
 ): boolean {
-    return (
-        actual.address === expected.address && actual.symbol === expected.symbol
-    )
+    return actual.address === expected.address
 }

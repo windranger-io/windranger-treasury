@@ -87,8 +87,7 @@ describe('Bond Mediator contract', () => {
                 )
                 verifyCollateralAddedEvents(receipt, [
                     {
-                        address: tokens.address,
-                        symbol
+                        address: tokens.address
                     }
                 ])
             })

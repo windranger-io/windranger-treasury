@@ -15,8 +15,8 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
         mapping(address => string) symbols;
     }
 
-    event CollateralAdded(address collateralTokens, string symbol);
-    event CollateralRemoved(address collateralToken, string symbol);
+    event AddCollateral(address collateralTokens);
+    event RemoveCollateral(address collateralTokens);
 
     /**
      * @notice Returns a list of the whitelisted tokens' symbols.
@@ -80,13 +80,11 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
             _daoCollateralWhitelist(daoId).tokens.add(erc20CollateralTokens),
             "DAO Collateral: failed to add"
         );
+        _daoCollateralWhitelist(daoId).symbols[
+            erc20CollateralTokens
+        ] = IERC20MetadataUpgradeable(erc20CollateralTokens).symbol();
 
-        string memory symbol = IERC20MetadataUpgradeable(erc20CollateralTokens)
-            .symbol();
-
-        _daoCollateralWhitelist(daoId).symbols[erc20CollateralTokens] = symbol;
-
-        emit CollateralAdded(erc20CollateralTokens, symbol);
+        emit AddCollateral(erc20CollateralTokens);
     }
 
     /**
@@ -111,12 +109,9 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
             "DAO Collateral: failed to remove"
         );
 
-        string memory symbol = _daoCollateralWhitelist(daoId).symbols[
-            erc20CollateralTokens
-        ];
         delete _daoCollateralWhitelist(daoId).symbols[erc20CollateralTokens];
 
-        emit CollateralRemoved(erc20CollateralTokens, symbol);
+        emit RemoveCollateral(erc20CollateralTokens);
     }
 
     /**
