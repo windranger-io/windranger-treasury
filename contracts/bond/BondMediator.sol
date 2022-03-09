@@ -66,11 +66,10 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
         external
         override
         whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
+        onlyDaoRole(daoId, Roles.DAO_ADMIN)
         returns (address)
     {
         require(_isValidDaoId(daoId), "BM: invalid DAO Id");
-
         require(
             isAllowedDaoCollateral(daoId, collateralTokens),
             "BM: collateral not whitelisted"
@@ -97,7 +96,7 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
     function setDaoTreasury(uint256 daoId, address replacement)
         external
         whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
+        onlyDaoRole(daoId, Roles.DAO_ADMIN)
     {
         _setDaoTreasury(daoId, replacement);
     }
@@ -113,7 +112,7 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
     function removeWhitelistedCollateral(
         uint256 daoId,
         address erc20CollateralTokens
-    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+    ) external whenNotPaused onlyDaoRole(daoId, Roles.DAO_ADMIN) {
         _removeWhitelistedDaoCollateral(daoId, erc20CollateralTokens);
     }
 
@@ -129,7 +128,7 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
     function whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
         external
         whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
+        onlyDaoRole(daoId, Roles.DAO_ADMIN)
     {
         _whitelistDaoCollateral(daoId, erc20CollateralTokens);
     }

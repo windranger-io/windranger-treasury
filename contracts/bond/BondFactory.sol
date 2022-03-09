@@ -68,14 +68,14 @@ contract BondFactory is
     /**
      * @notice Pauses most side affecting functions.
      */
-    function pause() external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+    function pause() external whenNotPaused onlyGlobalRole(Roles.SYSTEM_ADMIN) {
         _pause();
     }
 
     /**
      * @notice Resumes all paused side affecting functions.
      */
-    function unpause() external whenPaused onlyRole(Roles.BOND_ADMIN) {
+    function unpause() external whenPaused onlyGlobalRole(Roles.SYSTEM_ADMIN) {
         _unpause();
     }
 
@@ -87,6 +87,6 @@ contract BondFactory is
     function _authorizeUpgrade(address newImplementation)
         internal
         override
-        onlyRole(Roles.SYSTEM_ADMIN)
+        onlyGlobalRole(Roles.SYSTEM_ADMIN)
     {}
 }
