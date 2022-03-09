@@ -10,6 +10,7 @@ import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
 import "./BondPortal.sol";
+import "./Bond.sol";
 import "./DaoBondConfiguration.sol";
 import "./Roles.sol";
 import "../Version.sol";
@@ -75,7 +76,7 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
             "BM: collateral not whitelisted"
         );
 
-        BondCreator.BondSettings memory bondSettings;
+        Bond.Settings memory bondSettings;
         bondSettings = _bondSettings(
             daoId,
             debtTokenAmount,
@@ -84,7 +85,7 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
             minimumDeposit,
             data
         );
-        BondCreator.BondIdentity memory bondId = _bondIdentity(name, symbol);
+        Bond.Identity memory bondId = _bondIdentity(name, symbol);
 
         return _managedBond(daoId, bondId, bondSettings);
     }
@@ -145,9 +146,9 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
         uint256 expiryTimestamp,
         uint256 minimumDeposit,
         string calldata data
-    ) private returns (BondCreator.BondSettings memory) {
+    ) private returns (Bond.Settings memory) {
         return
-            BondCreator.BondSettings({
+            Bond.Settings({
                 debtTokenAmount: debtTokenAmount,
                 collateralTokens: collateralTokens,
                 treasury: _daoTreasury(daoId),
@@ -159,8 +160,8 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
 
     function _managedBond(
         uint256 daoId,
-        BondCreator.BondIdentity memory bondId,
-        BondCreator.BondSettings memory bondSettings
+        Bond.Identity memory bondId,
+        Bond.Settings memory bondSettings
     ) private returns (address) {
         address bond = _creator.createBond(bondId, bondSettings);
         _addBond(daoId, bond);
@@ -170,8 +171,8 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
     function _bondIdentity(string calldata name, string calldata symbol)
         private
         pure
-        returns (BondCreator.BondIdentity memory)
+        returns (Bond.Identity memory)
     {
-        return BondCreator.BondIdentity({name: name, symbol: symbol});
+        return Bond.Identity({name: name, symbol: symbol});
     }
 }

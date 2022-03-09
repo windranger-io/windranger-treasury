@@ -21,6 +21,7 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     // Roles that apply across all DAOs
     mapping(bytes32 => Role) private _globalRoles;
 
+    // TODO add grantor to all, account triggering  the change
     event AddDaoRoleAdmin(uint256 daoId, bytes32 role, bytes32 adminRole);
     event AddGlobalRoleAdmin(bytes32 role, bytes32 adminRole);
     event GrantDaoRole(uint256 daoId, bytes32 role, address account);
@@ -170,7 +171,7 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
 
         bool added = _daoRoles[daoId][role].adminRoles.add(adminRole);
         require(added, "DaoAccessControl: add failed");
-        emit AddDoaRoleAdmin(daoId, role, adminRole);
+        emit AddDaoRoleAdmin(daoId, role, adminRole);
     }
 
     function _removeGlobalRoleAdmin(bytes32 role, bytes32 adminRole) internal {
@@ -196,7 +197,7 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
 
         bool remove = _daoRoles[daoId][role].adminRoles.remove(adminRole);
         require(remove, "DaoAccessControl: remove failed");
-        emit RemoveDoaRoleAdmin(daoId, role, adminRole);
+        emit RemoveDaoRoleAdmin(daoId, role, adminRole);
     }
 
     //slither-disable-next-line naming-convention

@@ -30,12 +30,10 @@ contract BondFactory is
         __UUPSUpgradeable_init();
     }
 
-    function createBond(BondIdentity calldata id, BondSettings calldata config)
-        external
-        override
-        whenNotPaused
-        returns (address)
-    {
+    function createBond(
+        Bond.Identity calldata id,
+        Bond.Settings calldata config
+    ) external override whenNotPaused returns (address) {
         ERC20SingleCollateralBond bond = new ERC20SingleCollateralBond();
 
         emit CreateBond(
