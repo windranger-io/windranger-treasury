@@ -1207,8 +1207,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
             {signer: guarantorOne, pledge: pledge}
         ])
         await depositBond(guarantorOne, pledge)
-        await allowRedemption(REDEMPTION_REASON)
         await slashCollateral(slashedCollateral, BOND_SLASH_REASON)
+        await allowRedemption(REDEMPTION_REASON)
         await redeem(guarantorOne, pledge)
         const pledgeSlashedFloored = pledgeSlashed - ONE
 
