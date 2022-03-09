@@ -17,13 +17,7 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {
-    BigNumberish,
-    ContractReceipt,
-    constants,
-    ethers,
-    BigNumber
-} from 'ethers'
+import {BigNumberish, ContractReceipt, constants, ethers} from 'ethers'
 import {event} from './framework/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
@@ -34,7 +28,7 @@ import {
     verifyFullCollateralEvent,
     verifyPartialCollateralEvent,
     verifyRedemptionEvent,
-    verifySlashEvent,
+    verifySlashDepositsEvent,
     verifyWithdrawCollateralEvent
 } from './contracts/bond/verify-single-collateral-bond-events'
 import {createBondEvent} from './contracts/bond/bond-creator-events'
@@ -886,7 +880,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             slashedCollateral,
             BOND_SLASH_REASON
         )
-        verifySlashEvent(slashReceipt, {
+        verifySlashDepositsEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral,
             reason: BOND_SLASH_REASON
@@ -990,7 +984,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             slashedCollateral,
             BOND_SLASH_REASON
         )
-        verifySlashEvent(slashReceipt, {
+        verifySlashDepositsEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral,
             reason: BOND_SLASH_REASON
@@ -1459,7 +1453,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             slashedCollateral,
             BOND_SLASH_REASON
         )
-        verifySlashEvent(slashReceipt, {
+        verifySlashDepositsEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral,
             reason: BOND_SLASH_REASON
@@ -1601,7 +1595,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             slashedCollateral,
             BOND_SLASH_REASON
         )
-        verifySlashEvent(slashReceipt, {
+        verifySlashDepositsEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral,
             reason: BOND_SLASH_REASON
