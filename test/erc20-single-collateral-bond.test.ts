@@ -17,7 +17,13 @@ import {
     execute,
     signer
 } from './framework/contracts'
-import {BigNumberish, ContractReceipt, constants, ethers} from 'ethers'
+import {
+    BigNumberish,
+    ContractReceipt,
+    constants,
+    ethers,
+    BigNumber
+} from 'ethers'
 import {event} from './framework/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
@@ -49,6 +55,7 @@ const DATA = 'performance factors;assessment date;rewards pool'
 const BOND_EXPIRY = 750000n
 const MINIMUM_DEPOSIT = 100n
 const REDEMPTION_REASON = 'test reason string'
+const BOND_SLASH_REASON = 'example slash reason'
 
 describe('ERC20 Single Collateral Bond contract', () => {
     before(async () => {
@@ -152,9 +159,9 @@ describe('ERC20 Single Collateral Bond contract', () => {
     })
 
     describe('collateral slashed', () => {
+        const slashOne = 9000n
+        const slashTwo = 44300n
         it('increases', async () => {
-            const slashOne = 9000n
-            const slashTwo = 44300n
             const pledge = slashOne + slashTwo + 675n
             bond = await createBond(bonds, pledge)
             await setupGuarantorsWithCollateral([
@@ -163,14 +170,32 @@ describe('ERC20 Single Collateral Bond contract', () => {
             await depositBond(guarantorOne, pledge)
             expect(await bond.collateralSlashed()).equals(ZERO)
 
-            await slashCollateral(slashOne, bondSlashReason)
+            await slashCollateral(slashOne, BOND_SLASH_REASON)
 
             expect(await bond.collateralSlashed()).equals(slashOne)
 
-            await slashCollateral(slashTwo, bondSlashReason)
+            await slashCollateral(slashTwo, BOND_SLASH_REASON)
 
             expect(await bond.collateralSlashed()).equals(slashOne + slashTwo)
             expect(await bond.collateral()).equals(pledge - slashOne - slashTwo)
+        })
+        it('get all slash reasons', async () => {
+            const slashReasons = await bond.getSlashes()
+            expect(slashReasons).to.be.length(2)
+            expect(slashReasons[0].reason).to.equal(BOND_SLASH_REASON)
+            expect(slashReasons[0].collateralAmount).to.equal(slashOne)
+            expect(slashReasons[1].reason).to.equal(BOND_SLASH_REASON)
+            expect(slashReasons[1].collateralAmount).to.equal(slashTwo)
+        })
+        it('get first slash reason', async () => {
+            const slashReason = await bond.getSlashByIndex(0)
+            expect(slashReason.reason).to.equal(BOND_SLASH_REASON)
+            expect(slashReason.collateralAmount).to.equal(slashOne)
+        })
+        it('out of bounds slash reason', async () => {
+            await expect(bond.getSlashByIndex(2)).to.be.revertedWith(
+                'Bond: slash does not exist'
+            )
         })
     })
 
@@ -641,9 +666,9 @@ describe('ERC20 Single Collateral Bond contract', () => {
             ])
             await depositBond(guarantorOne, pledge)
 
-            await bond.slash(oneThirdOfSlash, bondSlashReason)
-            await bond.slash(oneThirdOfSlash, bondSlashReason)
-            await bond.slash(oneThirdOfSlash, bondSlashReason)
+            await bond.slash(oneThirdOfSlash, BOND_SLASH_REASON)
+            await bond.slash(oneThirdOfSlash, BOND_SLASH_REASON)
+            await bond.slash(oneThirdOfSlash, BOND_SLASH_REASON)
 
             await verifyBalances([
                 {
@@ -664,9 +689,9 @@ describe('ERC20 Single Collateral Bond contract', () => {
             ])
             await depositBond(guarantorOne, pledge)
 
-            await expect(bond.slash(ZERO, bondSlashReason)).to.be.revertedWith(
-                'Bond: too small'
-            )
+            await expect(
+                bond.slash(ZERO, BOND_SLASH_REASON)
+            ).to.be.revertedWith('Bond: too small')
         })
 
         it('cannot be greater than collateral held', async () => {
@@ -678,7 +703,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             await depositBond(guarantorOne, pledge)
 
             await expect(
-                bond.slash(pledge + 1n, bondSlashReason)
+                bond.slash(pledge + 1n, BOND_SLASH_REASON)
             ).to.be.revertedWith('Bond: too large')
         })
 
@@ -692,7 +717,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             await allowRedemption(REDEMPTION_REASON)
 
             await expect(
-                bond.slash(pledge, bondSlashReason)
+                bond.slash(pledge, BOND_SLASH_REASON)
             ).to.be.revertedWith('whenNotRedeemable: redeemable')
         })
 
@@ -706,7 +731,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             await bond.pause()
 
             await expect(
-                bond.slash(pledge, bondSlashReason)
+                bond.slash(pledge, BOND_SLASH_REASON)
             ).to.be.revertedWith('Pausable: paused')
         })
 
@@ -719,7 +744,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             await depositBond(guarantorOne, pledge)
 
             await expect(
-                bond.connect(guarantorOne).slash(pledge, bondSlashReason)
+                bond.connect(guarantorOne).slash(pledge, BOND_SLASH_REASON)
             ).to.be.revertedWith('Ownable: caller is not the owner')
         })
     })
@@ -859,12 +884,12 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Slash all of the collateral assets
         const slashReceipt = await slashCollateral(
             slashedCollateral,
-            bondSlashReason
+            BOND_SLASH_REASON
         )
         verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral,
-            reason: bondSlashReason
+            reason: BOND_SLASH_REASON
         })
         verifyERC20TransferEvents(slashReceipt, [
             {
@@ -963,12 +988,12 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Slash forty percent of the collateral assets
         const slashReceipt = await slashCollateral(
             slashedCollateral,
-            bondSlashReason
+            BOND_SLASH_REASON
         )
         verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral,
-            reason: bondSlashReason
+            reason: BOND_SLASH_REASON
         })
         verifyERC20TransferEvents(slashReceipt, [
             {
@@ -1183,7 +1208,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         ])
         await depositBond(guarantorOne, pledge)
         await allowRedemption(REDEMPTION_REASON)
-        await slashCollateral(slashedCollateral, bondSlashReason)
+        await slashCollateral(slashedCollateral, BOND_SLASH_REASON)
         await redeem(guarantorOne, pledge)
         const pledgeSlashedFloored = pledgeSlashed - ONE
 
@@ -1432,12 +1457,12 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Slash forty percent of the collateral assets
         const slashReceipt = await slashCollateral(
             slashedCollateral,
-            bondSlashReason
+            BOND_SLASH_REASON
         )
         verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral,
-            reason: bondSlashReason
+            reason: BOND_SLASH_REASON
         })
         verifyERC20TransferEvents(slashReceipt, [
             {
@@ -1574,12 +1599,12 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Slash forty percent from the collateral assets
         const slashReceipt = await slashCollateral(
             slashedCollateral,
-            bondSlashReason
+            BOND_SLASH_REASON
         )
         verifySlashEvent(slashReceipt, {
             symbol: collateralSymbol,
             amount: slashedCollateral,
-            reason: bondSlashReason
+            reason: BOND_SLASH_REASON
         })
         verifyERC20TransferEvents(slashReceipt, [
             {
@@ -1774,7 +1799,6 @@ describe('ERC20 Single Collateral Bond contract', () => {
     let guarantorTwo: SignerWithAddress
     let guarantorThree: SignerWithAddress
     let bonds: BondFactory
-    const bondSlashReason = 'example slash reason'
 })
 
 function slash(amount: bigint, percent: bigint): bigint {
