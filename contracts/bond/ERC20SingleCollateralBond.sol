@@ -31,12 +31,12 @@ contract ERC20SingleCollateralBond is
     Redeemable,
     Version
 {
-    struct SlashData {
+    struct SlashDeposits {
         string reason;
         uint256 collateralAmount;
     }
 
-    SlashData[] private _slashes;
+    SlashDeposits[] private _slashes;
 
     // Multiplier / divider for four decimal places, used in redemption ratio calculation.
     uint256 private constant _REDEMPTION_RATIO_ACCURACY = 1e4;
@@ -304,7 +304,7 @@ contract ERC20SingleCollateralBond is
 
         emit Slash(_collateralTokens.symbol(), amount, reason);
 
-        _slashes.push(SlashData(reason, amount));
+        _slashes.push(SlashDeposits(reason, amount));
 
         bool transferred = _collateralTokens.transfer(_treasury, amount);
         require(transferred, "Bond: collateral transfer failed");
@@ -435,14 +435,14 @@ contract ERC20SingleCollateralBond is
         return _treasury;
     }
 
-    function getSlashes() external view returns (SlashData[] memory) {
+    function getSlashes() external view returns (SlashDeposits[] memory) {
         return _slashes;
     }
 
     function getSlashByIndex(uint256 index)
         external
         view
-        returns (SlashData memory)
+        returns (SlashDeposits memory)
     {
         uint256 length = _slashes.length;
         require(index < length, "Bond: slash does not exist");
