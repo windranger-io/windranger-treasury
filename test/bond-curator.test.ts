@@ -236,7 +236,7 @@ describe('Bond Curator contract', () => {
                         5n,
                         BOND_SLASH_REASON
                     )
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
