@@ -32,6 +32,7 @@ chai.use(solidity)
 
 const INVALID_DAO_ID = 0n
 const DAO_ID = 1n
+const REDEMPTION_REASON = 'test redemption reason string'
 
 describe('Bond Curator contract', () => {
     before(async () => {
@@ -125,7 +126,7 @@ describe('Bond Curator contract', () => {
                     curator.bondAllowRedemption(
                         DAO_ID,
                         bond.address,
-                        redemptionReason
+                        REDEMPTION_REASON
                     )
                 )
 
@@ -137,9 +138,9 @@ describe('Bond Curator contract', () => {
                     curator.bondAllowRedemption(
                         DAO_ID,
                         bond.address,
-                        redemptionReason
+                        REDEMPTION_REASON
                     )
-                ).to.be.revertedWith('BondManager: not managing')
+                ).to.be.revertedWith('BondCurator: not managing')
             })
 
             it('only bond admin', async () => {
@@ -149,7 +150,7 @@ describe('Bond Curator contract', () => {
                         .bondAllowRedemption(
                             DAO_ID,
                             bond.address,
-                            redemptionReason
+                            REDEMPTION_REASON
                         )
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
@@ -164,7 +165,7 @@ describe('Bond Curator contract', () => {
                     curator.bondAllowRedemption(
                         DAO_ID,
                         bond.address,
-                        redemptionReason
+                        REDEMPTION_REASON
                     )
                 ).to.be.revertedWith('Pausable: paused')
             })
@@ -505,5 +506,4 @@ describe('Bond Curator contract', () => {
     let curator: BondCuratorBox
     let collateralTokens: ExtendedERC20
     let creator: BondFactory
-    const redemptionReason = 'test redemption reason string'
 })
