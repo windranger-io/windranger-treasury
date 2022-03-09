@@ -7,7 +7,7 @@ import {
     FullCollateralEvent,
     PartialCollateralEvent,
     RedemptionEvent,
-    SlashEvent,
+    SlashDepositsEvent,
     WithdrawCollateralEvent
 } from '../../../typechain-types/ERC20SingleCollateralBond'
 
@@ -52,6 +52,7 @@ export type ActualRedemptionEvent = {
 export type ActualSlashEvent = {
     collateralSymbol: string
     collateralAmount: BigNumber
+    reason: string
 }
 
 export type ActualTransferEvents = {
@@ -168,13 +169,15 @@ export function redemptionEvent(event: Event): ActualRedemptionEvent {
 /**
  * Shape check and conversion for a SlashEvent.
  */
-export function slashEvent(event: Event): ActualSlashEvent {
-    const slash = event as SlashEvent
+export function slashDepositsEvent(event: Event): ActualSlashEvent {
+    const slash = event as SlashDepositsEvent
     expect(slash.args).is.not.undefined
 
     const args = slash.args
     expect(args?.collateralSymbol).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
+
+    expect(args?.reason).is.not.undefined
 
     return slash.args
 }

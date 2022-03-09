@@ -8,7 +8,7 @@ import {
     fullCollateralEvent,
     partialCollateralEvent,
     redemptionEvent,
-    slashEvent,
+    slashDepositsEvent,
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
 
@@ -16,6 +16,12 @@ import {
  * Expected balance combination of a symbol and amount (value).
  */
 export type ExpectTokenBalance = {
+    symbol: string
+    amount: bigint
+}
+
+export type ExpectSlashEvent = {
+    reason: string
     symbol: string
     amount: bigint
 }
@@ -165,16 +171,19 @@ export function verifyRedemptionEvent(
 /**
  * Verifies the content for a Slash event.
  */
-export function verifySlashEvent(
+export function verifySlashDepositsEvent(
     receipt: ContractReceipt,
-    collateral: ExpectTokenBalance
+    expectedSlashEvent: ExpectSlashEvent
 ): void {
-    const onlySlashEvent = slashEvent(event('Slash', receipt))
+    const onlySlashEvent = slashDepositsEvent(event('SlashDeposits', receipt))
     expect(onlySlashEvent.collateralSymbol, 'Slash symbol').equals(
-        collateral.symbol
+        expectedSlashEvent.symbol
     )
     expect(onlySlashEvent.collateralAmount, 'Slash amount').equals(
-        collateral.amount
+        expectedSlashEvent.amount
+    )
+    expect(onlySlashEvent.reason, 'Slash reason').equals(
+        expectedSlashEvent.reason
     )
 }
 

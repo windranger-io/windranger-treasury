@@ -33,6 +33,7 @@ chai.use(solidity)
 const INVALID_DAO_ID = 0n
 const DAO_ID = 1n
 const REDEMPTION_REASON = 'test redemption reason string'
+const BOND_SLASH_REASON = 'example slash reason'
 
 describe('Bond Curator contract', () => {
     before(async () => {
@@ -218,13 +219,23 @@ describe('Bond Curator contract', () => {
                 )
 
                 await expect(
-                    curator.bondSlash(DAO_ID, bond.address, 77n)
+                    curator.bondSlash(
+                        DAO_ID,
+                        bond.address,
+                        77n,
+                        BOND_SLASH_REASON
+                    )
                 ).to.be.revertedWith('Bond: too large')
             })
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondSlash(DAO_ID, bond.address, 5n)
+                    curator.bondSlash(
+                        DAO_ID,
+                        bond.address,
+                        5n,
+                        BOND_SLASH_REASON
+                    )
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
@@ -232,7 +243,7 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondSlash(DAO_ID, bond.address, 5n)
+                        .bondSlash(DAO_ID, bond.address, 5n, BOND_SLASH_REASON)
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
@@ -243,7 +254,12 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondSlash(DAO_ID, bond.address, 4n)
+                    curator.bondSlash(
+                        DAO_ID,
+                        bond.address,
+                        4n,
+                        BOND_SLASH_REASON
+                    )
                 ).to.be.revertedWith('Pausable: paused')
             })
         })

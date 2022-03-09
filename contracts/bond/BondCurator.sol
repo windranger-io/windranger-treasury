@@ -50,11 +50,12 @@ abstract contract BondCurator is
     function bondSlash(
         uint256 daoId,
         address bond,
-        uint256 amount
+        uint256 amount,
+        string calldata reason
     ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).slash(amount);
+        SingleCollateralBond(bond).slash(amount, reason);
     }
 
     function bondSetMetaData(
