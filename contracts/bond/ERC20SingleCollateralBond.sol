@@ -444,8 +444,7 @@ contract ERC20SingleCollateralBond is
         view
         returns (Slash memory)
     {
-        uint256 length = _slashes.length;
-        require(index < length, "Bond: slash does not exist");
+        require(index < _slashes.length, "Bond: slash does not exist");
         return _slashes[index];
     }
 
