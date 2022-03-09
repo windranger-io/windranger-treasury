@@ -75,7 +75,8 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
             "BM: collateral not whitelisted"
         );
 
-        BondCreator.BondSettings memory bondSettings = _bondSettings(
+        BondCreator.BondSettings memory bondSettings;
+        bondSettings = _bondSettings(
             daoId,
             debtTokenAmount,
             collateralTokens,
