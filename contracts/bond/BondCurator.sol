@@ -27,14 +27,14 @@ abstract contract BondCurator is
 
     mapping(uint256 => EnumerableSetUpgradeable.AddressSet) private _bonds;
 
-    function bondAllowRedemption(uint256 daoId, address bond)
-        external
-        whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
-    {
+    function bondAllowRedemption(
+        uint256 daoId,
+        address bond,
+        string calldata reason
+    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).allowRedemption();
+        SingleCollateralBond(bond).allowRedemption(reason);
     }
 
     function bondPause(uint256 daoId, address bond)

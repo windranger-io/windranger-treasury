@@ -32,6 +32,7 @@ chai.use(solidity)
 
 const INVALID_DAO_ID = 0n
 const DAO_ID = 1n
+const REDEMPTION_REASON = 'test redemption reason string'
 
 describe('Bond Curator contract', () => {
     before(async () => {
@@ -122,7 +123,11 @@ describe('Bond Curator contract', () => {
                 )
 
                 await successfulTransaction(
-                    curator.bondAllowRedemption(DAO_ID, bond.address)
+                    curator.bondAllowRedemption(
+                        DAO_ID,
+                        bond.address,
+                        REDEMPTION_REASON
+                    )
                 )
 
                 expect(await bond.redeemable()).is.true
@@ -130,7 +135,11 @@ describe('Bond Curator contract', () => {
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondAllowRedemption(DAO_ID, bond.address)
+                    curator.bondAllowRedemption(
+                        DAO_ID,
+                        bond.address,
+                        REDEMPTION_REASON
+                    )
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
@@ -138,7 +147,11 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondAllowRedemption(DAO_ID, bond.address)
+                        .bondAllowRedemption(
+                            DAO_ID,
+                            bond.address,
+                            REDEMPTION_REASON
+                        )
                 ).to.be.revertedWith(
                     accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
                 )
@@ -149,7 +162,11 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondAllowRedemption(DAO_ID, bond.address)
+                    curator.bondAllowRedemption(
+                        DAO_ID,
+                        bond.address,
+                        REDEMPTION_REASON
+                    )
                 ).to.be.revertedWith('Pausable: paused')
             })
         })

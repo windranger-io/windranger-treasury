@@ -8,7 +8,7 @@ interface SingleCollateralBond {
      *
      * @dev Debt tokens are not allowed to be redeemed before the owner grants permission.
      */
-    function allowRedemption() external;
+    function allowRedemption(string calldata reason) external;
 
     /**
      * @notice Deposit swaps collateral tokens for an equal amount of debt tokens.

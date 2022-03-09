@@ -40,6 +40,7 @@ export type ActualTokenTransferEvent = {
 
 export type ExpectAllowRedemptionEvent = {
     authorizer: string
+    reason: string
 }
 /**
  * Verifies the content for a Allow Redemption event.
@@ -54,6 +55,7 @@ export function verifyAllowRedemptionEvent(
     expect(allowRedemption.authorizer, 'AllowRedemption authorizer').equals(
         expected.authorizer
     )
+    expect(allowRedemption.reason).to.equal(expected.reason)
 }
 
 /**
