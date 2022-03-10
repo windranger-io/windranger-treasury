@@ -36,7 +36,7 @@ interface BondPortal {
      */
     function createManagedBond(
         uint256 daoId,
-        Bond.Metadata memory metadata,
+        MetaData.Metadata memory metadata,
         Bond.Settings memory configuration
     ) external returns (address);
 }

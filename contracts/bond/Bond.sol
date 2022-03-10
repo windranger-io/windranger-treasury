@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
  * @title Domain model for Bonds.
  */
 library Bond {
-    struct Metadata {
+    struct MetaData {
         /** Description of the purpose of the Bond. */
         string name;
         /** Abbreviation to identify the Bond. */

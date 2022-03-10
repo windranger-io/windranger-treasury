@@ -28,7 +28,7 @@ interface BondCreator {
      * @param configuration Values to use during the Bond creation process.
      */
     function createBond(
-        Bond.Metadata memory metadata,
+        MetaData.Metadata memory metadata,
         Bond.Settings memory configuration
     ) external returns (address);
 }

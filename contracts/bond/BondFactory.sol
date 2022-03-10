@@ -31,7 +31,7 @@ contract BondFactory is
     }
 
     function createBond(
-        Bond.Metadata memory metadata,
+        MetaData.Metadata memory metadata,
         Bond.Settings memory configuration
     ) external override whenNotPaused returns (address) {
         ERC20SingleCollateralBond bond = new ERC20SingleCollateralBond();
