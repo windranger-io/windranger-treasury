@@ -36,7 +36,7 @@ abstract contract BondAccessControl is DaoAccessControl {
         _grantGlobalRole(Roles.SUPER_USER, _msgSender());
     }
 
-    // TODO function to add dao
+    // TODO function to add dao, assign super user role type to all
 
     // TODO update doco - tiered access control
 

@@ -56,7 +56,7 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
 
     function createManagedBond(
         uint256 daoId,
-        MetaData.Metadata memory metadata,
+        Bond.MetaData memory metadata,
         Bond.Settings memory configuration
     )
         external

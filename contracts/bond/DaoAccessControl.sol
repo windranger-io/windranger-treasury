@@ -5,9 +5,15 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
-// TODO doco
-
 // TODO not useful, needs the roles setup in child
+// TODO multi admin access control
+/**
+ * @title
+ *
+ * @notice
+ *
+ * @dev
+ */
 abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.Bytes32Set;
 
@@ -22,7 +28,6 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     // Roles that apply across all DAOs
     mapping(bytes32 => Role) private _globalRoles;
 
-    // TODO add grantor to all, account triggering  the change
     event AddDaoRoleAdmin(uint256 daoId, bytes32 role, bytes32 adminRole);
     event AddGlobalRoleAdmin(bytes32 role, bytes32 adminRole);
     event GrantDaoRole(uint256 daoId, bytes32 role, address account);
