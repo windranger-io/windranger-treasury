@@ -4,130 +4,143 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import chai, {expect} from 'chai'
-import {BOND_ADMIN, DAO_ADMIN, Role, SYSTEM_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN, SYSTEM_ADMIN} from './contracts/bond/roles'
 import {before} from 'mocha'
 import {deployContract, signer} from './framework/contracts'
 import {BondAccessControlBox} from '../typechain-types'
 import {solidity} from 'ethereum-waffle'
-import {ContractTransaction} from 'ethers'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
 
+const DAO_ID = 1
+const DAO_ADMIN_ROLE = DAO_ADMIN.hex
+const SYS_ADMIN_ROLE = SYSTEM_ADMIN.hex
+
 describe('Bond Access Control contract', () => {
     before(async () => {
-        admin = (await signer(0)).address
+        superUser = (await signer(0)).address
         memberOne = (await signer(3)).address
         memberTwo = (await signer(4)).address
-        memberThree = (await signer(5)).address
         accessControl = await deployContract<BondAccessControlBox>(
             'BondAccessControlBox'
         )
     })
 
-    describe('Bond Admin', () => {
-        it('add member', async () => {
-            expect(await hasRole(BOND_ADMIN, memberOne)).is.false
-            expect(await hasRole(BOND_ADMIN, admin)).is.true
-
-            await grantRole(BOND_ADMIN, memberOne)
-
-            expect(await hasRole(BOND_ADMIN, admin)).is.true
-            expect(await hasRole(BOND_ADMIN, memberOne)).is.true
-        })
-
-        it('remove member', async () => {
-            expect(await hasRole(BOND_ADMIN, admin)).is.true
-            expect(await hasRole(BOND_ADMIN, memberOne)).is.true
-
-            await revokeRole(BOND_ADMIN, memberOne)
-
-            expect(await hasRole(BOND_ADMIN, admin)).is.true
-            expect(await hasRole(BOND_ADMIN, memberOne)).is.false
-        })
-
-        it('DAO Admin is the role admin', async () => {
-            expect(await getRoleAdmin(BOND_ADMIN)).equals(DAO_ADMIN.hex)
-        })
-    })
-
     describe('DAO Admin', () => {
         it('add member', async () => {
-            expect(await hasRole(DAO_ADMIN, admin)).is.true
-            expect(await hasRole(DAO_ADMIN, memberTwo)).is.false
+            expect(
+                await accessControl.hasDaoRole(
+                    DAO_ID,
+                    DAO_ADMIN_ROLE,
+                    superUser
+                )
+            ).is.true
+            expect(
+                await accessControl.hasDaoRole(
+                    DAO_ID,
+                    DAO_ADMIN_ROLE,
+                    memberOne
+                )
+            ).is.false
 
-            await grantRole(DAO_ADMIN, memberTwo)
+            await accessControl.grantDaoAdminRole(DAO_ADMIN_ROLE, memberOne)
 
-            expect(await hasRole(DAO_ADMIN, admin)).is.true
-            expect(await hasRole(DAO_ADMIN, memberTwo)).is.true
+            expect(
+                await accessControl.hasDaoRole(
+                    DAO_ID,
+                    DAO_ADMIN_ROLE,
+                    superUser
+                )
+            ).is.true
+            expect(
+                await accessControl.hasDaoRole(
+                    DAO_ID,
+                    DAO_ADMIN_ROLE,
+                    memberOne
+                )
+            ).is.true
         })
 
         it('remove member', async () => {
-            expect(await hasRole(DAO_ADMIN, admin)).is.true
-            expect(await hasRole(DAO_ADMIN, memberTwo)).is.true
+            expect(
+                await accessControl.hasDaoRole(
+                    DAO_ID,
+                    DAO_ADMIN_ROLE,
+                    superUser
+                )
+            ).is.true
+            expect(
+                await accessControl.hasDaoRole(
+                    DAO_ID,
+                    DAO_ADMIN_ROLE,
+                    memberOne
+                )
+            ).is.true
 
-            await revokeRole(DAO_ADMIN, memberTwo)
+            await accessControl.revokeDaoAdminRole(DAO_ADMIN_ROLE, memberOne)
 
-            expect(await hasRole(DAO_ADMIN, admin)).is.true
-            expect(await hasRole(DAO_ADMIN, memberTwo)).is.false
+            expect(
+                await accessControl.hasDaoRole(
+                    DAO_ID,
+                    DAO_ADMIN_ROLE,
+                    superUser
+                )
+            ).is.true
+            expect(
+                await accessControl.hasDaoRole(
+                    DAO_ID,
+                    DAO_ADMIN_ROLE,
+                    memberOne
+                )
+            ).is.false
         })
 
         it('DAO Admin is the role admin', async () => {
-            expect(await getRoleAdmin(DAO_ADMIN)).equals(DAO_ADMIN.hex)
+            expect(
+                await accessControl.allDaoRoleAdmins(DAO_ID, DAO_ADMIN_ROLE)
+            ).equals(DAO_ADMIN_ROLE)
         })
     })
 
     describe('SysAdmin', () => {
         it('add member', async () => {
-            expect(await hasRole(SYSTEM_ADMIN, admin)).is.true
-            expect(await hasRole(SYSTEM_ADMIN, memberThree)).is.false
+            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, superUser))
+                .is.true
+            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
+                .is.false
 
-            await grantRole(SYSTEM_ADMIN, memberThree)
+            await accessControl.grantDaoAdminRole(SYS_ADMIN_ROLE, memberTwo)
 
-            expect(await hasRole(SYSTEM_ADMIN, admin)).is.true
-            expect(await hasRole(SYSTEM_ADMIN, memberThree)).is.true
+            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, superUser))
+                .is.true
+            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
+                .is.true
         })
 
         it('remove member', async () => {
-            expect(await hasRole(SYSTEM_ADMIN, admin)).is.true
-            expect(await hasRole(SYSTEM_ADMIN, memberThree)).is.true
+            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, superUser))
+                .is.true
+            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
+                .is.true
 
-            await revokeRole(SYSTEM_ADMIN, memberThree)
+            await accessControl.revokeDaoAdminRole(SYS_ADMIN_ROLE, memberTwo)
 
-            expect(await hasRole(SYSTEM_ADMIN, admin)).is.true
-            expect(await hasRole(SYSTEM_ADMIN, memberThree)).is.false
+            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, superUser))
+                .is.true
+            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
+                .is.false
         })
 
         it('DAO Admin is the role admin', async () => {
-            expect(await getRoleAdmin(SYSTEM_ADMIN)).equals(DAO_ADMIN.hex)
+            expect(
+                await accessControl.allGlobalRoleAdmins(SYS_ADMIN_ROLE)
+            ).equals(SYS_ADMIN_ROLE)
         })
     })
 
-    async function grantRole(
-        grant: Role,
-        address: string
-    ): Promise<ContractTransaction> {
-        return accessControl.grantRole(grant.hex, address)
-    }
-
-    async function revokeRole(
-        revoke: Role,
-        address: string
-    ): Promise<ContractTransaction> {
-        return accessControl.revokeRole(revoke.hex, address)
-    }
-
-    async function getRoleAdmin(queryingAdmin: Role): Promise<string> {
-        return accessControl.getRoleAdmin(queryingAdmin.hex)
-    }
-
-    async function hasRole(expected: Role, address: string): Promise<boolean> {
-        return accessControl.hasRole(expected.hex, address)
-    }
-
-    let admin: string
+    let superUser: string
     let memberOne: string
     let memberTwo: string
-    let memberThree: string
     let accessControl: BondAccessControlBox
 })

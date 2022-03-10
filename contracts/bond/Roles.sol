@@ -14,9 +14,9 @@ pragma solidity ^0.8.0;
  *  SYSTEM_ADMIN role deals with tasks such as pause-ability and the upgrading of contract.
  */
 library Roles {
-    bytes32 public constant SUPER_USER = "SUPER_USER";
     bytes32 public constant DAO_ADMIN = "DAO_ADMIN";
     bytes32 public constant DAO_CREATOR = "DAO_CREATOR";
     bytes32 public constant DAO_MEEPLE = "DAO_MEEPLE";
+    bytes32 public constant SUPER_USER = "SUPER_USER";
     bytes32 public constant SYSTEM_ADMIN = "SYSTEM_ADMIN";
 }

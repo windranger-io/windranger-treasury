@@ -29,7 +29,5 @@ library Bond {
          * any sized deposit from that account is allowed, as the minimum has already been met.
          */
         uint256 minimumDeposit;
-        /** receiver of any slashed or swept tokens. */
-        address treasury;
     }
 }

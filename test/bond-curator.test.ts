@@ -25,7 +25,7 @@ import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {event} from './framework/events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {BOND_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -154,7 +154,7 @@ describe('Bond Curator contract', () => {
                             REDEMPTION_REASON
                         )
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -198,7 +198,7 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondPause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -245,7 +245,7 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondSlash(DAO_ID, bond.address, 5n, BOND_SLASH_REASON)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -294,7 +294,7 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondSetMetaData(DAO_ID, bond.address, 'meta')
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -338,7 +338,7 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondSetTreasury(DAO_ID, bond.address, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -382,7 +382,7 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondUnpause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -419,7 +419,7 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondWithdrawCollateral(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -457,7 +457,7 @@ describe('Bond Curator contract', () => {
             await expect(
                 curator.connect(nonBondAdmin).unpause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
             )
         })
     })
@@ -481,7 +481,7 @@ describe('Bond Curator contract', () => {
             await expect(
                 curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
             )
         })
     })
@@ -495,14 +495,13 @@ describe('Bond Curator contract', () => {
     ): Promise<ERC20SingleCollateralBond> {
         const receipt = await execute(
             creator.createBond(
-                {name: 'name', symbol: 'symbol'},
+                {name: 'name', symbol: 'symbol', data: ''},
                 {
                     debtTokenAmount: 100n,
                     collateralTokens: collateralTokens.address,
                     expiryTimestamp: 0n,
                     minimumDeposit: 1n,
-                    treasury: treasury,
-                    data: ''
+                    treasury: treasury
                 }
             )
         )

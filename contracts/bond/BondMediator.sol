@@ -71,7 +71,11 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
             "BM: collateral not whitelisted"
         );
 
-        address bond = _creator.createBond(metadata, configuration);
+        address bond = _creator.createBond(
+            metadata,
+            configuration,
+            _daoTreasury(daoId)
+        );
         _addBond(daoId, bond);
         return bond;
     }

@@ -32,7 +32,8 @@ contract BondFactory is
 
     function createBond(
         Bond.MetaData memory metadata,
-        Bond.Settings memory configuration
+        Bond.Settings memory configuration,
+        address treasury
     ) external override whenNotPaused returns (address) {
         ERC20SingleCollateralBond bond = new ERC20SingleCollateralBond();
 
@@ -42,7 +43,7 @@ contract BondFactory is
             metadata.symbol,
             configuration.debtTokenAmount,
             _msgSender(),
-            configuration.treasury,
+            treasury,
             configuration.expiryTimestamp,
             configuration.minimumDeposit,
             metadata.data
@@ -53,7 +54,7 @@ contract BondFactory is
             metadata.symbol,
             configuration.debtTokenAmount,
             configuration.collateralTokens,
-            configuration.treasury,
+            treasury,
             configuration.expiryTimestamp,
             configuration.minimumDeposit,
             metadata.data

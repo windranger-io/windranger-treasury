@@ -26,9 +26,11 @@ interface BondCreator {
      *
      * @param metadata General details about the Bond no essential for operation.
      * @param configuration Values to use during the Bond creation process.
+     * @param treasury Receiver of any slashed or swept tokens or collateral.
      */
     function createBond(
         Bond.MetaData memory metadata,
-        Bond.Settings memory configuration
+        Bond.Settings memory configuration,
+        address treasury
     ) external returns (address);
 }
