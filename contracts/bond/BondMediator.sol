@@ -56,13 +56,8 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
 
     function createManagedBond(
         uint256 daoId,
-        string calldata name,
-        string calldata symbol,
-        uint256 debtTokenAmount,
-        address collateralTokens,
-        uint256 expiryTimestamp,
-        uint256 minimumDeposit,
-        string calldata data
+        Bond.Metadata memory metadata,
+        Bond.Settings memory configuration
     )
         external
         override
@@ -72,22 +67,13 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
     {
         require(_isValidDaoId(daoId), "BM: invalid DAO Id");
         require(
-            isAllowedDaoCollateral(daoId, collateralTokens),
+            isAllowedDaoCollateral(daoId, configuration.collateralTokens),
             "BM: collateral not whitelisted"
         );
 
-        Bond.Settings memory bondSettings;
-        bondSettings = _bondSettings(
-            daoId,
-            debtTokenAmount,
-            collateralTokens,
-            expiryTimestamp,
-            minimumDeposit,
-            data
-        );
-        Bond.Identity memory bondId = _bondIdentity(name, symbol);
-
-        return _managedBond(daoId, bondId, bondSettings);
+        address bond = _creator.createBond(metadata, configuration);
+        _addBond(daoId, bond);
+        return bond;
     }
 
     /**
@@ -137,42 +123,5 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
 
     function bondCreator() external view returns (address) {
         return address(_creator);
-    }
-
-    function _bondSettings(
-        uint256 daoId,
-        uint256 debtTokenAmount,
-        address collateralTokens,
-        uint256 expiryTimestamp,
-        uint256 minimumDeposit,
-        string calldata data
-    ) private returns (Bond.Settings memory) {
-        return
-            Bond.Settings({
-                debtTokenAmount: debtTokenAmount,
-                collateralTokens: collateralTokens,
-                treasury: _daoTreasury(daoId),
-                expiryTimestamp: expiryTimestamp,
-                minimumDeposit: minimumDeposit,
-                data: data
-            });
-    }
-
-    function _managedBond(
-        uint256 daoId,
-        Bond.Identity memory bondId,
-        Bond.Settings memory bondSettings
-    ) private returns (address) {
-        address bond = _creator.createBond(bondId, bondSettings);
-        _addBond(daoId, bond);
-        return bond;
-    }
-
-    function _bondIdentity(string calldata name, string calldata symbol)
-        private
-        pure
-        returns (Bond.Identity memory)
-    {
-        return Bond.Identity({name: name, symbol: symbol});
     }
 }

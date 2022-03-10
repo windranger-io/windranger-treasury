@@ -24,11 +24,11 @@ interface BondCreator {
     /**
      * @notice Deploys and initialises a new Bond.
      *
-     * @param id Identity for the Bond to create.
-     * @param config Values to use during the Bond creation process.
+     * @param metadata General details about the Bond no essential for operation.
+     * @param configuration Values to use during the Bond creation process.
      */
     function createBond(
-        Bond.Identity calldata id,
-        Bond.Settings calldata config
+        Bond.Metadata memory metadata,
+        Bond.Settings memory configuration
     ) external returns (address);
 }

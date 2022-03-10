@@ -5,11 +5,13 @@ pragma solidity ^0.8.0;
  * @title Domain model for Bonds.
  */
 library Bond {
-    struct Identity {
+    struct Metadata {
         /** Description of the purpose of the Bond. */
         string name;
         /** Abbreviation to identify the Bond. */
         string symbol;
+        /** Metadata bucket not required for the operation of the Bond, but needed by external actors. */
+        string data;
     }
 
     struct Settings {
@@ -29,7 +31,5 @@ library Bond {
         uint256 minimumDeposit;
         /** receiver of any slashed or swept tokens. */
         address treasury;
-        /** Metadata not required for the operation of the Bond, but needed by external actors. */
-        string data;
     }
 }

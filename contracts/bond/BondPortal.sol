@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "./Bond.sol";
 import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
@@ -35,12 +36,7 @@ interface BondPortal {
      */
     function createManagedBond(
         uint256 daoId,
-        string calldata name,
-        string calldata symbol,
-        uint256 debtTokenAmount,
-        address collateralTokens,
-        uint256 expiryTimestamp,
-        uint256 minimumDeposit,
-        string calldata data
+        Bond.Metadata memory metadata,
+        Bond.Settings memory configuration
     ) external returns (address);
 }

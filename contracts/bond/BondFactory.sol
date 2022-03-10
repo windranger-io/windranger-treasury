@@ -31,32 +31,32 @@ contract BondFactory is
     }
 
     function createBond(
-        Bond.Identity calldata id,
-        Bond.Settings calldata config
+        Bond.Metadata memory metadata,
+        Bond.Settings memory configuration
     ) external override whenNotPaused returns (address) {
         ERC20SingleCollateralBond bond = new ERC20SingleCollateralBond();
 
         emit CreateBond(
             address(bond),
-            id.name,
-            id.symbol,
-            config.debtTokenAmount,
+            metadata.name,
+            metadata.symbol,
+            configuration.debtTokenAmount,
             _msgSender(),
-            config.treasury,
-            config.expiryTimestamp,
-            config.minimumDeposit,
-            config.data
+            configuration.treasury,
+            configuration.expiryTimestamp,
+            configuration.minimumDeposit,
+            metadata.data
         );
 
         bond.initialize(
-            id.name,
-            id.symbol,
-            config.debtTokenAmount,
-            config.collateralTokens,
-            config.treasury,
-            config.expiryTimestamp,
-            config.minimumDeposit,
-            config.data
+            metadata.name,
+            metadata.symbol,
+            configuration.debtTokenAmount,
+            configuration.collateralTokens,
+            configuration.treasury,
+            configuration.expiryTimestamp,
+            configuration.minimumDeposit,
+            metadata.data
         );
         bond.transferOwnership(_msgSender());
 
