@@ -209,6 +209,22 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     //slither-disable-next-line naming-convention
     function __DaoAccessControl_init() internal onlyInitializing {}
 
+    function _isMissingDaoRole(
+        uint256 daoId,
+        bytes32 role,
+        address account
+    ) internal view returns (bool) {
+        return !_daoRoles[daoId][role].members[account];
+    }
+
+    function _isMissingGlobalRole(bytes32 role, address account)
+        internal
+        view
+        returns (bool)
+    {
+        return !_globalRoles[role].members[account];
+    }
+
     /**
      * @dev Override the function for a custom revert message.
      */
@@ -264,22 +280,6 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
         bytes32 adminRole
     ) private view returns (bool) {
         return _daoRoles[daoId][role].adminRoles.contains(adminRole);
-    }
-
-    function _isMissingDaoRole(
-        uint256 daoId,
-        bytes32 role,
-        address account
-    ) private view returns (bool) {
-        return !_daoRoles[daoId][role].members[account];
-    }
-
-    function _isMissingGlobalRole(bytes32 role, address account)
-        private
-        view
-        returns (bool)
-    {
-        return !_globalRoles[role].members[account];
     }
 
     /**
