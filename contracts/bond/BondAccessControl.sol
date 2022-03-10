@@ -96,7 +96,7 @@ abstract contract BondAccessControl is DaoAccessControl {
 
     function grantDaoAdminRole(uint256 daoId, address account)
         external
-        onlySuperUserRole
+        atLeastDaoAminRole(daoId)
     {
         _grantDaoRole(daoId, Roles.DAO_ADMIN, account);
     }
@@ -122,7 +122,7 @@ abstract contract BondAccessControl is DaoAccessControl {
 
     function revokeDaoAdminRole(uint256 daoId, address account)
         external
-        onlySuperUserRole
+        atLeastDaoAminRole(daoId)
     {
         _revokeDaoRole(daoId, Roles.DAO_ADMIN, account);
     }
