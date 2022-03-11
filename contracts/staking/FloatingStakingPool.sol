@@ -91,25 +91,17 @@ contract FloatingStakingPool is
     }
 
     function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
-        UserInfo memory user = userInfo[_msgSender()];
-        require(user.depositAmount > 0, "FixedStaking: not elegible");
+        _withdrawWithoutRewards();
+    }
 
-        delete userInfo[_msgSender()];
-
-        bool result = stakingPoolInfo.stakeToken.transferFrom(
-            address(this),
-            address(_msgSender()),
-            uint256(user.depositAmount)
-        );
-
-        require(result, "FixedStaking: stake tx fail");
-
-        emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
+    function emergencyWithdraw() external emergencyModeEnabled {
+        _withdrawWithoutRewards();
     }
 
     function adminEmergencyRewardSweep()
         external
         atLeastDaoAminRole(stakingPoolInfo.daoId)
+        emergencyModeEnabled
     {
         _adminEmergencyRewardSweep();
     }
@@ -148,6 +140,23 @@ contract FloatingStakingPool is
             );
         }
         return rewards;
+    }
+
+    function _withdrawWithoutRewards() internal {
+        UserInfo memory user = userInfo[_msgSender()];
+        require(user.depositAmount >= 0, "FixedStaking: not elegible");
+
+        delete userInfo[_msgSender()];
+
+        bool result = stakingPoolInfo.stakeToken.transferFrom(
+            address(this),
+            address(_msgSender()),
+            uint256(user.depositAmount)
+        );
+
+        require(result, "FixedStaking: stake tx fail");
+
+        emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
     }
 
     function _computeRewardsPerShare(uint256 rewardTokenIndex)
