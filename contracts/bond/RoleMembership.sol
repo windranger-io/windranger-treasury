@@ -32,7 +32,7 @@ abstract contract RoleMembership is Initializable {
     event RevokeGlobalRole(bytes32 role, address account);
 
     function hasGlobalRole(bytes32 role, address account)
-        public
+        external
         view
         returns (bool)
     {
@@ -43,7 +43,7 @@ abstract contract RoleMembership is Initializable {
         uint256 daoId,
         bytes32 role,
         address account
-    ) public view returns (bool) {
+    ) external view returns (bool) {
         return _daoRoleMembers[daoId][role][account];
     }
 

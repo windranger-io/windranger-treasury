@@ -23,10 +23,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         uint256 daoId,
         address bond,
         string calldata reason
-    )   external
-        whenNotPaused
-        atLeastDaoMeepleRole(daoId)
-    {
+    ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).allowRedemption(reason);
