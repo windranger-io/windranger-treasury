@@ -1,18 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "./BondAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
 import "./BondPortal.sol";
 import "./Bond.sol";
 import "./DaoBondConfiguration.sol";
-import "./Roles.sol";
 import "../Version.sol";
 
 /**
@@ -21,7 +17,13 @@ import "../Version.sol";
  * @dev Orchestrates a BondCreator and BondCurator to provide a single function to aggregate the various calls
  *      providing a single function to create and setup a bond for management with the curator.
  */
-contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
+contract BondMediator is
+    BondCurator,
+    BondPortal,
+    DaoBondConfiguration,
+    UUPSUpgradeable,
+    Version
+{
     BondCreator private _creator;
 
     /**
@@ -38,6 +40,7 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
 
         __BondCurator_init();
         __DaoBondConfiguration_init();
+        __UUPSUpgradeable_init();
 
         _creator = BondCreator(factory);
     }
@@ -128,4 +131,15 @@ contract BondMediator is BondCurator, BondPortal, DaoBondConfiguration {
     function bondCreator() external view returns (address) {
         return address(_creator);
     }
+
+    /**
+     * @notice Permits only the relevant admins to perform proxy upgrades.
+     *
+     * @dev Only applicable when deployed as implementation to a UUPS proxy.
+     */
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        override
+        atLeastSysAdminRole
+    {}
 }

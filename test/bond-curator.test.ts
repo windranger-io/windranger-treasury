@@ -42,9 +42,8 @@ describe('Bond Curator contract', () => {
         treasury = (await signer(2)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         creator = await deployContractWithProxy<BondFactory>('BondFactory')
-        curator = await deployContractWithProxy<BondCuratorBox>(
-            'BondCuratorBox'
-        )
+        curator = await deployContract<BondCuratorBox>('BondCuratorBox')
+        await successfulTransaction(curator.initialize())
     })
 
     describe('add bond', () => {
@@ -110,9 +109,8 @@ describe('Bond Curator contract', () => {
 
     describe('bond', () => {
         beforeEach(async () => {
-            curator = await deployContractWithProxy<BondCuratorBox>(
-                'BondCuratorBox'
-            )
+            curator = await deployContract<BondCuratorBox>('BondCuratorBox')
+            await successfulTransaction(curator.initialize())
             bond = await createBond()
         })
 
