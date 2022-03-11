@@ -17,7 +17,7 @@ const DAO_ID = 1
 const DAO_ADMIN_ROLE = DAO_ADMIN.hex
 const SYS_ADMIN_ROLE = SYSTEM_ADMIN.hex
 
-describe('Bond Access Control contract', () => {
+describe('Role Access Control contract', () => {
     before(async () => {
         superUser = (await signer(0)).address
         memberOne = (await signer(3)).address

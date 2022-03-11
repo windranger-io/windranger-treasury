@@ -5,15 +5,16 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "./DaoAccessControl.sol";
 import "./Roles.sol";
 
-// TODO doco
-//TODO add global / dao role explaination
-// TODO explain tiers
 /**
- * @title Access control dedicated for the Bond family of contracts.
+ * @title Access control using a predefined set of roles.
  *
- * @notice Provides modifiers and management for access control required throughout the Bond contracts.
+ * @notice The roles and their relationship to each other are defined.
+ *
+ * @dev There are two categories of role:
+ * - Global; permissions granted across all DAOs.
+ * - Dao; permissions granted only in a single DAO.
  */
-abstract contract BondAccessControl is DaoAccessControl, ContextUpgradeable {
+abstract contract RoleAccessControl is DaoAccessControl, ContextUpgradeable {
     modifier onlySuperUserRole() {
         if (_isMissingGlobalRole(Roles.SUPER_USER, _msgSender())) {
             revert(

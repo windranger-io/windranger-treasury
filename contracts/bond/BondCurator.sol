@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "./BondAccessControl.sol";
+import "./RoleAccessControl.sol";
 import "./SingleCollateralBond.sol";
 
 /**
@@ -14,7 +14,7 @@ import "./SingleCollateralBond.sol";
  *
  * @dev Owns of all Bonds it manages, guarding function accordingly allows finer access control to be provided.
  */
-abstract contract BondCurator is BondAccessControl, PausableUpgradeable {
+abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     mapping(uint256 => EnumerableSetUpgradeable.AddressSet) private _bonds;

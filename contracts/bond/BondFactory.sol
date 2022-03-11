@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./ERC20SingleCollateralBond.sol";
-import "./BondAccessControl.sol";
+import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
 import "./Roles.sol";
 import "../Version.sol";
@@ -15,7 +15,7 @@ import "../Version.sol";
  * @dev An upgradable contract that encapsulates the Bond implementation and associated deployment cost.
  */
 contract BondFactory is
-    BondAccessControl,
+    RoleAccessControl,
     BondCreator,
     PausableUpgradeable,
     UUPSUpgradeable,
