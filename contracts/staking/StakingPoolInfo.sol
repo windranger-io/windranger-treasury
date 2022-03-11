@@ -15,6 +15,7 @@ library StakingPoolInfo {
     }
 
     struct StakingPoolData {
+        uint256 daoId;
         uint128 minTotalPoolStake;
         uint128 maxTotalPoolStake;
         uint128 minimumContribution;
