@@ -147,26 +147,4 @@ abstract contract DaoAccessControl is Initializable {
                 )
             );
     }
-
-    /**
-     * @dev Revert with a standard message if `account` is missing the global `role`.
-     */
-    function _checkGlobalRole(bytes32 role, address account) private view {
-        if (_isMissingGlobalRole(role, account)) {
-            revert(_revertMessageMissingGlobalRole(role, account));
-        }
-    }
-
-    /**
-     * @dev Revert with a standard message if `account` is missing the `role` within the DAO.
-     */
-    function _checkDaoRole(
-        uint256 daoId,
-        bytes32 role,
-        address account
-    ) private view {
-        if (!hasDaoRole(daoId, role, account)) {
-            revert(_revertMessageMissingDaoRole(daoId, role, account));
-        }
-    }
 }
