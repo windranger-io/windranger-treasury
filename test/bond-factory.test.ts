@@ -17,7 +17,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {DAO_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN, SYSTEM_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 
 // Wires up Waffle with Chai
@@ -33,6 +33,11 @@ describe('Bond Factory contract', () => {
     })
 
     describe('create bond', () => {
+        after(async () => {
+            if (await bonds.paused()) {
+                await bonds.unpause()
+            }
+        })
         it('with BIT token collateral', async () => {
             const bondName = 'Special Debt Certificate'
             const bondSymbol = 'SDC001'
@@ -102,14 +107,14 @@ describe('Bond Factory contract', () => {
             expect(await bonds.paused()).is.false
         })
 
-        it('only bond admin', async () => {
+        it('only system admin', async () => {
             await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessage(nonAdmin, DAO_ADMIN)
+                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
             )
         })
 
         it('only when paused', async () => {
-            await expect(bonds.unpause()).to.be.revertedWith(
+            await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
                 'Pausable: not paused'
             )
         })

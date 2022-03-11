@@ -33,26 +33,12 @@ describe('Bond Access Control contract', () => {
                 await accessControl.hasDaoRole(
                     DAO_ID,
                     DAO_ADMIN_ROLE,
-                    superUser
-                )
-            ).is.true
-            expect(
-                await accessControl.hasDaoRole(
-                    DAO_ID,
-                    DAO_ADMIN_ROLE,
                     memberOne
                 )
             ).is.false
 
-            await accessControl.grantDaoAdminRole(DAO_ADMIN_ROLE, memberOne)
+            await accessControl.grantDaoAdminRole(DAO_ID, memberOne)
 
-            expect(
-                await accessControl.hasDaoRole(
-                    DAO_ID,
-                    DAO_ADMIN_ROLE,
-                    superUser
-                )
-            ).is.true
             expect(
                 await accessControl.hasDaoRole(
                     DAO_ID,
@@ -67,26 +53,12 @@ describe('Bond Access Control contract', () => {
                 await accessControl.hasDaoRole(
                     DAO_ID,
                     DAO_ADMIN_ROLE,
-                    superUser
-                )
-            ).is.true
-            expect(
-                await accessControl.hasDaoRole(
-                    DAO_ID,
-                    DAO_ADMIN_ROLE,
                     memberOne
                 )
             ).is.true
 
-            await accessControl.revokeDaoAdminRole(DAO_ADMIN_ROLE, memberOne)
+            await accessControl.revokeDaoAdminRole(DAO_ID, memberOne)
 
-            expect(
-                await accessControl.hasDaoRole(
-                    DAO_ID,
-                    DAO_ADMIN_ROLE,
-                    superUser
-                )
-            ).is.true
             expect(
                 await accessControl.hasDaoRole(
                     DAO_ID,
@@ -105,29 +77,21 @@ describe('Bond Access Control contract', () => {
 
     describe('SysAdmin', () => {
         it('add member', async () => {
-            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, superUser))
-                .is.true
             expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
                 .is.false
 
-            await accessControl.grantDaoAdminRole(SYS_ADMIN_ROLE, memberTwo)
+            await accessControl.grantSysAdminRole(memberTwo)
 
-            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, superUser))
-                .is.true
             expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
                 .is.true
         })
 
         it('remove member', async () => {
-            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, superUser))
-                .is.true
             expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
                 .is.true
 
             await accessControl.revokeDaoAdminRole(SYS_ADMIN_ROLE, memberTwo)
 
-            expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, superUser))
-                .is.true
             expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
                 .is.false
         })

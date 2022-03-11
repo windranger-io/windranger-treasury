@@ -217,7 +217,7 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
         return
             string(
                 abi.encodePacked(
-                    "BondAccessControl: account ",
+                    "AccessControl: account ",
                     StringsUpgradeable.toHexString(uint160(account), 20),
                     " is missing role ",
                     StringsUpgradeable.toHexString(uint256(role), 32)
@@ -236,7 +236,7 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
         return
             string(
                 abi.encodePacked(
-                    "BondAccessControl: account ",
+                    "AccessControl: account ",
                     StringsUpgradeable.toHexString(uint160(account), 20),
                     " is missing role ",
                     StringsUpgradeable.toHexString(uint256(role), 32),

@@ -143,13 +143,6 @@ abstract contract BondAccessControl is DaoAccessControl {
     function __BondAccessControl_init() internal onlyInitializing {
         __DaoAccessControl_init();
 
-        /*
-         * Super Users administrate themselves, DAO Creators and SysAdmins.
-         */
-        _addGlobalRoleAdmin(Roles.SUPER_USER, Roles.SUPER_USER);
-        _addGlobalRoleAdmin(Roles.DAO_CREATOR, Roles.SUPER_USER);
-        _addGlobalRoleAdmin(Roles.SYSTEM_ADMIN, Roles.SUPER_USER);
-
         _grantGlobalRole(Roles.SUPER_USER, _msgSender());
     }
 }

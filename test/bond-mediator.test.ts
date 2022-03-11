@@ -18,7 +18,7 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {DAO_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN, SYSTEM_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 import {eventLog} from './framework/event-logs'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
@@ -343,9 +343,9 @@ describe('Bond Mediator contract', () => {
             expect(await mediator.paused()).is.false
         })
 
-        it('only bond admin', async () => {
+        it('only system admin', async () => {
             await expect(mediator.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessage(nonAdmin, DAO_ADMIN)
+                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
             )
         })
 

@@ -25,7 +25,7 @@ import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {event} from './framework/events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {DAO_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN, SYSTEM_ADMIN} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -453,11 +453,11 @@ describe('Bond Curator contract', () => {
             await expect(curator.pause()).to.be.revertedWith('Pausable: paused')
         })
 
-        it('only bond admin', async () => {
+        it('only system admin', async () => {
             await expect(
                 curator.connect(nonBondAdmin).unpause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                accessControlRevertMessage(nonBondAdmin, SYSTEM_ADMIN)
             )
         })
     })
@@ -477,11 +477,11 @@ describe('Bond Curator contract', () => {
             )
         })
 
-        it('only bond admin', async () => {
+        it('only system admin', async () => {
             await expect(
                 curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                accessControlRevertMessage(nonBondAdmin, SYSTEM_ADMIN)
             )
         })
     })
