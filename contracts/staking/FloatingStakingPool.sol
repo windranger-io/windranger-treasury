@@ -108,6 +108,20 @@ contract FloatingStakingPool is
         emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
     }
 
+    function adminEmergencyRewardSweep()
+        external
+        atLeastDaoAminRole(stakingPoolInfo.daoId)
+    {
+        _adminEmergencyRewardSweep();
+    }
+
+    function initializeRewardTokens(
+        address treasury,
+        StakingPoolInfo.RewardToken[] calldata _rewardTokens
+    ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
+        _initializeRewardTokens(treasury, _rewardTokens);
+    }
+
     function computeRewardsPerShare(uint256 rewardTokenIndex)
         external
         view
