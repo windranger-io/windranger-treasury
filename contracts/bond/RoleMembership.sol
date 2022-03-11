@@ -75,18 +75,18 @@ abstract contract RoleMembership is Initializable {
         bytes32 role,
         address account
     ) internal {
-        require(
-            hasDaoRole(daoId, role, account),
-            "AccessControl: missing role"
-        );
+        if (_isMissingDaoRole(daoId, role, account)) {
+            revert(_revertMessageMissingDaoRole(daoId, role, account));
+        }
 
         delete _daoRoles[daoId][role].members[account];
         emit RevokeDaoRole(daoId, role, account);
     }
 
-    //TODO custom message - say which role they're missing
     function _revokeGlobalRole(bytes32 role, address account) internal {
-        require(hasGlobalRole(role, account), "AccessControl: missing role");
+        if (_isMissingGlobalRole(role, account)) {
+            revert(_revertMessageMissingGlobalRole(role, account));
+        }
 
         delete _globalRoles[role].members[account];
         emit RevokeGlobalRole(role, account);
