@@ -500,9 +500,9 @@ describe('Bond Curator contract', () => {
                     debtTokenAmount: 100n,
                     collateralTokens: collateralTokens.address,
                     expiryTimestamp: 0n,
-                    minimumDeposit: 1n,
-                    treasury: treasury
-                }
+                    minimumDeposit: 1n
+                },
+                treasury
             )
         )
 

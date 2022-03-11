@@ -48,9 +48,9 @@ describe('Bond Factory contract', () => {
                         debtTokenAmount: debtTokenAmount,
                         collateralTokens: collateralTokens.address,
                         expiryTimestamp: expiryTimestamp,
-                        minimumDeposit: minimumDeposit,
-                        treasury: treasury
-                    }
+                        minimumDeposit: minimumDeposit
+                    },
+                    treasury
                 )
             )
 
@@ -78,9 +78,9 @@ describe('Bond Factory contract', () => {
                         debtTokenAmount: 101n,
                         collateralTokens: collateralTokens.address,
                         expiryTimestamp: 0n,
-                        minimumDeposit: 0n,
-                        treasury: treasury
-                    }
+                        minimumDeposit: 0n
+                    },
+                    treasury
                 )
             ).to.be.revertedWith('Pausable: paused')
         })

@@ -425,15 +425,18 @@ describe('ERC20 Single Collateral Bond contract', () => {
         it('only after expiry', async () => {
             const receipt = await execute(
                 bonds.createBond(
-                    {name: 'Special Debt Certificate', symbol: 'SDC001'},
+                    {
+                        name: 'Special Debt Certificate',
+                        symbol: 'SDC001',
+                        data: DATA
+                    },
                     {
                         debtTokenAmount: 500n,
                         collateralTokens: collateralTokens.address,
                         expiryTimestamp: Date.now() + ONE_DAY_MS,
-                        minimumDeposit: MINIMUM_DEPOSIT,
-                        treasury: treasury,
-                        data: DATA
-                    }
+                        minimumDeposit: MINIMUM_DEPOSIT
+                    },
+                    treasury
                 )
             )
             bond = await erc20SingleCollateralBondContractAt(
@@ -1766,15 +1769,18 @@ describe('ERC20 Single Collateral Bond contract', () => {
     ): Promise<ERC20SingleCollateralBond> {
         const receipt = await execute(
             factory.createBond(
-                {name: 'Special Debt Certificate', symbol: 'SDC001'},
+                {
+                    name: 'Special Debt Certificate',
+                    symbol: 'SDC001',
+                    data: DATA
+                },
                 {
                     debtTokenAmount: debtTokenAmount,
                     collateralTokens: collateralTokens.address,
                     expiryTimestamp: BOND_EXPIRY,
-                    minimumDeposit: MINIMUM_DEPOSIT,
-                    treasury: treasury,
-                    data: DATA
-                }
+                    minimumDeposit: MINIMUM_DEPOSIT
+                },
+                treasury
             )
         )
         const creationEvent = createBondEvent(event('CreateBond', receipt))
