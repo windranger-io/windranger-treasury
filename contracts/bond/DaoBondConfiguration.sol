@@ -2,15 +2,20 @@
 pragma solidity ^0.8.0;
 
 import "./DaoBondCollateralWhitelist.sol";
-import "../Dao.sol";
 
-abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist, Dao {
+abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
     struct DaoBondConfig {
-        DaoConfig dao;
+        // Address zero is an invalid address, can be used to identify null structs
+        address treasury;
         CollateralWhitelist whitelist;
     }
 
-    mapping(uint256 => DaoBondConfig) private _daoBondConfig;
+    mapping(uint256 => DaoBondConfig) private _daoConfig;
+    uint256 private _daoConfigLastId;
+
+    function daoTreasury(uint256 daoId) external view returns (address) {
+        return _daoConfig[daoId].treasury;
+    }
 
     event DaoTreasuryUpdate(
         uint256 indexed daoId,
@@ -58,9 +63,12 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist, Dao {
 
         _setTreasury(_daoConfigLastId, erc20CapableTreasury);
 
-        DaoBondConfig storage config = _daoBondConfig[daoId];
-        config.dao.treasury = erc20CapableTreasury;
+        DaoBondConfig storage config = _daoConfig[_daoConfigLastId];
+        config.treasury = erc20CapableTreasury;
+
+        return _daoConfigLastId;
     }
+
     function _setDaoTreasury(uint256 daoId, address replacementTreasury)
         internal
     {

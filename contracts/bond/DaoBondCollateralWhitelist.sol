@@ -74,7 +74,7 @@ abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
         uint256 daoId,
         address erc20CollateralTokens
     ) internal {
-        // require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
+        require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
         require(
             erc20CollateralTokens != address(0),
             "DAO Collateral: zero address"
@@ -106,7 +106,7 @@ abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
         uint256 daoId,
         address erc20CollateralTokens
     ) internal {
-        // require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
+        require(_isValidDaoId(daoId), "DAO Collateral: invalid DAO id");
         require(
             _isDaoCollateralWhitelisted(daoId, erc20CollateralTokens),
             "DAO Collateral: not whitelisted"
@@ -136,16 +136,16 @@ abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
         virtual
         returns (CollateralWhitelist storage);
 
-    // /**
-    //  * @notice Whether a given DAO ID is currently associated with a currently live DAO.
-    //  *
-    //  * @dev At any moment, expect a range of IDs that have been assigned, with the possibility some DAOs within being
-    //  *          deleted.
-    //  *
-    //  * @param daoId Internal ID of the DAO whose existence is to be determined.
-    //  */
-    // //slither-disable-next-line dead-code
-    // function _isValidDaoId(uint256 daoId) internal view virtual returns (bool);
+    /**
+     * @notice Whether a given DAO ID is currently associated with a currently live DAO.
+     *
+     * @dev At any moment, expect a range of IDs that have been assigned, with the possibility some DAOs within being
+     *          deleted.
+     *
+     * @param daoId Internal ID of the DAO whose existence is to be determined.
+     */
+    //slither-disable-next-line dead-code
+    function _isValidDaoId(uint256 daoId) internal view virtual returns (bool);
 
     /**
      * @notice Whether a contract address is a member of the set of whitelisted tokens for a DAO.
