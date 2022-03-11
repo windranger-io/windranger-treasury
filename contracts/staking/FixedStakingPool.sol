@@ -5,11 +5,11 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import "./StakingAccessControl.sol";
 import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
+import "../RoleAccessControl.sol";
 
-contract FixedStakingPool is Initializable, StakingAccessControl, StakingPool {
+contract FixedStakingPool is Initializable, StakingPool, RoleAccessControl {
     struct UserInfo {
         uint128 depositAmount;
         uint128[] rewardAmounts;
@@ -119,7 +119,7 @@ contract FixedStakingPool is Initializable, StakingAccessControl, StakingPool {
         virtual
         initializer
     {
-        __StakingAccessControl_init();
+        __RoleAccessControl_init();
         __Context_init_unchained();
 
         stakingPoolInfo = _info;

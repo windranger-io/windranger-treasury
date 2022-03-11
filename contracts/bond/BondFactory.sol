@@ -3,11 +3,13 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./SingleCollateralMultiRewardBond.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
+import "./SingleCollateralMultiRewardBond.sol";
+import "./ERC20SingleCollateralBond.sol";
+import "../RoleAccessControl.sol";
 import "./BondCreator.sol";
-<<<<<<< HEAD
-=======
 import "../Roles.sol";
->>>>>>> 2272a43 (building)
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
 

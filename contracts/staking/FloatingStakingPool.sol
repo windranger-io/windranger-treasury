@@ -6,13 +6,13 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "./StakingAccessControl.sol";
 import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
+import "../RoleAccessControl.sol";
 
 contract FloatingStakingPool is
     Initializable,
-    StakingAccessControl,
+    RoleAccessControl,
     ReentrancyGuard,
     StakingPool
 {
@@ -142,7 +142,6 @@ contract FloatingStakingPool is
         virtual
         initializer
     {
-        __StakingAccessControl_init();
         __Context_init_unchained();
 
         stakingPoolInfo = _info;

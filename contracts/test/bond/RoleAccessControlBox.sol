@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../../bond/RoleAccessControl.sol";
+import "../../RoleAccessControl.sol";
 
 /**
  * @title Box to test the access control dedicated for the Bond family of contracts.
