@@ -65,7 +65,7 @@ contract BondMediator is
         external
         override
         whenNotPaused
-        atLeastDaoAminRole(daoId)
+        atLeastDaoMeepleRole(daoId)
         returns (address)
     {
         require(_isValidDaoId(daoId), "BM: invalid DAO Id");

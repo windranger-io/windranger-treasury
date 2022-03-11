@@ -25,7 +25,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         string calldata reason
     )   external
         whenNotPaused
-        atLeastDaoAminRole(daoId)
+        atLeastDaoMeepleRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -47,7 +47,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         address bond,
         uint256 amount,
         string calldata reason
-    ) external whenNotPaused atLeastDaoAminRole(daoId) {
+    ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).slash(amount, reason);
@@ -57,7 +57,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         uint256 daoId,
         address bond,
         string calldata data
-    ) external whenNotPaused atLeastDaoAminRole(daoId) {
+    ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).setMetaData(data);

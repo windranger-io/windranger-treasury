@@ -18,7 +18,7 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {DAO_ADMIN, SYSTEM_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 import {eventLog} from './framework/event-logs'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
@@ -64,7 +64,7 @@ describe('Bond Mediator contract', () => {
                     await mediator.unpause()
                 }
             })
-            it('only bond admin', async () => {
+            it('only dao admin', async () => {
                 await expect(
                     mediator
                         .connect(nonAdmin)
@@ -109,7 +109,7 @@ describe('Bond Mediator contract', () => {
                 }
             })
 
-            it('only bond admin', async () => {
+            it('only dao admin', async () => {
                 await expect(
                     mediator
                         .connect(nonAdmin)
@@ -182,7 +182,7 @@ describe('Bond Mediator contract', () => {
                 ).to.be.revertedWith('BM: invalid DAO Id')
             })
 
-            it('only bond admin', async () => {
+            it('only dao meeple', async () => {
                 await expect(
                     mediator.connect(nonAdmin).createManagedBond(
                         daoId,
@@ -199,7 +199,7 @@ describe('Bond Mediator contract', () => {
                         }
                     )
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, DAO_ADMIN)
+                    accessControlRevertMessage(nonAdmin, DAO_MEEPLE)
                 )
             })
 
