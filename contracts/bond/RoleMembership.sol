@@ -56,7 +56,7 @@ abstract contract RoleMembership is Initializable {
     ) internal {
         require(
             _isMissingDaoRole(daoId, role, account),
-            "AccessControl: has role"
+            "RoleMembership: has role"
         );
 
         _daoRoles[daoId][role].members[account] = true;
@@ -64,7 +64,10 @@ abstract contract RoleMembership is Initializable {
     }
 
     function _grantGlobalRole(bytes32 role, address account) internal {
-        require(_isMissingGlobalRole(role, account), "AccessControl: has role");
+        require(
+            _isMissingGlobalRole(role, account),
+            "RoleMembership: has role"
+        );
 
         _globalRoles[role].members[account] = true;
         emit GrantGlobalRole(role, account);
@@ -93,7 +96,7 @@ abstract contract RoleMembership is Initializable {
     }
 
     //slither-disable-next-line naming-convention
-    function __DaoAccessControl_init() internal onlyInitializing {}
+    function __RoleMembership_init() internal onlyInitializing {}
 
     function _isMissingDaoRole(
         uint256 daoId,
@@ -123,7 +126,7 @@ abstract contract RoleMembership is Initializable {
         return
             string(
                 abi.encodePacked(
-                    "AccessControl: account ",
+                    "RoleMembership: account ",
                     StringsUpgradeable.toHexString(uint160(account), 20),
                     " is missing role ",
                     StringsUpgradeable.toHexString(uint256(role), 32)
@@ -142,7 +145,7 @@ abstract contract RoleMembership is Initializable {
         return
             string(
                 abi.encodePacked(
-                    "AccessControl: account ",
+                    "RoleMembership: account ",
                     StringsUpgradeable.toHexString(uint160(account), 20),
                     " is missing role ",
                     StringsUpgradeable.toHexString(uint256(role), 32),

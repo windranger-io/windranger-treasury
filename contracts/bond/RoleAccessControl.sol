@@ -142,8 +142,8 @@ abstract contract RoleAccessControl is RoleMembership, ContextUpgradeable {
      * @dev Allows granting and future renouncing after other addresses have been setup.
      */
     //slither-disable-next-line naming-convention
-    function __BondAccessControl_init() internal onlyInitializing {
-        __DaoAccessControl_init();
+    function __RoleAccessControl_init() internal onlyInitializing {
+        __RoleMembership_init();
 
         _grantGlobalRole(Roles.SUPER_USER, _msgSender());
     }
