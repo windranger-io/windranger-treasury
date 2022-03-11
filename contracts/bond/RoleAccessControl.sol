@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "./RoleMembership.sol";
-import "./Roles.sol";
+import "../Roles.sol";
 
 /**
  * @title Access control using a predefined set of roles.

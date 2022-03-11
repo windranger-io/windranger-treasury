@@ -5,6 +5,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./SingleCollateralMultiRewardBond.sol";
 import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
+<<<<<<< HEAD
+=======
+import "../Roles.sol";
+>>>>>>> 2272a43 (building)
 import "../Version.sol";
 
 /**
