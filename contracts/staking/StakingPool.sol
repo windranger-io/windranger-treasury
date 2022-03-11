@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "./StakingPoolInfo.sol";
+import "../RoleAccessControl.sol";
 
 abstract contract StakingPool {
     StakingPoolInfo.StakingPoolData public stakingPoolInfo;
@@ -55,22 +58,50 @@ abstract contract StakingPool {
         _;
     }
 
-    // function initializeRewardTokens(address treasury, StakingPoolInfo.RewardToken[] calldata _rewardToken, address _stakingPool, uint256[] calldata amounts) internal {
-
-    //     for(uint256 i = 0; i < _rewardToken.length; i++) {
-    //         require(IERC20(_rewardToken[i].rewardToken).transferFrom(treasury, _stakingPool, amounts[i]), "Failed to transfer tokens");
-    //     }
-
-    // }
-
-    // function adminRewardsWithdraw() external onlyRole(Roles.DAO_ADMIN) {
-
-    //     stakingPoolInfo.rewardToken.transfer();
-    // }
-
     function isReedemable() external view returns (bool) {
         // rewardsFinalized stakingPeriodComplete
         return _isRewardsFinalized() && _isStakingPeriodComplete();
+    }
+
+    function _initializeRewardTokens(
+        address treasury,
+        StakingPoolInfo.RewardToken[] calldata _rewardTokens
+    ) internal {
+        for (uint256 i = 0; i < _rewardTokens.length; i++) {
+            IERC20 token = IERC20(_rewardTokens[i].rewardToken);
+
+            require(
+                token.allowance(treasury, address(this)) >=
+                    _rewardTokens[i].totalTokenRewardsAvailable,
+                "StakingPool: invalid allowance"
+            );
+
+            require(
+                token.transferFrom(
+                    treasury,
+                    address(this),
+                    _rewardTokens[i].totalTokenRewardsAvailable
+                ),
+                "StakingPool: fund tx failed"
+            );
+        }
+    }
+
+    function _adminEmergencyRewardSweep() internal {
+        StakingPoolInfo.RewardToken[] memory rewardTokens = stakingPoolInfo
+            .rewardTokens;
+        address treasury = stakingPoolInfo.treasury;
+
+        for (uint256 i = 0; i < rewardTokens.length; i++) {
+            IERC20 token = IERC20(rewardTokens[i].rewardToken);
+            require(
+                token.transfer(
+                    treasury,
+                    rewardTokens[i].totalTokenRewardsAvailable
+                ),
+                "StakingPool: withdraw tx failed"
+            );
+        }
     }
 
     function _isRewardsFinalized() internal view returns (bool) {

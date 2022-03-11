@@ -102,6 +102,20 @@ contract FixedStakingPool is Initializable, StakingPool, RoleAccessControl {
         emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
     }
 
+    function initializeRewardTokens(
+        address treasury,
+        StakingPoolInfo.RewardToken[] calldata _rewardTokens
+    ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
+        _initializeRewardTokens(treasury, _rewardTokens);
+    }
+
+    function adminEmergencyRewardSweep()
+        external
+        atLeastDaoAminRole(stakingPoolInfo.daoId)
+    {
+        _adminEmergencyRewardSweep();
+    }
+
     function computeRewards(address receipient, uint256 rewardTokenIndex)
         external
         view
