@@ -24,12 +24,8 @@ abstract contract DaoAccessControl is Initializable {
     // Roles that apply across all DAOs
     mapping(bytes32 => Role) private _globalRoles;
 
-    event AddDaoRoleAdmin(uint256 daoId, bytes32 role, bytes32 adminRole);
-    event AddGlobalRoleAdmin(bytes32 role, bytes32 adminRole);
     event GrantDaoRole(uint256 daoId, bytes32 role, address account);
     event GrantGlobalRole(bytes32 role, address account);
-    event RemoveDaoRoleAdmin(uint256 daoId, bytes32 role, bytes32 adminRole);
-    event RemoveGlobalRoleAdmin(bytes32 role, bytes32 adminRole);
     event RevokeDaoRole(uint256 daoId, bytes32 role, address account);
     event RevokeGlobalRole(bytes32 role, address account);
 
