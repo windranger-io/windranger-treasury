@@ -19,9 +19,8 @@ const SYS_ADMIN_ROLE = SYSTEM_ADMIN.hex
 
 describe('Role Access Control contract', () => {
     before(async () => {
-        superUser = (await signer(0)).address
-        memberOne = (await signer(3)).address
-        memberTwo = (await signer(4)).address
+        memberOne = (await signer(1)).address
+        memberTwo = (await signer(2)).address
         accessControl = await deployContract<BondAccessControlBox>(
             'BondAccessControlBox'
         )
@@ -96,7 +95,6 @@ describe('Role Access Control contract', () => {
         })
     })
 
-    let superUser: string
     let memberOne: string
     let memberTwo: string
     let accessControl: BondAccessControlBox
