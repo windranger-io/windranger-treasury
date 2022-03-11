@@ -4,67 +4,44 @@ pragma solidity ^0.8.0;
 import "./FixedStakingPoolFactory.sol";
 import "./FloatingStakingPoolFactory.sol";
 import "./StakingPoolInfo.sol";
-import "./StakingAccessControl.sol";
-
-interface DaoWhitelist {
-    function daoTreasury(uint256 daoId) external view returns (address);
-}
+import "../RoleAccessControl.sol";
 
 contract DaoStakingFactory is
+    RoleAccessControl,
     FixedStakingPoolFactory,
     FloatingStakingPoolFactory
 {
-    DaoWhitelist public daoWhitelist;
-
-    function setDaoWhitelist(DaoWhitelist _daoWhitelist)
-        external
-        onlyRole(Roles.DAO_ADMIN)
-    {
-        daoWhitelist = _daoWhitelist;
-    }
-
-    function pause() external whenNotPaused onlyRole(Roles.DAO_ADMIN) {
+    function pause() external whenNotPaused atLeastSysAdminRole {
         _pause();
     }
 
-    function unpause() external whenPaused onlyRole(Roles.DAO_ADMIN) {
+    function unpause() external whenPaused atLeastSysAdminRole {
         _unpause();
     }
 
-    function initialize(DaoWhitelist _daoWhitelist) public {
+    function initialize() public {
         __FixedStakingPoolFactory_init();
         __FloatingStakingPoolFactory_init();
-        __StakingAccessControl_init();
-        daoWhitelist = _daoWhitelist;
+        __RoleAccessControl_init();
     }
 
     function createFixedStakingPool(
         uint256 daoId,
         StakingPoolInfo.StakingPoolData calldata _info
-    ) public daoRole(daoId, Roles.DAO_MEEPLE) returns (address) {
-        require(
-            daoWhitelist.daoTreasury(daoId) == _info.treasury,
-            "Treasury is not whitelisted"
-        );
-
-        return super.createFixedStakingPool(_info);
+    ) public override atLeastDaoAminRole(daoId) returns (address) {
+        return super.createFixedStakingPool(daoId, _info);
     }
 
     function createFloatingStakingPool(
         uint256 daoId,
         StakingPoolInfo.StakingPoolData calldata _info
-    ) public daoRole(daoId, Roles.DAO_MEEPLE) returns (address) {
-        require(
-            daoWhitelist.daoTreasury(daoId) == _info.treasury,
-            "Treasury is not whitelisted"
-        );
-
-        return super.createFloatingStakingPool(_info);
+    ) public override atLeastDaoAminRole(daoId) returns (address) {
+        return super.createFloatingStakingPool(daoId, _info);
     }
 
     function _authorizeUpgrade(address newImplementation)
         internal
         override
-        onlyRole(Roles.SYSTEM_ADMIN)
+        atLeastSysAdminRole
     {}
 }
