@@ -74,9 +74,7 @@ abstract contract StakingPool {
     }
 
     function _isRewardsFinalized() internal view returns (bool) {
-        return
-            (block.timestamp > stakingPoolInfo.rewardUnlockTimestamp) &&
-            stakingPoolInfo.rewardsFinalized;
+        return _isStakingPeriodComplete() && stakingPoolInfo.rewardsFinalized;
     }
 
     function _isStakingPeriodComplete() internal view returns (bool) {
