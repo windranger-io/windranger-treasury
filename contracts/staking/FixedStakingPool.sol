@@ -9,7 +9,7 @@ import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
 
-contract FixedStakingPool is StakingPool {
+contract FixedStakingPool is Initializable, StakingPool, RoleAccessControl {
     struct UserInfo {
         uint128 depositAmount;
         uint128[] rewardAmounts;

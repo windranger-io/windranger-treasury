@@ -7,8 +7,14 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
+import "../RoleAccessControl.sol";
 
-contract FloatingStakingPool is ReentrancyGuard, StakingPool {
+contract FloatingStakingPool is
+    Initializable,
+    RoleAccessControl,
+    ReentrancyGuard,
+    StakingPool
+{
     struct UserInfo {
         uint128 depositAmount;
     }
