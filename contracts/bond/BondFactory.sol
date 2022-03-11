@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./ERC20SingleCollateralBond.sol";
-import "./BondAccessControl.sol";
+import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
 import "./Roles.sol";
 import "../Version.sol";
@@ -15,7 +15,7 @@ import "../Version.sol";
  * @dev An upgradable contract that encapsulates the Bond implementation and associated deployment cost.
  */
 contract BondFactory is
-    BondAccessControl,
+    RoleAccessControl,
     BondCreator,
     PausableUpgradeable,
     UUPSUpgradeable,
@@ -26,39 +26,38 @@ contract BondFactory is
      *      have been setup.
      */
     function initialize() external virtual initializer {
-        __BondAccessControl_init();
+        __RoleAccessControl_init();
         __UUPSUpgradeable_init();
     }
 
-    function createBond(BondIdentity calldata id, BondSettings calldata config)
-        external
-        override
-        whenNotPaused
-        returns (address)
-    {
+    function createBond(
+        Bond.MetaData memory metadata,
+        Bond.Settings memory configuration,
+        address treasury
+    ) external override whenNotPaused returns (address) {
         ERC20SingleCollateralBond bond = new ERC20SingleCollateralBond();
 
         emit CreateBond(
             address(bond),
-            id.name,
-            id.symbol,
-            config.debtTokenAmount,
+            metadata.name,
+            metadata.symbol,
+            configuration.debtTokenAmount,
             _msgSender(),
-            config.treasury,
-            config.expiryTimestamp,
-            config.minimumDeposit,
-            config.data
+            treasury,
+            configuration.expiryTimestamp,
+            configuration.minimumDeposit,
+            metadata.data
         );
 
         bond.initialize(
-            id.name,
-            id.symbol,
-            config.debtTokenAmount,
-            config.collateralTokens,
-            config.treasury,
-            config.expiryTimestamp,
-            config.minimumDeposit,
-            config.data
+            metadata.name,
+            metadata.symbol,
+            configuration.debtTokenAmount,
+            configuration.collateralTokens,
+            treasury,
+            configuration.expiryTimestamp,
+            configuration.minimumDeposit,
+            metadata.data
         );
         bond.transferOwnership(_msgSender());
 
@@ -68,14 +67,14 @@ contract BondFactory is
     /**
      * @notice Pauses most side affecting functions.
      */
-    function pause() external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+    function pause() external whenNotPaused atLeastSysAdminRole {
         _pause();
     }
 
     /**
      * @notice Resumes all paused side affecting functions.
      */
-    function unpause() external whenPaused onlyRole(Roles.BOND_ADMIN) {
+    function unpause() external whenPaused atLeastSysAdminRole {
         _unpause();
     }
 
@@ -87,6 +86,6 @@ contract BondFactory is
     function _authorizeUpgrade(address newImplementation)
         internal
         override
-        onlyRole(Roles.SYSTEM_ADMIN)
+        atLeastSysAdminRole
     {}
 }

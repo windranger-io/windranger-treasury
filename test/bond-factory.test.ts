@@ -17,7 +17,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {BOND_ADMIN} from './contracts/bond/roles'
+import {SYSTEM_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 
 // Wires up Waffle with Chai
@@ -33,6 +33,11 @@ describe('Bond Factory contract', () => {
     })
 
     describe('create bond', () => {
+        after(async () => {
+            if (await bonds.paused()) {
+                await bonds.unpause()
+            }
+        })
         it('with BIT token collateral', async () => {
             const bondName = 'Special Debt Certificate'
             const bondSymbol = 'SDC001'
@@ -43,15 +48,14 @@ describe('Bond Factory contract', () => {
 
             const receipt = await execute(
                 bonds.createBond(
-                    {name: bondName, symbol: bondSymbol},
+                    {name: bondName, symbol: bondSymbol, data: data},
                     {
                         debtTokenAmount: debtTokenAmount,
                         collateralTokens: collateralTokens.address,
                         expiryTimestamp: expiryTimestamp,
-                        minimumDeposit: minimumDeposit,
-                        treasury: treasury,
-                        data: data
-                    }
+                        minimumDeposit: minimumDeposit
+                    },
+                    treasury
                 )
             )
 
@@ -74,23 +78,24 @@ describe('Bond Factory contract', () => {
 
             await expect(
                 bonds.createBond(
-                    {name: 'Named bond', symbol: 'AA00AA'},
+                    {name: 'Named bond', symbol: 'AA00AA', data: ''},
                     {
                         debtTokenAmount: 101n,
                         collateralTokens: collateralTokens.address,
                         expiryTimestamp: 0n,
-                        minimumDeposit: 0n,
-                        treasury: treasury,
-                        data: ''
-                    }
+                        minimumDeposit: 0n
+                    },
+                    treasury
                 )
             ).to.be.revertedWith('Pausable: paused')
         })
     })
 
     describe('unpause', () => {
-        before(async () => {
-            await bonds.unpause()
+        after(async () => {
+            if (await bonds.paused()) {
+                await bonds.unpause()
+            }
         })
         it('changes state', async () => {
             await bonds.pause()
@@ -102,14 +107,14 @@ describe('Bond Factory contract', () => {
             expect(await bonds.paused()).is.false
         })
 
-        it('only bond admin', async () => {
+        it('only system admin', async () => {
             await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessage(nonAdmin, BOND_ADMIN)
+                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
             )
         })
 
         it('only when paused', async () => {
-            await expect(bonds.unpause()).to.be.revertedWith(
+            await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
                 'Pausable: not paused'
             )
         })

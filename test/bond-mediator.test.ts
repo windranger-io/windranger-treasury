@@ -18,7 +18,7 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {BOND_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 import {eventLog} from './framework/event-logs'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
@@ -64,13 +64,13 @@ describe('Bond Mediator contract', () => {
                     await mediator.unpause()
                 }
             })
-            it('only bond admin', async () => {
+            it('only dao admin', async () => {
                 await expect(
                     mediator
                         .connect(nonAdmin)
                         .whitelistCollateral(daoId, collateralTokens.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonAdmin, DAO_ADMIN)
                 )
             })
 
@@ -109,7 +109,7 @@ describe('Bond Mediator contract', () => {
                 }
             })
 
-            it('only bond admin', async () => {
+            it('only dao admin', async () => {
                 await expect(
                     mediator
                         .connect(nonAdmin)
@@ -118,7 +118,7 @@ describe('Bond Mediator contract', () => {
                             collateralTokens.address
                         )
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonAdmin, DAO_ADMIN)
                 )
             })
 
@@ -146,13 +146,18 @@ describe('Bond Mediator contract', () => {
                 await expect(
                     mediator.createManagedBond(
                         daoId,
-                        'Named bond',
-                        'AA00AA',
-                        101n,
-                        nonWhitelistCollateralTokens.address,
-                        0n,
-                        0n,
-                        ''
+                        {
+                            name: 'Named bond',
+                            symbol: 'AA00AA',
+                            data: ''
+                        },
+                        {
+                            collateralTokens:
+                                nonWhitelistCollateralTokens.address,
+                            debtTokenAmount: 101n,
+                            expiryTimestamp: 0n,
+                            minimumDeposit: 0n
+                        }
                     )
                 ).to.be.revertedWith('BM: collateral not whitelisted')
             })
@@ -161,33 +166,40 @@ describe('Bond Mediator contract', () => {
                 await expect(
                     mediator.createManagedBond(
                         INVALID_DAO_ID,
-                        'Named bond',
-                        'AA00AA',
-                        101n,
-                        nonWhitelistCollateralTokens.address,
-                        0n,
-                        0n,
-                        ''
+                        {
+                            name: 'Named bond',
+                            symbol: 'AA00AA',
+                            data: ''
+                        },
+                        {
+                            collateralTokens:
+                                nonWhitelistCollateralTokens.address,
+                            debtTokenAmount: 201n,
+                            expiryTimestamp: 0n,
+                            minimumDeposit: 0n
+                        }
                     )
                 ).to.be.revertedWith('BM: invalid DAO Id')
             })
 
-            it('only bond admin', async () => {
+            it('only dao meeple', async () => {
                 await expect(
-                    mediator
-                        .connect(nonAdmin)
-                        .createManagedBond(
-                            daoId,
-                            'Bond Name',
-                            'Bond Symbol',
-                            1n,
-                            collateralTokens.address,
-                            0n,
-                            100n,
-                            ''
-                        )
+                    mediator.connect(nonAdmin).createManagedBond(
+                        daoId,
+                        {
+                            name: 'Named bond',
+                            symbol: 'Bond Symbol',
+                            data: ''
+                        },
+                        {
+                            collateralTokens: collateralTokens.address,
+                            debtTokenAmount: 1n,
+                            expiryTimestamp: 0n,
+                            minimumDeposit: 100n
+                        }
+                    )
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonAdmin, DAO_MEEPLE)
                 )
             })
 
@@ -202,13 +214,17 @@ describe('Bond Mediator contract', () => {
                 const receipt = await successfulTransaction(
                     mediator.createManagedBond(
                         daoId,
-                        bondName,
-                        bondSymbol,
-                        debtTokens,
-                        collateralTokens.address,
-                        expiryTimestamp,
-                        minimumDeposit,
-                        metaData
+                        {
+                            name: bondName,
+                            symbol: bondSymbol,
+                            data: metaData
+                        },
+                        {
+                            collateralTokens: collateralTokens.address,
+                            debtTokenAmount: debtTokens,
+                            expiryTimestamp: expiryTimestamp,
+                            minimumDeposit: minimumDeposit
+                        }
                     )
                 )
 
@@ -259,13 +275,17 @@ describe('Bond Mediator contract', () => {
                 await expect(
                     mediator.createManagedBond(
                         daoId,
-                        'Bond Name',
-                        'Bond Symbol',
-                        1n,
-                        collateralTokens.address,
-                        0n,
-                        100n,
-                        ''
+                        {
+                            name: 'Named bond',
+                            symbol: 'Bond Symbol',
+                            data: ''
+                        },
+                        {
+                            collateralTokens: collateralTokens.address,
+                            debtTokenAmount: 5n,
+                            expiryTimestamp: 2n,
+                            minimumDeposit: 70n
+                        }
                     )
                 ).to.be.revertedWith('Pausable: paused')
             })
@@ -292,7 +312,7 @@ describe('Bond Mediator contract', () => {
                 await expect(
                     mediator.connect(nonAdmin).setDaoTreasury(daoId, treasury)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonAdmin, DAO_ADMIN)
                 )
             })
 
@@ -323,9 +343,9 @@ describe('Bond Mediator contract', () => {
             expect(await mediator.paused()).is.false
         })
 
-        it('only bond admin', async () => {
+        it('only system admin', async () => {
             await expect(mediator.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessage(nonAdmin, BOND_ADMIN)
+                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
             )
         })
 

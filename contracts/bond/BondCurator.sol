@@ -2,13 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
-import "./BondAccessControl.sol";
-import "./Roles.sol";
+import "./RoleAccessControl.sol";
 import "./SingleCollateralBond.sol";
-import "../Version.sol";
 
 /**
  * @title Manages interactions with Bond contracts.
@@ -17,12 +14,7 @@ import "../Version.sol";
  *
  * @dev Owns of all Bonds it manages, guarding function accordingly allows finer access control to be provided.
  */
-abstract contract BondCurator is
-    BondAccessControl,
-    PausableUpgradeable,
-    UUPSUpgradeable,
-    Version
-{
+abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     mapping(uint256 => EnumerableSetUpgradeable.AddressSet) private _bonds;
@@ -31,7 +23,7 @@ abstract contract BondCurator is
         uint256 daoId,
         address bond,
         string calldata reason
-    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+    ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).allowRedemption(reason);
@@ -40,7 +32,7 @@ abstract contract BondCurator is
     function bondPause(uint256 daoId, address bond)
         external
         whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
+        atLeastDaoAminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -52,7 +44,7 @@ abstract contract BondCurator is
         address bond,
         uint256 amount,
         string calldata reason
-    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+    ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).slash(amount, reason);
@@ -62,7 +54,7 @@ abstract contract BondCurator is
         uint256 daoId,
         address bond,
         string calldata data
-    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+    ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).setMetaData(data);
@@ -72,7 +64,7 @@ abstract contract BondCurator is
         uint256 daoId,
         address bond,
         address replacement
-    ) external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+    ) external whenNotPaused atLeastDaoAminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).setTreasury(replacement);
@@ -81,7 +73,7 @@ abstract contract BondCurator is
     function bondUnpause(uint256 daoId, address bond)
         external
         whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
+        atLeastDaoAminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -91,7 +83,7 @@ abstract contract BondCurator is
     function bondWithdrawCollateral(uint256 daoId, address bond)
         external
         whenNotPaused
-        onlyRole(Roles.BOND_ADMIN)
+        atLeastDaoAminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -101,14 +93,14 @@ abstract contract BondCurator is
     /**
      * @notice Pauses most side affecting functions.
      */
-    function pause() external whenNotPaused onlyRole(Roles.BOND_ADMIN) {
+    function pause() external whenNotPaused atLeastSysAdminRole {
         _pause();
     }
 
     /**
      * @notice Resumes all paused side affecting functions.
      */
-    function unpause() external whenPaused onlyRole(Roles.BOND_ADMIN) {
+    function unpause() external whenPaused atLeastSysAdminRole {
         _unpause();
     }
 
@@ -140,22 +132,10 @@ abstract contract BondCurator is
         require(added, "BondCurator: failed to add");
     }
 
-    /**
-     * @notice Permits only the relevant admins to perform proxy upgrades.
-     *
-     * @dev Only applicable when deployed as implementation to a UUPS proxy.
-     */
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyRole(Roles.SYSTEM_ADMIN)
-    {}
-
     //slither-disable-next-line naming-convention
     function __BondCurator_init() internal onlyInitializing {
-        __BondAccessControl_init();
+        __RoleAccessControl_init();
         __Pausable_init();
-        __UUPSUpgradeable_init();
     }
 
     function _requireManagingBond(uint256 daoId, address bond) private view {

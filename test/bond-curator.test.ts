@@ -25,7 +25,7 @@ import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {event} from './framework/events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
-import {BOND_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -42,9 +42,8 @@ describe('Bond Curator contract', () => {
         treasury = (await signer(2)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         creator = await deployContractWithProxy<BondFactory>('BondFactory')
-        curator = await deployContractWithProxy<BondCuratorBox>(
-            'BondCuratorBox'
-        )
+        curator = await deployContract<BondCuratorBox>('BondCuratorBox')
+        await successfulTransaction(curator.initialize())
     })
 
     describe('add bond', () => {
@@ -110,9 +109,8 @@ describe('Bond Curator contract', () => {
 
     describe('bond', () => {
         beforeEach(async () => {
-            curator = await deployContractWithProxy<BondCuratorBox>(
-                'BondCuratorBox'
-            )
+            curator = await deployContract<BondCuratorBox>('BondCuratorBox')
+            await successfulTransaction(curator.initialize())
             bond = await createBond()
         })
 
@@ -144,7 +142,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only bond admin', async () => {
+            it('only dao meeple', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -154,7 +152,7 @@ describe('Bond Curator contract', () => {
                             REDEMPTION_REASON
                         )
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
                 )
             })
 
@@ -192,13 +190,13 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only bond admin', async () => {
+            it('only dao admin', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondPause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -239,13 +237,13 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only bond admin', async () => {
+            it('only dao meeple', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondSlash(DAO_ID, bond.address, 5n, BOND_SLASH_REASON)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
                 )
             })
 
@@ -288,13 +286,13 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only bond admin', async () => {
+            it('only dao meeple', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondSetMetaData(DAO_ID, bond.address, 'meta')
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
                 )
             })
 
@@ -332,13 +330,13 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only bond admin', async () => {
+            it('only dao admin', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondSetTreasury(DAO_ID, bond.address, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -376,13 +374,13 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only bond admin', async () => {
+            it('only dao admin', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondUnpause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -413,13 +411,13 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only bond admin', async () => {
+            it('only dao admin', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondWithdrawCollateral(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
                 )
             })
 
@@ -453,11 +451,11 @@ describe('Bond Curator contract', () => {
             await expect(curator.pause()).to.be.revertedWith('Pausable: paused')
         })
 
-        it('only bond admin', async () => {
+        it('only system admin', async () => {
             await expect(
                 curator.connect(nonBondAdmin).unpause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                accessControlRevertMessage(nonBondAdmin, SYSTEM_ADMIN)
             )
         })
     })
@@ -477,11 +475,11 @@ describe('Bond Curator contract', () => {
             )
         })
 
-        it('only bond admin', async () => {
+        it('only system admin', async () => {
             await expect(
                 curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, BOND_ADMIN)
+                accessControlRevertMessage(nonBondAdmin, SYSTEM_ADMIN)
             )
         })
     })
@@ -495,15 +493,14 @@ describe('Bond Curator contract', () => {
     ): Promise<ERC20SingleCollateralBond> {
         const receipt = await execute(
             creator.createBond(
-                {name: 'name', symbol: 'symbol'},
+                {name: 'name', symbol: 'symbol', data: ''},
                 {
                     debtTokenAmount: 100n,
                     collateralTokens: collateralTokens.address,
                     expiryTimestamp: 0n,
-                    minimumDeposit: 1n,
-                    treasury: treasury,
-                    data: ''
-                }
+                    minimumDeposit: 1n
+                },
+                treasury
             )
         )
 

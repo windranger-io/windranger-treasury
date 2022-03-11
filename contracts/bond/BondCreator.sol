@@ -1,40 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "./Bond.sol";
+
 /**
  * @title Deploys new Bonds.
  *
  * @notice Creating a Bond involves the two steps of deploying and initialising.
  */
 interface BondCreator {
-    struct BondIdentity {
-        /** Description of the purpose of the Bond. */
-        string name;
-        /** Abbreviation to identify the Bond. */
-        string symbol;
-    }
-
-    struct BondSettings {
-        /** Number of tokens to create, which get swapped for collateral tokens by depositing. */
-        uint256 debtTokenAmount;
-        /** Token contract for the collateral that is swapped for debt tokens during deposit. */
-        address collateralTokens;
-        /**
-         * Unix timestamp for when the Bond is expired and anyone can move the remaining collateral to the Treasury,
-         * then petitions may be made for redemption.
-         */
-        uint256 expiryTimestamp;
-        /**
-         * Minimum debt holding allowed in the deposit phase. Once the minimum is met,
-         * any sized deposit from that account is allowed, as the minimum has already been met.
-         */
-        uint256 minimumDeposit;
-        /** receiver of any slashed or swept tokens. */
-        address treasury;
-        /** Metadata not required for the operation of the Bond, but needed by external actors. */
-        string data;
-    }
-
     event CreateBond(
         address indexed bond,
         string name,
@@ -50,10 +24,13 @@ interface BondCreator {
     /**
      * @notice Deploys and initialises a new Bond.
      *
-     * @param id Identity for the Bond to create.
-     * @param config Values to use during the Bond creation process.
+     * @param metadata General details about the Bond no essential for operation.
+     * @param configuration Values to use during the Bond creation process.
+     * @param treasury Receiver of any slashed or swept tokens or collateral.
      */
-    function createBond(BondIdentity calldata id, BondSettings calldata config)
-        external
-        returns (address);
+    function createBond(
+        Bond.MetaData memory metadata,
+        Bond.Settings memory configuration,
+        address treasury
+    ) external returns (address);
 }
