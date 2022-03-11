@@ -10,7 +10,7 @@ import "./Bond.sol";
 import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
-import "./Roles.sol";
+import "../Roles.sol";
 import "../Version.sol";
 
 /**

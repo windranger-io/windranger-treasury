@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./RoleMembership.sol";
-import "./Roles.sol";
+import "../Roles.sol";
 
 /**
  * @title Access control using a predefined set of roles.
