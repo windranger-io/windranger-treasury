@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "./DaoAccessControl.sol";
 import "./Roles.sol";
 
@@ -12,7 +13,7 @@ import "./Roles.sol";
  *
  * @notice Provides modifiers and management for access control required throughout the Bond contracts.
  */
-abstract contract BondAccessControl is DaoAccessControl {
+abstract contract BondAccessControl is DaoAccessControl, ContextUpgradeable {
     modifier onlySuperUserRole() {
         if (_isMissingGlobalRole(Roles.SUPER_USER, _msgSender())) {
             revert(
@@ -91,7 +92,7 @@ abstract contract BondAccessControl is DaoAccessControl {
     }
 
     function grantSysAdminRole(address account) external atLeastSysAdminRole {
-        _grantGlobalRole(Roles.DAO_CREATOR, account);
+        _grantGlobalRole(Roles.SYSTEM_ADMIN, account);
     }
 
     function grantDaoAdminRole(uint256 daoId, address account)
@@ -117,7 +118,7 @@ abstract contract BondAccessControl is DaoAccessControl {
     }
 
     function revokeSysAdminRole(address account) external atLeastSysAdminRole {
-        _revokeGlobalRole(Roles.DAO_CREATOR, account);
+        _revokeGlobalRole(Roles.SYSTEM_ADMIN, account);
     }
 
     function revokeDaoAdminRole(uint256 daoId, address account)

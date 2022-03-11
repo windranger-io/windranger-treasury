@@ -27,6 +27,11 @@ describe('Bond Access Control contract', () => {
         )
     })
 
+    /*
+     * TODO missing role
+     * TODO missing permissions
+     */
+
     describe('DAO Admin', () => {
         it('add member', async () => {
             expect(
@@ -67,12 +72,6 @@ describe('Bond Access Control contract', () => {
                 )
             ).is.false
         })
-
-        it('DAO Admin is the role admin', async () => {
-            expect(
-                await accessControl.allDaoRoleAdmins(DAO_ID, DAO_ADMIN_ROLE)
-            ).equals(DAO_ADMIN_ROLE)
-        })
     })
 
     describe('SysAdmin', () => {
@@ -90,16 +89,10 @@ describe('Bond Access Control contract', () => {
             expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
                 .is.true
 
-            await accessControl.revokeDaoAdminRole(SYS_ADMIN_ROLE, memberTwo)
+            await accessControl.revokeSysAdminRole(memberTwo)
 
             expect(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, memberTwo))
                 .is.false
-        })
-
-        it('DAO Admin is the role admin', async () => {
-            expect(
-                await accessControl.allGlobalRoleAdmins(SYS_ADMIN_ROLE)
-            ).equals(SYS_ADMIN_ROLE)
         })
     })
 

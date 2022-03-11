@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
 // TODO not useful, needs the roles setup in child
-// TODO multi admin access control
+// TODO enforcement of role admins in child
 /**
  * @title
  *
@@ -14,11 +13,8 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
  *
  * @dev
  */
-abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.Bytes32Set;
-
+abstract contract DaoAccessControl is Initializable {
     struct Role {
-        EnumerableSetUpgradeable.Bytes32Set adminRoles;
         mapping(address => bool) members;
     }
 
@@ -36,42 +32,6 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     event RemoveGlobalRoleAdmin(bytes32 role, bytes32 adminRole);
     event RevokeDaoRole(uint256 daoId, bytes32 role, address account);
     event RevokeGlobalRole(bytes32 role, address account);
-
-    /**
-     * @notice The set of admin roles for a DAO role.
-     *
-     * @dev
-     * WARNING: This operation will copy the entire storage to memory, which could be very expensive.
-     * Provided to be used by view accessors that are queried without any gas fees.
-     * Developers should keep in mind that this function has an unbounded cost, as part of a state-changing function it
-     * may render that function uncallable if the set grows to a point where copying to memory consumes too much gas
-     * to fit in a block.
-     */
-    function allDaoRoleAdmins(uint256 daoId, bytes32 role)
-        external
-        view
-        returns (bytes32[] memory)
-    {
-        return _daoRoles[daoId][role].adminRoles.values();
-    }
-
-    /**
-     * @notice The set of admin roles for a global role.
-     *
-     * @dev
-     * WARNING: This operation will copy the entire storage to memory, which could be very expensive.
-     * Provided to be used by view accessors that are queried without any gas fees.
-     * Developers should keep in mind that this function has an unbounded cost, as part of a state-changing function it
-     * may render that function uncallable if the set grows to a point where copying to memory consumes too much gas
-     * to fit in a block.
-     */
-    function allGlobalRoleAdmins(bytes32 role)
-        external
-        view
-        returns (bytes32[] memory)
-    {
-        return _globalRoles[role].adminRoles.values();
-    }
 
     function hasGlobalRole(bytes32 role, address account)
         public
@@ -96,7 +56,7 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     ) internal {
         require(
             _isMissingDaoRole(daoId, role, account),
-            "DaoAccessControl: has role"
+            "AccessControl: has role"
         );
 
         _daoRoles[daoId][role].members[account] = true;
@@ -104,10 +64,7 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     }
 
     function _grantGlobalRole(bytes32 role, address account) internal {
-        require(
-            _isMissingGlobalRole(role, account),
-            "DaoAccessControl: has role"
-        );
+        require(_isMissingGlobalRole(role, account), "AccessControl: has role");
 
         _globalRoles[role].members[account] = true;
         emit GrantGlobalRole(role, account);
@@ -120,70 +77,19 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     ) internal {
         require(
             hasDaoRole(daoId, role, account),
-            "DaoAccessControl: missing role"
+            "AccessControl: missing role"
         );
 
         delete _daoRoles[daoId][role].members[account];
         emit RevokeDaoRole(daoId, role, account);
     }
 
+    //TODO custom message - say which role they're missing
     function _revokeGlobalRole(bytes32 role, address account) internal {
-        require(hasGlobalRole(role, account), "DaoAccessControl: missing role");
+        require(hasGlobalRole(role, account), "AccessControl: missing role");
 
         delete _globalRoles[role].members[account];
         emit RevokeGlobalRole(role, account);
-    }
-
-    function _addGlobalRoleAdmin(bytes32 role, bytes32 adminRole) internal {
-        require(
-            !_isGlobalRoleAdmin(role, adminRole),
-            "DaoAccessControl: role member"
-        );
-
-        bool added = _globalRoles[role].adminRoles.add(adminRole);
-        require(added, "DaoAccessControl: add failed");
-        emit AddGlobalRoleAdmin(role, adminRole);
-    }
-
-    function _addDaoRoleAdmin(
-        uint256 daoId,
-        bytes32 role,
-        bytes32 adminRole
-    ) internal {
-        require(
-            !_isDaoRoleAdmin(daoId, role, adminRole),
-            "DaoAccessControl: role member"
-        );
-
-        bool added = _daoRoles[daoId][role].adminRoles.add(adminRole);
-        require(added, "DaoAccessControl: add failed");
-        emit AddDaoRoleAdmin(daoId, role, adminRole);
-    }
-
-    function _removeGlobalRoleAdmin(bytes32 role, bytes32 adminRole) internal {
-        require(
-            _isGlobalRoleAdmin(role, adminRole),
-            "DaoAccessControl: not present"
-        );
-
-        bool remove = _globalRoles[role].adminRoles.remove(adminRole);
-        require(remove, "DaoAccessControl: remove failed");
-        emit RemoveGlobalRoleAdmin(role, adminRole);
-    }
-
-    function _removeDaoRoleAdmin(
-        uint256 daoId,
-        bytes32 role,
-        bytes32 adminRole
-    ) internal {
-        require(
-            _isDaoRoleAdmin(daoId, role, adminRole),
-            "DaoAccessControl: not present"
-        );
-
-        bool remove = _daoRoles[daoId][role].adminRoles.remove(adminRole);
-        require(remove, "DaoAccessControl: remove failed");
-        emit RemoveDaoRoleAdmin(daoId, role, adminRole);
     }
 
     //slither-disable-next-line naming-convention
@@ -244,22 +150,6 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
                     StringsUpgradeable.toHexString(daoId, 32)
                 )
             );
-    }
-
-    function _isGlobalRoleAdmin(bytes32 role, bytes32 adminRole)
-        private
-        view
-        returns (bool)
-    {
-        return _globalRoles[role].adminRoles.contains(adminRole);
-    }
-
-    function _isDaoRoleAdmin(
-        uint256 daoId,
-        bytes32 role,
-        bytes32 adminRole
-    ) private view returns (bool) {
-        return _daoRoles[daoId][role].adminRoles.contains(adminRole);
     }
 
     /**
