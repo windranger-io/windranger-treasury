@@ -87,8 +87,10 @@ describe('Bond Factory contract', () => {
     })
 
     describe('unpause', () => {
-        before(async () => {
-            await bonds.unpause()
+        after(async () => {
+            if (await bonds.paused()) {
+                await bonds.unpause()
+            }
         })
         it('changes state', async () => {
             await bonds.pause()

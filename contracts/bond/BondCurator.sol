@@ -33,7 +33,7 @@ abstract contract BondCurator is
         string calldata reason
     )   external
         whenNotPaused
-        onlyDaoRole(daoId, Roles.DAO_ADMIN)
+        atLeastDaoAminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -43,7 +43,7 @@ abstract contract BondCurator is
     function bondPause(uint256 daoId, address bond)
         external
         whenNotPaused
-        onlyDaoRole(daoId, Roles.DAO_ADMIN)
+        atLeastDaoAminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -55,7 +55,7 @@ abstract contract BondCurator is
         address bond,
         uint256 amount,
         string calldata reason
-    ) external whenNotPaused onlyDaoRole(daoId, Roles.DAO_ADMIN) {
+    ) external whenNotPaused atLeastDaoAminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).slash(amount, reason);
@@ -65,7 +65,7 @@ abstract contract BondCurator is
         uint256 daoId,
         address bond,
         string calldata data
-    ) external whenNotPaused onlyDaoRole(daoId, Roles.DAO_ADMIN) {
+    ) external whenNotPaused atLeastDaoAminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).setMetaData(data);
@@ -75,7 +75,7 @@ abstract contract BondCurator is
         uint256 daoId,
         address bond,
         address replacement
-    ) external whenNotPaused onlyDaoRole(daoId, Roles.DAO_ADMIN) {
+    ) external whenNotPaused atLeastDaoAminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).setTreasury(replacement);
@@ -84,7 +84,7 @@ abstract contract BondCurator is
     function bondUnpause(uint256 daoId, address bond)
         external
         whenNotPaused
-        onlyDaoRole(daoId, Roles.DAO_ADMIN)
+        atLeastDaoAminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -94,7 +94,7 @@ abstract contract BondCurator is
     function bondWithdrawCollateral(uint256 daoId, address bond)
         external
         whenNotPaused
-        onlyDaoRole(daoId, Roles.DAO_ADMIN)
+        atLeastDaoAminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -104,14 +104,14 @@ abstract contract BondCurator is
     /**
      * @notice Pauses most side affecting functions.
      */
-    function pause() external whenNotPaused onlyGlobalRole(Roles.SYSTEM_ADMIN) {
+    function pause() external whenNotPaused atLeastSysAdminRole {
         _pause();
     }
 
     /**
      * @notice Resumes all paused side affecting functions.
      */
-    function unpause() external whenPaused onlyGlobalRole(Roles.SYSTEM_ADMIN) {
+    function unpause() external whenPaused atLeastSysAdminRole {
         _unpause();
     }
 
@@ -151,7 +151,7 @@ abstract contract BondCurator is
     function _authorizeUpgrade(address newImplementation)
         internal
         override
-        onlyGlobalRole(Roles.SYSTEM_ADMIN)
+        atLeastSysAdminRole
     {}
 
     //slither-disable-next-line naming-convention

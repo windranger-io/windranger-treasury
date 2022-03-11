@@ -38,26 +38,6 @@ abstract contract DaoAccessControl is Initializable, ContextUpgradeable {
     event RevokeGlobalRole(bytes32 role, address account);
 
     /**
-     * @notice Modifier for enforcing that an account has a specific global role
-     *
-     * @dev Reverts with a standardized message including the required role.
-     */
-    modifier onlyGlobalRole(bytes32 role) {
-        _checkGlobalRole(role, _msgSender());
-        _;
-    }
-
-    /**
-     * @notice Modifier for enforcing that an account has a specific DAO role
-     *
-     * @dev Reverts with a standardized message including the required role.
-     */
-    modifier onlyDaoRole(uint256 daoId, bytes32 role) {
-        _checkDaoRole(daoId, role, _msgSender());
-        _;
-    }
-
-    /**
      * @notice The set of admin roles for a DAO role.
      *
      * @dev
