@@ -9,24 +9,22 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
  *
  * @notice Encapsulation of tracking, management and validation of role membership of addresses.
  *
- * There are two distinct classes of roles:
- * - Global; without scope limit.
- * - Dao; membership scoped to that of the key (uint256).
+ *  A role is a bytes32 value.
+ *
+ *  There are two distinct classes of roles:
+ *  - Global; without scope limit.
+ *  - Dao; membership scoped to that of the key (uint256).
  *
  * @dev Meaningful application of role membership is expected to come from derived contracts.
  *      e.g. access control.
  */
 abstract contract RoleMembership is Initializable {
-    // TODO collapse the Role
-    struct Role {
-        mapping(address => bool) members;
-    }
+    // DAOs to their roles to members; scoped to an individual DAO
+    mapping(uint256 => mapping(bytes32 => mapping(address => bool)))
+        private _daoRoleMembers;
 
-    // Roles that apply in DAOs individually
-    mapping(uint256 => mapping(bytes32 => Role)) private _daoRoles;
-
-    // Roles that apply across all DAOs
-    mapping(bytes32 => Role) private _globalRoles;
+    // Global roles to members; apply across all DAOs
+    mapping(bytes32 => mapping(address => bool)) private _globalRoleMembers;
 
     event GrantDaoRole(uint256 daoId, bytes32 role, address account);
     event GrantGlobalRole(bytes32 role, address account);
@@ -38,7 +36,7 @@ abstract contract RoleMembership is Initializable {
         view
         returns (bool)
     {
-        return _globalRoles[role].members[account];
+        return _globalRoleMembers[role][account];
     }
 
     function hasDaoRole(
@@ -46,7 +44,7 @@ abstract contract RoleMembership is Initializable {
         bytes32 role,
         address account
     ) public view returns (bool) {
-        return _daoRoles[daoId][role].members[account];
+        return _daoRoleMembers[daoId][role][account];
     }
 
     function _grantDaoRole(
@@ -59,7 +57,7 @@ abstract contract RoleMembership is Initializable {
             "RoleMembership: has role"
         );
 
-        _daoRoles[daoId][role].members[account] = true;
+        _daoRoleMembers[daoId][role][account] = true;
         emit GrantDaoRole(daoId, role, account);
     }
 
@@ -69,7 +67,7 @@ abstract contract RoleMembership is Initializable {
             "RoleMembership: has role"
         );
 
-        _globalRoles[role].members[account] = true;
+        _globalRoleMembers[role][account] = true;
         emit GrantGlobalRole(role, account);
     }
 
@@ -82,7 +80,7 @@ abstract contract RoleMembership is Initializable {
             revert(_revertMessageMissingDaoRole(daoId, role, account));
         }
 
-        delete _daoRoles[daoId][role].members[account];
+        delete _daoRoleMembers[daoId][role][account];
         emit RevokeDaoRole(daoId, role, account);
     }
 
@@ -91,7 +89,7 @@ abstract contract RoleMembership is Initializable {
             revert(_revertMessageMissingGlobalRole(role, account));
         }
 
-        delete _globalRoles[role].members[account];
+        delete _globalRoleMembers[role][account];
         emit RevokeGlobalRole(role, account);
     }
 
@@ -103,7 +101,7 @@ abstract contract RoleMembership is Initializable {
         bytes32 role,
         address account
     ) internal view returns (bool) {
-        return !_daoRoles[daoId][role].members[account];
+        return !_daoRoleMembers[daoId][role][account];
     }
 
     function _isMissingGlobalRole(bytes32 role, address account)
@@ -111,7 +109,7 @@ abstract contract RoleMembership is Initializable {
         view
         returns (bool)
     {
-        return !_globalRoles[role].members[account];
+        return !_globalRoleMembers[role][account];
     }
 
     /**

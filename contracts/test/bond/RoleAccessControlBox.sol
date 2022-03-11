@@ -13,6 +13,6 @@ contract BondAccessControlBox is RoleAccessControl {
      * As BondAccessControl is intended to be used in Upgradable contracts, it uses an init.
      */
     constructor() initializer {
-        __BondAccessControl_init();
+        __RoleAccessControl_init();
     }
 }

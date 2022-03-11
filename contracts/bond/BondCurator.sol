@@ -137,7 +137,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
 
     //slither-disable-next-line naming-convention
     function __BondCurator_init() internal onlyInitializing {
-        __BondAccessControl_init();
+        __RoleAccessControl_init();
         __Pausable_init();
     }
 

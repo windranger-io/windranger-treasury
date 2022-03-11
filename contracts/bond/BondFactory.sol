@@ -26,7 +26,7 @@ contract BondFactory is
      *      have been setup.
      */
     function initialize() external virtual initializer {
-        __BondAccessControl_init();
+        __RoleAccessControl_init();
         __UUPSUpgradeable_init();
     }
 
