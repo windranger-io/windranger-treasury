@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./ERC20SingleCollateralBond.sol";
 import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
-import "./Roles.sol";
+import "../Roles.sol";
 import "../Version.sol";
 
 /**

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-import "./Roles.sol";
+import "../Roles.sol";
 import "./StakingAccessControl.sol";
 import "./FloatingStakingPool.sol";
 import "./StakingPoolInfo.sol";

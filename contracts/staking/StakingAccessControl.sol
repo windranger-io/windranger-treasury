@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "./Roles.sol";
+import "../Roles.sol";
 
 /**
  * @title Access control dedicated for the Staking family of contracts.
