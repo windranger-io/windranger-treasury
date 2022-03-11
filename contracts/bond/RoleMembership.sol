@@ -4,16 +4,20 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
-// TODO not useful, needs the roles setup in child
-// TODO enforcement of role admins in child
 /**
- * @title
+ * @title Role based set membership.
  *
- * @notice
+ * @notice Encapsulation of tracking, management and validation of role membership of addresses.
  *
- * @dev
+ * There are two distinct classes of roles:
+ * - Global; without scope limit.
+ * - Dao; membership scoped to that of the key (uint256).
+ *
+ * @dev Meaningful application of role membership is expected to come from derived contracts.
+ *      e.g. access control.
  */
-abstract contract DaoAccessControl is Initializable {
+abstract contract RoleMembership is Initializable {
+    // TODO collapse the Role
     struct Role {
         mapping(address => bool) members;
     }
