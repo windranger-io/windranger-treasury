@@ -5,12 +5,13 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import "../Roles.sol";
-import "./StakingAccessControl.sol";
+
 import "./FloatingStakingPool.sol";
 import "./StakingPoolInfo.sol";
+import "../RoleAccessControl.sol";
 
 abstract contract FloatingStakingPoolFactory is
-    StakingAccessControl,
+    RoleAccessControl,
     PausableUpgradeable,
     UUPSUpgradeable
 {
@@ -28,13 +29,14 @@ abstract contract FloatingStakingPoolFactory is
 
     // solhint-disable-next-line
     function __FloatingStakingPoolFactory_init() public virtual initializer {
-        __StakingAccessControl_init();
+        __RoleAccessControl_init();
         __UUPSUpgradeable_init();
     }
 
     function createFloatingStakingPool(
+        uint256 daoId,
         StakingPoolInfo.StakingPoolData calldata _info
-    ) public virtual whenNotPaused onlyRole(Roles.DAO_ADMIN) returns (address) {
+    ) public virtual whenNotPaused atLeastDaoAminRole(daoId) returns (address) {
         FloatingStakingPool floatingStakingPool = new FloatingStakingPool();
 
         emit FloatingStakingPoolCreated(

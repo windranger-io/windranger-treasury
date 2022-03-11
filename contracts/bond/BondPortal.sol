@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./Bond.sol";
-import "./RoleAccessControl.sol";
+import "../RoleAccessControl.sol";
 import "./BondCreator.sol";
 import "./BondCurator.sol";
 import "../Roles.sol";
