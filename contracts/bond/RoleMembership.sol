@@ -52,7 +52,7 @@ abstract contract RoleMembership is Initializable {
         bytes32 role,
         address account
     ) internal {
-        if (!_isMissingDaoRole(daoId, role, account)) {
+        if (_hasDaoRole(daoId, role, account)) {
             revert(_revertMessageAlreadyHasDaoRole(daoId, role, account));
         }
 
@@ -61,7 +61,7 @@ abstract contract RoleMembership is Initializable {
     }
 
     function _grantGlobalRole(bytes32 role, address account) internal {
-        if (!_isMissingGlobalRole(role, account)) {
+        if (_hasGlobalRole(role, account)) {
             revert(_revertMessageAlreadyHasGlobalRole(role, account));
         }
 
@@ -93,6 +93,22 @@ abstract contract RoleMembership is Initializable {
 
     //slither-disable-next-line naming-convention
     function __RoleMembership_init() internal onlyInitializing {}
+
+    function _hasDaoRole(
+        uint256 daoId,
+        bytes32 role,
+        address account
+    ) internal view returns (bool) {
+        return _daoRoleMembers[daoId][role][account];
+    }
+
+    function _hasGlobalRole(bytes32 role, address account)
+        internal
+        view
+        returns (bool)
+    {
+        return _globalRoleMembers[role][account];
+    }
 
     function _isMissingDaoRole(
         uint256 daoId,
