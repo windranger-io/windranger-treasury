@@ -142,7 +142,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao meeple', async () => {
+            it('at least dao meeple role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -190,7 +190,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao admin', async () => {
+            it('at least dao admin role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -237,7 +237,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao meeple', async () => {
+            it('at least dao meeple role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -286,7 +286,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao meeple', async () => {
+            it('at least dao meeple role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -330,7 +330,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao admin', async () => {
+            it('at least dao admin role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -374,7 +374,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao admin', async () => {
+            it('at least dao admin role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -411,7 +411,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao admin', async () => {
+            it('at least dao admin role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -451,7 +451,7 @@ describe('Bond Curator contract', () => {
             await expect(curator.pause()).to.be.revertedWith('Pausable: paused')
         })
 
-        it('only system admin', async () => {
+        it('at least system admin role', async () => {
             await expect(
                 curator.connect(nonBondAdmin).unpause()
             ).to.be.revertedWith(
@@ -475,7 +475,7 @@ describe('Bond Curator contract', () => {
             )
         })
 
-        it('only system admin', async () => {
+        it('at least system admin role', async () => {
             await expect(
                 curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(

@@ -91,15 +91,51 @@ describe('Bond Factory contract', () => {
         })
     })
 
-    describe('unpause', () => {
+    describe('pause', () => {
         after(async () => {
             if (await bonds.paused()) {
                 await bonds.unpause()
             }
         })
+
+        it('at least system admin', async () => {
+            await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
+                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
+            )
+        })
+
         it('changes state', async () => {
+            expect(await bonds.paused()).is.false
+
             await bonds.pause()
 
+            expect(await bonds.paused()).is.true
+        })
+
+        it('only when not paused', async () => {
+            await expect(bonds.pause()).to.be.revertedWith('Pausable: paused')
+        })
+    })
+
+    describe('unpause', () => {
+        before(async () => {
+            if (!(await bonds.paused())) {
+                await bonds.pause()
+            }
+        })
+        after(async () => {
+            if (await bonds.paused()) {
+                await bonds.unpause()
+            }
+        })
+
+        it('at least system admin', async () => {
+            await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
+                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
+            )
+        })
+
+        it('changes state', async () => {
             expect(await bonds.paused()).is.true
 
             await bonds.unpause()
@@ -107,14 +143,8 @@ describe('Bond Factory contract', () => {
             expect(await bonds.paused()).is.false
         })
 
-        it('only system admin', async () => {
-            await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
-            )
-        })
-
         it('only when paused', async () => {
-            await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
+            await expect(bonds.unpause()).to.be.revertedWith(
                 'Pausable: not paused'
             )
         })

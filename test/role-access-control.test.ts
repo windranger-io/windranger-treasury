@@ -26,6 +26,12 @@ describe('Role Access Control contract', () => {
         )
     })
 
+    /*
+     * TODO missing role
+     * TODO missing permissions
+     * TODO custom messages when grant roles fail
+     */
+
     describe('DAO Admin', () => {
         it('add member', async () => {
             expect(
