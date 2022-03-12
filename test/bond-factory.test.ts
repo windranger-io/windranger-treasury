@@ -16,7 +16,7 @@ import {
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
+import {accessControlRevertMessageMissingRole} from './contracts/bond/access-control-messages'
 import {SYSTEM_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 
@@ -100,7 +100,7 @@ describe('Bond Factory contract', () => {
 
         it('at least system admin', async () => {
             await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingRole(nonAdmin, SYSTEM_ADMIN)
             )
         })
 
@@ -131,7 +131,7 @@ describe('Bond Factory contract', () => {
 
         it('at least system admin', async () => {
             await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
-                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingRole(nonAdmin, SYSTEM_ADMIN)
             )
         })
 

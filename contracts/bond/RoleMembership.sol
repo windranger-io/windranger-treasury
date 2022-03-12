@@ -52,20 +52,18 @@ abstract contract RoleMembership is Initializable {
         bytes32 role,
         address account
     ) internal {
-        require(
-            _isMissingDaoRole(daoId, role, account),
-            "RoleMembership: has role"
-        );
+        if (!_isMissingDaoRole(daoId, role, account)) {
+            revert(_revertMessageAlreadyHasDaoRole(daoId, role, account));
+        }
 
         _daoRoleMembers[daoId][role][account] = true;
         emit GrantDaoRole(daoId, role, account);
     }
 
     function _grantGlobalRole(bytes32 role, address account) internal {
-        require(
-            _isMissingGlobalRole(role, account),
-            "RoleMembership: has role"
-        );
+        if (!_isMissingGlobalRole(role, account)) {
+            revert(_revertMessageAlreadyHasGlobalRole(role, account));
+        }
 
         _globalRoleMembers[role][account] = true;
         emit GrantGlobalRole(role, account);
@@ -110,6 +108,47 @@ abstract contract RoleMembership is Initializable {
         returns (bool)
     {
         return !_globalRoleMembers[role][account];
+    }
+
+    /**
+     * @dev Override for a custom revert message.
+     */
+    function _revertMessageAlreadyHasGlobalRole(bytes32 role, address account)
+        internal
+        view
+        virtual
+        returns (string memory)
+    {
+        return
+            string(
+                abi.encodePacked(
+                    "RoleMembership: account ",
+                    StringsUpgradeable.toHexString(uint160(account), 20),
+                    " already has role ",
+                    StringsUpgradeable.toHexString(uint256(role), 32)
+                )
+            );
+    }
+
+    /**
+     * @dev Override the function for a custom revert message.
+     */
+    function _revertMessageAlreadyHasDaoRole(
+        uint256 daoId,
+        bytes32 role,
+        address account
+    ) internal view virtual returns (string memory) {
+        return
+            string(
+                abi.encodePacked(
+                    "RoleMembership: account ",
+                    StringsUpgradeable.toHexString(uint160(account), 20),
+                    " already has role ",
+                    StringsUpgradeable.toHexString(uint256(role), 32),
+                    " in DAO ",
+                    StringsUpgradeable.toHexString(daoId, 32)
+                )
+            );
     }
 
     /**

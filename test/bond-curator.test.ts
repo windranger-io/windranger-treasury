@@ -24,7 +24,7 @@ import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-colla
 import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {event} from './framework/events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
+import {accessControlRevertMessageMissingRole} from './contracts/bond/access-control-messages'
 import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from './contracts/bond/roles'
 
 // Wires up Waffle with Chai
@@ -152,7 +152,10 @@ describe('Bond Curator contract', () => {
                             REDEMPTION_REASON
                         )
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
+                    accessControlRevertMessageMissingRole(
+                        nonBondAdmin,
+                        DAO_MEEPLE
+                    )
                 )
             })
 
@@ -196,7 +199,10 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondPause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -243,7 +249,10 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondSlash(DAO_ID, bond.address, 5n, BOND_SLASH_REASON)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
+                    accessControlRevertMessageMissingRole(
+                        nonBondAdmin,
+                        DAO_MEEPLE
+                    )
                 )
             })
 
@@ -292,7 +301,10 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondSetMetaData(DAO_ID, bond.address, 'meta')
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
+                    accessControlRevertMessageMissingRole(
+                        nonBondAdmin,
+                        DAO_MEEPLE
+                    )
                 )
             })
 
@@ -336,7 +348,10 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondSetTreasury(DAO_ID, bond.address, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -380,7 +395,10 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondUnpause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -417,7 +435,10 @@ describe('Bond Curator contract', () => {
                         .connect(nonBondAdmin)
                         .bondWithdrawCollateral(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -455,7 +476,10 @@ describe('Bond Curator contract', () => {
             await expect(
                 curator.connect(nonBondAdmin).unpause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingRole(
+                    nonBondAdmin,
+                    SYSTEM_ADMIN
+                )
             )
         })
     })
@@ -479,7 +503,10 @@ describe('Bond Curator contract', () => {
             await expect(
                 curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingRole(
+                    nonBondAdmin,
+                    SYSTEM_ADMIN
+                )
             )
         })
     })
