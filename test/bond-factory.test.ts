@@ -16,9 +16,9 @@ import {
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
 import {SYSTEM_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
+import {accessControlRevertMessageMissingGlobalRole} from './contracts/bond/access-control-messages'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -91,15 +91,57 @@ describe('Bond Factory contract', () => {
         })
     })
 
-    describe('unpause', () => {
+    describe('pause', () => {
         after(async () => {
             if (await bonds.paused()) {
                 await bonds.unpause()
             }
         })
+
+        it('at least system admin', async () => {
+            await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
+                accessControlRevertMessageMissingGlobalRole(
+                    nonAdmin,
+                    SYSTEM_ADMIN
+                )
+            )
+        })
+
         it('changes state', async () => {
+            expect(await bonds.paused()).is.false
+
             await bonds.pause()
 
+            expect(await bonds.paused()).is.true
+        })
+
+        it('only when not paused', async () => {
+            await expect(bonds.pause()).to.be.revertedWith('Pausable: paused')
+        })
+    })
+
+    describe('unpause', () => {
+        before(async () => {
+            if (!(await bonds.paused())) {
+                await bonds.pause()
+            }
+        })
+        after(async () => {
+            if (await bonds.paused()) {
+                await bonds.unpause()
+            }
+        })
+
+        it('at least system admin', async () => {
+            await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
+                accessControlRevertMessageMissingGlobalRole(
+                    nonAdmin,
+                    SYSTEM_ADMIN
+                )
+            )
+        })
+
+        it('changes state', async () => {
             expect(await bonds.paused()).is.true
 
             await bonds.unpause()
@@ -107,14 +149,8 @@ describe('Bond Factory contract', () => {
             expect(await bonds.paused()).is.false
         })
 
-        it('only system admin', async () => {
-            await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessage(nonAdmin, SYSTEM_ADMIN)
-            )
-        })
-
         it('only when paused', async () => {
-            await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
+            await expect(bonds.unpause()).to.be.revertedWith(
                 'Pausable: not paused'
             )
         })

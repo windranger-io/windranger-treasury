@@ -24,8 +24,8 @@ import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-colla
 import {createBondEvent} from './contracts/bond/bond-creator-events'
 import {event} from './framework/events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {accessControlRevertMessage} from './contracts/bond/bond-access-control-messages'
 import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from './contracts/bond/roles'
+import {accessControlRevertMessageMissingGlobalRole} from './contracts/bond/access-control-messages'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -142,7 +142,7 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao meeple', async () => {
+            it('at least dao meeple role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
@@ -152,7 +152,10 @@ describe('Bond Curator contract', () => {
                             REDEMPTION_REASON
                         )
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonBondAdmin,
+                        DAO_MEEPLE
+                    )
                 )
             })
 
@@ -190,13 +193,16 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao admin', async () => {
+            it('at least dao admin role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondPause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -237,13 +243,16 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao meeple', async () => {
+            it('at least dao meeple role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondSlash(DAO_ID, bond.address, 5n, BOND_SLASH_REASON)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonBondAdmin,
+                        DAO_MEEPLE
+                    )
                 )
             })
 
@@ -286,13 +295,16 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao meeple', async () => {
+            it('at least dao meeple role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondSetMetaData(DAO_ID, bond.address, 'meta')
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_MEEPLE)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonBondAdmin,
+                        DAO_MEEPLE
+                    )
                 )
             })
 
@@ -330,13 +342,16 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao admin', async () => {
+            it('at least dao admin role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondSetTreasury(DAO_ID, bond.address, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -374,13 +389,16 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao admin', async () => {
+            it('at least dao admin role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondUnpause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -411,13 +429,16 @@ describe('Bond Curator contract', () => {
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
-            it('only dao admin', async () => {
+            it('at least dao admin role', async () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
                         .bondWithdrawCollateral(DAO_ID, bond.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessage(nonBondAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -451,11 +472,14 @@ describe('Bond Curator contract', () => {
             await expect(curator.pause()).to.be.revertedWith('Pausable: paused')
         })
 
-        it('only system admin', async () => {
+        it('at least system admin role', async () => {
             await expect(
                 curator.connect(nonBondAdmin).unpause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingGlobalRole(
+                    nonBondAdmin,
+                    SYSTEM_ADMIN
+                )
             )
         })
     })
@@ -475,11 +499,14 @@ describe('Bond Curator contract', () => {
             )
         })
 
-        it('only system admin', async () => {
+        it('at least system admin role', async () => {
             await expect(
                 curator.connect(nonBondAdmin).pause()
             ).to.be.revertedWith(
-                accessControlRevertMessage(nonBondAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingGlobalRole(
+                    nonBondAdmin,
+                    SYSTEM_ADMIN
+                )
             )
         })
     })
