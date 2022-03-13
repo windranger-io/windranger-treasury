@@ -7,6 +7,7 @@ import chai, {expect} from 'chai'
 import {
     DAO_ADMIN,
     DAO_CREATOR,
+    DAO_MEEPLE,
     Role,
     SUPER_USER,
     SYSTEM_ADMIN
@@ -532,6 +533,208 @@ describe('Role Access Control contract', () => {
         })
     })
 
+    describe('DAO Meeple', () => {
+        describe('add member', () => {
+            before(async () => {
+                await ensureDaoMeepleRoleMembershipMissing(memberOne)
+            })
+            after(async () => {
+                await ensureDaoMeepleRoleMembership(memberOne)
+            })
+
+            it('by Super User', async () => {
+                await verifyDaoRoleMembershipMissing(DAO_MEEPLE, memberOne)
+
+                await accessControl
+                    .connect(superUser)
+                    .grantDaoMeepleRole(DAO_ID, memberOne.address)
+
+                expect(
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_MEEPLE.hex,
+                        memberOne.address
+                    )
+                ).is.true
+            })
+
+            it('by Dao Admin', async () => {
+                await verifyDaoRoleMembershipMissing(DAO_MEEPLE, memberTwo)
+
+                await accessControl
+                    .connect(daoAdmin)
+                    .grantDaoMeepleRole(DAO_ID, memberTwo.address)
+
+                expect(
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_MEEPLE.hex,
+                        memberTwo.address
+                    )
+                ).is.true
+            })
+
+            it('not by System Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(sysAdmin)
+                        .grantDaoMeepleRole(DAO_ID, memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        sysAdmin,
+                        DAO_ADMIN,
+                        DAO_ID
+                    )
+                )
+            })
+
+            it('not by Dao Creator', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoCreator)
+                        .grantDaoMeepleRole(DAO_ID, memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        daoCreator,
+                        DAO_ADMIN,
+                        DAO_ID
+                    )
+                )
+            })
+
+            it('not by Dao Meeple', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoMeeple)
+                        .grantDaoMeepleRole(DAO_ID, memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        daoMeeple,
+                        DAO_ADMIN,
+                        DAO_ID
+                    )
+                )
+            })
+        })
+
+        describe('remove member', () => {
+            before(async () => {
+                await ensureDaoMeepleRoleMembership(memberOne)
+                await ensureDaoMeepleRoleMembership(memberTwo)
+            })
+            after(async () => {
+                await ensureDaoMeepleRoleMembershipMissing(memberOne)
+            })
+
+            it('by Super User', async () => {
+                await verifyDaoRoleMembership(DAO_MEEPLE, memberOne)
+
+                await accessControl
+                    .connect(superUser)
+                    .revokeDaoMeepleRole(DAO_ID, memberOne.address)
+
+                expect(
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_MEEPLE.hex,
+                        memberOne.address
+                    )
+                ).is.false
+            })
+
+            it('by Dao Admin', async () => {
+                await verifyDaoRoleMembership(DAO_MEEPLE, memberTwo)
+
+                await accessControl
+                    .connect(daoAdmin)
+                    .revokeDaoMeepleRole(DAO_ID, memberTwo.address)
+
+                expect(
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_MEEPLE.hex,
+                        memberTwo.address
+                    )
+                ).is.false
+            })
+
+            it('not by System Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(sysAdmin)
+                        .revokeDaoMeepleRole(DAO_ID, memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        sysAdmin,
+                        DAO_ADMIN,
+                        DAO_ID
+                    )
+                )
+            })
+
+            it('not by Dao Creator', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoCreator)
+                        .revokeDaoMeepleRole(DAO_ID, memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        daoCreator,
+                        DAO_ADMIN,
+                        DAO_ID
+                    )
+                )
+            })
+
+            it('not by Dao Meeple', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoMeeple)
+                        .revokeDaoMeepleRole(DAO_ID, memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        daoMeeple,
+                        DAO_ADMIN,
+                        DAO_ID
+                    )
+                )
+            })
+        })
+
+        before(async () => {
+            await ensureDaoMeepleRoleMembership(memberOne)
+        })
+        after(async () => {
+            await ensureDaoMeepleRoleMembershipMissing(memberOne)
+        })
+
+        it('role scoped to dao id', async () => {
+            await verifyDaoRoleMembership(DAO_MEEPLE, memberOne)
+
+            expect(
+                await accessControl.hasDaoRole(
+                    OTHER_DAO_ID,
+                    DAO_MEEPLE.hex,
+                    memberOne.address
+                )
+            ).is.false
+        })
+
+        it('cannot grant role twice', async () => {
+            await verifyDaoRoleMembership(DAO_MEEPLE, memberOne)
+
+            await expect(
+                accessControl.grantDaoMeepleRole(DAO_ID, memberOne.address)
+            ).to.be.revertedWith(
+                accessControlRevertMessageAlreadyDaoRoleMember(
+                    memberOne,
+                    DAO_MEEPLE,
+                    DAO_ID
+                )
+            )
+        })
+    })
+
     describe('Super User', () => {
         describe('add member', () => {
             before(async () => {
@@ -937,6 +1140,36 @@ describe('Role Access Control contract', () => {
         ) {
             await successfulTransaction(
                 accessControl.revokeDaoCreatorRole(member.address)
+            )
+        }
+    }
+
+    async function ensureDaoMeepleRoleMembership(member: SignerWithAddress) {
+        if (
+            !(await accessControl.hasDaoRole(
+                DAO_ID,
+                DAO_MEEPLE.hex,
+                member.address
+            ))
+        ) {
+            await successfulTransaction(
+                accessControl.grantDaoMeepleRole(DAO_ID, member.address)
+            )
+        }
+    }
+
+    async function ensureDaoMeepleRoleMembershipMissing(
+        member: SignerWithAddress
+    ) {
+        if (
+            await accessControl.hasDaoRole(
+                DAO_ID,
+                DAO_MEEPLE.hex,
+                member.address
+            )
+        ) {
+            await successfulTransaction(
+                accessControl.revokeDaoMeepleRole(DAO_ID, member.address)
             )
         }
     }
