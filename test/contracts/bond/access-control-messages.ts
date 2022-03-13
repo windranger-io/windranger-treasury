@@ -21,7 +21,7 @@ export function accessControlRevertMessageMissingDaoRole(
     } in DAO ${ethers.utils.defaultAbiCoder.encode(['uint256'], [daoId])}`
 }
 
-export function accessControlRevertMessageAlreadyRoleMember(
+export function accessControlRevertMessageAlreadyGlobalRoleMember(
     account: SignerWithAddress,
     role: Role
 ): string {

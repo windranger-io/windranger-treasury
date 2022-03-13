@@ -10,7 +10,7 @@ import {deployContract, signer} from './framework/contracts'
 import {BondAccessControlBox} from '../typechain-types'
 import {solidity} from 'ethereum-waffle'
 import {
-    accessControlRevertMessageAlreadyRoleMember,
+    accessControlRevertMessageAlreadyGlobalRoleMember,
     accessControlRevertMessageMissingDaoRole
 } from './contracts/bond/access-control-messages'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
@@ -153,6 +153,39 @@ describe('Role Access Control contract', () => {
 
     describe('DAO Admin', () => {
         describe('add member', () => {
+            before(async () => {
+                if (
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberOne.address
+                    )
+                ) {
+                    await successfulTransaction(
+                        accessControl.revokeDaoAdminRole(
+                            DAO_ID,
+                            memberOne.address
+                        )
+                    )
+                }
+            })
+            after(async () => {
+                if (
+                    !(await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberOne.address
+                    ))
+                ) {
+                    await successfulTransaction(
+                        accessControl.grantDaoAdminRole(
+                            DAO_ID,
+                            memberOne.address
+                        )
+                    )
+                }
+            })
+
             it('by Super User', async () => {
                 expect(
                     await accessControl.hasDaoRole(
@@ -171,6 +204,28 @@ describe('Role Access Control contract', () => {
                         DAO_ID,
                         DAO_ADMIN_ROLE,
                         memberOne.address
+                    )
+                ).is.true
+            })
+
+            it('by Dao Admin', async () => {
+                expect(
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberTwo.address
+                    )
+                ).is.false
+
+                await accessControl
+                    .connect(daoAdmin)
+                    .grantDaoAdminRole(DAO_ID, memberTwo.address)
+
+                expect(
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberTwo.address
                     )
                 ).is.true
             })
@@ -203,6 +258,92 @@ describe('Role Access Control contract', () => {
                 )
             })
 
+            it('not by Dao Meeple', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoMeeple)
+                        .grantDaoAdminRole(DAO_ID, memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        daoMeeple,
+                        DAO_ID,
+                        DAO_ADMIN
+                    )
+                )
+            })
+        })
+
+        // TODO access attempts for each role
+        describe('remove member', () => {
+            before(async () => {
+                if (
+                    !(await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberOne.address
+                    ))
+                ) {
+                    await successfulTransaction(
+                        accessControl.grantDaoAdminRole(
+                            DAO_ID,
+                            memberOne.address
+                        )
+                    )
+                }
+                if (
+                    !(await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberTwo.address
+                    ))
+                ) {
+                    await successfulTransaction(
+                        accessControl.grantDaoAdminRole(
+                            DAO_ID,
+                            memberTwo.address
+                        )
+                    )
+                }
+            })
+            after(async () => {
+                if (
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberOne.address
+                    )
+                ) {
+                    await successfulTransaction(
+                        accessControl.revokeDaoAdminRole(
+                            DAO_ID,
+                            memberOne.address
+                        )
+                    )
+                }
+            })
+
+            it('by Super User', async () => {
+                expect(
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberOne.address
+                    )
+                ).is.true
+
+                await accessControl
+                    .connect(superUser)
+                    .revokeDaoAdminRole(DAO_ID, memberOne.address)
+
+                expect(
+                    await accessControl.hasDaoRole(
+                        DAO_ID,
+                        DAO_ADMIN_ROLE,
+                        memberOne.address
+                    )
+                ).is.false
+            })
+
             it('by Dao Admin', async () => {
                 expect(
                     await accessControl.hasDaoRole(
@@ -210,11 +351,11 @@ describe('Role Access Control contract', () => {
                         DAO_ADMIN_ROLE,
                         memberTwo.address
                     )
-                ).is.false
+                ).is.true
 
                 await accessControl
                     .connect(daoAdmin)
-                    .grantDaoAdminRole(DAO_ID, memberTwo.address)
+                    .revokeDaoAdminRole(DAO_ID, memberTwo.address)
 
                 expect(
                     await accessControl.hasDaoRole(
@@ -222,14 +363,42 @@ describe('Role Access Control contract', () => {
                         DAO_ADMIN_ROLE,
                         memberTwo.address
                     )
-                ).is.true
+                ).is.false
+            })
+
+            it('not by System Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(sysAdmin)
+                        .revokeDaoAdminRole(DAO_ID, memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        sysAdmin,
+                        DAO_ID,
+                        DAO_ADMIN
+                    )
+                )
+            })
+
+            it('not by Dao Creator', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoCreator)
+                        .revokeDaoAdminRole(DAO_ID, memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingDaoRole(
+                        daoCreator,
+                        DAO_ID,
+                        DAO_ADMIN
+                    )
+                )
             })
 
             it('not by Dao Meeple', async () => {
                 await expect(
                     accessControl
                         .connect(daoMeeple)
-                        .grantDaoAdminRole(DAO_ID, memberTwo.address)
+                        .revokeDaoAdminRole(DAO_ID, memberOne.address)
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingDaoRole(
                         daoMeeple,
@@ -277,6 +446,7 @@ describe('Role Access Control contract', () => {
             ).is.false
         })
 
+        // TODO wrong !!!! should be a DAO message
         it('cannot grant role twice', async () => {
             expect(
                 await accessControl.hasDaoRole(
@@ -289,34 +459,15 @@ describe('Role Access Control contract', () => {
             await expect(
                 accessControl.grantDaoAdminRole(DAO_ID, memberOne.address)
             ).to.be.revertedWith(
-                accessControlRevertMessageAlreadyRoleMember(
+                accessControlRevertMessageAlreadyGlobalRoleMember(
                     memberOne,
                     DAO_ADMIN
                 )
             )
         })
-
-        // TODO access attempts for each role
-        it('remove member', async () => {
-            expect(
-                await accessControl.hasDaoRole(
-                    DAO_ID,
-                    DAO_ADMIN_ROLE,
-                    memberOne.address
-                )
-            ).is.true
-
-            await accessControl.revokeDaoAdminRole(DAO_ID, memberOne.address)
-
-            expect(
-                await accessControl.hasDaoRole(
-                    DAO_ID,
-                    DAO_ADMIN_ROLE,
-                    memberOne.address
-                )
-            ).is.false
-        })
     })
+
+    // TODO refactor function / clean code - private methods for shorter more readable functions
 
     // TODO duplicate DAO admin access structure
     describe('Sys Admin', () => {
@@ -356,6 +507,11 @@ describe('Role Access Control contract', () => {
             ).is.false
         })
     })
+
+    /*
+     * TODO helpers for the before & after
+     *  TODO helpers for the state querying
+     */
 
     let superUser: SignerWithAddress
     let sysAdmin: SignerWithAddress
