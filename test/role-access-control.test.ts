@@ -11,7 +11,9 @@ import {BondAccessControlBox} from '../typechain-types'
 import {solidity} from 'ethereum-waffle'
 import {
     accessControlRevertMessageAlreadyDaoRoleMember,
-    accessControlRevertMessageMissingDaoRole
+    accessControlRevertMessageAlreadyGlobalRoleMember,
+    accessControlRevertMessageMissingDaoRole,
+    accessControlRevertMessageMissingGlobalRole
 } from './contracts/bond/access-control-messages'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
@@ -352,41 +354,188 @@ describe('Role Access Control contract', () => {
     })
 
     // TODO duplicate DAO admin access structure
-    describe('Sys Admin', () => {
-        it('add member', async () => {
-            expect(
-                await accessControl.hasGlobalRole(
-                    SYS_ADMIN_ROLE,
-                    memberTwo.address
-                )
-            ).is.false
+    describe('System Admin', () => {
+        describe('add member', () => {
+            before(async () => {
+                await ensureSysAdminRoleMembershipMissing(memberOne)
+            })
+            after(async () => {
+                await ensureSysAdminRoleMembership(memberOne)
+            })
 
-            await accessControl.grantSysAdminRole(memberTwo.address)
-
-            expect(
-                await accessControl.hasGlobalRole(
+            it('by Super User', async () => {
+                await verifyGlobalRoleMembershipMissing(
                     SYS_ADMIN_ROLE,
-                    memberTwo.address
+                    memberOne
                 )
-            ).is.true
+
+                await accessControl
+                    .connect(superUser)
+                    .grantSysAdminRole(memberOne.address)
+
+                expect(
+                    await accessControl.hasGlobalRole(
+                        SYS_ADMIN_ROLE,
+                        memberOne.address
+                    )
+                ).is.true
+            })
+
+            it('not by Dao Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoAdmin)
+                        .grantSysAdminRole(memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoAdmin,
+                        SYSTEM_ADMIN
+                    )
+                )
+            })
+
+            it('by System Admin', async () => {
+                await verifyGlobalRoleMembershipMissing(
+                    SYS_ADMIN_ROLE,
+                    memberTwo
+                )
+
+                await accessControl
+                    .connect(sysAdmin)
+                    .grantSysAdminRole(memberTwo.address)
+
+                expect(
+                    await accessControl.hasGlobalRole(
+                        SYS_ADMIN_ROLE,
+                        memberTwo.address
+                    )
+                ).is.true
+            })
+
+            it('not by Dao Creator', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoCreator)
+                        .grantSysAdminRole(memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoCreator,
+                        SYSTEM_ADMIN
+                    )
+                )
+            })
+
+            it('not by Dao Meeple', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoMeeple)
+                        .grantSysAdminRole(memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoMeeple,
+                        SYSTEM_ADMIN
+                    )
+                )
+            })
         })
 
-        it('remove member', async () => {
-            expect(
-                await accessControl.hasGlobalRole(
-                    SYS_ADMIN_ROLE,
-                    memberTwo.address
-                )
-            ).is.true
+        describe('remove member', () => {
+            before(async () => {
+                await ensureSysAdminRoleMembership(memberOne)
+                await ensureSysAdminRoleMembership(memberTwo)
+            })
+            after(async () => {
+                await ensureSysAdminRoleMembershipMissing(memberOne)
+            })
 
-            await accessControl.revokeSysAdminRole(memberTwo.address)
+            it('by Super User', async () => {
+                await verifyGlobalRoleMembership(SYS_ADMIN_ROLE, memberOne)
 
-            expect(
-                await accessControl.hasGlobalRole(
-                    SYS_ADMIN_ROLE,
-                    memberTwo.address
+                await accessControl
+                    .connect(superUser)
+                    .revokeSysAdminRole(memberOne.address)
+
+                expect(
+                    await accessControl.hasGlobalRole(
+                        SYS_ADMIN_ROLE,
+                        memberOne.address
+                    )
+                ).is.false
+            })
+
+            it('by Dao Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoAdmin)
+                        .revokeSysAdminRole(memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoAdmin,
+                        SYSTEM_ADMIN
+                    )
                 )
-            ).is.false
+            })
+
+            it('not by System Admin', async () => {
+                await verifyGlobalRoleMembership(SYS_ADMIN_ROLE, memberTwo)
+
+                await accessControl
+                    .connect(sysAdmin)
+                    .revokeSysAdminRole(memberTwo.address)
+
+                expect(
+                    await accessControl.hasGlobalRole(
+                        SYS_ADMIN_ROLE,
+                        memberTwo.address
+                    )
+                ).is.false
+            })
+
+            it('not by Dao Creator', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoCreator)
+                        .revokeSysAdminRole(memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoCreator,
+                        SYSTEM_ADMIN
+                    )
+                )
+            })
+
+            it('not by Dao Meeple', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoMeeple)
+                        .revokeSysAdminRole(memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoMeeple,
+                        SYSTEM_ADMIN
+                    )
+                )
+            })
+        })
+
+        before(async () => {
+            await ensureSysAdminRoleMembership(memberOne)
+        })
+        after(async () => {
+            await ensureSysAdminRoleMembershipMissing(memberOne)
+        })
+
+        it('cannot grant role twice', async () => {
+            await verifyGlobalRoleMembership(SYS_ADMIN_ROLE, memberOne)
+
+            await expect(
+                accessControl.grantSysAdminRole(memberOne.address)
+            ).to.be.revertedWith(
+                accessControlRevertMessageAlreadyGlobalRoleMember(
+                    memberOne,
+                    SYSTEM_ADMIN
+                )
+            )
         })
     })
 
@@ -420,6 +569,26 @@ describe('Role Access Control contract', () => {
         }
     }
 
+    async function ensureSysAdminRoleMembership(member: SignerWithAddress) {
+        if (
+            !(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, member.address))
+        ) {
+            await successfulTransaction(
+                accessControl.grantSysAdminRole(member.address)
+            )
+        }
+    }
+
+    async function ensureSysAdminRoleMembershipMissing(
+        member: SignerWithAddress
+    ) {
+        if (await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, member.address)) {
+            await successfulTransaction(
+                accessControl.revokeSysAdminRole(member.address)
+            )
+        }
+    }
+
     async function verifyDaoRoleMembership(
         role: string,
         member: SignerWithAddress
@@ -434,6 +603,20 @@ describe('Role Access Control contract', () => {
     ): Promise<void> {
         expect(await accessControl.hasDaoRole(DAO_ID, role, member.address)).is
             .false
+    }
+
+    async function verifyGlobalRoleMembership(
+        role: string,
+        member: SignerWithAddress
+    ): Promise<void> {
+        expect(await accessControl.hasGlobalRole(role, member.address)).is.true
+    }
+
+    async function verifyGlobalRoleMembershipMissing(
+        role: string,
+        member: SignerWithAddress
+    ): Promise<void> {
+        expect(await accessControl.hasGlobalRole(role, member.address)).is.false
     }
 
     let superUser: SignerWithAddress
