@@ -4,7 +4,7 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import chai, {expect} from 'chai'
-import {DAO_ADMIN, SUPER_USER, SYSTEM_ADMIN} from './contracts/bond/roles'
+import {DAO_ADMIN, Role, SUPER_USER, SYSTEM_ADMIN} from './contracts/bond/roles'
 import {before} from 'mocha'
 import {deployContract, signer} from './framework/contracts'
 import {BondAccessControlBox} from '../typechain-types'
@@ -23,11 +23,6 @@ chai.use(solidity)
 
 const DAO_ID = 1n
 const OTHER_DAO_ID = 2n
-
-// TODO could these be dropped, now private function are used?
-const DAO_ADMIN_ROLE = DAO_ADMIN.hex
-const SYS_ADMIN_ROLE = SYSTEM_ADMIN.hex
-const SUPER_USER_ROLE = SUPER_USER.hex
 
 describe('Role Access Control contract', () => {
     before(async () => {
@@ -164,7 +159,7 @@ describe('Role Access Control contract', () => {
             })
 
             it('by Super User', async () => {
-                await verifyDaoRoleMembershipMissing(DAO_ADMIN_ROLE, memberOne)
+                await verifyDaoRoleMembershipMissing(DAO_ADMIN, memberOne)
 
                 await accessControl
                     .connect(superUser)
@@ -173,14 +168,14 @@ describe('Role Access Control contract', () => {
                 expect(
                     await accessControl.hasDaoRole(
                         DAO_ID,
-                        DAO_ADMIN_ROLE,
+                        DAO_ADMIN.hex,
                         memberOne.address
                     )
                 ).is.true
             })
 
             it('by Dao Admin', async () => {
-                await verifyDaoRoleMembershipMissing(DAO_ADMIN_ROLE, memberTwo)
+                await verifyDaoRoleMembershipMissing(DAO_ADMIN, memberTwo)
 
                 await accessControl
                     .connect(daoAdmin)
@@ -189,7 +184,7 @@ describe('Role Access Control contract', () => {
                 expect(
                     await accessControl.hasDaoRole(
                         DAO_ID,
-                        DAO_ADMIN_ROLE,
+                        DAO_ADMIN.hex,
                         memberTwo.address
                     )
                 ).is.true
@@ -248,7 +243,7 @@ describe('Role Access Control contract', () => {
             })
 
             it('by Super User', async () => {
-                await verifyDaoRoleMembership(DAO_ADMIN_ROLE, memberOne)
+                await verifyDaoRoleMembership(DAO_ADMIN, memberOne)
 
                 await accessControl
                     .connect(superUser)
@@ -257,14 +252,14 @@ describe('Role Access Control contract', () => {
                 expect(
                     await accessControl.hasDaoRole(
                         DAO_ID,
-                        DAO_ADMIN_ROLE,
+                        DAO_ADMIN.hex,
                         memberOne.address
                     )
                 ).is.false
             })
 
             it('by Dao Admin', async () => {
-                await verifyDaoRoleMembership(DAO_ADMIN_ROLE, memberTwo)
+                await verifyDaoRoleMembership(DAO_ADMIN, memberTwo)
 
                 await accessControl
                     .connect(daoAdmin)
@@ -273,7 +268,7 @@ describe('Role Access Control contract', () => {
                 expect(
                     await accessControl.hasDaoRole(
                         DAO_ID,
-                        DAO_ADMIN_ROLE,
+                        DAO_ADMIN.hex,
                         memberTwo.address
                     )
                 ).is.false
@@ -330,19 +325,19 @@ describe('Role Access Control contract', () => {
         })
 
         it('role scoped to dao id', async () => {
-            await verifyDaoRoleMembership(DAO_ADMIN_ROLE, memberOne)
+            await verifyDaoRoleMembership(DAO_ADMIN, memberOne)
 
             expect(
                 await accessControl.hasDaoRole(
                     OTHER_DAO_ID,
-                    DAO_ADMIN_ROLE,
+                    DAO_ADMIN.hex,
                     memberOne.address
                 )
             ).is.false
         })
 
         it('cannot grant role twice', async () => {
-            await verifyDaoRoleMembership(DAO_ADMIN_ROLE, memberOne)
+            await verifyDaoRoleMembership(DAO_ADMIN, memberOne)
 
             await expect(
                 accessControl.grantDaoAdminRole(DAO_ID, memberOne.address)
@@ -366,10 +361,7 @@ describe('Role Access Control contract', () => {
             })
 
             it('by Super User', async () => {
-                await verifyGlobalRoleMembershipMissing(
-                    SUPER_USER_ROLE,
-                    memberOne
-                )
+                await verifyGlobalRoleMembershipMissing(SUPER_USER, memberOne)
 
                 await accessControl
                     .connect(superUser)
@@ -377,7 +369,7 @@ describe('Role Access Control contract', () => {
 
                 expect(
                     await accessControl.hasGlobalRole(
-                        SUPER_USER_ROLE,
+                        SUPER_USER.hex,
                         memberOne.address
                     )
                 ).is.true
@@ -446,7 +438,7 @@ describe('Role Access Control contract', () => {
             })
 
             it('by Super User', async () => {
-                await verifyGlobalRoleMembership(SUPER_USER_ROLE, memberOne)
+                await verifyGlobalRoleMembership(SUPER_USER, memberOne)
 
                 await accessControl
                     .connect(superUser)
@@ -454,7 +446,7 @@ describe('Role Access Control contract', () => {
 
                 expect(
                     await accessControl.hasGlobalRole(
-                        SUPER_USER_ROLE,
+                        SUPER_USER.hex,
                         memberOne.address
                     )
                 ).is.false
@@ -521,7 +513,7 @@ describe('Role Access Control contract', () => {
         })
 
         it('cannot grant role twice', async () => {
-            await verifyGlobalRoleMembership(SUPER_USER_ROLE, memberOne)
+            await verifyGlobalRoleMembership(SUPER_USER, memberOne)
 
             await expect(
                 accessControl.grantSuperUserRole(memberOne.address)
@@ -544,10 +536,7 @@ describe('Role Access Control contract', () => {
             })
 
             it('by Super User', async () => {
-                await verifyGlobalRoleMembershipMissing(
-                    SYS_ADMIN_ROLE,
-                    memberOne
-                )
+                await verifyGlobalRoleMembershipMissing(SYSTEM_ADMIN, memberOne)
 
                 await accessControl
                     .connect(superUser)
@@ -555,7 +544,7 @@ describe('Role Access Control contract', () => {
 
                 expect(
                     await accessControl.hasGlobalRole(
-                        SYS_ADMIN_ROLE,
+                        SYSTEM_ADMIN.hex,
                         memberOne.address
                     )
                 ).is.true
@@ -575,10 +564,7 @@ describe('Role Access Control contract', () => {
             })
 
             it('by System Admin', async () => {
-                await verifyGlobalRoleMembershipMissing(
-                    SYS_ADMIN_ROLE,
-                    memberTwo
-                )
+                await verifyGlobalRoleMembershipMissing(SYSTEM_ADMIN, memberTwo)
 
                 await accessControl
                     .connect(sysAdmin)
@@ -586,7 +572,7 @@ describe('Role Access Control contract', () => {
 
                 expect(
                     await accessControl.hasGlobalRole(
-                        SYS_ADMIN_ROLE,
+                        SYSTEM_ADMIN.hex,
                         memberTwo.address
                     )
                 ).is.true
@@ -629,7 +615,7 @@ describe('Role Access Control contract', () => {
             })
 
             it('by Super User', async () => {
-                await verifyGlobalRoleMembership(SYS_ADMIN_ROLE, memberOne)
+                await verifyGlobalRoleMembership(SYSTEM_ADMIN, memberOne)
 
                 await accessControl
                     .connect(superUser)
@@ -637,7 +623,7 @@ describe('Role Access Control contract', () => {
 
                 expect(
                     await accessControl.hasGlobalRole(
-                        SYS_ADMIN_ROLE,
+                        SYSTEM_ADMIN.hex,
                         memberOne.address
                     )
                 ).is.false
@@ -657,7 +643,7 @@ describe('Role Access Control contract', () => {
             })
 
             it('by System Admin', async () => {
-                await verifyGlobalRoleMembership(SYS_ADMIN_ROLE, memberTwo)
+                await verifyGlobalRoleMembership(SYSTEM_ADMIN, memberTwo)
 
                 await accessControl
                     .connect(sysAdmin)
@@ -665,7 +651,7 @@ describe('Role Access Control contract', () => {
 
                 expect(
                     await accessControl.hasGlobalRole(
-                        SYS_ADMIN_ROLE,
+                        SYSTEM_ADMIN.hex,
                         memberTwo.address
                     )
                 ).is.false
@@ -706,7 +692,7 @@ describe('Role Access Control contract', () => {
         })
 
         it('cannot grant role twice', async () => {
-            await verifyGlobalRoleMembership(SYS_ADMIN_ROLE, memberOne)
+            await verifyGlobalRoleMembership(SYSTEM_ADMIN, memberOne)
 
             await expect(
                 accessControl.grantSysAdminRole(memberOne.address)
@@ -723,7 +709,7 @@ describe('Role Access Control contract', () => {
         if (
             !(await accessControl.hasDaoRole(
                 DAO_ID,
-                DAO_ADMIN_ROLE,
+                DAO_ADMIN.hex,
                 member.address
             ))
         ) {
@@ -739,7 +725,7 @@ describe('Role Access Control contract', () => {
         if (
             await accessControl.hasDaoRole(
                 DAO_ID,
-                DAO_ADMIN_ROLE,
+                DAO_ADMIN.hex,
                 member.address
             )
         ) {
@@ -751,10 +737,7 @@ describe('Role Access Control contract', () => {
 
     async function ensureSuperUserRoleMembership(member: SignerWithAddress) {
         if (
-            !(await accessControl.hasGlobalRole(
-                SUPER_USER_ROLE,
-                member.address
-            ))
+            !(await accessControl.hasGlobalRole(SUPER_USER.hex, member.address))
         ) {
             await successfulTransaction(
                 accessControl.grantSuperUserRole(member.address)
@@ -765,9 +748,7 @@ describe('Role Access Control contract', () => {
     async function ensureSuperUserRoleMembershipMissing(
         member: SignerWithAddress
     ) {
-        if (
-            await accessControl.hasGlobalRole(SUPER_USER_ROLE, member.address)
-        ) {
+        if (await accessControl.hasGlobalRole(SUPER_USER.hex, member.address)) {
             await successfulTransaction(
                 accessControl.revokeSuperUserRole(member.address)
             )
@@ -776,7 +757,10 @@ describe('Role Access Control contract', () => {
 
     async function ensureSysAdminRoleMembership(member: SignerWithAddress) {
         if (
-            !(await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, member.address))
+            !(await accessControl.hasGlobalRole(
+                SYSTEM_ADMIN.hex,
+                member.address
+            ))
         ) {
             await successfulTransaction(
                 accessControl.grantSysAdminRole(member.address)
@@ -787,7 +771,9 @@ describe('Role Access Control contract', () => {
     async function ensureSysAdminRoleMembershipMissing(
         member: SignerWithAddress
     ) {
-        if (await accessControl.hasGlobalRole(SYS_ADMIN_ROLE, member.address)) {
+        if (
+            await accessControl.hasGlobalRole(SYSTEM_ADMIN.hex, member.address)
+        ) {
             await successfulTransaction(
                 accessControl.revokeSysAdminRole(member.address)
             )
@@ -795,33 +781,35 @@ describe('Role Access Control contract', () => {
     }
 
     async function verifyDaoRoleMembership(
-        role: string,
+        role: Role,
         member: SignerWithAddress
     ): Promise<void> {
-        expect(await accessControl.hasDaoRole(DAO_ID, role, member.address)).is
-            .true
+        expect(await accessControl.hasDaoRole(DAO_ID, role.hex, member.address))
+            .is.true
     }
 
     async function verifyDaoRoleMembershipMissing(
-        role: string,
+        role: Role,
         member: SignerWithAddress
     ): Promise<void> {
-        expect(await accessControl.hasDaoRole(DAO_ID, role, member.address)).is
-            .false
+        expect(await accessControl.hasDaoRole(DAO_ID, role.hex, member.address))
+            .is.false
     }
 
     async function verifyGlobalRoleMembership(
-        role: string,
+        role: Role,
         member: SignerWithAddress
     ): Promise<void> {
-        expect(await accessControl.hasGlobalRole(role, member.address)).is.true
+        expect(await accessControl.hasGlobalRole(role.hex, member.address)).is
+            .true
     }
 
     async function verifyGlobalRoleMembershipMissing(
-        role: string,
+        role: Role,
         member: SignerWithAddress
     ): Promise<void> {
-        expect(await accessControl.hasGlobalRole(role, member.address)).is.false
+        expect(await accessControl.hasGlobalRole(role.hex, member.address)).is
+            .false
     }
 
     let superUser: SignerWithAddress
