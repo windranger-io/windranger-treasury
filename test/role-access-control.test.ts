@@ -463,7 +463,7 @@ describe('Role Access Control contract', () => {
                 ).is.false
             })
 
-            it('by Dao Admin', async () => {
+            it('not by Dao Admin', async () => {
                 await expect(
                     accessControl
                         .connect(daoAdmin)
@@ -476,7 +476,7 @@ describe('Role Access Control contract', () => {
                 )
             })
 
-            it('not by System Admin', async () => {
+            it('by System Admin', async () => {
                 await verifyGlobalRoleMembership(SYS_ADMIN_ROLE, memberTwo)
 
                 await accessControl
