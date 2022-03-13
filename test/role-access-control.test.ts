@@ -4,7 +4,13 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import chai, {expect} from 'chai'
-import {DAO_ADMIN, Role, SUPER_USER, SYSTEM_ADMIN} from './contracts/bond/roles'
+import {
+    DAO_ADMIN,
+    DAO_CREATOR,
+    Role,
+    SUPER_USER,
+    SYSTEM_ADMIN
+} from './contracts/bond/roles'
 import {before} from 'mocha'
 import {deployContract, signer} from './framework/contracts'
 import {BondAccessControlBox} from '../typechain-types'
@@ -346,6 +352,181 @@ describe('Role Access Control contract', () => {
                     memberOne,
                     DAO_ADMIN,
                     DAO_ID
+                )
+            )
+        })
+    })
+
+    describe('Dao Creator', () => {
+        describe('add member', () => {
+            before(async () => {
+                await ensureDaoCreatorRoleMembershipMissing(memberOne)
+            })
+            after(async () => {
+                await ensureDaoCreatorRoleMembership(memberOne)
+            })
+
+            it('by Super User', async () => {
+                await verifyGlobalRoleMembershipMissing(DAO_CREATOR, memberOne)
+
+                await accessControl
+                    .connect(superUser)
+                    .grantDaoCreatorRole(memberOne.address)
+
+                expect(
+                    await accessControl.hasGlobalRole(
+                        DAO_CREATOR.hex,
+                        memberOne.address
+                    )
+                ).is.true
+            })
+
+            it('not by Dao Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoAdmin)
+                        .grantDaoCreatorRole(memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoAdmin,
+                        SUPER_USER
+                    )
+                )
+            })
+
+            it('not by System Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(sysAdmin)
+                        .grantDaoCreatorRole(memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        sysAdmin,
+                        SUPER_USER
+                    )
+                )
+            })
+
+            it('not by Dao Creator', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoCreator)
+                        .grantDaoCreatorRole(memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoCreator,
+                        SUPER_USER
+                    )
+                )
+            })
+
+            it('not by Dao Meeple', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoMeeple)
+                        .grantDaoCreatorRole(memberTwo.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoMeeple,
+                        SUPER_USER
+                    )
+                )
+            })
+        })
+
+        describe('remove member', () => {
+            before(async () => {
+                await ensureDaoCreatorRoleMembership(memberOne)
+                await ensureDaoCreatorRoleMembership(memberTwo)
+            })
+            after(async () => {
+                await ensureDaoCreatorRoleMembershipMissing(memberOne)
+            })
+
+            it('by Super User', async () => {
+                await verifyGlobalRoleMembership(DAO_CREATOR, memberOne)
+
+                await accessControl
+                    .connect(superUser)
+                    .revokeDaoCreatorRole(memberOne.address)
+
+                expect(
+                    await accessControl.hasGlobalRole(
+                        DAO_CREATOR.hex,
+                        memberOne.address
+                    )
+                ).is.false
+            })
+
+            it('not by Dao Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoAdmin)
+                        .revokeDaoCreatorRole(memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoAdmin,
+                        SUPER_USER
+                    )
+                )
+            })
+
+            it('not by System Admin', async () => {
+                await expect(
+                    accessControl
+                        .connect(sysAdmin)
+                        .revokeDaoCreatorRole(memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        sysAdmin,
+                        SUPER_USER
+                    )
+                )
+            })
+
+            it('not by Dao Creator', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoCreator)
+                        .revokeDaoCreatorRole(memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoCreator,
+                        SUPER_USER
+                    )
+                )
+            })
+
+            it('not by Dao Meeple', async () => {
+                await expect(
+                    accessControl
+                        .connect(daoMeeple)
+                        .revokeDaoCreatorRole(memberOne.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        daoMeeple,
+                        SUPER_USER
+                    )
+                )
+            })
+        })
+
+        before(async () => {
+            await ensureDaoCreatorRoleMembership(memberOne)
+        })
+        after(async () => {
+            await ensureDaoCreatorRoleMembershipMissing(memberOne)
+        })
+
+        it('cannot grant role twice', async () => {
+            await verifyGlobalRoleMembership(DAO_CREATOR, memberOne)
+
+            await expect(
+                accessControl.grantDaoCreatorRole(memberOne.address)
+            ).to.be.revertedWith(
+                accessControlRevertMessageAlreadyGlobalRoleMember(
+                    memberOne,
+                    DAO_CREATOR
                 )
             )
         })
@@ -731,6 +912,31 @@ describe('Role Access Control contract', () => {
         ) {
             await successfulTransaction(
                 accessControl.revokeDaoAdminRole(DAO_ID, member.address)
+            )
+        }
+    }
+
+    async function ensureDaoCreatorRoleMembership(member: SignerWithAddress) {
+        if (
+            !(await accessControl.hasGlobalRole(
+                DAO_CREATOR.hex,
+                member.address
+            ))
+        ) {
+            await successfulTransaction(
+                accessControl.grantDaoCreatorRole(member.address)
+            )
+        }
+    }
+
+    async function ensureDaoCreatorRoleMembershipMissing(
+        member: SignerWithAddress
+    ) {
+        if (
+            await accessControl.hasGlobalRole(DAO_CREATOR.hex, member.address)
+        ) {
+            await successfulTransaction(
+                accessControl.revokeDaoCreatorRole(member.address)
             )
         }
     }
