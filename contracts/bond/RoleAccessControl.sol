@@ -136,6 +136,43 @@ abstract contract RoleAccessControl is RoleMembership, ContextUpgradeable {
         _revokeDaoRole(daoId, Roles.DAO_MEEPLE, account);
     }
 
+    function hasSuperUserAccess(address account) external view returns (bool) {
+        return _hasGlobalRole(Roles.SUPER_USER, account);
+    }
+
+    function hasDaoAdminAccess(uint256 daoId, address account)
+        external
+        view
+        returns (bool)
+    {
+        return
+            _hasGlobalRole(Roles.SUPER_USER, account) ||
+            _hasDaoRole(daoId, Roles.DAO_ADMIN, account);
+    }
+
+    function hasDaoCreatorAccess(address account) external view returns (bool) {
+        return
+            _hasGlobalRole(Roles.SUPER_USER, account) ||
+            _hasGlobalRole(Roles.DAO_CREATOR, account);
+    }
+
+    function hasDaoMeepleAccess(uint256 daoId, address account)
+        external
+        view
+        returns (bool)
+    {
+        return
+            _hasGlobalRole(Roles.SUPER_USER, account) ||
+            _hasDaoRole(daoId, Roles.DAO_ADMIN, account) ||
+            _hasDaoRole(daoId, Roles.DAO_MEEPLE, account);
+    }
+
+    function hasSysAdminAccess(address account) external view returns (bool) {
+        return
+            _hasGlobalRole(Roles.SUPER_USER, account) ||
+            _hasGlobalRole(Roles.SYSTEM_ADMIN, account);
+    }
+
     /**
      * @notice The _msgSender() is given membership of the SuperUser role.
      *

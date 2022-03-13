@@ -41,7 +41,6 @@ describe('Role Access Control contract', () => {
 
         memberOne = await signer(7)
         memberTwo = await signer(8)
-        memberThree = await signer(9)
 
         accessControl = await deployContract<BondAccessControlBox>(
             'BondAccessControlBox'
@@ -60,6 +59,172 @@ describe('Role Access Control contract', () => {
         await successfulTransaction(
             accessControl.grantDaoMeepleRole(DAO_ID, daoMeeple.address)
         )
+    })
+
+    describe('Hierarchy', () => {
+        describe('Super User role', () => {
+            it('has Super User access', async () => {
+                expect(
+                    await accessControl.hasSuperUserAccess(superUser.address)
+                ).is.true
+            })
+            it('has Dao Creator access', async () => {
+                expect(
+                    await accessControl.hasDaoCreatorAccess(superUser.address)
+                ).is.true
+            })
+            it('has System Admin access', async () => {
+                expect(await accessControl.hasSysAdminAccess(superUser.address))
+                    .is.true
+            })
+            it('has Dao Admin access', async () => {
+                expect(
+                    await accessControl.hasDaoAdminAccess(
+                        DAO_ID,
+                        superUser.address
+                    )
+                ).is.true
+            })
+            it('has Dao Meeple access', async () => {
+                expect(
+                    await accessControl.hasDaoMeepleAccess(
+                        DAO_ID,
+                        superUser.address
+                    )
+                ).is.true
+            })
+        })
+
+        describe('Dao Creator role', () => {
+            it('lacks Super User access', async () => {
+                expect(
+                    await accessControl.hasSuperUserAccess(daoCreator.address)
+                ).is.false
+            })
+            it('has Dao Creator access', async () => {
+                expect(
+                    await accessControl.hasDaoCreatorAccess(daoCreator.address)
+                ).is.true
+            })
+            it('lacks System Admin access', async () => {
+                expect(
+                    await accessControl.hasSysAdminAccess(daoCreator.address)
+                ).is.false
+            })
+            it('lacks Dao Admin access', async () => {
+                expect(
+                    await accessControl.hasDaoAdminAccess(
+                        DAO_ID,
+                        daoCreator.address
+                    )
+                ).is.false
+            })
+            it('lacks Dao Meeple access', async () => {
+                expect(
+                    await accessControl.hasDaoMeepleAccess(
+                        DAO_ID,
+                        daoCreator.address
+                    )
+                ).is.false
+            })
+        })
+
+        describe('System Admin role', () => {
+            it('lacks Super User access', async () => {
+                expect(await accessControl.hasSuperUserAccess(sysAdmin.address))
+                    .is.false
+            })
+            it('lacks Dao Creator access', async () => {
+                expect(
+                    await accessControl.hasDaoCreatorAccess(sysAdmin.address)
+                ).is.false
+            })
+            it('has System Admin access', async () => {
+                expect(await accessControl.hasSysAdminAccess(sysAdmin.address))
+                    .is.true
+            })
+            it('lacks Dao Admin access', async () => {
+                expect(
+                    await accessControl.hasDaoAdminAccess(
+                        DAO_ID,
+                        sysAdmin.address
+                    )
+                ).is.false
+            })
+            it('lacks Dao Meeple access', async () => {
+                expect(
+                    await accessControl.hasDaoMeepleAccess(
+                        DAO_ID,
+                        sysAdmin.address
+                    )
+                ).is.false
+            })
+        })
+
+        describe('Dao Admin role', () => {
+            it('lacks Super User access', async () => {
+                expect(await accessControl.hasSuperUserAccess(daoAdmin.address))
+                    .is.false
+            })
+            it('lacks Dao Creator access', async () => {
+                expect(
+                    await accessControl.hasDaoCreatorAccess(daoAdmin.address)
+                ).is.false
+            })
+            it('lacks System Admin access', async () => {
+                expect(await accessControl.hasSysAdminAccess(daoAdmin.address))
+                    .is.false
+            })
+            it('has Dao Admin access', async () => {
+                expect(
+                    await accessControl.hasDaoAdminAccess(
+                        DAO_ID,
+                        daoAdmin.address
+                    )
+                ).is.true
+            })
+            it('has Dao Meeple access', async () => {
+                expect(
+                    await accessControl.hasDaoAdminAccess(
+                        DAO_ID,
+                        daoAdmin.address
+                    )
+                ).is.true
+            })
+        })
+
+        describe('Dao Meeple role', () => {
+            it('lacks Super User access', async () => {
+                expect(
+                    await accessControl.hasSuperUserAccess(daoMeeple.address)
+                ).is.false
+            })
+            it('lacks Dao Creator access', async () => {
+                expect(
+                    await accessControl.hasDaoCreatorAccess(daoMeeple.address)
+                ).is.false
+            })
+            it('lacks System Admin access', async () => {
+                expect(await accessControl.hasSysAdminAccess(daoMeeple.address))
+                    .is.false
+            })
+            it('lacks Dao Admin access', async () => {
+                expect(
+                    await accessControl.hasDaoAdminAccess(
+                        DAO_ID,
+                        daoMeeple.address
+                    )
+                ).is.false
+            })
+            it('has Dao Meeple access', async () => {
+                expect(
+                    await accessControl.hasDaoMeepleAccess(
+                        DAO_ID,
+                        daoMeeple.address
+                    )
+                ).is.true
+            })
+        })
     })
 
     describe('DAO Admin', () => {
@@ -1164,6 +1329,5 @@ describe('Role Access Control contract', () => {
     let daoMeeple: SignerWithAddress
     let memberOne: SignerWithAddress
     let memberTwo: SignerWithAddress
-    let memberThree: SignerWithAddress
     let accessControl: BondAccessControlBox
 })
