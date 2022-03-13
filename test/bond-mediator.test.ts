@@ -26,10 +26,10 @@ import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from './contracts/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {accessControlRevertMessageMissingRole} from './contracts/bond/access-control-messages'
 import {createDaoEvents} from './contracts/bond/bond-portal-events'
 import {events} from './framework/events'
 import {createBondEventLogs} from './contracts/bond/bond-creator-events'
+import {accessControlRevertMessageMissingGlobalRole} from './contracts/bond/access-control-messages'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -70,7 +70,10 @@ describe('Bond Mediator contract', () => {
                         .connect(nonAdmin)
                         .whitelistCollateral(daoId, collateralTokens.address)
                 ).to.be.revertedWith(
-                    accessControlRevertMessageMissingRole(nonAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -118,7 +121,10 @@ describe('Bond Mediator contract', () => {
                             collateralTokens.address
                         )
                 ).to.be.revertedWith(
-                    accessControlRevertMessageMissingRole(nonAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -199,7 +205,10 @@ describe('Bond Mediator contract', () => {
                         }
                     )
                 ).to.be.revertedWith(
-                    accessControlRevertMessageMissingRole(nonAdmin, DAO_MEEPLE)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        DAO_MEEPLE
+                    )
                 )
             })
 
@@ -312,7 +321,10 @@ describe('Bond Mediator contract', () => {
                 await expect(
                     mediator.connect(nonAdmin).setDaoTreasury(daoId, treasury)
                 ).to.be.revertedWith(
-                    accessControlRevertMessageMissingRole(nonAdmin, DAO_ADMIN)
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        DAO_ADMIN
+                    )
                 )
             })
 
@@ -335,7 +347,10 @@ describe('Bond Mediator contract', () => {
 
         it('at least system admin role', async () => {
             await expect(mediator.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessageMissingRole(nonAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingGlobalRole(
+                    nonAdmin,
+                    SYSTEM_ADMIN
+                )
             )
         })
 
@@ -373,7 +388,10 @@ describe('Bond Mediator contract', () => {
 
         it('at least system admin role', async () => {
             await expect(mediator.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessageMissingRole(nonAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingGlobalRole(
+                    nonAdmin,
+                    SYSTEM_ADMIN
+                )
             )
         })
 

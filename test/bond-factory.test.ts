@@ -16,9 +16,9 @@ import {
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {accessControlRevertMessageMissingRole} from './contracts/bond/access-control-messages'
 import {SYSTEM_ADMIN} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
+import {accessControlRevertMessageMissingGlobalRole} from './contracts/bond/access-control-messages'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -100,7 +100,10 @@ describe('Bond Factory contract', () => {
 
         it('at least system admin', async () => {
             await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessageMissingRole(nonAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingGlobalRole(
+                    nonAdmin,
+                    SYSTEM_ADMIN
+                )
             )
         })
 
@@ -131,7 +134,10 @@ describe('Bond Factory contract', () => {
 
         it('at least system admin', async () => {
             await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
-                accessControlRevertMessageMissingRole(nonAdmin, SYSTEM_ADMIN)
+                accessControlRevertMessageMissingGlobalRole(
+                    nonAdmin,
+                    SYSTEM_ADMIN
+                )
             )
         })
 
