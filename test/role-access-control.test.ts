@@ -10,7 +10,7 @@ import {deployContract, signer} from './framework/contracts'
 import {BondAccessControlBox} from '../typechain-types'
 import {solidity} from 'ethereum-waffle'
 import {
-    accessControlRevertMessageAlreadyGlobalRoleMember,
+    accessControlRevertMessageAlreadyDaoRoleMember,
     accessControlRevertMessageMissingDaoRole
 } from './contracts/bond/access-control-messages'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
@@ -19,8 +19,8 @@ import {successfulTransaction} from './framework/transaction'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-const DAO_ID = 1
-const OTHER_DAO_ID = 2
+const DAO_ID = 1n
+const OTHER_DAO_ID = 2n
 const DAO_ADMIN_ROLE = DAO_ADMIN.hex
 const SYS_ADMIN_ROLE = SYSTEM_ADMIN.hex
 
@@ -238,8 +238,8 @@ describe('Role Access Control contract', () => {
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingDaoRole(
                         sysAdmin,
-                        DAO_ID,
-                        DAO_ADMIN
+                        DAO_ADMIN,
+                        DAO_ID
                     )
                 )
             })
@@ -252,8 +252,8 @@ describe('Role Access Control contract', () => {
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingDaoRole(
                         daoCreator,
-                        DAO_ID,
-                        DAO_ADMIN
+                        DAO_ADMIN,
+                        DAO_ID
                     )
                 )
             })
@@ -266,14 +266,13 @@ describe('Role Access Control contract', () => {
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingDaoRole(
                         daoMeeple,
-                        DAO_ID,
-                        DAO_ADMIN
+                        DAO_ADMIN,
+                        DAO_ID
                     )
                 )
             })
         })
 
-        // TODO access attempts for each role
         describe('remove member', () => {
             before(async () => {
                 if (
@@ -374,8 +373,8 @@ describe('Role Access Control contract', () => {
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingDaoRole(
                         sysAdmin,
-                        DAO_ID,
-                        DAO_ADMIN
+                        DAO_ADMIN,
+                        DAO_ID
                     )
                 )
             })
@@ -388,8 +387,8 @@ describe('Role Access Control contract', () => {
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingDaoRole(
                         daoCreator,
-                        DAO_ID,
-                        DAO_ADMIN
+                        DAO_ADMIN,
+                        DAO_ID
                     )
                 )
             })
@@ -402,8 +401,8 @@ describe('Role Access Control contract', () => {
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingDaoRole(
                         daoMeeple,
-                        DAO_ID,
-                        DAO_ADMIN
+                        DAO_ADMIN,
+                        DAO_ID
                     )
                 )
             })
@@ -446,7 +445,6 @@ describe('Role Access Control contract', () => {
             ).is.false
         })
 
-        // TODO wrong !!!! should be a DAO message
         it('cannot grant role twice', async () => {
             expect(
                 await accessControl.hasDaoRole(
@@ -459,9 +457,10 @@ describe('Role Access Control contract', () => {
             await expect(
                 accessControl.grantDaoAdminRole(DAO_ID, memberOne.address)
             ).to.be.revertedWith(
-                accessControlRevertMessageAlreadyGlobalRoleMember(
+                accessControlRevertMessageAlreadyDaoRoleMember(
                     memberOne,
-                    DAO_ADMIN
+                    DAO_ADMIN,
+                    DAO_ID
                 )
             )
         })

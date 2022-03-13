@@ -13,8 +13,8 @@ export function accessControlRevertMessageMissingGlobalRole(
 
 export function accessControlRevertMessageMissingDaoRole(
     account: SignerWithAddress,
-    daoId: number,
-    role: Role
+    role: Role,
+    daoId: bigint
 ): string {
     return `RoleMembership: account ${account.address.toLowerCase()} is missing role ${
         role.hex
@@ -28,4 +28,14 @@ export function accessControlRevertMessageAlreadyGlobalRoleMember(
     return `RoleMembership: account ${account.address.toLowerCase()} already has role ${
         role.hex
     }`
+}
+
+export function accessControlRevertMessageAlreadyDaoRoleMember(
+    account: SignerWithAddress,
+    role: Role,
+    daoId: bigint
+): string {
+    return `RoleMembership: account ${account.address.toLowerCase()} already has role ${
+        role.hex
+    } in DAO ${ethers.utils.defaultAbiCoder.encode(['uint256'], [daoId])}`
 }
