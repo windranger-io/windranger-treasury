@@ -22,6 +22,7 @@ library StakingPoolInfo {
         uint32 epochDuration;
         uint32 epochStartTimestamp;
         bool rewardsFinalized;
+        bool emergencyMode;
         address treasury;
         uint128 totalStakedAmount;
         IERC20 stakeToken;

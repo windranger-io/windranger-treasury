@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
@@ -86,6 +85,48 @@ contract FixedStakingPool is StakingPool {
     }
 
     function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
+        _withdrawWithoutRewards();
+    }
+
+    function emergencyWithdraw() external emergencyModeEnabled {
+        _withdrawWithoutRewards();
+    }
+
+    function initializeRewardTokens(
+        address treasury,
+        StakingPoolInfo.RewardToken[] calldata _rewardTokens
+    ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
+        _initializeRewardTokens(treasury, _rewardTokens);
+    }
+
+    function adminEmergencyRewardSweep()
+        external
+        atLeastDaoAminRole(stakingPoolInfo.daoId)
+        emergencyModeEnabled
+    {
+        _adminEmergencyRewardSweep();
+    }
+
+    function enableEmergencyMode()
+        external
+        atLeastDaoAminRole(stakingPoolInfo.daoId)
+    {
+        stakingPoolInfo.emergencyMode = true;
+    }
+
+    function computeRewards(address receipient, uint256 rewardTokenIndex)
+        external
+        view
+        returns (uint128)
+    {
+        return
+            _computeRewards(
+                userInfo[receipient].depositAmount,
+                rewardTokenIndex
+            );
+    }
+
+    function _withdrawWithoutRewards() internal {
         UserInfo memory user = userInfo[_msgSender()];
         require(user.depositAmount >= 0, "FixedStaking: not elegible");
 
@@ -100,32 +141,6 @@ contract FixedStakingPool is StakingPool {
         require(result, "FixedStaking: stake tx fail");
 
         emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
-    }
-
-    function initializeRewardTokens(
-        address treasury,
-        StakingPoolInfo.RewardToken[] calldata _rewardTokens
-    ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
-        _initializeRewardTokens(treasury, _rewardTokens);
-    }
-
-    function adminEmergencyRewardSweep()
-        external
-        atLeastDaoAminRole(stakingPoolInfo.daoId)
-    {
-        _adminEmergencyRewardSweep();
-    }
-
-    function computeRewards(address receipient, uint256 rewardTokenIndex)
-        external
-        view
-        returns (uint128)
-    {
-        return
-            _computeRewards(
-                userInfo[receipient].depositAmount,
-                rewardTokenIndex
-            );
     }
 
     function _computeRewards(uint128 amount, uint256 rewardTokenIndex)
