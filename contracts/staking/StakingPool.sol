@@ -43,6 +43,11 @@ abstract contract StakingPool is Initializable, RoleAccessControl {
         _;
     }
 
+    modifier emergencyModeEnabled() {
+        require(stakingPoolInfo.emergencyMode, "Staking: not emergency mode");
+        _;
+    }
+
     modifier stakingPeriodNotStarted() {
         require(
             block.timestamp < stakingPoolInfo.epochStartTimestamp,
