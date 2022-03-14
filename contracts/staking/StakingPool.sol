@@ -52,7 +52,7 @@ abstract contract StakingPool is Initializable, RoleAccessControl {
 
     modifier stakingPeriodNotStarted() {
         require(
-            block.timestamp < stakingPoolInfo.epochStartTimestamp,
+            block.timestamp >= stakingPoolInfo.epochStartTimestamp,
             "FixedStaking: too early"
         );
         _;
