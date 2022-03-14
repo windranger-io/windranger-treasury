@@ -6,7 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./StakingPoolInfo.sol";
 import "../RoleAccessControl.sol";
 
-abstract contract StakingPool {
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+abstract contract StakingPool is Initializable, RoleAccessControl {
     StakingPoolInfo.StakingPoolData public stakingPoolInfo;
 
     event WithdrawRewards(
@@ -56,6 +58,17 @@ abstract contract StakingPool {
             "FixedStaking: pool full"
         );
         _;
+    }
+
+    function initialize(StakingPoolInfo.StakingPoolData calldata info)
+        external
+        virtual
+        initializer
+    {
+        __RoleAccessControl_init();
+        __Context_init_unchained();
+
+        stakingPoolInfo = info;
     }
 
     function isReedemable() external view returns (bool) {

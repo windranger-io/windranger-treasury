@@ -3,19 +3,12 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
-import "../RoleAccessControl.sol";
 
-contract FloatingStakingPool is
-    Initializable,
-    RoleAccessControl,
-    ReentrancyGuard,
-    StakingPool
-{
+contract FloatingStakingPool is ReentrancyGuard, StakingPool {
     struct UserInfo {
         uint128 depositAmount;
     }
@@ -61,7 +54,7 @@ contract FloatingStakingPool is
     function withdraw() external rewardsFinalized stakingPeriodComplete {
         UserInfo memory user = userInfo[_msgSender()];
         // checks
-        require(user.depositAmount >= 0, "FixedStaking: not elegible");
+        require(user.depositAmount > 0, "FixedStaking: not elegible");
 
         delete userInfo[_msgSender()];
 
@@ -93,7 +86,7 @@ contract FloatingStakingPool is
 
     function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
         UserInfo memory user = userInfo[_msgSender()];
-        require(user.depositAmount >= 0, "FixedStaking: not elegible");
+        require(user.depositAmount > 0, "FixedStaking: not elegible");
 
         delete userInfo[_msgSender()];
 
@@ -149,16 +142,6 @@ contract FloatingStakingPool is
             );
         }
         return rewards;
-    }
-
-    function initialize(StakingPoolInfo.StakingPoolData calldata _info)
-        public
-        virtual
-        initializer
-    {
-        __Context_init_unchained();
-
-        stakingPoolInfo = _info;
     }
 
     function _computeRewardsPerShare(uint256 rewardTokenIndex)
