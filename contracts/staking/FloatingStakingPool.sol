@@ -25,7 +25,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
         // some sanity checks
         require(
             amount >= stakingPoolInfo.minimumContribution,
-            "FixedStaking: min contribution"
+            "StakingPool: min contribution"
         );
 
         UserInfo storage user = userInfo[_msgSender()];
@@ -47,7 +47,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
             address(this),
             amount
         );
-        require(result, "FixedStaking: failed to transfer");
+        require(result, "StakingPool: failed to transfer");
 
         emit Deposit(_msgSender(), amount);
     }
@@ -55,7 +55,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
     function withdraw() external rewardsFinalized stakingPeriodComplete {
         UserInfo memory user = userInfo[_msgSender()];
         // checks
-        require(user.depositAmount > 0, "FixedStaking: not elegible");
+        require(user.depositAmount > 0, "StakingPool: not eligible");
 
         delete userInfo[_msgSender()];
 
@@ -63,7 +63,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
             _msgSender(),
             uint256(user.depositAmount)
         );
-        require(result, "FixedStaking: stake tx fail");
+        require(result, "StakingPool: stake tx fail");
 
         for (uint256 i = 0; i < stakingPoolInfo.rewardTokens.length; i++) {
             uint256 amount = uint256(

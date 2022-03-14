@@ -27,12 +27,12 @@ abstract contract StakingPool is Initializable, RoleAccessControl {
     event RewardsInitialized(address rewardTokens, uint256 amount);
 
     modifier rewardsFinalized() {
-        require(_isRewardsFinalized(), "FixedStaking: not finalized");
+        require(_isRewardsFinalized(), "StakingPool: not finalized");
         _;
     }
 
     modifier stakingPeriodComplete() {
-        require(_isStakingPeriodComplete(), "FixedStaking: still stake period");
+        require(_isStakingPeriodComplete(), "StakingPool: still stake period");
         _;
     }
 
@@ -41,20 +41,23 @@ abstract contract StakingPool is Initializable, RoleAccessControl {
             (stakingPoolInfo.totalStakedAmount <
                 stakingPoolInfo.minTotalPoolStake) &&
                 (block.timestamp > stakingPoolInfo.epochStartTimestamp),
-            "FixedStaking: requirements unmet"
+            "StakingPool: requirements unmet"
         );
         _;
     }
 
     modifier emergencyModeEnabled() {
-        require(stakingPoolInfo.emergencyMode, "Staking: not emergency mode");
+        require(
+            stakingPoolInfo.emergencyMode,
+            "StakingPool: not emergency mode"
+        );
         _;
     }
 
     modifier stakingPeriodNotStarted() {
         require(
-            block.timestamp < stakingPoolInfo.epochStartTimestamp,
-            "FixedStaking: too early"
+            block.timestamp > stakingPoolInfo.epochStartTimestamp,
+            "StakingPool: too early"
         );
         _;
     }
@@ -63,7 +66,7 @@ abstract contract StakingPool is Initializable, RoleAccessControl {
         require(
             stakingPoolInfo.totalStakedAmount + _deposit <
                 stakingPoolInfo.maxTotalPoolStake,
-            "FixedStaking: pool full"
+            "StakingPool: pool full"
         );
         _;
     }

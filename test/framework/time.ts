@@ -1,3 +1,7 @@
+import {Provider} from '@ethersproject/providers'
+import {ethers} from 'hardhat'
+const {provider} = ethers
+
 const PAUSE_TIME_INCREMENT_MS = 100
 
 /**
@@ -23,6 +27,10 @@ export async function occurrenceAtMost(
         await sleep(PAUSE_TIME_INCREMENT_MS)
         passedMs += PAUSE_TIME_INCREMENT_MS
     }
+}
+
+export async function getTimestampNow(): Promise<number> {
+    return (await provider.getBlock('latest')).timestamp
 }
 
 function sleep(ms: number): Promise<unknown> {
