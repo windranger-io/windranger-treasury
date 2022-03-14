@@ -23,6 +23,8 @@ abstract contract StakingPool is Initializable, RoleAccessControl {
 
     event Deposit(address indexed user, uint256 depositAmount);
 
+    event RewardsInitialized(address rewardTokens, uint256 amount);
+
     modifier rewardsFinalized() {
         require(_isRewardsFinalized(), "FixedStaking: not finalized");
         _;
@@ -87,6 +89,11 @@ abstract contract StakingPool is Initializable, RoleAccessControl {
     ) internal {
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
             IERC20 token = IERC20(_rewardTokens[i].rewardToken);
+
+            emit RewardsInitialized(
+                address(token),
+                _rewardTokens[i].totalTokenRewardsAvailable
+            );
 
             require(
                 token.allowance(treasury, address(this)) >=
