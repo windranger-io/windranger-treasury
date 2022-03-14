@@ -6,7 +6,6 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
-import "../RoleAccessControl.sol";
 
 contract FixedStakingPool is StakingPool {
     struct UserInfo {
@@ -21,17 +20,15 @@ contract FixedStakingPool is StakingPool {
         stakingPeriodNotStarted
         stakingPoolNotFull(amount)
     {
-        // some sanity checks
         require(
             amount >= stakingPoolInfo.minimumContribution,
             "FixedStaking: min contribution"
         );
 
-        // load user info
         UserInfo storage user = userInfo[_msgSender()];
-
-        // update user info
         user.depositAmount += uint128(amount);
+
+        emit Deposit(_msgSender(), amount);
 
         for (uint256 i = 0; i < stakingPoolInfo.rewardTokens.length; i++) {
             user.rewardAmounts[i] += _computeRewards(uint128(amount), i);
@@ -39,15 +36,14 @@ contract FixedStakingPool is StakingPool {
 
         stakingPoolInfo.totalStakedAmount += uint128(amount);
 
-        // transfer asset into staking pool (this)
-        bool result = stakingPoolInfo.stakeToken.transferFrom(
-            _msgSender(),
-            address(this),
-            amount
+        require(
+            stakingPoolInfo.stakeToken.transferFrom(
+                _msgSender(),
+                address(this),
+                amount
+            ),
+            "FixedStaking: failed to transfer"
         );
-        require(result, "FixedStaking: failed to transfer");
-
-        emit Deposit(_msgSender(), amount);
     }
 
     function withdraw() external rewardsFinalized stakingPeriodComplete {
@@ -58,8 +54,9 @@ contract FixedStakingPool is StakingPool {
         // effects
         delete userInfo[_msgSender()];
 
-        // Interactions
+        emit Withdraw(_msgSender(), user.depositAmount);
 
+        // Interactions
         bool result = stakingPoolInfo.stakeToken.transferFrom(
             address(this),
             _msgSender(),
@@ -72,16 +69,13 @@ contract FixedStakingPool is StakingPool {
             uint256 amount = uint256(user.rewardAmounts[i]);
             IERC20 token = IERC20(stakingPoolInfo.rewardTokens[i].rewardToken);
 
-            bool transferResult = token.transferFrom(
-                address(this),
-                _msgSender(),
-                amount
-            );
-            require(transferResult, "FixedStaking: reward tx fail");
             emit WithdrawRewards(_msgSender(), address(token), amount);
-        }
 
-        emit Withdraw(_msgSender(), user.depositAmount);
+            require(
+                token.transferFrom(address(this), _msgSender(), amount),
+                "FixedStaking: reward tx fail"
+            );
+        }
     }
 
     function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
@@ -128,9 +122,11 @@ contract FixedStakingPool is StakingPool {
 
     function _withdrawWithoutRewards() internal {
         UserInfo memory user = userInfo[_msgSender()];
-        require(user.depositAmount >= 0, "FixedStaking: not elegible");
+        require(user.depositAmount > 0, "FixedStaking: not eligible");
 
         delete userInfo[_msgSender()];
+
+        emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
 
         bool result = stakingPoolInfo.stakeToken.transferFrom(
             address(this),
@@ -139,8 +135,6 @@ contract FixedStakingPool is StakingPool {
         );
 
         require(result, "FixedStaking: stake tx fail");
-
-        emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
     }
 
     function _computeRewards(uint128 amount, uint256 rewardTokenIndex)
