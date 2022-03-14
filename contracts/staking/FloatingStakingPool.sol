@@ -9,12 +9,7 @@ import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
 
-contract FloatingStakingPool is
-    Initializable,
-    RoleAccessControl,
-    ReentrancyGuard,
-    StakingPool
-{
+contract FloatingStakingPool is ReentrancyGuard, StakingPool {
     struct UserInfo {
         uint128 depositAmount;
     }
