@@ -64,14 +64,8 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
         return address(floatingStakingPool);
     }
 
-    function initialize() public {
+    function initialize() external {
         __Pausable_init();
         __RoleAccessControl_init();
     }
-
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        virtual
-        atLeastSysAdminRole
-    {}
 }

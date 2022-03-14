@@ -9,7 +9,7 @@ import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
 
-contract FixedStakingPool is Initializable, StakingPool, RoleAccessControl {
+contract FixedStakingPool is StakingPool {
     struct UserInfo {
         uint128 depositAmount;
         uint128[] rewardAmounts;
@@ -54,7 +54,7 @@ contract FixedStakingPool is Initializable, StakingPool, RoleAccessControl {
     function withdraw() external rewardsFinalized stakingPeriodComplete {
         UserInfo memory user = userInfo[_msgSender()];
         // checks
-        require(user.depositAmount >= 0, "FixedStaking: not elegible");
+        require(user.depositAmount > 0, "FixedStaking: not elegible");
 
         // effects
         delete userInfo[_msgSender()];
@@ -63,7 +63,7 @@ contract FixedStakingPool is Initializable, StakingPool, RoleAccessControl {
 
         bool result = stakingPoolInfo.stakeToken.transferFrom(
             address(this),
-            address(_msgSender()),
+            _msgSender(),
             uint256(user.depositAmount)
         );
         require(result, "FixedStaking: stake tx fail");
@@ -75,7 +75,7 @@ contract FixedStakingPool is Initializable, StakingPool, RoleAccessControl {
 
             bool transferResult = token.transferFrom(
                 address(this),
-                address(_msgSender()),
+                _msgSender(),
                 amount
             );
             require(transferResult, "FixedStaking: reward tx fail");
@@ -126,17 +126,6 @@ contract FixedStakingPool is Initializable, StakingPool, RoleAccessControl {
                 userInfo[receipient].depositAmount,
                 rewardTokenIndex
             );
-    }
-
-    function initialize(StakingPoolInfo.StakingPoolData calldata _info)
-        public
-        virtual
-        initializer
-    {
-        __RoleAccessControl_init();
-        __Context_init_unchained();
-
-        stakingPoolInfo = _info;
     }
 
     function _computeRewards(uint128 amount, uint256 rewardTokenIndex)
