@@ -9,6 +9,8 @@ import "./StakingPoolInfo.sol";
 import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
 
+import "hardhat/console.sol";
+
 contract FloatingStakingPool is ReentrancyGuard, StakingPool {
     struct UserInfo {
         uint128 depositAmount;
@@ -42,6 +44,13 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
         stakingPoolInfo.totalStakedAmount += uint128(amount);
 
         // transfer asset into staking pool (this)
+        console.log("transferFrom ", _msgSender(), address(this), amount);
+        console.log("stakeToken address ", address(stakingPoolInfo.stakeToken));
+        console.log(
+            "balanceOf: ",
+            stakingPoolInfo.stakeToken.balanceOf(_msgSender())
+        );
+
         bool result = stakingPoolInfo.stakeToken.transferFrom(
             _msgSender(),
             address(this),

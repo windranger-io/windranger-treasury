@@ -22,16 +22,19 @@ import {
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
 
-import {getTimestampNow} from './framework/time'
+import {getTimestampNow, increaseTime} from './framework/time'
 import {Provider} from '@ethersproject/providers'
+import {BigNumber} from 'ethers'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
 
+const EPOCH_DURATION = 60
+
 describe.only('Floating Staking Tests', () => {
     before(async () => {
         admin = (await signer(0)).address
-        user = (await signer(1)).address
+        user = await signer(1)
         const symbol = 'EEK'
         stakeTokens = await deployContract<ERC20PresetMinterPauser>(
             'ERC20PresetMinterPauser',
@@ -44,7 +47,7 @@ describe.only('Floating Staking Tests', () => {
             minTotalPoolStake: 50,
             maxTotalPoolStake: 100,
             minimumContribution: 5,
-            epochDuration: 60,
+            epochDuration: EPOCH_DURATION,
             epochStartTimestamp: await getTimestampNow(),
             rewardsFinalized: true,
             emergencyMode: false,
@@ -62,23 +65,31 @@ describe.only('Floating Staking Tests', () => {
 
     describe('deposit', () => {
         it('allows user to deposit', async () => {
-            const amount = 20
-            await stakeTokens.mint(user, amount * 2)
-            // eslint-disable-next-line no-console
-            console.log('minted!')
-            await stakeTokens.increaseAllowance(
-                floatingStakingPool.address,
-                amount
-            )
-            // eslint-disable-next-line no-console
-            console.log('depositing!')
-            await floatingStakingPool.deposit(amount)
+            await userDeposit(user, BigNumber.from(20))
+        })
+    })
+    describe('withdraw', () => {
+        it('allows user to withdraw', async () => {
+            const amount = BigNumber.from(20)
+            await userDeposit(user, amount)
+            await increaseTime(EPOCH_DURATION)
+            await userWithdraw(user)
         })
     })
 
+    async function userDeposit(user: SignerWithAddress, amount: BigNumber) {
+        await stakeTokens.mint(user.address, amount)
+        await stakeTokens
+            .connect(user)
+            .increaseAllowance(floatingStakingPool.address, amount)
+        await floatingStakingPool.connect(user).deposit(amount)
+    }
+    async function userWithdraw(user: SignerWithAddress) {
+        await floatingStakingPool.connect(user).withdraw()
+    }
+
     let admin: string
-    let user: string
+    let user: SignerWithAddress
     let stakeTokens: ERC20PresetMinterPauser
     let floatingStakingPool: FloatingStakingPool
-    let provider: Provider
 })
