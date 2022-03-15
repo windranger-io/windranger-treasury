@@ -35,7 +35,7 @@ Replace these variable:
 - `${MEDIATOR_CONTRACT_ADDRESS}` : BondMediator contract (from the deployment step).
 
 ```shell
-npx hardhat --network localhost createDao --treasury ${TREASURY_ADDRESS} --mediator ${MEDIATOR_CONTRACT_ADDRESS}
+npx hardhat run ./scripts/local/create-dao.ts --network localhost
 ```
 
 Note the `BigNumber` values from the `CreateDao` event, convert from hex to decimal and that is the DAO id to use later.

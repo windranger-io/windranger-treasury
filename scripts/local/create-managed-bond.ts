@@ -1,20 +1,15 @@
+import {ethers} from 'hardhat'
 import {BondMediator} from '../../typechain-types'
 import {log} from '../../config/logging'
 import {ContractReceipt, Event} from 'ethers'
-import {HardhatEthersHelpers} from '@nomiclabs/hardhat-ethers/types'
 
-export async function createBond(
+async function createManagedBond(
     mediatorAddress: string,
     daoId: string,
-    ethers: HardhatEthersHelpers
-) {
+    collateralTokensAddress: string
+): Promise<void> {
     const factory = await ethers.getContractFactory('BondMediator')
     const contract = <BondMediator>factory.attach(mediatorAddress)
-
-    const network = await ethers.provider.getNetwork()
-    log.info(network)
-
-    log.info(mediatorAddress)
 
     log.info('Creating a new managed bond')
 
@@ -27,7 +22,7 @@ export async function createBond(
         },
         {
             debtTokenAmount: 75000n,
-            collateralTokens: 'BIT',
+            collateralTokens: collateralTokensAddress,
             expiryTimestamp: 1640010122n,
             minimumDeposit: 25n
         }
@@ -44,7 +39,35 @@ export async function createBond(
     }
 }
 
+async function main(): Promise<void> {
+    const mediator = parseEnvironmentVariable('BOND_MEDIATOR_CONTRACT')
+    const collateral = parseEnvironmentVariable('COLLATERAL_TOKENS_CONTRACT')
+    const daoId = parseEnvironmentVariable('DAO_ID')
+
+    // TODO validate input - addresses
+
+    return createManagedBond(mediator, daoId, collateral)
+}
+
 function receiptEvents(receipt: ContractReceipt): Event[] {
     const availableEvents = receipt.events
     return availableEvents ? availableEvents : []
 }
+
+function parseEnvironmentVariable(name: string): string {
+    const envVar = process.env[name]
+
+    // eslint-disable-next-line no-undefined
+    if (envVar === undefined) {
+        throw Error(`Missing environment variable: ${name}`)
+    }
+
+    return envVar
+}
+
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        log.error(error)
+        process.exit(1)
+    })

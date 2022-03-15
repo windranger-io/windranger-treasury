@@ -3,13 +3,20 @@ import {BondMediator} from '../../typechain-types'
 import {log} from '../../config/logging'
 import {ContractReceipt, Event} from 'ethers'
 
-async function createDao(mediatorAddress: string, treasuryAddress: string) {
+async function whitelistCollateral(
+    mediatorAddress: string,
+    daoId: string,
+    collateralTokens: string
+) {
     const factory = await ethers.getContractFactory('BondMediator')
     const contract = <BondMediator>factory.attach(mediatorAddress)
 
-    log.info('Creating a new DAO')
+    log.info('Whitelisting ERC20 token collateral')
 
-    const transaction = await contract.createDao(treasuryAddress)
+    const transaction = await contract.whitelistCollateral(
+        daoId,
+        collateralTokens
+    )
 
     const receipt = await transaction.wait()
 
@@ -24,11 +31,12 @@ async function createDao(mediatorAddress: string, treasuryAddress: string) {
 
 async function main(): Promise<void> {
     const mediator = parseEnvironmentVariable('BOND_MEDIATOR_CONTRACT')
-    const treasury = parseEnvironmentVariable('TREASURY_ADDRESS')
+    const collateral = parseEnvironmentVariable('COLLATERAL_TOKENS_CONTRACT')
+    const daoId = parseEnvironmentVariable('DAO_ID')
 
     // TODO validate input - addresses
 
-    return createDao(mediator, treasury)
+    return whitelistCollateral(mediator, daoId, collateral)
 }
 
 function receiptEvents(receipt: ContractReceipt): Event[] {
