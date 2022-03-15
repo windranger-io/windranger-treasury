@@ -4,9 +4,17 @@ import {eventLog} from '../../test/framework/event-logs'
 import {log} from '../../config/logging'
 import {BondFactory} from '../../typechain-types'
 
-export function receiptEvents(receipt: ContractReceipt): Event[] {
+function receiptEvents(receipt: ContractReceipt): Event[] {
     const availableEvents = receipt.events
     return availableEvents ? availableEvents : []
+}
+
+export function logEvents(receipt: ContractReceipt): void {
+    const events = receiptEvents(receipt)
+
+    for (const event of events) {
+        log.info('%s, %s', event.event, JSON.stringify(event.args))
+    }
 }
 
 export function logCreateBondEvents(

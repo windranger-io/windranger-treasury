@@ -1,11 +1,11 @@
 import {ethers} from 'hardhat'
 import {BondMediator} from '../../typechain-types'
 import {log} from '../../config/logging'
-import {ContractReceipt, Event} from 'ethers'
 import {
     addressEnvironmentVariable,
     bigintEnvironmentVariable
 } from '../utils/environment-variable'
+import {logEvents} from '../utils/transaction-event-log'
 
 async function whitelistCollateral(
     mediatorAddress: string,
@@ -24,13 +24,9 @@ async function whitelistCollateral(
 
     const receipt = await transaction.wait()
 
-    log.info('Transaction: ', receipt.transactionHash)
+    log.info('Transaction complete with status %s', receipt.status)
 
-    const events = receiptEvents(receipt)
-
-    for (const event of events) {
-        log.info('%s, %s', event.event, JSON.stringify(event.args))
-    }
+    logEvents(receipt)
 }
 
 async function main(): Promise<void> {
@@ -39,11 +35,6 @@ async function main(): Promise<void> {
     const daoId = bigintEnvironmentVariable('DAO_ID')
 
     return whitelistCollateral(mediator, daoId, collateral)
-}
-
-function receiptEvents(receipt: ContractReceipt): Event[] {
-    const availableEvents = receipt.events
-    return availableEvents ? availableEvents : []
 }
 
 main()

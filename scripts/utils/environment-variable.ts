@@ -18,8 +18,6 @@ export function addressEnvironmentVariable(name: string): string {
 function parseEnvironmentVariable(name: string): string {
     const envVar = process.env[name]
 
-    log.info(envVar)
-
     // eslint-disable-next-line no-undefined
     if (envVar === undefined) {
         throw Error(`Missing environment variable: ${name}`)
