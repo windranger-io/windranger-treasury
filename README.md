@@ -65,7 +65,7 @@ Run a single test (or a regex of tests), then pass in as an argument.
 The TypeScript transpiler will automatically as needed, execute through HardHat for the instantiated environment
 
 ```shell
-npx hardhat run .\scripts\deploy.ts
+npx hardhat run .\scripts\bond-deploy.ts
 ```
 
 ### Logging
@@ -97,6 +97,10 @@ The output will vary depending on OS, however if it fails claiming Java is not f
 ```shell
 npm run plant
 ```
+
+## Deploy & Test contracts locally
+
+The contracts can be deployed locally and their behaviour verified [using our scripts](./docs/deploy_local.md)
 
 ## Solidity Static Analysis
 
