@@ -98,6 +98,10 @@ The output will vary depending on OS, however if it fails claiming Java is not f
 npm run plant
 ```
 
+## Deploy & Test contracts locally
+
+The contracts can be deployed locally and their behaviour verified [using our scripts](./docs/deploy_local.md)
+
 ## Solidity Static Analysis
 
 We use the Trail of Bits Solidity static analyzer [Slither](https://github.com/crytic/slither).
