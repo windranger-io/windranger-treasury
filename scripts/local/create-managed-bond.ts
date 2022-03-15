@@ -1,23 +1,27 @@
 import {ethers} from 'hardhat'
-import {BondMediator} from '../../typechain-types'
+import {BondFactory, BondMediator} from '../../typechain-types'
 import {log} from '../../config/logging'
-import {ContractReceipt, Event} from 'ethers'
 import {
     addressEnvironmentVariable,
     bigintEnvironmentVariable
 } from '../utils/environment-variable'
+import {logCreateBondEvents} from '../utils/transaction-event-log'
 
 async function createManagedBond(
     mediatorAddress: string,
+    creatorAddress: string,
     daoId: bigint,
     collateralTokensAddress: string
 ): Promise<void> {
-    const factory = await ethers.getContractFactory('BondMediator')
-    const contract = <BondMediator>factory.attach(mediatorAddress)
+    const mediatorFactory = await ethers.getContractFactory('BondMediator')
+    const mediator = <BondMediator>mediatorFactory.attach(mediatorAddress)
+
+    const creatorFactory = await ethers.getContractFactory('BondFactory')
+    const creator = <BondFactory>creatorFactory.attach(creatorAddress)
 
     log.info('Creating a new managed bond')
 
-    const transaction = await contract.createManagedBond(
+    const transaction = await mediator.createManagedBond(
         BigInt(daoId),
         {
             name: 'Name for testing',
@@ -34,26 +38,18 @@ async function createManagedBond(
 
     const receipt = await transaction.wait()
 
-    log.info('Transaction: ', receipt.transactionHash)
+    log.info('Transaction complete with status %s', receipt.status)
 
-    const events = receiptEvents(receipt)
-
-    for (const event of events) {
-        log.info('%s, %s', event.event, JSON.stringify(event.args))
-    }
+    logCreateBondEvents(creator, receipt)
 }
 
 async function main(): Promise<void> {
+    const creator = addressEnvironmentVariable('BOND_FACTORY_CONTRACT')
     const mediator = addressEnvironmentVariable('BOND_MEDIATOR_CONTRACT')
     const collateral = addressEnvironmentVariable('COLLATERAL_TOKENS_CONTRACT')
     const daoId = bigintEnvironmentVariable('DAO_ID')
 
-    return createManagedBond(mediator, daoId, collateral)
-}
-
-function receiptEvents(receipt: ContractReceipt): Event[] {
-    const availableEvents = receipt.events
-    return availableEvents ? availableEvents : []
+    return createManagedBond(mediator, creator, daoId, collateral)
 }
 
 main()

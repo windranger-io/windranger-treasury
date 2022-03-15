@@ -1,12 +1,12 @@
 import {run} from 'hardhat'
 import {log} from '../../config/logging'
 import {BitDAO, BondFactory, BondMediator} from '../../typechain-types'
-import {signer} from '../utils/signer'
 import {
     awaitContractPropagation,
     deployContract,
     verifyContract
 } from '../utils/contract'
+import {signer} from '../../test/framework/contracts'
 
 async function main() {
     await run('compile')

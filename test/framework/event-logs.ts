@@ -39,7 +39,10 @@ function eventLogs<T extends BaseContract>(
     const eventId = utils.id(emitter.interface.getEvent(name).format())
 
     for (const log of receipt.logs) {
-        if (emitter.address === log.address && eventId === log.topics[0]) {
+        if (
+            emitter.address.toLowerCase() === log.address.toLowerCase() &&
+            eventId === log.topics[0]
+        ) {
             found.push(
                 emitter.interface.decodeEventLog(name, log.data, log.topics)
             )
