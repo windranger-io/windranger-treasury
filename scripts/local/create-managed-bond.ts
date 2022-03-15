@@ -2,10 +2,14 @@ import {ethers} from 'hardhat'
 import {BondMediator} from '../../typechain-types'
 import {log} from '../../config/logging'
 import {ContractReceipt, Event} from 'ethers'
+import {
+    addressEnvironmentVariable,
+    bigintEnvironmentVariable
+} from '../utils/environment-variable'
 
 async function createManagedBond(
     mediatorAddress: string,
-    daoId: string,
+    daoId: bigint,
     collateralTokensAddress: string
 ): Promise<void> {
     const factory = await ethers.getContractFactory('BondMediator')
@@ -40,11 +44,9 @@ async function createManagedBond(
 }
 
 async function main(): Promise<void> {
-    const mediator = parseEnvironmentVariable('BOND_MEDIATOR_CONTRACT')
-    const collateral = parseEnvironmentVariable('COLLATERAL_TOKENS_CONTRACT')
-    const daoId = parseEnvironmentVariable('DAO_ID')
-
-    // TODO validate input - addresses
+    const mediator = addressEnvironmentVariable('BOND_MEDIATOR_CONTRACT')
+    const collateral = addressEnvironmentVariable('COLLATERAL_TOKENS_CONTRACT')
+    const daoId = bigintEnvironmentVariable('DAO_ID')
 
     return createManagedBond(mediator, daoId, collateral)
 }
@@ -52,17 +54,6 @@ async function main(): Promise<void> {
 function receiptEvents(receipt: ContractReceipt): Event[] {
     const availableEvents = receipt.events
     return availableEvents ? availableEvents : []
-}
-
-function parseEnvironmentVariable(name: string): string {
-    const envVar = process.env[name]
-
-    // eslint-disable-next-line no-undefined
-    if (envVar === undefined) {
-        throw Error(`Missing environment variable: ${name}`)
-    }
-
-    return envVar
 }
 
 main()
