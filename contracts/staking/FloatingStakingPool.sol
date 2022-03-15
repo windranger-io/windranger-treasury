@@ -59,9 +59,8 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
 
         delete userInfo[_msgSender()];
 
-        bool result = stakingPoolInfo.stakeToken.transferFrom(
-            address(this),
-            address(_msgSender()),
+        bool result = stakingPoolInfo.stakeToken.transfer(
+            _msgSender(),
             uint256(user.depositAmount)
         );
         require(result, "FixedStaking: stake tx fail");
@@ -73,11 +72,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
             );
             IERC20 token = IERC20(stakingPoolInfo.rewardTokens[i].rewardToken);
 
-            bool transferResult = token.transferFrom(
-                address(this),
-                address(_msgSender()),
-                amount
-            );
+            bool transferResult = token.transfer(_msgSender(), amount);
             require(transferResult, "FixedStaking: reward tx fail");
             emit WithdrawRewards(_msgSender(), address(token), amount);
         }
@@ -139,19 +134,12 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
 
     function _withdrawWithoutRewards() internal {
         UserInfo memory user = userInfo[_msgSender()];
-        require(user.depositAmount >= 0, "FixedStaking: not elegible");
+        require(user.depositAmount >= 0, "FixedStaking: not eligible");
 
         delete userInfo[_msgSender()];
-
-        bool result = stakingPoolInfo.stakeToken.transferFrom(
-            address(this),
-            address(_msgSender()),
-            uint256(user.depositAmount)
-        );
-
-        require(result, "FixedStaking: stake tx fail");
-
         emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
+
+        _transferStake(uint256(user.depositAmount));
     }
 
     function _computeRewardsPerShare(uint256 rewardTokenIndex)

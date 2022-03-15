@@ -7,6 +7,7 @@ import "./StakingPoolInfo.sol";
 import "../RoleAccessControl.sol";
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 abstract contract StakingPool is Initializable, RoleAccessControl {
     StakingPoolInfo.StakingPoolData public stakingPoolInfo;
@@ -110,6 +111,14 @@ abstract contract StakingPool is Initializable, RoleAccessControl {
                 "StakingPool: fund tx failed"
             );
         }
+    }
+
+    function _transferStake(uint256 amount) internal {
+        emit WithdrawWithoutRewards(_msgSender(), amount);
+        require(
+            stakingPoolInfo.stakeToken.transfer(msg.sender, amount),
+            "StakingPool: stake tx fail"
+        );
     }
 
     function _adminEmergencyRewardSweep() internal {

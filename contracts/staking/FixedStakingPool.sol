@@ -57,8 +57,7 @@ contract FixedStakingPool is StakingPool {
         emit Withdraw(_msgSender(), user.depositAmount);
 
         // Interactions
-        bool result = stakingPoolInfo.stakeToken.transferFrom(
-            address(this),
+        bool result = stakingPoolInfo.stakeToken.transfer(
             _msgSender(),
             uint256(user.depositAmount)
         );
@@ -125,16 +124,7 @@ contract FixedStakingPool is StakingPool {
         require(user.depositAmount > 0, "FixedStaking: not eligible");
 
         delete userInfo[_msgSender()];
-
-        emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
-
-        bool result = stakingPoolInfo.stakeToken.transferFrom(
-            address(this),
-            address(_msgSender()),
-            uint256(user.depositAmount)
-        );
-
-        require(result, "FixedStaking: stake tx fail");
+        _transferStake(uint256((user.depositAmount)));
     }
 
     function _computeRewards(uint128 amount, uint256 rewardTokenIndex)
