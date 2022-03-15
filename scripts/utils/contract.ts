@@ -1,6 +1,10 @@
 import {ethers, run} from 'hardhat'
-import {log} from '../config/logging'
-import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
+import {log} from '../../config/logging'
+
+export interface DeployableContract<T> {
+    deployed(): Promise<T>
+    address: string
+}
 
 export async function deployContract<T extends DeployableContract<T>>(
     name: string,
@@ -25,22 +29,6 @@ export async function verifyContract<T extends DeployableContract<T>>(
         constructorArguments: [...args]
     })
 }
-
-interface DeployableContract<T> {
-    deployed(): Promise<T>
-    address: string
-}
-
-export async function signer(index: number): Promise<SignerWithAddress> {
-    const signers = await ethers.getSigners()
-
-    if (index >= signers.length) {
-        throw new Error('Configuration problem: too few signers!')
-    }
-
-    return signers[index]
-}
-
 export async function awaitContractPropagation() {
     const sleepyTimeMs = 1500
     log.info('Awaiting contract propagation for: %s ms', sleepyTimeMs)

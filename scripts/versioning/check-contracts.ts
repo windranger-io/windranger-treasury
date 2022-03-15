@@ -1,14 +1,13 @@
 import {
     Box,
     BondFactory,
-    BondManager,
     BondMediator,
     ERC20SingleCollateralBond
 } from '../../typechain-types'
 import {log} from '../../config/logging'
-import {deployContract} from '../common'
 import {checkContractVersionAgainstReleaseTag} from './check'
 import {Version} from '../../test/contracts/cast/version'
+import {deployContract} from '../utils/contract'
 
 function deployAndCheckVersion<T extends Version>(contractName: string) {
     deployContract<T>(contractName)
@@ -23,6 +22,5 @@ function deployAndCheckVersion<T extends Version>(contractName: string) {
 
 deployAndCheckVersion<Box>('Box')
 deployAndCheckVersion<BondFactory>('BondFactory')
-deployAndCheckVersion<BondManager>('BondManager')
 deployAndCheckVersion<BondMediator>('BondMediator')
 deployAndCheckVersion<ERC20SingleCollateralBond>('ERC20SingleCollateralBond')
