@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "./FixedStakingPool.sol";
 import "./FloatingStakingPool.sol";
-import "./StakingPoolInfo.sol";
+import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
 
 contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
@@ -20,11 +20,11 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
 
     function createFixedStakingPool(
         uint256 daoId,
-        StakingPoolInfo.StakingPoolData calldata info
+        StakingPool.Data calldata info
     ) external atLeastDaoAminRole(daoId) returns (address) {
         FixedStakingPool fixedStakingPool = new FixedStakingPool();
 
-        emit StakingPoolInfo.StakingPoolCreated(
+        emit StakingPool.StakingPoolCreated(
             address(fixedStakingPool),
             info.treasury,
             _msgSender(),
@@ -33,7 +33,7 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
             info.epochStartTimestamp,
             info.epochDuration,
             info.minimumContribution,
-            StakingPoolInfo.StakingPoolType.FIXED
+            StakingPool.StakingPoolType.FIXED
         );
 
         fixedStakingPool.initialize(info);
@@ -43,11 +43,11 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
 
     function createFloatingStakingPool(
         uint256 daoId,
-        StakingPoolInfo.StakingPoolData calldata info
+        StakingPool.Data calldata info
     ) external atLeastDaoAminRole(daoId) returns (address) {
         FloatingStakingPool floatingStakingPool = new FloatingStakingPool();
 
-        emit StakingPoolInfo.StakingPoolCreated(
+        emit StakingPool.StakingPoolCreated(
             address(floatingStakingPool),
             info.treasury,
             _msgSender(),
@@ -56,7 +56,7 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
             info.epochStartTimestamp,
             info.epochDuration,
             info.minimumContribution,
-            StakingPoolInfo.StakingPoolType.FLOATING
+            StakingPool.StakingPoolType.FLOATING
         );
 
         floatingStakingPool.initialize(info);
