@@ -8,6 +8,8 @@ import "./StakingPoolBase.sol";
 import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
 
+import "hardhat/console.sol";
+
 contract FloatingStakingPool is StakingPoolBase {
     struct User {
         uint128 depositAmount;
@@ -59,7 +61,6 @@ contract FloatingStakingPool is StakingPoolBase {
         nonReentrant
     {
         User memory user = users[_msgSender()];
-        // checks
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
         delete users[_msgSender()];
@@ -101,6 +102,7 @@ contract FloatingStakingPool is StakingPoolBase {
         external
         atLeastDaoAminRole(stakingPoolInfo.daoId)
     {
+        console.log("setFinalizeRewards: ", finalize);
         _setFinalizeRewards(finalize);
     }
 
