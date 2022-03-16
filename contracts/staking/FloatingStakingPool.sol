@@ -5,18 +5,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "./StakingPoolInfo.sol";
+import "./StakingPoolBase.sol";
 import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
 
-import "hardhat/console.sol";
-
-contract FloatingStakingPool is ReentrancyGuard, StakingPool {
-    struct UserInfo {
+contract FloatingStakingPool is ReentrancyGuard, StakingPoolBase {
+    struct User {
         uint128 depositAmount;
     }
 
-    mapping(address => UserInfo) public userInfo;
+    mapping(address => User) public users;
 
     function deposit(uint256 amount)
         external
@@ -30,7 +28,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
             "StakingPool: min contribution"
         );
 
-        UserInfo storage user = userInfo[_msgSender()];
+        User storage user = users[_msgSender()];
 
         user.depositAmount += uint128(amount);
 
@@ -43,36 +41,32 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
 
         stakingPoolInfo.totalStakedAmount += uint128(amount);
 
-        // transfer asset into staking pool (this)
-        console.log("transferFrom ", _msgSender(), address(this), amount);
-        console.log("stakeToken address ", address(stakingPoolInfo.stakeToken));
-        console.log(
-            "balanceOf: ",
-            stakingPoolInfo.stakeToken.balanceOf(_msgSender())
+        require(
+            stakingPoolInfo.stakeToken.transferFrom(
+                _msgSender(),
+                address(this),
+                amount
+            ),
+            "StakingPool: failed to transfer"
         );
-
-        bool result = stakingPoolInfo.stakeToken.transferFrom(
-            _msgSender(),
-            address(this),
-            amount
-        );
-        require(result, "StakingPool: failed to transfer");
 
         emit Deposit(_msgSender(), amount);
     }
 
     function withdraw() external rewardsFinalized stakingPeriodComplete {
-        UserInfo memory user = userInfo[_msgSender()];
+        User memory user = users[_msgSender()];
         // checks
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
-        delete userInfo[_msgSender()];
+        delete users[_msgSender()];
 
-        bool result = stakingPoolInfo.stakeToken.transfer(
-            _msgSender(),
-            uint256(user.depositAmount)
+        require(
+            stakingPoolInfo.stakeToken.transfer(
+                _msgSender(),
+                uint256(user.depositAmount)
+            ),
+            "StakingPool: stake tx fail"
         );
-        require(result, "StakingPool: stake tx fail");
 
         for (uint256 i = 0; i < stakingPoolInfo.rewardTokens.length; i++) {
             uint256 amount = uint256(
@@ -81,8 +75,10 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
             );
             IERC20 token = IERC20(stakingPoolInfo.rewardTokens[i].rewardToken);
 
-            bool transferResult = token.transfer(_msgSender(), amount);
-            require(transferResult, "FixedStaking: reward tx fail");
+            require(
+                token.transfer(_msgSender(), amount),
+                "FixedStaking: reward tx fail"
+            );
             emit WithdrawRewards(_msgSender(), address(token), amount);
         }
 
@@ -97,6 +93,13 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
         _withdrawWithoutRewards();
     }
 
+    function setFinalizeRewards(bool _finalize)
+        external
+        atLeastDaoAminRole(stakingPoolInfo.daoId)
+    {
+        _setFinalizeRewards(_finalize);
+    }
+
     function adminEmergencyRewardSweep()
         external
         atLeastDaoAminRole(stakingPoolInfo.daoId)
@@ -107,7 +110,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
 
     function initializeRewardTokens(
         address treasury,
-        StakingPoolInfo.RewardToken[] calldata _rewardTokens
+        StakingPool.RewardToken[] calldata _rewardTokens
     ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
         _initializeRewardTokens(treasury, _rewardTokens);
     }
@@ -125,9 +128,8 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
         view
         returns (uint256[] memory)
     {
-        UserInfo memory _userInfo = userInfo[user];
-        StakingPoolInfo.StakingPoolData
-            memory _stakingPoolInfo = stakingPoolInfo;
+        User memory _user = users[user];
+        StakingPool.Data memory _stakingPoolInfo = stakingPoolInfo;
         uint256[] memory rewards = new uint256[](
             _stakingPoolInfo.rewardTokens.length
         );
@@ -135,17 +137,17 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
         for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
             rewards[i] = uint256(
                 _stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
-                    _userInfo.depositAmount
+                    _user.depositAmount
             );
         }
         return rewards;
     }
 
     function _withdrawWithoutRewards() internal {
-        UserInfo memory user = userInfo[_msgSender()];
+        User memory user = users[_msgSender()];
         require(user.depositAmount >= 0, "FixedStaking: not eligible");
 
-        delete userInfo[_msgSender()];
+        delete users[_msgSender()];
         emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
 
         _transferStake(uint256(user.depositAmount));
@@ -156,8 +158,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPool {
         view
         returns (uint256)
     {
-        StakingPoolInfo.StakingPoolData
-            memory _stakingPoolInfo = stakingPoolInfo;
+        StakingPool.Data memory _stakingPoolInfo = stakingPoolInfo;
 
         uint256 availableTokenRewards = _stakingPoolInfo
             .rewardTokens[rewardTokenIndex]

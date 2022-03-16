@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
-import "./StakingPoolInfo.sol";
+import "./StakingPoolBase.sol";
 import "./StakingPool.sol";
 
-contract FixedStakingPool is StakingPool {
+contract FixedStakingPool is StakingPoolBase {
     struct UserInfo {
         uint128 depositAmount;
         uint128[] rewardAmounts;
@@ -87,7 +87,7 @@ contract FixedStakingPool is StakingPool {
 
     function initializeRewardTokens(
         address treasury,
-        StakingPoolInfo.RewardToken[] calldata _rewardTokens
+        StakingPool.RewardToken[] calldata _rewardTokens
     ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
         _initializeRewardTokens(treasury, _rewardTokens);
     }
