@@ -24,12 +24,13 @@ import {successfulTransaction} from './framework/transaction'
 
 import {getTimestampNow, increaseTime} from './framework/time'
 import {Provider} from '@ethersproject/providers'
-import {BigNumber} from 'ethers'
+import {BigNumber, ContractReceipt} from 'ethers'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
 
 const EPOCH_DURATION = 60
+const START_DELAY = 15
 
 describe.only('Floating Staking Tests', () => {
     before(async () => {
@@ -41,6 +42,7 @@ describe.only('Floating Staking Tests', () => {
             'Another erc20 Token',
             symbol
         )
+        const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
 
         const floatingStakingPoolInfo = {
             daoId: 0,
@@ -48,7 +50,7 @@ describe.only('Floating Staking Tests', () => {
             maxTotalPoolStake: 100,
             minimumContribution: 5,
             epochDuration: EPOCH_DURATION,
-            epochStartTimestamp: await getTimestampNow(),
+            epochStartTimestamp,
             rewardsFinalized: true,
             emergencyMode: false,
             treasury: admin,
@@ -64,8 +66,34 @@ describe.only('Floating Staking Tests', () => {
     })
 
     describe('deposit', () => {
+        const depositAmount = BigNumber.from(20)
+
+        it('does not allow user to deposit when stakingPeriodNotStarted', async () => {
+            await expect(userDeposit(user, depositAmount)).to.be.revertedWith(
+                'StakingPool: too early'
+            )
+        })
+
+        it('does not allow user to deposit when staking pool full', async () => {
+            await increaseTime(START_DELAY)
+            await expect(
+                userDeposit(user, BigNumber.from(100n))
+            ).to.be.revertedWith('StakingPool: pool full')
+        })
+
+        it('does not allow user to deposit when amount less than min contribution', async () => {
+            await increaseTime(START_DELAY)
+            await expect(
+                userDeposit(user, BigNumber.from(4))
+            ).to.be.revertedWith('StakingPool: min contribution')
+        })
+
         it('allows user to deposit', async () => {
-            await userDeposit(user, BigNumber.from(20))
+            await userDeposit(user, depositAmount)
+        })
+
+        it('allows user to deposit again', async () => {
+            await userDeposit(user, depositAmount)
         })
     })
     describe('withdraw', () => {
@@ -77,15 +105,24 @@ describe.only('Floating Staking Tests', () => {
         })
     })
 
-    async function userDeposit(user: SignerWithAddress, amount: BigNumber) {
+    async function userDeposit(
+        user: SignerWithAddress,
+        amount: BigNumber
+    ): Promise<ContractReceipt> {
         await stakeTokens.mint(user.address, amount)
         await stakeTokens
             .connect(user)
             .increaseAllowance(floatingStakingPool.address, amount)
-        await floatingStakingPool.connect(user).deposit(amount)
+        return successfulTransaction(
+            floatingStakingPool.connect(user).deposit(amount)
+        )
     }
-    async function userWithdraw(user: SignerWithAddress) {
-        await floatingStakingPool.connect(user).withdraw()
+    async function userWithdraw(
+        user: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(
+            floatingStakingPool.connect(user).withdraw()
+        )
     }
 
     let admin: string
