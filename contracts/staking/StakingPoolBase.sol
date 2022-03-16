@@ -10,6 +10,8 @@ import "../RoleAccessControl.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
+import "hardhat/console.sol";
+
 abstract contract StakingPoolBase is
     Initializable,
     RoleAccessControl,
@@ -93,6 +95,10 @@ abstract contract StakingPoolBase is
         return _isRewardsFinalized() && _isStakingPeriodComplete();
     }
 
+    function isRewardsFinalized() external view returns (bool) {
+        return _isRewardsFinalized();
+    }
+
     function _initializeRewardTokens(
         address treasury,
         StakingPool.RewardToken[] calldata _rewardTokens
@@ -125,7 +131,10 @@ abstract contract StakingPoolBase is
     function _setFinalizeRewards(bool finalize) internal {
         if (_isStakingPeriodComplete()) {
             require(finalize, "StakePool: already finalized");
+            console.log("setting finalize flag here 1");
+            stakingPoolInfo.rewardsFinalized = finalize;
         } else {
+            console.log("setting finalize flag here");
             stakingPoolInfo.rewardsFinalized = finalize;
             emit FinalizeRewards(finalize);
         }
@@ -157,7 +166,7 @@ abstract contract StakingPoolBase is
     }
 
     function _isRewardsFinalized() internal view returns (bool) {
-        return _isStakingPeriodComplete() && stakingPoolInfo.rewardsFinalized;
+        return stakingPoolInfo.rewardsFinalized;
     }
 
     function _isStakingPeriodComplete() internal view returns (bool) {

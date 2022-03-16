@@ -25,6 +25,7 @@ import {successfulTransaction} from './framework/transaction'
 import {getTimestampNow, increaseTime} from './framework/time'
 import {Provider} from '@ethersproject/providers'
 import {BigNumber, ContractReceipt} from 'ethers'
+import {float} from 'hardhat/internal/core/params/argumentTypes'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -95,11 +96,36 @@ describe.only('Floating Staking Tests', () => {
         })
     })
     describe('withdraw', () => {
-        it('allows user to withdraw', async () => {
-            const amount = BigNumber.from(20)
+        const amount = BigNumber.from(20)
+        it('cant withdraw since rewards have not been finalized', async () => {
+            await increaseTime(START_DELAY)
             await userDeposit(user, amount)
+            await floatingStakingPool.setFinalizeRewards(false)
+            await expect(userWithdraw(user)).to.be.revertedWith(
+                'StakingPool: not finalized'
+            )
+        })
+
+        it('cant withdraw staking period not complete', async () => {
+            await successfulTransaction(
+                floatingStakingPool.setFinalizeRewards(true)
+            )
+            await expect(userWithdraw(user)).to.be.revertedWith(
+                'StakingPool: still stake period'
+            )
+        })
+
+        it('allows user to withdraw', async () => {
+            await userDeposit(user, amount)
+            await floatingStakingPool.setFinalizeRewards(true)
             await increaseTime(EPOCH_DURATION)
-            await userWithdraw(user)
+            const withdrawReceipt = await userWithdraw(user)
+        })
+
+        it('doesnt allow user to withdraw twice', async () => {
+            await expect(userWithdraw(user)).to.be.revertedWith(
+                'StakingPool: not eligible'
+            )
         })
     })
 
