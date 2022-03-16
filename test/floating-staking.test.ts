@@ -60,8 +60,6 @@ describe.only('Floating Staking Tests', () => {
         }
 
         floatingStakingPool = await deployContract('FloatingStakingPool')
-        // eslint-disable-next-line no-console
-        console.log('deployed staking pool at ', floatingStakingPool.address)
         await floatingStakingPool.initialize(floatingStakingPoolInfo)
     })
 

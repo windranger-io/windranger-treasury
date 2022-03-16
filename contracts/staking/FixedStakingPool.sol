@@ -19,6 +19,7 @@ contract FixedStakingPool is StakingPoolBase {
         external
         stakingPeriodNotStarted
         stakingPoolNotFull(amount)
+        nonReentrant
     {
         require(
             amount >= stakingPoolInfo.minimumContribution,
@@ -46,7 +47,12 @@ contract FixedStakingPool is StakingPoolBase {
         );
     }
 
-    function withdraw() external rewardsFinalized stakingPeriodComplete {
+    function withdraw()
+        external
+        rewardsFinalized
+        stakingPeriodComplete
+        nonReentrant
+    {
         UserInfo memory user = userInfo[_msgSender()];
         // checks
         require(user.depositAmount > 0, "FixedStaking: not elegible");
@@ -87,9 +93,9 @@ contract FixedStakingPool is StakingPoolBase {
 
     function initializeRewardTokens(
         address treasury,
-        StakingPool.RewardToken[] calldata _rewardTokens
+        StakingPool.RewardToken[] calldata rewardTokens
     ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
-        _initializeRewardTokens(treasury, _rewardTokens);
+        _initializeRewardTokens(treasury, rewardTokens);
     }
 
     function adminEmergencyRewardSweep()

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
@@ -9,7 +10,11 @@ import "../RoleAccessControl.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
-abstract contract StakingPoolBase is Initializable, RoleAccessControl {
+abstract contract StakingPoolBase is
+    Initializable,
+    RoleAccessControl,
+    ReentrancyGuard
+{
     StakingPool.Data public stakingPoolInfo;
 
     event WithdrawRewards(
