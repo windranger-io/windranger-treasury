@@ -3,13 +3,12 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./StakingPoolBase.sol";
 import "./StakingPool.sol";
 import "../RoleAccessControl.sol";
 
-contract FloatingStakingPool is ReentrancyGuard, StakingPoolBase {
+contract FloatingStakingPool is StakingPoolBase {
     struct User {
         uint128 depositAmount;
     }
@@ -53,7 +52,12 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPoolBase {
         emit Deposit(_msgSender(), amount);
     }
 
-    function withdraw() external rewardsFinalized stakingPeriodComplete {
+    function withdraw()
+        external
+        rewardsFinalized
+        stakingPeriodComplete
+        nonReentrant
+    {
         User memory user = users[_msgSender()];
         // checks
         require(user.depositAmount > 0, "StakingPool: not eligible");
@@ -93,11 +97,11 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPoolBase {
         _withdrawWithoutRewards();
     }
 
-    function setFinalizeRewards(bool _finalize)
+    function setFinalizeRewards(bool finalize)
         external
         atLeastDaoAminRole(stakingPoolInfo.daoId)
     {
-        _setFinalizeRewards(_finalize);
+        _setFinalizeRewards(finalize);
     }
 
     function adminEmergencyRewardSweep()
@@ -110,9 +114,9 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPoolBase {
 
     function initializeRewardTokens(
         address treasury,
-        StakingPool.RewardToken[] calldata _rewardTokens
+        StakingPool.RewardToken[] calldata rewardTokens
     ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
-        _initializeRewardTokens(treasury, _rewardTokens);
+        _initializeRewardTokens(treasury, rewardTokens);
     }
 
     function computeRewardsPerShare(uint256 rewardTokenIndex)
@@ -145,7 +149,7 @@ contract FloatingStakingPool is ReentrancyGuard, StakingPoolBase {
 
     function _withdrawWithoutRewards() internal {
         User memory user = users[_msgSender()];
-        require(user.depositAmount >= 0, "FixedStaking: not eligible");
+        require(user.depositAmount > 0, "FixedStaking: not eligible");
 
         delete users[_msgSender()];
         emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
