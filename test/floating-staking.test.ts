@@ -26,6 +26,7 @@ import {getTimestampNow, increaseTime} from './framework/time'
 import {Provider} from '@ethersproject/providers'
 import {BigNumber, ContractReceipt} from 'ethers'
 import {float} from 'hardhat/internal/core/params/argumentTypes'
+import {verifyDepositEvent} from './contracts/staking/verify-staking-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -88,7 +89,11 @@ describe.only('Floating Staking Tests', () => {
         })
 
         it('allows user to deposit', async () => {
-            await userDeposit(user, depositAmount)
+            const depositReceipt = await userDeposit(user, depositAmount)
+            verifyDepositEvent(
+                {depositAmount, user: user.address},
+                depositReceipt
+            )
         })
 
         it('allows user to deposit again', async () => {
