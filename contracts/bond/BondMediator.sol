@@ -48,9 +48,11 @@ contract BondMediator is
     function createDao(address erc20CapableTreasury)
         external
         override
+        atLeastDaoCreatorRole
         returns (uint256)
     {
         uint256 id = _daoBondConfiguration(erc20CapableTreasury);
+        _grantDaoCreatorAdminRoleInTheirDao(id);
 
         emit CreateDao(id, erc20CapableTreasury);
 
@@ -142,4 +144,10 @@ contract BondMediator is
         override
         atLeastSysAdminRole
     {}
+
+    function _grantDaoCreatorAdminRoleInTheirDao(uint256 daoId) private {
+        if (_hasGlobalRole(Roles.DAO_CREATOR, _msgSender())) {
+            _grantDaoRole(daoId, Roles.DAO_ADMIN, _msgSender());
+        }
+    }
 }
