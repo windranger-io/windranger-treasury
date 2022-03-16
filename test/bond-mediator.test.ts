@@ -18,7 +18,12 @@ import {
     deployContractWithProxy,
     signer
 } from './framework/contracts'
-import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from './contracts/bond/roles'
+import {
+    DAO_ADMIN,
+    DAO_CREATOR,
+    DAO_MEEPLE,
+    SYSTEM_ADMIN
+} from './contracts/bond/roles'
 import {successfulTransaction} from './framework/transaction'
 import {eventLog} from './framework/event-logs'
 import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
@@ -38,10 +43,11 @@ const INVALID_DAO_ID = 0n
 
 describe('Bond Mediator contract', () => {
     before(async () => {
-        admin = (await signer(0)).address
-        treasury = (await signer(1)).address
-        nonAdmin = await signer(2)
-        collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
+        superUser = (await signer(0)).address
+        daoCreator = await signer(1)
+        treasury = (await signer(2)).address
+        nonAdmin = await signer(3)
+        collateralTokens = await deployContract<BitDAO>('BitDAO', superUser)
         nonWhitelistCollateralTokens = await deployContract<ERC20>(
             '@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20',
             'Name',
@@ -52,6 +58,8 @@ describe('Bond Mediator contract', () => {
             'BondMediator',
             creator.address
         )
+
+        await mediator.grantDaoCreatorRole(daoCreator.address)
 
         daoId = await createDao(mediator, treasury)
         await mediator.whitelistCollateral(daoId, collateralTokens.address)
@@ -137,6 +145,67 @@ describe('Bond Mediator contract', () => {
                         collateralTokens.address
                     )
                 ).to.be.revertedWith('Pausable: paused')
+            })
+        })
+    })
+
+    describe('DAO', () => {
+        describe('create', () => {
+            it('by Super User role', async () => {
+                const previousHighestDaoId = await mediator.highestDaoId()
+
+                const receipt = await successfulTransaction(
+                    mediator.createDao(treasury)
+                )
+
+                const creationEvents = createDaoEvents(
+                    events('CreateDao', receipt)
+                )
+                expect(creationEvents).is.not.undefined
+                expect(creationEvents).has.length(1)
+                const daoId = creationEvents[0].id
+
+                expect(daoId).to.equal(await mediator.highestDaoId())
+                expect(daoId).to.equal(previousHighestDaoId.add(1))
+                expect(
+                    await mediator.hasDaoRole(daoId, DAO_ADMIN.hex, superUser)
+                ).to.be.false
+            })
+
+            it('by Dao Creator role', async () => {
+                const previousHighestDaoId = await mediator.highestDaoId()
+
+                const receipt = await successfulTransaction(
+                    mediator.connect(daoCreator).createDao(treasury)
+                )
+
+                const creationEvents = createDaoEvents(
+                    events('CreateDao', receipt)
+                )
+                expect(creationEvents).is.not.undefined
+                expect(creationEvents).has.length(1)
+                const daoId = creationEvents[0].id
+
+                expect(daoId).to.equal(await mediator.highestDaoId())
+                expect(daoId).to.equal(previousHighestDaoId.add(1))
+                expect(
+                    await mediator.hasDaoRole(
+                        daoId,
+                        DAO_ADMIN.hex,
+                        daoCreator.address
+                    )
+                ).to.be.true
+            })
+
+            it('has access control', async () => {
+                await expect(
+                    mediator.connect(nonAdmin).createDao(treasury)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        DAO_CREATOR
+                    )
+                )
             })
         })
     })
@@ -402,7 +471,8 @@ describe('Bond Mediator contract', () => {
         })
     })
 
-    let admin: string
+    let superUser: string
+    let daoCreator: SignerWithAddress
     let treasury: string
     let nonAdmin: SignerWithAddress
     let collateralTokens: ExtendedERC20
