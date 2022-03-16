@@ -1,3 +1,7 @@
+import {Provider} from '@ethersproject/providers'
+import {ethers} from 'hardhat'
+const {provider} = ethers
+
 const PAUSE_TIME_INCREMENT_MS = 100
 
 export const DAY_IN_SECONDS = 60 * 60 * 24
@@ -24,6 +28,28 @@ export async function occurrenceAtMost(
     while (!earlyStop() && passedMs < maximumDelayMs) {
         await sleep(PAUSE_TIME_INCREMENT_MS)
         passedMs += PAUSE_TIME_INCREMENT_MS
+    }
+}
+
+export async function getTimestampNow(): Promise<number> {
+    return (await provider.getBlock('latest')).timestamp
+}
+
+export function advanceBlock() {
+    return provider.send('evm_mine', [])
+}
+
+export const increaseTime = async (time: number, advance = true) => {
+    await provider.send('evm_increaseTime', [time])
+    if (advance) {
+        await advanceBlock()
+    }
+}
+
+export async function setTime(time: number, advance = true) {
+    await provider.send('evm_setNextBlockTimestamp', [time])
+    if (advance) {
+        await advanceBlock()
     }
 }
 
