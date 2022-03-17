@@ -26,6 +26,10 @@ import {event} from './framework/events'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from './contracts/bond/roles'
 import {accessControlRevertMessageMissingGlobalRole} from './contracts/bond/access-control-messages'
+import {
+    verifyAddBondEvents,
+    verifyAddBondLogEvents
+} from './contracts/bond/verify-curator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -87,12 +91,18 @@ describe('Bond Curator contract', () => {
         it('when valid', async () => {
             const bond = await createBond()
 
-            await curator.addBond(DAO_ID, bond.address)
+            const receipt = await successfulTransaction(
+                curator.addBond(DAO_ID, bond.address)
+            )
 
             const createdBondIndex = await curator.bondCount(DAO_ID)
             expect(
                 await curator.bondAt(DAO_ID, createdBondIndex.sub(1n))
             ).equals(bond.address)
+
+            const expectedAddBondEvents = [{bond: bond.address}]
+            verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
+            verifyAddBondEvents(receipt, expectedAddBondEvents)
         })
 
         it('only when not paused', async () => {
