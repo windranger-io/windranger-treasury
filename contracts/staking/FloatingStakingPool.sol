@@ -103,8 +103,8 @@ contract FloatingStakingPool is StakingPoolBase {
 
         for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
             rewards[i] = uint256(
-                _stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
-                    _user.depositAmount
+                (_stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
+                    _user.depositAmount) / 1 ether
             );
         }
         return rewards;
