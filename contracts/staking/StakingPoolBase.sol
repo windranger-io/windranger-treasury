@@ -33,10 +33,10 @@ abstract contract StakingPoolBase is
 
     event RewardsInitialized(address rewardTokens, uint256 amount);
 
-    event FinalizeRewards(bool finalize);
+    event RewardsAvailableTimestamp(uint32 rewardsAvailableTimestamp);
 
-    modifier rewardsFinalized() {
-        require(_isRewardsFinalized(), "StakingPool: not finalized");
+    modifier rewardsAvailable() {
+        require(_isRewardsAvailable(), "StakingPool: rewards too early");
         _;
     }
 
@@ -92,11 +92,11 @@ abstract contract StakingPoolBase is
     }
 
     function isReedemable() external view returns (bool) {
-        return _isRewardsFinalized() && _isStakingPeriodComplete();
+        return _isRewardsAvailable() && _isStakingPeriodComplete();
     }
 
     function isRewardsFinalized() external view returns (bool) {
-        return _isRewardsFinalized();
+        return _isRewardsAvailable();
     }
 
     function _initializeRewardTokens(
@@ -128,16 +128,14 @@ abstract contract StakingPoolBase is
         }
     }
 
-    function _setFinalizeRewards(bool finalize) internal {
-        if (_isStakingPeriodComplete()) {
-            require(finalize, "StakePool: already finalized");
-            console.log("setting finalize flag here 1");
-            stakingPoolInfo.rewardsFinalized = finalize;
-        } else {
-            console.log("setting finalize flag here");
-            stakingPoolInfo.rewardsFinalized = finalize;
-            emit FinalizeRewards(finalize);
-        }
+    function _setRewardsAvailableRewards(uint32 availableTimestamp) internal {
+        //        if (_isStakingPeriodComplete()) {
+        //            require(finalize, "StakePool: already finalized");
+        //            stakingPoolInfo.rewardsFinalized = finalize;
+        //        } else {
+        stakingPoolInfo.rewardsAvailableTimestamp = availableTimestamp;
+        emit RewardsAvailableTimestamp(availableTimestamp);
+        //        }
     }
 
     function _transferStake(uint256 amount) internal {
@@ -165,13 +163,13 @@ abstract contract StakingPoolBase is
         }
     }
 
-    function _isRewardsFinalized() internal view returns (bool) {
-        return stakingPoolInfo.rewardsFinalized;
+    function _isRewardsAvailable() internal view returns (bool) {
+        return block.timestamp >= stakingPoolInfo.rewardsAvailableTimestamp;
     }
 
     function _isStakingPeriodComplete() internal view returns (bool) {
         return
-            block.timestamp >
+            block.timestamp >=
             (stakingPoolInfo.epochStartTimestamp +
                 stakingPoolInfo.epochDuration);
     }
