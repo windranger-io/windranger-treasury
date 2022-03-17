@@ -130,7 +130,6 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
             "BondCurator: not bond owner"
         );
 
-        //slither-disable-next-line reentrancy-events
         emit AddBond(daoId, bond);
 
         bool added = _bonds[daoId].add(bond);
