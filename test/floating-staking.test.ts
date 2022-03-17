@@ -59,7 +59,8 @@ describe.only('Floating Staking Tests', () => {
             minimumContribution: 5,
             epochDuration: EPOCH_DURATION,
             epochStartTimestamp,
-            rewardsAvailableTimestamp: REWARDS_AVAILABLE_OFFSET,
+            rewardsAvailableTimestamp:
+                REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION,
             emergencyMode: false,
             treasury: admin,
             totalStakedAmount: 0,
@@ -152,7 +153,9 @@ describe.only('Floating Staking Tests', () => {
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
                 rewardsAvailableTimestamp:
-                    (await getTimestampNow()) + REWARDS_AVAILABLE_OFFSET,
+                    REWARDS_AVAILABLE_OFFSET +
+                    epochStartTimestamp +
+                    EPOCH_DURATION,
                 emergencyMode: false,
                 treasury: admin,
                 totalStakedAmount: 0,
@@ -169,7 +172,7 @@ describe.only('Floating Staking Tests', () => {
         it('cannot withdraw without rewards if staking pool requirements are unmet', async () => {
             await increaseTime(START_DELAY)
             await userDeposit(user, amount)
-            // await floatingStakingPool.setFinalizeRewards(true)
+
             await increaseTime(epochStartTimestamp - (await getTimestampNow()))
             await userWithdrawWithoutRewards(user)
         })
@@ -182,6 +185,60 @@ describe.only('Floating Staking Tests', () => {
             )
         })
     })
+    describe('withdraw stake', () => {
+        let epochStartTimestamp: number
+        beforeEach(async () => {
+            epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+
+            const floatingStakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                rewardsAvailableTimestamp:
+                    REWARDS_AVAILABLE_OFFSET +
+                    epochStartTimestamp +
+                    EPOCH_DURATION,
+                emergencyMode: false,
+                treasury: admin,
+                totalStakedAmount: 0,
+                stakeToken: stakeTokens.address,
+                rewardTokens: []
+            }
+
+            floatingStakingPool = await deployContract('FloatingStakingPool')
+            await floatingStakingPool.initialize(floatingStakingPoolInfo)
+        })
+
+        const amount = BigNumber.from(20)
+        it('cannot withdraw stake after staking period', async () => {
+            await increaseTime(START_DELAY)
+
+            await userDeposit(user, amount)
+
+            await expect(userWithdrawStake(user)).to.be.revertedWith(
+                'StakingPool: still stake period'
+            )
+        })
+
+        it('can withdraw stake after staking period', async () => {
+            await increaseTime(START_DELAY)
+
+            await userDeposit(user, amount)
+
+            await increaseTime((await getTimestampNow()) + EPOCH_DURATION)
+            await userWithdrawStake(user)
+        })
+    })
+    async function userWithdrawStake(
+        user: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(
+            floatingStakingPool.connect(user).withdrawStake()
+        )
+    }
 
     async function userDeposit(
         user: SignerWithAddress,
