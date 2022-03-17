@@ -8,12 +8,12 @@ import "./StakingPoolBase.sol";
 import "./StakingPool.sol";
 
 contract FixedStakingPool is StakingPoolBase {
-    struct UserInfo {
+    struct User {
         uint128 depositAmount;
         uint128[] rewardAmounts;
     }
 
-    mapping(address => UserInfo) public userInfo;
+    mapping(address => User) public users;
 
     function deposit(uint256 amount)
         external
@@ -26,7 +26,7 @@ contract FixedStakingPool is StakingPoolBase {
             "FixedStaking: min contribution"
         );
 
-        UserInfo storage user = userInfo[_msgSender()];
+        User storage user = users[_msgSender()];
         user.depositAmount += uint128(amount);
 
         emit Deposit(_msgSender(), amount);
@@ -53,16 +53,13 @@ contract FixedStakingPool is StakingPoolBase {
         stakingPeriodComplete
         nonReentrant
     {
-        UserInfo memory user = userInfo[_msgSender()];
+        User memory user = users[_msgSender()];
         // checks
         require(user.depositAmount > 0, "FixedStaking: not elegible");
-
-        // effects
-        delete userInfo[_msgSender()];
+        delete users[_msgSender()];
 
         emit Withdraw(_msgSender(), user.depositAmount);
 
-        // Interactions
         bool result = stakingPoolInfo.stakeToken.transfer(
             _msgSender(),
             uint256(user.depositAmount)
@@ -119,17 +116,14 @@ contract FixedStakingPool is StakingPoolBase {
         returns (uint128)
     {
         return
-            _computeRewards(
-                userInfo[receipient].depositAmount,
-                rewardTokenIndex
-            );
+            _computeRewards(users[receipient].depositAmount, rewardTokenIndex);
     }
 
     function _withdrawWithoutRewards() internal {
-        UserInfo memory user = userInfo[_msgSender()];
+        User memory user = users[_msgSender()];
         require(user.depositAmount > 0, "FixedStaking: not eligible");
 
-        delete userInfo[_msgSender()];
+        delete users[_msgSender()];
         _transferStake(uint256((user.depositAmount)));
     }
 
