@@ -23,7 +23,6 @@ contract FloatingStakingPool is StakingPoolBase {
         nonReentrant
         stakingPoolNotFull(amount)
     {
-        // some sanity checks
         require(
             amount >= stakingPoolInfo.minimumContribution,
             "StakingPool: min contribution"
@@ -56,14 +55,12 @@ contract FloatingStakingPool is StakingPoolBase {
 
     function withdraw()
         external
-        rewardsFinalized
+        rewardsAvailable
         stakingPeriodComplete
         nonReentrant
     {
         User memory user = users[_msgSender()];
         require(user.depositAmount > 0, "StakingPool: not eligible");
-
-        console.log("user.depositAmount", user.depositAmount);
 
         delete users[_msgSender()];
         emit Withdraw(_msgSender(), user.depositAmount);
@@ -99,12 +96,11 @@ contract FloatingStakingPool is StakingPoolBase {
         _withdrawWithoutRewards();
     }
 
-    function setFinalizeRewards(bool finalize)
+    function setRewardsAvailableRewards(uint32 finalize)
         external
         atLeastDaoAminRole(stakingPoolInfo.daoId)
     {
-        console.log("setFinalizeRewards: ", finalize);
-        _setFinalizeRewards(finalize);
+        _setRewardsAvailableRewards(finalize);
     }
 
     function adminEmergencyRewardSweep()

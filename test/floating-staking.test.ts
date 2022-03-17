@@ -52,8 +52,8 @@ describe.only('Floating Staking Tests', () => {
 
         const floatingStakingPoolInfo = {
             daoId: 0,
-            minTotalPoolStake: 50,
-            maxTotalPoolStake: 100,
+            minTotalPoolStake: 500,
+            maxTotalPoolStake: 600,
             minimumContribution: 5,
             epochDuration: EPOCH_DURATION,
             epochStartTimestamp,
@@ -81,7 +81,7 @@ describe.only('Floating Staking Tests', () => {
         it('does not allow user to deposit when staking pool full', async () => {
             await increaseTime(START_DELAY)
             await expect(
-                userDeposit(user, BigNumber.from(100n))
+                userDeposit(user, BigNumber.from(1000))
             ).to.be.revertedWith('StakingPool: pool full')
         })
 
@@ -108,16 +108,18 @@ describe.only('Floating Staking Tests', () => {
         const amount = BigNumber.from(20)
         it('cant withdraw since rewards have not been finalized', async () => {
             await increaseTime(START_DELAY)
-            await floatingStakingPool.setFinalizeRewards(false)
+            // await floatingStakingPool.setFinalizeRewards(false)
             await expect(userWithdraw(user)).to.be.revertedWith(
                 'StakingPool: not finalized'
             )
         })
 
         it('cant withdraw staking period not complete', async () => {
-            await successfulTransaction(
-                floatingStakingPool.setFinalizeRewards(true)
-            )
+            /*
+             * await successfulTransaction(
+             *     floatingStakingPool.setFinalizeRewards(true)
+             * )
+             */
             await expect(userWithdraw(user)).to.be.revertedWith(
                 'StakingPool: still stake period'
             )
@@ -125,7 +127,7 @@ describe.only('Floating Staking Tests', () => {
 
         it('allows a user to withdraw', async () => {
             await userDeposit(user2, amount)
-            await floatingStakingPool.setFinalizeRewards(true)
+            // await floatingStakingPool.setFinalizeRewards(true)
             await increaseTime(EPOCH_DURATION)
             const withdrawReceipt = await userWithdraw(user2)
             verifyWithdrawEvent(
@@ -138,6 +140,41 @@ describe.only('Floating Staking Tests', () => {
             await expect(userWithdraw(user2)).to.be.revertedWith(
                 'StakingPool: not eligible'
             )
+        })
+    })
+
+    describe('withdraw without rewards', () => {
+        let epochStartTimestamp: number
+        before(async () => {
+            epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+
+            const floatingStakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: 500,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                rewardsFinalized: true,
+                emergencyMode: false,
+                treasury: admin,
+                totalStakedAmount: 0,
+                stakeToken: stakeTokens.address,
+                rewardTokens: []
+            }
+
+            floatingStakingPool = await deployContract('FloatingStakingPool')
+            await floatingStakingPool.initialize(floatingStakingPoolInfo)
+        })
+
+        const amount = BigNumber.from(20)
+
+        it('cannot withdraw without rewards if staking pool requirements are unmet', async () => {
+            await increaseTime(START_DELAY)
+            await userDeposit(user, amount)
+            // await floatingStakingPool.setFinalizeRewards(true)
+            await increaseTime(epochStartTimestamp - (await getTimestampNow()))
+            await userWithdrawWithoutRewards(user)
         })
     })
 
@@ -158,6 +195,13 @@ describe.only('Floating Staking Tests', () => {
     ): Promise<ContractReceipt> {
         return successfulTransaction(
             floatingStakingPool.connect(user).withdraw()
+        )
+    }
+    async function userWithdrawWithoutRewards(
+        user: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(
+            floatingStakingPool.connect(user).withdrawWithoutRewards()
         )
     }
 

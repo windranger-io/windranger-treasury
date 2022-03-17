@@ -49,7 +49,7 @@ contract FixedStakingPool is StakingPoolBase {
 
     function withdraw()
         external
-        rewardsFinalized
+        rewardsAvailable
         stakingPeriodComplete
         nonReentrant
     {

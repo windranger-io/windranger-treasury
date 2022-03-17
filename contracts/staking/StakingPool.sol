@@ -21,7 +21,7 @@ library StakingPool {
         uint128 minimumContribution;
         uint32 epochDuration;
         uint32 epochStartTimestamp;
-        bool rewardsFinalized;
+        uint32 rewardsAvailableTimestamp;
         bool emergencyMode;
         address treasury;
         uint128 totalStakedAmount;
