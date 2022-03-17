@@ -1,5 +1,4 @@
 import {ethers} from 'hardhat'
-import {log} from '../../config/logging'
 
 export function bigintEnvironmentVariable(name: string): bigint {
     return BigInt(parseEnvironmentVariable(name))
