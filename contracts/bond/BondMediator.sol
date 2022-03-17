@@ -81,7 +81,11 @@ contract BondMediator is
             configuration,
             _daoTreasury(daoId)
         );
+
+        // Reentrancy warning from an emitted event, which needs the Bond, created by an external call above.
+        //slither-disable-next-line reentrancy-events
         _addBond(daoId, bond);
+
         return bond;
     }
 

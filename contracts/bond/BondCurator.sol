@@ -19,6 +19,8 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
 
     mapping(uint256 => EnumerableSetUpgradeable.AddressSet) private _bonds;
 
+    event AddBond(uint256 daiId, address bond);
+
     function bondAllowRedemption(
         uint256 daoId,
         address bond,
@@ -127,6 +129,8 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
             OwnableUpgradeable(bond).owner() == address(this),
             "BondCurator: not bond owner"
         );
+
+        emit AddBond(daoId, bond);
 
         bool added = _bonds[daoId].add(bond);
         require(added, "BondCurator: failed to add");
