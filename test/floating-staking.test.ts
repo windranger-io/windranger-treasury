@@ -26,7 +26,10 @@ import {getTimestampNow, increaseTime} from './framework/time'
 import {Provider} from '@ethersproject/providers'
 import {BigNumber, ContractReceipt} from 'ethers'
 import {float} from 'hardhat/internal/core/params/argumentTypes'
-import {verifyDepositEvent} from './contracts/staking/verify-staking-events'
+import {
+    verifyDepositEvent,
+    verifyWithdrawEvent
+} from './contracts/staking/verify-staking-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -38,6 +41,7 @@ describe.only('Floating Staking Tests', () => {
     before(async () => {
         admin = (await signer(0)).address
         user = await signer(1)
+        user2 = await signer(2)
         const symbol = 'EEK'
         stakeTokens = await deployContract<ERC20PresetMinterPauser>(
             'ERC20PresetMinterPauser',
@@ -104,7 +108,6 @@ describe.only('Floating Staking Tests', () => {
         const amount = BigNumber.from(20)
         it('cant withdraw since rewards have not been finalized', async () => {
             await increaseTime(START_DELAY)
-            await userDeposit(user, amount)
             await floatingStakingPool.setFinalizeRewards(false)
             await expect(userWithdraw(user)).to.be.revertedWith(
                 'StakingPool: not finalized'
@@ -120,15 +123,19 @@ describe.only('Floating Staking Tests', () => {
             )
         })
 
-        it('allows user to withdraw', async () => {
-            await userDeposit(user, amount)
+        it('allows a user to withdraw', async () => {
+            await userDeposit(user2, amount)
             await floatingStakingPool.setFinalizeRewards(true)
             await increaseTime(EPOCH_DURATION)
-            const withdrawReceipt = await userWithdraw(user)
+            const withdrawReceipt = await userWithdraw(user2)
+            verifyWithdrawEvent(
+                {user: user2.address, stake: amount},
+                withdrawReceipt
+            )
         })
 
-        it('doesnt allow user to withdraw twice', async () => {
-            await expect(userWithdraw(user)).to.be.revertedWith(
+        it('doesnt allow a user to withdraw twice', async () => {
+            await expect(userWithdraw(user2)).to.be.revertedWith(
                 'StakingPool: not eligible'
             )
         })
@@ -156,6 +163,7 @@ describe.only('Floating Staking Tests', () => {
 
     let admin: string
     let user: SignerWithAddress
+    let user2: SignerWithAddress
     let stakeTokens: ERC20PresetMinterPauser
     let floatingStakingPool: FloatingStakingPool
 })

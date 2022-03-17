@@ -42,6 +42,8 @@ contract FloatingStakingPool is StakingPoolBase {
 
         stakingPoolInfo.totalStakedAmount += uint128(amount);
 
+        emit Deposit(_msgSender(), amount);
+
         require(
             stakingPoolInfo.stakeToken.transferFrom(
                 _msgSender(),
@@ -50,8 +52,6 @@ contract FloatingStakingPool is StakingPoolBase {
             ),
             "StakingPool: failed to transfer"
         );
-
-        emit Deposit(_msgSender(), amount);
     }
 
     function withdraw()
@@ -63,8 +63,10 @@ contract FloatingStakingPool is StakingPoolBase {
         User memory user = users[_msgSender()];
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
-        delete users[_msgSender()];
+        console.log("user.depositAmount", user.depositAmount);
 
+        delete users[_msgSender()];
+        emit Withdraw(_msgSender(), user.depositAmount);
         require(
             stakingPoolInfo.stakeToken.transfer(
                 _msgSender(),
@@ -80,14 +82,13 @@ contract FloatingStakingPool is StakingPoolBase {
             );
             IERC20 token = IERC20(stakingPoolInfo.rewardTokens[i].rewardToken);
 
+            emit WithdrawRewards(_msgSender(), address(token), amount);
+
             require(
                 token.transfer(_msgSender(), amount),
                 "FixedStaking: reward tx fail"
             );
-            emit WithdrawRewards(_msgSender(), address(token), amount);
         }
-
-        emit Withdraw(_msgSender(), user.depositAmount);
     }
 
     function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
