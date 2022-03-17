@@ -11,12 +11,6 @@ import "../RoleAccessControl.sol";
 import "hardhat/console.sol";
 
 contract FloatingStakingPool is StakingPoolBase {
-    struct User {
-        uint128 depositAmount;
-    }
-
-    mapping(address => User) public users;
-
     function deposit(uint256 amount)
         external
         stakingPeriodNotStarted
@@ -88,36 +82,6 @@ contract FloatingStakingPool is StakingPoolBase {
         }
     }
 
-    function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
-        _withdrawWithoutRewards();
-    }
-
-    function emergencyWithdraw() external emergencyModeEnabled {
-        _withdrawWithoutRewards();
-    }
-
-    function setRewardsAvailableRewards(uint32 finalize)
-        external
-        atLeastDaoAminRole(stakingPoolInfo.daoId)
-    {
-        _setRewardsAvailableRewards(finalize);
-    }
-
-    function adminEmergencyRewardSweep()
-        external
-        atLeastDaoAminRole(stakingPoolInfo.daoId)
-        emergencyModeEnabled
-    {
-        _adminEmergencyRewardSweep();
-    }
-
-    function initializeRewardTokens(
-        address treasury,
-        StakingPool.RewardToken[] calldata rewardTokens
-    ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
-        _initializeRewardTokens(treasury, rewardTokens);
-    }
-
     function computeRewardsPerShare(uint256 rewardTokenIndex)
         external
         view
@@ -144,16 +108,6 @@ contract FloatingStakingPool is StakingPoolBase {
             );
         }
         return rewards;
-    }
-
-    function _withdrawWithoutRewards() internal {
-        User memory user = users[_msgSender()];
-        require(user.depositAmount > 0, "FixedStaking: not eligible");
-
-        delete users[_msgSender()];
-        emit WithdrawWithoutRewards(_msgSender(), user.depositAmount);
-
-        _transferStake(uint256(user.depositAmount));
     }
 
     function _computeRewardsPerShare(uint256 rewardTokenIndex)

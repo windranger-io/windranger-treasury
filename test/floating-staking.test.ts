@@ -36,6 +36,8 @@ chai.use(solidity)
 
 const EPOCH_DURATION = 60
 const START_DELAY = 15
+const REWARDS_AVAILABLE_OFFSET = 20
+const MIN_POOL_STAKE = 500
 
 describe.only('Floating Staking Tests', () => {
     before(async () => {
@@ -52,12 +54,12 @@ describe.only('Floating Staking Tests', () => {
 
         const floatingStakingPoolInfo = {
             daoId: 0,
-            minTotalPoolStake: 500,
+            minTotalPoolStake: MIN_POOL_STAKE,
             maxTotalPoolStake: 600,
             minimumContribution: 5,
             epochDuration: EPOCH_DURATION,
             epochStartTimestamp,
-            rewardsFinalized: true,
+            rewardsAvailableTimestamp: REWARDS_AVAILABLE_OFFSET,
             emergencyMode: false,
             treasury: admin,
             totalStakedAmount: 0,
@@ -106,20 +108,14 @@ describe.only('Floating Staking Tests', () => {
     })
     describe('withdraw', () => {
         const amount = BigNumber.from(20)
-        it('cant withdraw since rewards have not been finalized', async () => {
-            await increaseTime(START_DELAY)
-            // await floatingStakingPool.setFinalizeRewards(false)
+        it('cant withdraw since not past reward start date', async () => {
+            // await increaseTime(START_DELAY + REWARDS_AVAILABLE_OFFSET)
             await expect(userWithdraw(user)).to.be.revertedWith(
-                'StakingPool: not finalized'
+                'StakingPool: still stake period'
             )
         })
 
         it('cant withdraw staking period not complete', async () => {
-            /*
-             * await successfulTransaction(
-             *     floatingStakingPool.setFinalizeRewards(true)
-             * )
-             */
             await expect(userWithdraw(user)).to.be.revertedWith(
                 'StakingPool: still stake period'
             )
@@ -145,17 +141,18 @@ describe.only('Floating Staking Tests', () => {
 
     describe('withdraw without rewards', () => {
         let epochStartTimestamp: number
-        before(async () => {
+        beforeEach(async () => {
             epochStartTimestamp = (await getTimestampNow()) + START_DELAY
 
             const floatingStakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: 500,
+                minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                rewardsFinalized: true,
+                rewardsAvailableTimestamp:
+                    (await getTimestampNow()) + REWARDS_AVAILABLE_OFFSET,
                 emergencyMode: false,
                 treasury: admin,
                 totalStakedAmount: 0,
@@ -175,6 +172,14 @@ describe.only('Floating Staking Tests', () => {
             // await floatingStakingPool.setFinalizeRewards(true)
             await increaseTime(epochStartTimestamp - (await getTimestampNow()))
             await userWithdrawWithoutRewards(user)
+        })
+
+        it('can withdraw without rewards if staking pool requirements are unmet', async () => {
+            await increaseTime(START_DELAY)
+            await userDeposit(user, BigNumber.from(MIN_POOL_STAKE))
+            await expect(userWithdrawWithoutRewards(user)).to.be.revertedWith(
+                'StakingPool: requirements unmet'
+            )
         })
     })
 

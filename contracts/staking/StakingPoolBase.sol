@@ -17,6 +17,13 @@ abstract contract StakingPoolBase is
     RoleAccessControl,
     ReentrancyGuard
 {
+    struct User {
+        uint128 depositAmount;
+        uint128[] rewardAmounts;
+    }
+
+    mapping(address => User) public users;
+
     StakingPool.Data public stakingPoolInfo;
 
     event WithdrawRewards(
@@ -80,6 +87,28 @@ abstract contract StakingPoolBase is
         _;
     }
 
+    // withdraw stake separately from rewards (rewards may not be available yet)
+    function withdrawStake() external stakingPeriodComplete nonReentrant {
+        User memory user = users[_msgSender()];
+        require(user.depositAmount > 0, "StakingPool: not eligible");
+
+        emit Withdraw(_msgSender(), user.depositAmount);
+        user.depositAmount = 0;
+
+        require(
+            stakingPoolInfo.stakeToken.transfer(
+                _msgSender(),
+                uint256(user.depositAmount)
+            ),
+            "StakingPool: stake tx fail"
+        );
+    }
+
+    // withdraw when the pool is not going ahead
+    function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
+        _withdrawWithoutRewards();
+    }
+
     function initialize(StakingPool.Data calldata info)
         external
         virtual
@@ -89,6 +118,32 @@ abstract contract StakingPoolBase is
         __Context_init_unchained();
 
         stakingPoolInfo = info;
+    }
+
+    function emergencyWithdraw() external emergencyModeEnabled {
+        _withdrawWithoutRewards();
+    }
+
+    function initializeRewardTokens(
+        address treasury,
+        StakingPool.RewardToken[] calldata rewardTokens
+    ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
+        _initializeRewardTokens(treasury, rewardTokens);
+    }
+
+    function adminEmergencyRewardSweep()
+        external
+        atLeastDaoAminRole(stakingPoolInfo.daoId)
+        emergencyModeEnabled
+    {
+        _adminEmergencyRewardSweep();
+    }
+
+    function enableEmergencyMode()
+        external
+        atLeastDaoAminRole(stakingPoolInfo.daoId)
+    {
+        stakingPoolInfo.emergencyMode = true;
     }
 
     function isReedemable() external view returns (bool) {
@@ -126,6 +181,14 @@ abstract contract StakingPoolBase is
                 "StakingPool: fund tx failed"
             );
         }
+    }
+
+    function _withdrawWithoutRewards() internal {
+        User memory user = users[_msgSender()];
+        require(user.depositAmount > 0, "StakingPool: not eligible");
+
+        delete users[_msgSender()];
+        _transferStake(uint256((user.depositAmount)));
     }
 
     function _setRewardsAvailableRewards(uint32 availableTimestamp) internal {

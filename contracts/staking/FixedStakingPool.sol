@@ -8,13 +8,6 @@ import "./StakingPoolBase.sol";
 import "./StakingPool.sol";
 
 contract FixedStakingPool is StakingPoolBase {
-    struct User {
-        uint128 depositAmount;
-        uint128[] rewardAmounts;
-    }
-
-    mapping(address => User) public users;
-
     function deposit(uint256 amount)
         external
         stakingPeriodNotStarted
@@ -47,6 +40,7 @@ contract FixedStakingPool is StakingPoolBase {
         );
     }
 
+    // withdraw BOTH stake and rewards
     function withdraw()
         external
         rewardsAvailable
@@ -55,7 +49,7 @@ contract FixedStakingPool is StakingPoolBase {
     {
         User memory user = users[_msgSender()];
         // checks
-        require(user.depositAmount > 0, "FixedStaking: not elegible");
+        require(user.depositAmount > 0, "FixedStaking: not eligible");
         delete users[_msgSender()];
 
         emit Withdraw(_msgSender(), user.depositAmount);
@@ -80,36 +74,6 @@ contract FixedStakingPool is StakingPoolBase {
         }
     }
 
-    function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
-        _withdrawWithoutRewards();
-    }
-
-    function emergencyWithdraw() external emergencyModeEnabled {
-        _withdrawWithoutRewards();
-    }
-
-    function initializeRewardTokens(
-        address treasury,
-        StakingPool.RewardToken[] calldata rewardTokens
-    ) external atLeastDaoMeepleRole(stakingPoolInfo.daoId) {
-        _initializeRewardTokens(treasury, rewardTokens);
-    }
-
-    function adminEmergencyRewardSweep()
-        external
-        atLeastDaoAminRole(stakingPoolInfo.daoId)
-        emergencyModeEnabled
-    {
-        _adminEmergencyRewardSweep();
-    }
-
-    function enableEmergencyMode()
-        external
-        atLeastDaoAminRole(stakingPoolInfo.daoId)
-    {
-        stakingPoolInfo.emergencyMode = true;
-    }
-
     function computeRewards(address receipient, uint256 rewardTokenIndex)
         external
         view
@@ -117,14 +81,6 @@ contract FixedStakingPool is StakingPoolBase {
     {
         return
             _computeRewards(users[receipient].depositAmount, rewardTokenIndex);
-    }
-
-    function _withdrawWithoutRewards() internal {
-        User memory user = users[_msgSender()];
-        require(user.depositAmount > 0, "FixedStaking: not eligible");
-
-        delete users[_msgSender()];
-        _transferStake(uint256((user.depositAmount)));
     }
 
     function _computeRewards(uint128 amount, uint256 rewardTokenIndex)
