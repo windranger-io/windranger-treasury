@@ -43,8 +43,8 @@ contract FixedStakingPool is StakingPoolBase {
     // withdraw BOTH stake and rewards
     function withdraw()
         external
-        rewardsAvailable
         stakingPeriodComplete
+        rewardsAvailable
         nonReentrant
     {
         User memory user = users[_msgSender()];

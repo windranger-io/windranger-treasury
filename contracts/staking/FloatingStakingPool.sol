@@ -49,8 +49,8 @@ contract FloatingStakingPool is StakingPoolBase {
 
     function withdraw()
         external
-        rewardsAvailable
         stakingPeriodComplete
+        rewardsAvailable
         nonReentrant
     {
         User memory user = users[_msgSender()];

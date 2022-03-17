@@ -117,6 +117,26 @@ abstract contract StakingPoolBase is
         __RoleAccessControl_init();
         __Context_init_unchained();
 
+        uint256 now = block.timestamp;
+
+        require(info.epochStartTimestamp >= now, "StakingPool: start time");
+        require(
+            address(info.stakeToken) != address(0),
+            "StakingPool: stake token defined"
+        );
+        require(
+            info.rewardsAvailableTimestamp >
+                info.epochStartTimestamp + info.epochDuration,
+            "StakingPool: init rewards"
+        );
+        require(info.treasury != address(0), "StakePool: nonzero treasury"); // TODO: are we checking if the treasury is whitelisted to that daoId
+        require(info.emergencyMode != true, "StakePool: init emergency mode");
+
+        require(info.maxTotalPoolStake > 0, "StakePool: maxTotalPoolStake > 0"); // is this check pointless?
+        require(info.epochDuration > 0, "StakePool: epochDuration > 0"); // is this check pointless?
+        require(info.minimumContribution > 0, "StakePool: minimumContribution"); // is this check pointless?
+        require(info.totalStakedAmount == 0, "StakePool: totalStakedAmount"); // or should we move this to be a single field?
+
         stakingPoolInfo = info;
     }
 
@@ -192,13 +212,9 @@ abstract contract StakingPoolBase is
     }
 
     function _setRewardsAvailableRewards(uint32 availableTimestamp) internal {
-        //        if (_isStakingPeriodComplete()) {
-        //            require(finalize, "StakePool: already finalized");
-        //            stakingPoolInfo.rewardsFinalized = finalize;
-        //        } else {
+        require(!_isStakingPeriodComplete(), "StakePool: already finalized");
         stakingPoolInfo.rewardsAvailableTimestamp = availableTimestamp;
         emit RewardsAvailableTimestamp(availableTimestamp);
-        //        }
     }
 
     function _transferStake(uint256 amount) internal {
