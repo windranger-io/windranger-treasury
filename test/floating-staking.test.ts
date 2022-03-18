@@ -6,26 +6,13 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {
-    BitDAO,
-    FloatingStakingPool,
-    BondCuratorBox,
-    ERC20SingleCollateralBond,
-    ERC20PresetMinterPauser
-} from '../typechain-types'
-import {
-    deployContract,
-    deployContractWithProxy,
-    execute,
-    signer
-} from './framework/contracts'
+import {FloatingStakingPool, ERC20PresetMinterPauser} from '../typechain-types'
+import {deployContract, signer} from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
-
 import {getTimestampNow, increaseTime} from './framework/time'
-import {Provider} from '@ethersproject/providers'
 import {BigNumber, ContractReceipt} from 'ethers'
-import {float} from 'hardhat/internal/core/params/argumentTypes'
+
 import {
     verifyDepositEvent,
     verifyWithdrawEvent
