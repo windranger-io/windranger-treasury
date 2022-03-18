@@ -1,7 +1,6 @@
 import {depositEvent, withdrawEvent} from './floating-staking-events'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
-import {ethers} from 'hardhat'
 import {BigNumber, ContractReceipt} from 'ethers'
 
 export type ActualDepositEvent = {

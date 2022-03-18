@@ -1,4 +1,3 @@
-import {Provider} from '@ethersproject/providers'
 import {ethers} from 'hardhat'
 const {provider} = ethers
 
