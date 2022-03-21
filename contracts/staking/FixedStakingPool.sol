@@ -63,7 +63,7 @@ contract FixedStakingPool is StakingPoolBase {
         // now transfer reward tokens
         for (uint256 i = 0; i < stakingPoolInfo.rewardTokens.length; i++) {
             uint256 amount = uint256(user.rewardAmounts[i]);
-            IERC20 token = IERC20(stakingPoolInfo.rewardTokens[i].rewardToken);
+            IERC20 token = IERC20(stakingPoolInfo.rewardTokens[i].token);
 
             emit WithdrawRewards(_msgSender(), address(token), amount);
 

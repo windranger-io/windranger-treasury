@@ -89,11 +89,16 @@ abstract contract StakingPoolBase is
 
     // withdraw stake separately from rewards (rewards may not be available yet)
     function withdrawStake() external stakingPeriodComplete nonReentrant {
-        User memory user = users[_msgSender()];
+        console.log("StakingPool: withdrawStake() for ", _msgSender());
+
+        User storage user = users[_msgSender()];
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
+        uint128 currentDepositBalance = user.depositAmount;
         emit Withdraw(_msgSender(), user.depositAmount);
         user.depositAmount = 0;
+
+        console.log("transferring..", address(stakingPoolInfo.stakeToken));
 
         require(
             stakingPoolInfo.stakeToken.transfer(
@@ -102,9 +107,59 @@ abstract contract StakingPoolBase is
             ),
             "StakingPool: stake tx fail"
         );
+
+        // calc the amount of rewards the user is due
+        console.log(
+            "calculating rewards..",
+            stakingPoolInfo.rewardTokens.length
+        );
+        for (uint256 i = 0; i < stakingPoolInfo.rewardTokens.length; i++) {
+            console.log("reward", i);
+
+            console.log(
+                "stakingPoolInfo.rewardTokens[i].rewardAmountRatio: ",
+                stakingPoolInfo.rewardTokens[i].rewardAmountRatio
+            );
+            console.log("currentDepositBalance ", currentDepositBalance);
+            console.log(
+                uint128(
+                    stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
+                        currentDepositBalance
+                )
+            );
+
+            user.rewardAmounts[i] = uint128(
+                stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
+                    currentDepositBalance
+            );
+            console.log("user reward amount: ", user.rewardAmounts[i]);
+        }
     }
 
-    // withdraw when the pool is not going ahead
+    // to be called after withdrawStake()
+    function withdrawRewards() external stakingPeriodComplete rewardsAvailable {
+        console.log("withdrawing rewards");
+
+        User memory user = users[_msgSender()];
+        require(user.rewardAmounts.length > 0, "StakingPool: No rewards");
+        delete users[_msgSender()];
+
+        StakingPool.RewardToken[] memory rewardTokens = stakingPoolInfo
+            .rewardTokens;
+
+        for (uint256 i = 0; i < rewardTokens.length; i++) {
+            IERC20 token = IERC20(rewardTokens[i].token);
+            require(
+                token.transfer(
+                    _msgSender(),
+                    user.rewardAmounts[i] // is this the same for floating and fixed?
+                ),
+                "StakingPool: rewards tx failed"
+            );
+        }
+    }
+
+    // withdraw when the pool is not going ahead (earlyWithdraw)
     function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
         _withdrawWithoutRewards();
     }
@@ -179,7 +234,7 @@ abstract contract StakingPoolBase is
         StakingPool.RewardToken[] calldata _rewardTokens
     ) internal {
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
-            IERC20 token = IERC20(_rewardTokens[i].rewardToken);
+            IERC20 token = IERC20(_rewardTokens[i].token);
 
             emit RewardsInitialized(
                 address(token),
@@ -231,7 +286,7 @@ abstract contract StakingPoolBase is
         address treasury = stakingPoolInfo.treasury;
 
         for (uint256 i = 0; i < rewardTokens.length; i++) {
-            IERC20 token = IERC20(rewardTokens[i].rewardToken);
+            IERC20 token = IERC20(rewardTokens[i].token);
             require(
                 token.transfer(
                     treasury,

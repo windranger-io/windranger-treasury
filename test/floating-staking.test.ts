@@ -25,6 +25,7 @@ const EPOCH_DURATION = 60
 const START_DELAY = 15
 const REWARDS_AVAILABLE_OFFSET = 20
 const MIN_POOL_STAKE = 500
+const REWARD_TOKEN_1_AMOUNT = 2000
 
 describe.only('Floating Staking Tests', () => {
     before(async () => {
@@ -173,9 +174,22 @@ describe.only('Floating Staking Tests', () => {
         })
     })
     describe('withdraw stake', () => {
-        let epochStartTimestamp: number
+        let epochStartTimestamp: BigNumber
+        let rewardsAvailableTimestamp: BigNumber
         beforeEach(async () => {
-            epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+            epochStartTimestamp = BigNumber.from(await getTimestampNow()).add(
+                Number(START_DELAY)
+            )
+
+            rewardsAvailableTimestamp = BigNumber.from(REWARDS_AVAILABLE_OFFSET)
+                .add(epochStartTimestamp)
+                .add(EPOCH_DURATION)
+
+            rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                'SYM'
+            )
 
             const floatingStakingPoolInfo = {
                 daoId: 0,
@@ -184,23 +198,30 @@ describe.only('Floating Staking Tests', () => {
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                rewardsAvailableTimestamp:
-                    REWARDS_AVAILABLE_OFFSET +
-                    epochStartTimestamp +
-                    EPOCH_DURATION,
+                rewardsAvailableTimestamp,
                 emergencyMode: false,
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                rewardTokens: []
+                rewardTokens: [
+                    {
+                        token: rewardToken1.address,
+                        totalTokenRewardsAvailable: 2000,
+                        rewardAmountRatio: 0
+                    }
+                ]
             }
 
             floatingStakingPool = await deployContract('FloatingStakingPool')
             await floatingStakingPool.initialize(floatingStakingPoolInfo)
+            await rewardToken1.mint(
+                floatingStakingPool.address,
+                REWARD_TOKEN_1_AMOUNT
+            )
         })
 
         const amount = BigNumber.from(20)
-        it('cannot withdraw stake after staking period', async () => {
+        it('cannot withdraw stake before staking period ends', async () => {
             await increaseTime(START_DELAY)
 
             await userDeposit(user, amount)
@@ -214,16 +235,53 @@ describe.only('Floating Staking Tests', () => {
             await increaseTime(START_DELAY)
 
             await userDeposit(user, amount)
-
-            await increaseTime((await getTimestampNow()) + EPOCH_DURATION)
+            await increaseTime(EPOCH_DURATION)
             await userWithdrawStake(user)
         })
+
+        it('cannot withdraw both stake and rewards after withdrawing stake', async () => {
+            await increaseTime(START_DELAY)
+
+            await userDeposit(user, amount)
+
+            await increaseTime(EPOCH_DURATION)
+            await userWithdrawStake(user)
+
+            // increase time to rewards release
+            await increaseTime(REWARDS_AVAILABLE_OFFSET)
+            await expect(userWithdraw(user)).to.be.revertedWith(
+                'StakingPool: not eligible'
+            )
+        })
+
+        it('can withdraw rewards after withdrawing stake', async () => {
+            await increaseTime(START_DELAY)
+
+            await userDeposit(user, amount)
+
+            // increase past staking period
+            await increaseTime(EPOCH_DURATION)
+
+            await userWithdrawStake(user)
+            await increaseTime(REWARDS_AVAILABLE_OFFSET)
+            await userWithdrawRewards(user)
+        })
     })
+
     async function userWithdrawStake(
         user: SignerWithAddress
     ): Promise<ContractReceipt> {
+        // eslint-disable-next-line no-console
+        console.log('userWithdrawStake')
         return successfulTransaction(
             floatingStakingPool.connect(user).withdrawStake()
+        )
+    }
+    async function userWithdrawRewards(
+        user: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(
+            floatingStakingPool.connect(user).withdrawRewards()
         )
     }
 
@@ -259,4 +317,5 @@ describe.only('Floating Staking Tests', () => {
     let user2: SignerWithAddress
     let stakeTokens: ERC20PresetMinterPauser
     let floatingStakingPool: FloatingStakingPool
+    let rewardToken1: ERC20PresetMinterPauser
 })

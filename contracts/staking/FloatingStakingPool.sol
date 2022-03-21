@@ -17,6 +17,7 @@ contract FloatingStakingPool is StakingPoolBase {
         nonReentrant
         stakingPoolNotFull(amount)
     {
+        console.log("depositing..!");
         require(
             amount >= stakingPoolInfo.minimumContribution,
             "StakingPool: min contribution"
@@ -25,15 +26,17 @@ contract FloatingStakingPool is StakingPoolBase {
         User storage user = users[_msgSender()];
 
         user.depositAmount += uint128(amount);
+        stakingPoolInfo.totalStakedAmount += uint128(amount);
 
         for (uint256 i = 0; i < stakingPoolInfo.rewardTokens.length; i++) {
             uint256 rewardsPerShare = _computeRewardsPerShare(i);
             stakingPoolInfo.rewardTokens[i].rewardAmountRatio = uint32(
                 rewardsPerShare
             );
-        }
 
-        stakingPoolInfo.totalStakedAmount += uint128(amount);
+            // assign storage for rewards amount
+            user.rewardAmounts.push(0);
+        }
 
         emit Deposit(_msgSender(), amount);
 
@@ -54,6 +57,9 @@ contract FloatingStakingPool is StakingPoolBase {
         nonReentrant
     {
         User memory user = users[_msgSender()];
+
+        console.log("user.depositAmount ", user.depositAmount);
+
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
         delete users[_msgSender()];
@@ -71,7 +77,7 @@ contract FloatingStakingPool is StakingPoolBase {
                 stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
                     user.depositAmount
             );
-            IERC20 token = IERC20(stakingPoolInfo.rewardTokens[i].rewardToken);
+            IERC20 token = IERC20(stakingPoolInfo.rewardTokens[i].token);
 
             emit WithdrawRewards(_msgSender(), address(token), amount);
 
