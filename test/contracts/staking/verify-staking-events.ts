@@ -1,4 +1,4 @@
-import {depositEvent, withdrawEvent} from './floating-staking-events'
+import {depositEvent, withdrawEvent} from './staking-events'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {BigNumber, ContractReceipt} from 'ethers'
