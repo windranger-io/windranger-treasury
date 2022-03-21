@@ -9,7 +9,7 @@ library StakingPool {
     }
 
     struct RewardToken {
-        address rewardToken;
+        address token;
         uint32 rewardAmountRatio;
         uint256 totalTokenRewardsAvailable; // NOTE: ask cooper whether reward amount is fixed
     }
