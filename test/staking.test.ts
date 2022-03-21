@@ -27,7 +27,7 @@ const REWARDS_AVAILABLE_OFFSET = 20
 const MIN_POOL_STAKE = 500
 const REWARD_TOKEN_1_AMOUNT = 2000
 
-describe.only('Staking Tests', () => {
+describe.only('Floating Staking Tests', () => {
     before(async () => {
         admin = (await signer(0)).address
         user = await signer(1)
@@ -53,7 +53,7 @@ describe.only('Staking Tests', () => {
             treasury: admin,
             totalStakedAmount: 0,
             stakeToken: stakeTokens.address,
-            poolType: 0,
+            poolType: 1,
             rewardTokens: []
         }
 
@@ -148,7 +148,7 @@ describe.only('Staking Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                poolType: 0,
+                poolType: 1,
                 rewardTokens: []
             }
 
@@ -204,7 +204,7 @@ describe.only('Staking Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                poolType: 0,
+                poolType: 1,
                 rewardTokens: [
                     {
                         token: rewardToken1.address,

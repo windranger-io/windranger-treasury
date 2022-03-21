@@ -182,16 +182,12 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
 
     // withdraw stake separately from rewards (rewards may not be available yet)
     function withdrawStake() external stakingPeriodComplete nonReentrant {
-        console.log("StakingPool: withdrawStake() for ", _msgSender());
-
         User storage user = _users[_msgSender()];
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
         uint128 currentDepositBalance = user.depositAmount;
         emit Withdraw(_msgSender(), user.depositAmount);
         user.depositAmount = 0;
-
-        console.log("transferring..", address(_stakingPoolInfo.stakeToken));
 
         require(
             _stakingPoolInfo.stakeToken.transfer(
@@ -201,12 +197,17 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
             "StakingPool: stake tx fail"
         );
 
-        // calc the amount of rewards the user is due
+        // calc the amount of rewards the user is due for the floating pool type
         for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
-            user.rewardAmounts[i] = uint128(
-                _stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
-                    currentDepositBalance
-            );
+            if (
+                _stakingPoolInfo.poolType ==
+                StakingPoolLib.StakingPoolType.FLOATING
+            ) {
+                user.rewardAmounts[i] = uint128(
+                    _stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
+                        currentDepositBalance
+                );
+            }
         }
     }
 
