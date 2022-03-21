@@ -17,7 +17,7 @@ export function depositEvent(event: Event): ActualDepositEvent {
 }
 
 /**
- * Shape check and conversion for a DepositEvent
+ * Shape check and conversion for a WithdrawEvent
  */
 export function withdrawEvent(event: Event): ActualWithdrawEvent {
     const deposit = event as WithdrawEvent
