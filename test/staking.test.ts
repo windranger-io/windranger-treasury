@@ -6,7 +6,7 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {FloatingStakingPool, ERC20PresetMinterPauser} from '../typechain-types'
+import {StakingPool, ERC20PresetMinterPauser} from '../typechain-types'
 import {deployContract, signer} from './framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
@@ -27,7 +27,7 @@ const REWARDS_AVAILABLE_OFFSET = 20
 const MIN_POOL_STAKE = 500
 const REWARD_TOKEN_1_AMOUNT = 2000
 
-describe.only('Floating Staking Tests', () => {
+describe.only('Staking Tests', () => {
     before(async () => {
         admin = (await signer(0)).address
         user = await signer(1)
@@ -40,7 +40,7 @@ describe.only('Floating Staking Tests', () => {
         )
         const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
 
-        const floatingStakingPoolInfo = {
+        const stakingPoolInfo = {
             daoId: 0,
             minTotalPoolStake: MIN_POOL_STAKE,
             maxTotalPoolStake: 600,
@@ -53,11 +53,12 @@ describe.only('Floating Staking Tests', () => {
             treasury: admin,
             totalStakedAmount: 0,
             stakeToken: stakeTokens.address,
+            poolType: 0,
             rewardTokens: []
         }
 
-        floatingStakingPool = await deployContract('FloatingStakingPool')
-        await floatingStakingPool.initialize(floatingStakingPoolInfo)
+        stakingPool = await deployContract('StakingPool')
+        await stakingPool.initialize(stakingPoolInfo)
     })
 
     describe('deposit', () => {
@@ -112,7 +113,6 @@ describe.only('Floating Staking Tests', () => {
 
         it('allows a user to withdraw', async () => {
             await userDeposit(user2, amount)
-            // await floatingStakingPool.setFinalizeRewards(true)
             await increaseTime(EPOCH_DURATION)
             const withdrawReceipt = await userWithdraw(user2)
             verifyWithdrawEvent(
@@ -133,7 +133,7 @@ describe.only('Floating Staking Tests', () => {
         beforeEach(async () => {
             epochStartTimestamp = (await getTimestampNow()) + START_DELAY
 
-            const floatingStakingPoolInfo = {
+            const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
@@ -148,11 +148,12 @@ describe.only('Floating Staking Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
+                poolType: 0,
                 rewardTokens: []
             }
 
-            floatingStakingPool = await deployContract('FloatingStakingPool')
-            await floatingStakingPool.initialize(floatingStakingPoolInfo)
+            stakingPool = await deployContract('StakingPool')
+            await stakingPool.initialize(stakingPoolInfo)
         })
 
         const amount = BigNumber.from(20)
@@ -191,7 +192,7 @@ describe.only('Floating Staking Tests', () => {
                 'SYM'
             )
 
-            const floatingStakingPoolInfo = {
+            const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
@@ -203,6 +204,7 @@ describe.only('Floating Staking Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
+                poolType: 0,
                 rewardTokens: [
                     {
                         token: rewardToken1.address,
@@ -212,12 +214,9 @@ describe.only('Floating Staking Tests', () => {
                 ]
             }
 
-            floatingStakingPool = await deployContract('FloatingStakingPool')
-            await floatingStakingPool.initialize(floatingStakingPoolInfo)
-            await rewardToken1.mint(
-                floatingStakingPool.address,
-                REWARD_TOKEN_1_AMOUNT
-            )
+            stakingPool = await deployContract('StakingPool')
+            await stakingPool.initialize(stakingPoolInfo)
+            await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })
 
         const amount = BigNumber.from(20)
@@ -273,15 +272,13 @@ describe.only('Floating Staking Tests', () => {
     ): Promise<ContractReceipt> {
         // eslint-disable-next-line no-console
         console.log('userWithdrawStake')
-        return successfulTransaction(
-            floatingStakingPool.connect(user).withdrawStake()
-        )
+        return successfulTransaction(stakingPool.connect(user).withdrawStake())
     }
     async function userWithdrawRewards(
         user: SignerWithAddress
     ): Promise<ContractReceipt> {
         return successfulTransaction(
-            floatingStakingPool.connect(user).withdrawRewards()
+            stakingPool.connect(user).withdrawRewards()
         )
     }
 
@@ -292,23 +289,19 @@ describe.only('Floating Staking Tests', () => {
         await stakeTokens.mint(user.address, amount)
         await stakeTokens
             .connect(user)
-            .increaseAllowance(floatingStakingPool.address, amount)
-        return successfulTransaction(
-            floatingStakingPool.connect(user).deposit(amount)
-        )
+            .increaseAllowance(stakingPool.address, amount)
+        return successfulTransaction(stakingPool.connect(user).deposit(amount))
     }
     async function userWithdraw(
         user: SignerWithAddress
     ): Promise<ContractReceipt> {
-        return successfulTransaction(
-            floatingStakingPool.connect(user).withdraw()
-        )
+        return successfulTransaction(stakingPool.connect(user).withdraw())
     }
     async function userWithdrawWithoutRewards(
         user: SignerWithAddress
     ): Promise<ContractReceipt> {
         return successfulTransaction(
-            floatingStakingPool.connect(user).withdrawWithoutRewards()
+            stakingPool.connect(user).withdrawWithoutRewards()
         )
     }
 
@@ -316,6 +309,6 @@ describe.only('Floating Staking Tests', () => {
     let user: SignerWithAddress
     let user2: SignerWithAddress
     let stakeTokens: ERC20PresetMinterPauser
-    let floatingStakingPool: FloatingStakingPool
+    let stakingPool: StakingPool
     let rewardToken1: ERC20PresetMinterPauser
 })
