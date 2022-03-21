@@ -4,12 +4,23 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import "./FixedStakingPool.sol";
-import "./FloatingStakingPool.sol";
 import "./StakingPool.sol";
+import "./StakingPoolLib.sol";
 import "../RoleAccessControl.sol";
 
 contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
+    event StakingPoolCreated(
+        address indexed stakingPool,
+        address treasury,
+        address indexed creator,
+        StakingPoolLib.RewardToken[] rewardTokens,
+        address stakeToken,
+        uint128 epochStartTimestamp,
+        uint128 epochDuration,
+        uint128 minimumContribution,
+        StakingPoolLib.StakingPoolType stakingPoolType
+    );
+
     function pause() external whenNotPaused atLeastSysAdminRole {
         _pause();
     }
@@ -18,36 +29,14 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
         _unpause();
     }
 
-    function createFixedStakingPool(
-        uint256 daoId,
-        StakingPool.Data calldata info
-    ) external atLeastDaoAminRole(daoId) returns (address) {
-        FixedStakingPool fixedStakingPool = new FixedStakingPool();
+    function createStakingPool(uint256 daoId, StakingPoolLib.Data calldata info)
+        external
+        atLeastDaoAminRole(daoId)
+        returns (address)
+    {
+        StakingPool floatingStakingPool = new StakingPool();
 
-        emit StakingPool.StakingPoolCreated(
-            address(fixedStakingPool),
-            info.treasury,
-            _msgSender(),
-            info.rewardTokens,
-            address(info.stakeToken),
-            info.epochStartTimestamp,
-            info.epochDuration,
-            info.minimumContribution,
-            StakingPool.StakingPoolType.FIXED
-        );
-
-        fixedStakingPool.initialize(info);
-
-        return address(fixedStakingPool);
-    }
-
-    function createFloatingStakingPool(
-        uint256 daoId,
-        StakingPool.Data calldata info
-    ) external atLeastDaoAminRole(daoId) returns (address) {
-        FloatingStakingPool floatingStakingPool = new FloatingStakingPool();
-
-        emit StakingPool.StakingPoolCreated(
+        emit StakingPoolCreated(
             address(floatingStakingPool),
             info.treasury,
             _msgSender(),
@@ -56,7 +45,7 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
             info.epochStartTimestamp,
             info.epochDuration,
             info.minimumContribution,
-            StakingPool.StakingPoolType.FLOATING
+            StakingPoolLib.StakingPoolType.FLOATING
         );
 
         floatingStakingPool.initialize(info);
