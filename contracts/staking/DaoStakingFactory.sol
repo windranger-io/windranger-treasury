@@ -29,15 +29,15 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
         _unpause();
     }
 
-    function createStakingPool(uint256 daoId, StakingPoolLib.Data calldata info)
+    function createStakingPool(StakingPoolLib.Data calldata info)
         external
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAminRole(info.daoId)
         returns (address)
     {
-        StakingPool floatingStakingPool = new StakingPool();
+        StakingPool stakingPool = new StakingPool();
 
         emit StakingPoolCreated(
-            address(floatingStakingPool),
+            address(stakingPool),
             info.treasury,
             _msgSender(),
             info.rewardTokens,
@@ -45,12 +45,12 @@ contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
             info.epochStartTimestamp,
             info.epochDuration,
             info.minimumContribution,
-            StakingPoolLib.StakingPoolType.FLOATING
+            info.poolType
         );
 
-        floatingStakingPool.initialize(info);
+        stakingPool.initialize(info);
 
-        return address(floatingStakingPool);
+        return address(stakingPool);
     }
 
     function initialize() external initializer {

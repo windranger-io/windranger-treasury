@@ -1,8 +1,7 @@
 import {Event} from 'ethers'
-import {DepositEvent} from '../../../typechain-types/FloatingStakingPool'
+import {DepositEvent, WithdrawEvent} from '../../../typechain-types/StakingPool'
 import {expect} from 'chai'
 import {ActualDepositEvent, ActualWithdrawEvent} from './verify-staking-events'
-import {WithdrawEvent} from '../../../typechain-types/StakingPoolBase'
 
 /**
  * Shape check and conversion for a DepositEvent
