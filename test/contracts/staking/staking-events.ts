@@ -1,7 +1,15 @@
 import {Event} from 'ethers'
-import {DepositEvent, WithdrawEvent} from '../../../typechain-types/StakingPool'
+import {
+    DepositEvent,
+    WithdrawEvent,
+    WithdrawRewardsEvent
+} from '../../../typechain-types/StakingPool'
 import {expect} from 'chai'
-import {ActualDepositEvent, ActualWithdrawEvent} from './verify-staking-events'
+import {
+    ActualDepositEvent,
+    ActualWithdrawEvent,
+    ActualWithdrawRewardsEvent
+} from './verify-staking-events'
 
 /**
  * Shape check and conversion for a DepositEvent
@@ -27,4 +35,18 @@ export function withdrawEvent(event: Event): ActualWithdrawEvent {
     expect(args?.stake).is.not.undefined
     expect(args?.user).is.not.undefined
     return deposit.args
+}
+
+/**
+ * Shape check and conversion for a WithdrawRewardsEvent
+ */
+export function withdrawRewardsEvent(event: Event): ActualWithdrawRewardsEvent {
+    const rewardsEvent = event as WithdrawRewardsEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.rewardToken).is.not.undefined
+    expect(args?.rewards).is.not.undefined
+    expect(args?.user).is.not.undefined
+    return rewardsEvent.args
 }
