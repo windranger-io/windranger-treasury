@@ -106,13 +106,16 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
             uint256 rewardsPerShare = 0;
             if (poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                _computeRewardsPerShare(i);
+                _computeFloatingRewardsPerShare(i);
                 _stakingPoolInfo.rewardTokens[i].rewardAmountRatio = uint32(
                     rewardsPerShare
                 );
             } else {
                 // fixed
-                user.rewardAmounts[i] += _computeRewards(uint128(amount), i);
+                user.rewardAmounts[i] += _computeFixedRewards(
+                    uint128(amount),
+                    i
+                );
             }
 
             // assign storage for rewards amount
@@ -204,9 +207,9 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
                 StakingPoolLib.StakingPoolType.FLOATING
             ) {
                 user.rewardAmounts[i] = uint128(
-                    _stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
-                        currentDepositBalance
+                    _computeFloatingRewardsPerShare(i) * currentDepositBalance
                 );
+                console.log("withdrawStake after : ", user.rewardAmounts[i]);
             }
         }
     }
@@ -224,6 +227,16 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
 
         for (uint256 i = 0; i < rewardTokens.length; i++) {
             IERC20 token = IERC20(rewardTokens[i].token);
+            console.log(
+                "withdrawRewards:: user.rewardAmounts[i] ",
+                user.rewardAmounts[i]
+            );
+
+            emit WithdrawRewards(
+                _msgSender(),
+                address(token),
+                user.rewardAmounts[i]
+            );
             require(
                 token.transfer(
                     _msgSender(),
@@ -301,9 +314,10 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         view
         returns (uint256)
     {
-        return _computeRewardsPerShare(rewardTokenIndex);
+        return _computeFloatingRewardsPerShare(rewardTokenIndex);
     }
 
+    // floating
     function currentExpectedReward(address user)
         external
         view
@@ -325,13 +339,16 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
     }
 
     //fixed
-    function computeRewards(address recipient, uint256 rewardTokenIndex)
+    function computeFixedRewards(address recipient, uint256 rewardTokenIndex)
         external
         view
         returns (uint128)
     {
         return
-            _computeRewards(_users[recipient].depositAmount, rewardTokenIndex);
+            _computeFixedRewards(
+                _users[recipient].depositAmount,
+                rewardTokenIndex
+            );
     }
 
     function isRedeemable() external view returns (bool) {
@@ -411,7 +428,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
     }
 
     // fixed
-    function _computeRewards(uint128 amount, uint256 rewardTokenIndex)
+    function _computeFixedRewards(uint128 amount, uint256 rewardTokenIndex)
         internal
         view
         returns (uint128)
@@ -426,7 +443,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
     }
 
     //floating
-    function _computeRewardsPerShare(uint256 rewardTokenIndex)
+    function _computeFloatingRewardsPerShare(uint256 rewardTokenIndex)
         internal
         view
         returns (uint256)
