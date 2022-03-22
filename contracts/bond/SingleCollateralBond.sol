@@ -81,11 +81,11 @@ interface SingleCollateralBond {
     function setTreasury(address replacement) external;
 
     /**
- * @notice Permits the owner to transfer all collateral held by the Bond to the Treasury.
+     * @notice Permits the owner to transfer all collateral held by the Bond to the Treasury.
      *
-     * @dev Intention is to sweeping up excess collateral from redemption ration calculation.
-     *         when there has been slashing. Slashing can result in collateral remaining due to flooring.
-
+     * @dev Intention is to sweeping up excess collateral from redemption ration calculation, such as  when there has
+     *      been slashing. Slashing can result in collateral remaining due to flooring.
+     *
      *  Can also provide an emergency extracting moving of funds out of the Bond by the owner.
      */
     function withdrawCollateral() external;
