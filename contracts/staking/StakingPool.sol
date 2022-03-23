@@ -16,7 +16,7 @@ import "hardhat/console.sol";
 contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
     struct User {
         uint128 depositAmount;
-        uint128[] rewardAmounts;
+        uint128[5] rewardAmounts;
     }
 
     mapping(address => User) internal _users;
@@ -105,6 +105,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
 
         for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
             uint256 rewardsPerShare = 0;
+
             if (poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 _computeFloatingRewardsPerShare(i);
                 _stakingPoolInfo.rewardTokens[i].rewardAmountRatio = uint32(
@@ -117,9 +118,6 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
                     i
                 );
             }
-
-            // assign storage for rewards amount
-            user.rewardAmounts.push(0);
         }
 
         emit Deposit(_msgSender(), amount);
@@ -209,7 +207,10 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
                 user.rewardAmounts[i] = uint128(
                     _computeFloatingRewardsPerShare(i) * currentDepositBalance
                 );
-                console.log("withdrawStake after : ", user.rewardAmounts[i]);
+                console.log(
+                    "floating..withdrawStake after : ",
+                    user.rewardAmounts[i]
+                );
             }
         }
     }
@@ -261,6 +262,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         __Context_init_unchained();
 
         uint256 now = block.timestamp;
+        console.log("initializing stakepool as type ", uint256(info.poolType));
 
         require(info.epochStartTimestamp >= now, "StakingPool: start time");
         require(
@@ -438,7 +440,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
                 (amount *
                     _stakingPoolInfo
                         .rewardTokens[rewardTokenIndex]
-                        .rewardAmountRatio) / 1 ether
+                        .rewardAmountRatio)
             );
     }
 
