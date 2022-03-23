@@ -104,15 +104,13 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         StakingPoolLib.StakingPoolType poolType = _stakingPoolInfo.poolType;
 
         for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
-            uint256 rewardsPerShare = 0;
-
             if (poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                _computeFloatingRewardsPerShare(i);
+                // update the global rewards ratio
                 _stakingPoolInfo.rewardTokens[i].rewardAmountRatio = uint32(
-                    rewardsPerShare
+                    _computeFloatingRewardsPerShare(i)
                 );
             } else {
-                // fixed
+                // fixed: set the reward amount per user now
                 user.rewardAmounts[i] += _computeFixedRewards(
                     uint128(amount),
                     i
@@ -162,13 +160,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
             }
 
             IERC20 token = IERC20(_info.rewardTokens[i].token);
-
-            emit WithdrawRewards(_msgSender(), address(token), amount);
-
-            require(
-                token.transfer(_msgSender(), amount),
-                "FixedStaking: reward tx fail"
-            );
+            _transferRewards(amount, token);
         }
     }
 
@@ -294,15 +286,23 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
     {
         User memory _user = _users[user];
         StakingPoolLib.Data memory _stakingPoolInfo = _stakingPoolInfo;
+
         uint256[] memory rewards = new uint256[](
             _stakingPoolInfo.rewardTokens.length
         );
 
         for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
-            rewards[i] = uint256(
-                (_stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
-                    _user.depositAmount) / 1 ether
-            );
+            if (
+                _stakingPoolInfo.poolType ==
+                StakingPoolLib.StakingPoolType.FLOATING
+            ) {
+                rewards[i] = uint256(
+                    (_stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
+                        _user.depositAmount) / 1 ether
+                );
+            } else {
+                rewards[i] = _computeFixedRewards(_user.depositAmount, i);
+            }
         }
         return rewards;
     }

@@ -11,6 +11,12 @@ import {
     ActualWithdrawRewardsEvent
 } from './verify-staking-events'
 
+// eslint-disable-next-line no-shadow
+export enum StakingPoolType {
+    FIXED,
+    FLOATING
+}
+
 /**
  * Shape check and conversion for a DepositEvent
  */

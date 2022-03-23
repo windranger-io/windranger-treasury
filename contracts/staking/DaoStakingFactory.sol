@@ -8,7 +8,7 @@ import "./StakingPool.sol";
 import "./StakingPoolLib.sol";
 import "../RoleAccessControl.sol";
 
-contract DaoStakingFactory is RoleAccessControl, PausableUpgradeable {
+contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
     event StakingPoolCreated(
         address indexed stakingPool,
         address treasury,
