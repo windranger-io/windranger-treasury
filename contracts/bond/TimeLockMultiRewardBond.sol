@@ -24,9 +24,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         uint256 timeLock;
     }
 
-    // Multiplier / divider for four decimal places, used in redemption ratio calculation.
-    uint256 private constant _REWARD_RATIO_ACCURACY = 1e4;
-
     mapping(address => mapping(address => uint256))
         private _claimantToRewardPoolDebt;
     mapping(address => RewardPool) private _rewardPool;
@@ -67,7 +64,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
             "Rewards: nothing to claim"
         );
 
-        for (uint256 i; i < EnumerableSetUpgradeable.length(_tokens); i++) {
+        for (uint256 i = 0; i < EnumerableSetUpgradeable.length(_tokens); i++) {
             address tokens = EnumerableSetUpgradeable.at(_tokens, i);
 
             if (_hasRegisteredRewards(tokens) && _hasTimeLockExpired(tokens)) {
@@ -121,13 +118,10 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     ) internal {
         require(claimantDebtTokens < totalSupply, "Rewards: too much debt");
 
-        uint256 rewardsRatio = (claimantDebtTokens * _REWARD_RATIO_ACCURACY) /
-            totalSupply;
-
-        for (uint256 i; i < EnumerableSetUpgradeable.length(_tokens); i++) {
+        for (uint256 i = 0; i < EnumerableSetUpgradeable.length(_tokens); i++) {
             address tokens = EnumerableSetUpgradeable.at(_tokens, i);
-            uint256 rewardDebt = (_rewardPool[tokens].amount * rewardsRatio) /
-                _REWARD_RATIO_ACCURACY;
+            uint256 rewardDebt = (_rewardPool[tokens].amount *
+                claimantDebtTokens) / totalSupply;
 
             _claimantToRewardPoolDebt[claimant][tokens] = rewardDebt;
             emit RewardDebt(tokens, claimant, rewardDebt);
@@ -203,7 +197,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     /**
      * @notice Whether the claimant holds debt tokens.
      */
-    //slither-disable-next-line dead-code
     function _isDetTokenHolder(address claimant)
         internal
         virtual
