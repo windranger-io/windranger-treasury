@@ -37,7 +37,7 @@ export function verifyWithdrawEvent(
     receipt: ContractReceipt
 ) {
     const actualWithdrawEvent: ActualWithdrawEvent = withdrawEvent(
-        event('Withdraw', receipt)
+        event('WithdrawStake', receipt)
     )
     expect(actualWithdrawEvent.user).equals(expected.user)
     expect(actualWithdrawEvent.stake).equals(expected.stake)

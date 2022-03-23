@@ -1,7 +1,7 @@
 import {Event} from 'ethers'
 import {
     DepositEvent,
-    WithdrawEvent,
+    WithdrawStakeEvent,
     WithdrawRewardsEvent
 } from '../../../typechain-types/StakingPool'
 import {expect} from 'chai'
@@ -28,13 +28,13 @@ export function depositEvent(event: Event): ActualDepositEvent {
  * Shape check and conversion for a WithdrawEvent
  */
 export function withdrawEvent(event: Event): ActualWithdrawEvent {
-    const deposit = event as WithdrawEvent
+    const withdrawal = event as WithdrawStakeEvent
     expect(event.args).is.not.undefined
 
     const args = event.args
     expect(args?.stake).is.not.undefined
     expect(args?.user).is.not.undefined
-    return deposit.args
+    return withdrawal.args
 }
 
 /**

@@ -19,6 +19,8 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         uint128[5] rewardAmounts;
     }
 
+    uint256 internal constant _MAX_REWARDS_TOKENS = 5;
+
     mapping(address => User) internal _users;
 
     StakingPoolLib.Data internal _stakingPoolInfo;
@@ -29,9 +31,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         uint256 rewards
     );
 
-    event Withdraw(address indexed user, uint256 stake);
-
-    event WithdrawWithoutRewards(address indexed user, uint256 stake);
+    event WithdrawStake(address indexed user, uint256 stake);
 
     event Deposit(address indexed user, uint256 depositAmount);
 
@@ -139,28 +139,19 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         nonReentrant
     {
         User memory user = _users[_msgSender()];
-
-        console.log("user.depositAmount ", user.depositAmount);
-
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
         delete _users[_msgSender()];
-        emit Withdraw(_msgSender(), user.depositAmount);
-        require(
-            _stakingPoolInfo.stakeToken.transfer(
-                _msgSender(),
-                uint256(user.depositAmount)
-            ),
-            "StakingPool: stake tx fail"
-        );
 
-        StakingPoolLib.StakingPoolType poolType = _stakingPoolInfo.poolType;
+        StakingPoolLib.Data storage _info = _stakingPoolInfo;
 
-        for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
+        _transferStake(user.depositAmount, IERC20(_info.stakeToken));
+
+        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             uint256 amount = 0;
 
             // floating
-            if (poolType == StakingPoolLib.StakingPoolType.FLOATING) {
+            if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 amount = uint256(
                     _stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
                         user.depositAmount
@@ -170,7 +161,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
                 amount = uint256(user.rewardAmounts[i]);
             }
 
-            IERC20 token = IERC20(_stakingPoolInfo.rewardTokens[i].token);
+            IERC20 token = IERC20(_info.rewardTokens[i].token);
 
             emit WithdrawRewards(_msgSender(), address(token), amount);
 
@@ -187,29 +178,17 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
         uint128 currentDepositBalance = user.depositAmount;
-        emit Withdraw(_msgSender(), user.depositAmount);
         user.depositAmount = 0;
 
-        require(
-            _stakingPoolInfo.stakeToken.transfer(
-                _msgSender(),
-                uint256(user.depositAmount)
-            ),
-            "StakingPool: stake tx fail"
-        );
+        StakingPoolLib.Data storage _info = _stakingPoolInfo;
+
+        _transferStake(currentDepositBalance, IERC20(_info.stakeToken));
 
         // calc the amount of rewards the user is due for the floating pool type
-        for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
-            if (
-                _stakingPoolInfo.poolType ==
-                StakingPoolLib.StakingPoolType.FLOATING
-            ) {
+        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
+            if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 user.rewardAmounts[i] = uint128(
                     _computeFloatingRewardsPerShare(i) * currentDepositBalance
-                );
-                console.log(
-                    "floating..withdrawStake after : ",
-                    user.rewardAmounts[i]
                 );
             }
         }
@@ -232,19 +211,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
                 "withdrawRewards:: user.rewardAmounts[i] ",
                 user.rewardAmounts[i]
             );
-
-            emit WithdrawRewards(
-                _msgSender(),
-                address(token),
-                user.rewardAmounts[i]
-            );
-            require(
-                token.transfer(
-                    _msgSender(),
-                    user.rewardAmounts[i] // is this the same for floating and fixed?
-                ),
-                "StakingPool: rewards tx failed"
-            );
+            _transferRewards(user.rewardAmounts[i], token);
         }
     }
 
@@ -395,7 +362,8 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
         delete _users[_msgSender()];
-        _transferStake(uint256((user.depositAmount)));
+        StakingPoolLib.Data memory _info = _stakingPoolInfo;
+        _transferStake(uint256((user.depositAmount)), IERC20(_info.stakeToken));
     }
 
     function _setRewardsAvailableTimestamp(uint32 timestamp) internal {
@@ -404,11 +372,19 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         emit RewardsAvailableTimestamp(timestamp);
     }
 
-    function _transferStake(uint256 amount) internal {
-        emit WithdrawWithoutRewards(_msgSender(), amount);
+    function _transferStake(uint256 amount, IERC20 stakeToken) internal {
+        emit WithdrawStake(_msgSender(), amount);
         require(
-            _stakingPoolInfo.stakeToken.transfer(msg.sender, amount),
+            stakeToken.transfer(msg.sender, amount),
             "StakingPool: stake tx fail"
+        );
+    }
+
+    function _transferRewards(uint256 amount, IERC20 rewardsToken) internal {
+        emit WithdrawRewards(_msgSender(), address(rewardsToken), amount);
+        require(
+            rewardsToken.transfer(_msgSender(), amount),
+            "StakingPool: rewards tx failed"
         );
     }
 
