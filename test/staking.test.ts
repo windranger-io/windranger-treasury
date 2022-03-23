@@ -22,6 +22,12 @@ import {
 // Wires up Waffle with Chai
 chai.use(solidity)
 
+// eslint-disable-next-line no-shadow
+enum StakingPoolType {
+    FIXED,
+    FLOATING
+}
+
 const EPOCH_DURATION = 60
 const START_DELAY = 15
 const REWARDS_AVAILABLE_OFFSET = 20
@@ -29,7 +35,7 @@ const MIN_POOL_STAKE = 500
 const REWARD_TOKEN_1_AMOUNT = 2000
 
 describe.only('Staking Pool Tests', () => {
-    describe.only('Floating Staking Tests', () => {
+    describe('Floating Staking Tests', () => {
         before(async () => {
             admin = (await signer(0)).address
             user = await signer(1)
@@ -57,7 +63,7 @@ describe.only('Staking Pool Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                poolType: 1,
+                poolType: StakingPoolType.FLOATING,
                 rewardTokens: []
             }
 
@@ -152,7 +158,7 @@ describe.only('Staking Pool Tests', () => {
                     treasury: admin,
                     totalStakedAmount: 0,
                     stakeToken: stakeTokens.address,
-                    poolType: 1,
+                    poolType: StakingPoolType.FLOATING,
                     rewardTokens: []
                 }
 
@@ -315,102 +321,131 @@ describe.only('Staking Pool Tests', () => {
                 )
             })
         })
-        describe('Fixed Staking Tests', () => {
-            before(async () => {
-                admin = (await signer(0)).address
-                user = await signer(1)
-                user2 = await signer(2)
-                const symbol = 'EEK'
-                stakeTokens = await deployContract<ERC20PresetMinterPauser>(
-                    'ERC20PresetMinterPauser',
-                    'Another erc20 Token',
-                    symbol
-                )
-                rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
-                    'ERC20PresetMinterPauser',
-                    'Another erc20 Token',
-                    'SYM'
-                )
-                const epochStartTimestamp =
-                    (await getTimestampNow()) + START_DELAY
+    })
+    describe('Fixed Staking Tests', () => {
+        const rewardAmountRatio = 10
+        before(async () => {
+            admin = (await signer(0)).address
+            user = await signer(1)
+            user2 = await signer(2)
+            const symbol = 'EEK'
+            stakeTokens = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                symbol
+            )
+            rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                'SYM'
+            )
+            const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
 
-                const stakingPoolInfo = {
-                    daoId: 0,
-                    minTotalPoolStake: MIN_POOL_STAKE,
-                    maxTotalPoolStake: 600,
-                    minimumContribution: 5,
-                    epochDuration: EPOCH_DURATION,
-                    epochStartTimestamp,
-                    rewardsAvailableTimestamp:
-                        REWARDS_AVAILABLE_OFFSET +
-                        epochStartTimestamp +
-                        EPOCH_DURATION,
-                    emergencyMode: false,
-                    treasury: admin,
-                    totalStakedAmount: 0,
-                    stakeToken: stakeTokens.address,
-                    poolType: 0,
-                    rewardTokens: [
-                        {
-                            token: rewardToken1.address,
-                            totalTokenRewardsAvailable: 2000,
-                            rewardAmountRatio: 0
-                        }
-                    ]
-                }
+            const stakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                rewardsAvailableTimestamp:
+                    REWARDS_AVAILABLE_OFFSET +
+                    epochStartTimestamp +
+                    EPOCH_DURATION,
+                emergencyMode: false,
+                treasury: admin,
+                totalStakedAmount: 0,
+                stakeToken: stakeTokens.address,
+                poolType: StakingPoolType.FIXED,
+                rewardTokens: [
+                    {
+                        token: rewardToken1.address,
+                        totalTokenRewardsAvailable: 2000,
+                        rewardAmountRatio
+                    }
+                ]
+            }
 
-                stakingPool = await deployContract('StakingPool')
-                await stakingPool.initialize(stakingPoolInfo)
+            stakingPool = await deployContract('StakingPool')
+            await stakingPool.initialize(stakingPoolInfo)
+            await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
+        })
+        describe('withdraw stake', () => {
+            const amount = BigNumber.from(80)
+            it('2 users get the same reward', async () => {
+                await increaseTime(START_DELAY)
+
+                await userDeposit(user, amount)
+                await userDeposit(user2, amount)
+
+                // increase past staking period
+                await increaseTime(EPOCH_DURATION)
+
+                await userWithdrawStake(user)
+                await userWithdrawStake(user2)
+                await increaseTime(REWARDS_AVAILABLE_OFFSET)
+                verifyWithdrawRewardsEvent(
+                    {
+                        user: user.address,
+                        rewards: amount.mul(rewardAmountRatio),
+                        rewardToken: rewardToken1.address
+                    },
+                    await userWithdrawRewards(user)
+                )
+                verifyWithdrawRewardsEvent(
+                    {
+                        user: user2.address,
+                        rewards: amount.mul(rewardAmountRatio),
+                        rewardToken: rewardToken1.address
+                    },
+                    await userWithdrawRewards(user2)
+                )
             })
         })
-
-        async function userWithdrawStake(
-            user: SignerWithAddress
-        ): Promise<ContractReceipt> {
-            // eslint-disable-next-line no-console
-            console.log('userWithdrawStake')
-            return successfulTransaction(
-                stakingPool.connect(user).withdrawStake()
-            )
-        }
-        async function userWithdrawRewards(
-            user: SignerWithAddress
-        ): Promise<ContractReceipt> {
-            return successfulTransaction(
-                stakingPool.connect(user).withdrawRewards()
-            )
-        }
-
-        async function userDeposit(
-            user: SignerWithAddress,
-            amount: BigNumber
-        ): Promise<ContractReceipt> {
-            await stakeTokens.mint(user.address, amount)
-            await stakeTokens
-                .connect(user)
-                .increaseAllowance(stakingPool.address, amount)
-            return successfulTransaction(
-                stakingPool.connect(user).deposit(amount)
-            )
-        }
-        async function userWithdraw(
-            user: SignerWithAddress
-        ): Promise<ContractReceipt> {
-            return successfulTransaction(stakingPool.connect(user).withdraw())
-        }
-        async function userWithdrawWithoutRewards(
-            user: SignerWithAddress
-        ): Promise<ContractReceipt> {
-            return successfulTransaction(
-                stakingPool.connect(user).withdrawWithoutRewards()
-            )
-        }
-
-        let admin: string
-        let user: SignerWithAddress
-        let user2: SignerWithAddress
-        let stakeTokens: ERC20PresetMinterPauser
-        let stakingPool: StakingPool
-        let rewardToken1: ERC20PresetMinterPauser
     })
+
+    async function userWithdrawStake(
+        user: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        // eslint-disable-next-line no-console
+        console.log('userWithdrawStake')
+        return successfulTransaction(stakingPool.connect(user).withdrawStake())
+    }
+    async function userWithdrawRewards(
+        user: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(
+            stakingPool.connect(user).withdrawRewards()
+        )
+    }
+
+    async function userDeposit(
+        user: SignerWithAddress,
+        amount: BigNumber
+    ): Promise<ContractReceipt> {
+        await stakeTokens.mint(user.address, amount)
+        await stakeTokens
+            .connect(user)
+            .increaseAllowance(stakingPool.address, amount)
+        return successfulTransaction(stakingPool.connect(user).deposit(amount))
+    }
+    async function userWithdraw(
+        user: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(stakingPool.connect(user).withdraw())
+    }
+    async function userWithdrawWithoutRewards(
+        user: SignerWithAddress
+    ): Promise<ContractReceipt> {
+        return successfulTransaction(
+            stakingPool.connect(user).withdrawWithoutRewards()
+        )
+    }
+
+    let admin: string
+    let user: SignerWithAddress
+    let user2: SignerWithAddress
+    let stakeTokens: ERC20PresetMinterPauser
+    let stakingPool: StakingPool
+    let rewardToken1: ERC20PresetMinterPauser
 })
