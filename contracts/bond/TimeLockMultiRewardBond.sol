@@ -23,6 +23,9 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
         uint256 timeLock;
     }
 
+    // Multiplier / divider for four decimal places, used in redemption ratio calculation.
+    uint256 private constant _REWARD_RATIO_ACCURACY = 1e4;
+
     mapping(address => mapping(address => uint256))
         private _claimantToRewardPoolDebt;
     mapping(address => RewardPool) private _rewardPool;
@@ -31,6 +34,7 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
 
     event ClaimReward(address tokens, uint256 amount);
     event RegisterReward(address tokens, uint256 amount, uint256 timeLock);
+    event RewardDebt(address tokens, address claimant, uint256 rewardDebt);
     event SetRedemptionTimestamp(uint256 timestamp);
     event UpdateRewardTimeLock(address tokens, uint256 timeLock);
 
@@ -105,15 +109,28 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
         return _rewardPool[tokens].amount;
     }
 
-    //TODO mo events
-
     /**
      * @dev Must be called before the claimant debt tokens are burnt, as they are used with total supply in
      *      calculating the rewards.
      */
-    function _calculateRewardDebt(address claimant) internal {
-        //TODO call when a user redeem their debt tokens
-        //TODO iterate through the rewards, calculating payout
+    function _calculateRewardDebt(
+        address claimant,
+        uint256 claimantDebtTokens,
+        uint256 totalSupply
+    ) internal {
+        require(claimantDebtTokens < totalSupply, "Rewards: too much debt");
+
+        uint256 rewardsRatio = (claimantDebtTokens * _REWARD_RATIO_ACCURACY) /
+            totalSupply;
+
+        for (uint256 i; i < EnumerableSetUpgradeable.length(_tokens); i++) {
+            address tokens = EnumerableSetUpgradeable.at(_tokens, i);
+            uint256 rewardDebt = (_rewardPool[tokens].amount * rewardsRatio) /
+                _REWARD_RATIO_ACCURACY;
+
+            _claimantToRewardPoolDebt[claimant][tokens] = rewardDebt;
+            emit RewardDebt(tokens, claimant, rewardDebt);
+        }
     }
 
     /**
