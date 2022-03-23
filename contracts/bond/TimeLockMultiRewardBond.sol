@@ -67,6 +67,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         for (uint256 i = 0; i < EnumerableSetUpgradeable.length(_tokens); i++) {
             address tokens = EnumerableSetUpgradeable.at(_tokens, i);
 
+            // Intentional use of timestamp for time lock expiry check
+            //slither-disable-next-line timestamp
             if (_hasRegisteredRewards(tokens) && _hasTimeLockExpired(tokens)) {
                 return true;
             }
@@ -228,6 +230,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         return _rewardPool[tokens].amount > 0;
     }
 
+    // Intentional use of timestamp for time lock expiry check
+    //slither-disable-next-line timestamp
     function _hasTimeLockExpired(address tokens) private view returns (bool) {
         return
             block.timestamp >=
