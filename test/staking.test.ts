@@ -18,15 +18,10 @@ import {
     verifyWithdrawEvent,
     verifyWithdrawRewardsEvent
 } from './contracts/staking/verify-staking-events'
+import {StakingPoolType} from './contracts/staking/staking-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
-
-// eslint-disable-next-line no-shadow
-enum StakingPoolType {
-    FIXED,
-    FLOATING
-}
 
 const EPOCH_DURATION = 60
 const START_DELAY = 15
