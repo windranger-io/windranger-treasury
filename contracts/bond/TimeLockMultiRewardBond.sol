@@ -191,6 +191,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         emit SetRedemptionTimestamp(timestamp);
     }
 
+    //TODO init with rewards?
     //slither-disable-next-line naming-convention
     function __TimeLockMultiRewardBond_init() internal onlyInitializing {
         __Context_init();
@@ -215,6 +216,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
     }
 
+    // Claiming multiple rewards in a single function, looping is unavoidable
+    //slither-disable-next-line calls-loop
     function _transferReward(
         address tokens,
         uint256 amount,
