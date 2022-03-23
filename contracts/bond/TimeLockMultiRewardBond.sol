@@ -12,6 +12,8 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
  *         Rewards are not accrued, rather they are given to token holder on redemption of their debt token.
  *
  * @dev Each reward has it's own time lock, allowing different rewards to be claimable at different points in time.
+ *      When a guarantor redeems their debt tokens for collateral `_calculateRewardDebt()` must be invoked to
+ *      calculate their rewards.
  */
 abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
@@ -27,8 +29,10 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
     EnumerableSetUpgradeable.AddressSet private _tokens;
     uint256 private _redemptionTimestamp;
 
-    event RegisterReward(address tokens, uint256 amount, uint256 timeLock);
     event ClaimReward(address tokens, uint256 amount);
+    event RegisterReward(address tokens, uint256 amount, uint256 timeLock);
+    event SetRedemptionTimestamp(uint256 timestamp);
+    event UpdateRewardTimeLock(address tokens, uint256 timeLock);
 
     /**
      * @notice Claims any available rewards for the caller.
@@ -103,9 +107,14 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
 
     //TODO mo events
 
-    //TODO doco & move
-    //TODO call when a user redeem their debt tokens
-    function _calculateRewardDebt(address claimant) internal {}
+    /**
+     * @dev Must be called before the claimant debt tokens are burnt, as they are used with total supply in
+     *      calculating the rewards.
+     */
+    function _calculateRewardDebt(address claimant) internal {
+        //TODO call when a user redeem their debt tokens
+        //TODO iterate through the rewards, calculating payout
+    }
 
     /**
      * @notice Registers ERC20 tokens already transferred to the contract, adding them to the existing reward set.
@@ -148,6 +157,8 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
         require(_hasRegisteredRewards(tokens), "Rewards: no reward tokens");
 
         _rewardPool[tokens].timeLock = timeLock;
+
+        emit UpdateRewardTimeLock(tokens, timeLock);
     }
 
     /**
@@ -159,6 +170,8 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
         require(timestamp != 0, "Rewards: zero is invalid time");
 
         _redemptionTimestamp = timestamp;
+
+        emit SetRedemptionTimestamp(timestamp);
     }
 
     //slither-disable-next-line naming-convention
