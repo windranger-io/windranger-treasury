@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
@@ -15,7 +16,7 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
  *      When a guarantor redeems their debt tokens for collateral `_calculateRewardDebt()` must be invoked to
  *      calculate their rewards.
  */
-abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
+abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     struct RewardPool {
@@ -46,7 +47,7 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
      *  NOTE: If there is nothing to claim, the function completes execution without revert. Handle this problem
      *        with UI. Only display a claim when there an available reward to claim.
      */
-    function claimReward() external {
+    function claimReward() external whenNotPaused {
         address claimant = _msgSender();
 
         for (uint256 i = 0; i < EnumerableSetUpgradeable.length(_tokens); i++) {
@@ -148,7 +149,7 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
         address tokens,
         uint256 amount,
         uint256 timeLock
-    ) internal {
+    ) internal whenNotPaused {
         require(tokens != address(0), "Rewards: address is zero");
         require(amount > 0, "Rewards: no reward amount");
 
@@ -170,7 +171,10 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
      * @param tokens ERC20 rewards already registered.
      * @param timeLock ms to lock rewards after redemption is allowed.
      */
-    function _updateRewardTimeLock(address tokens, uint256 timeLock) internal {
+    function _updateRewardTimeLock(address tokens, uint256 timeLock)
+        internal
+        whenNotPaused
+    {
         require(_hasRegisteredRewards(tokens), "Rewards: no reward tokens");
 
         _rewardPool[tokens].timeLock = timeLock;
@@ -183,7 +187,7 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
      *
      * @dev Until a redemption time is set, no rewards are claimable.
      */
-    function _setRedemptionTimestamp(uint256 timestamp) internal {
+    function _setRedemptionTimestamp(uint256 timestamp) internal whenNotPaused {
         require(timestamp != 0, "Rewards: zero is invalid time");
 
         _redemptionTimestamp = timestamp;
@@ -199,6 +203,7 @@ abstract contract TimeLockMultiRewardBond is ContextUpgradeable {
     /**
      * @notice Whether the claimant holds debt tokens.
      */
+    //slither-disable-next-line dead-code
     function _isDetTokenHolder(address claimant)
         internal
         virtual
