@@ -8,15 +8,21 @@ import "../RoleAccessControl.sol";
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "./StakingPoolLib.sol";
 
 import "hardhat/console.sol";
 
-contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
+contract StakingPool is
+    Initializable,
+    RoleAccessControl,
+    ReentrancyGuard,
+    PausableUpgradeable
+{
     struct User {
         uint128 depositAmount;
-        uint128[5] rewardAmounts;
+        uint128[5] rewardAmounts; // todo: once constants are allowed get rid of this magic number
     }
 
     uint256 internal constant _MAX_REWARDS_TOKENS = 5;
@@ -84,29 +90,37 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         _;
     }
 
+    function pause() external whenNotPaused atLeastSysAdminRole {
+        _pause();
+    }
+
+    function unpause() external whenPaused atLeastSysAdminRole {
+        _unpause();
+    }
+
     function deposit(uint256 amount)
         external
+        whenNotPaused
         stakingPeriodNotStarted
         nonReentrant
         stakingPoolNotFull(amount)
     {
-        console.log("depositing..!");
         require(
             amount >= _stakingPoolInfo.minimumContribution,
             "StakingPool: min contribution"
         );
 
         User storage user = _users[_msgSender()];
+        StakingPoolLib.Data storage _info = _stakingPoolInfo;
 
         user.depositAmount += uint128(amount);
-        _stakingPoolInfo.totalStakedAmount += uint128(amount);
+        _info.totalStakedAmount += uint128(amount);
 
-        StakingPoolLib.StakingPoolType poolType = _stakingPoolInfo.poolType;
-
-        for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
-            if (poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                // update the global rewards ratio
-                _stakingPoolInfo.rewardTokens[i].rewardAmountRatio = uint32(
+        // calculate/update rewards
+        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
+            if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
+                // floating: update the global rewards ratio
+                _info.rewardTokens[i].rewardAmountRatio = uint32(
                     _computeFloatingRewardsPerShare(i)
                 );
             } else {
@@ -121,11 +135,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         emit Deposit(_msgSender(), amount);
 
         require(
-            _stakingPoolInfo.stakeToken.transferFrom(
-                _msgSender(),
-                address(this),
-                amount
-            ),
+            _info.stakeToken.transferFrom(_msgSender(), address(this), amount),
             "StakingPool: failed to transfer"
         );
     }
@@ -158,13 +168,11 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
                 // fixed
                 amount = uint256(user.rewardAmounts[i]);
             }
-
-            IERC20 token = IERC20(_info.rewardTokens[i].token);
-            _transferRewards(amount, token);
+            _transferRewards(amount, IERC20(_info.rewardTokens[i].token));
         }
     }
 
-    // withdraw stake separately from rewards (rewards may not be available yet)
+    // withdraw stake separately from rewards (rewards may not be available yet due to rewardsAvailableTimestamp)
     function withdrawStake() external stakingPeriodComplete nonReentrant {
         User storage user = _users[_msgSender()];
         require(user.depositAmount > 0, "StakingPool: not eligible");
@@ -173,10 +181,12 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         user.depositAmount = 0;
 
         StakingPoolLib.Data storage _info = _stakingPoolInfo;
+        // do we want to decrement _info.totalStakedAmount here?
 
         _transferStake(currentDepositBalance, IERC20(_info.stakeToken));
 
         // calc the amount of rewards the user is due for the floating pool type
+        // fixed amounts are calculated on deposit.
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 user.rewardAmounts[i] = uint128(
@@ -188,22 +198,19 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
 
     // to be called after withdrawStake()
     function withdrawRewards() external stakingPeriodComplete rewardsAvailable {
-        console.log("withdrawing rewards");
-
         User memory user = _users[_msgSender()];
-        require(user.rewardAmounts.length > 0, "StakingPool: No rewards");
+        require(user.rewardAmounts[0] > 0, "StakingPool: No rewards"); // this is safe?
+
         delete _users[_msgSender()];
 
         StakingPoolLib.RewardToken[] memory rewardTokens = _stakingPoolInfo
             .rewardTokens;
 
         for (uint256 i = 0; i < rewardTokens.length; i++) {
-            IERC20 token = IERC20(rewardTokens[i].token);
-            console.log(
-                "withdrawRewards:: user.rewardAmounts[i] ",
-                user.rewardAmounts[i]
+            _transferRewards(
+                user.rewardAmounts[i],
+                IERC20(rewardTokens[i].token)
             );
-            _transferRewards(user.rewardAmounts[i], token);
         }
     }
 
@@ -219,6 +226,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
     {
         __RoleAccessControl_init();
         __Context_init_unchained();
+        __Pausable_init();
 
         uint256 now = block.timestamp;
         console.log("initializing stakepool as type ", uint256(info.poolType));
@@ -240,6 +248,10 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         require(info.epochDuration > 0, "StakePool: epochDuration > 0"); // is this check pointless?
         require(info.minimumContribution > 0, "StakePool: minimumContribution"); // is this check pointless?
         require(info.totalStakedAmount == 0, "StakePool: totalStakedAmount"); // or should we move this to be a single field?
+
+        if (info.launchPaused) {
+            _pause();
+        }
 
         _stakingPoolInfo = info;
     }
@@ -270,7 +282,7 @@ contract StakingPool is Initializable, RoleAccessControl, ReentrancyGuard {
         _stakingPoolInfo.emergencyMode = true;
     }
 
-    function computeRewardsPerShare(uint256 rewardTokenIndex)
+    function computeFloatingRewardsPerShare(uint256 rewardTokenIndex)
         external
         view
         returns (uint256)

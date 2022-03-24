@@ -55,12 +55,15 @@ describe.only('Staking Pool FactoryTests', () => {
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
                 poolType: StakingPoolType.FLOATING,
-                rewardTokens: []
+                rewardTokens: [],
+                launchPaused: false
             }
             await stakingPoolFactory.createStakingPool(stakingPoolInfo)
         })
         it('create fixed pool', async () => {
-            const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+            const epochStartTimestamp = BigNumber.from(
+                (await getTimestampNow()) + START_DELAY
+            )
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
                 stakingPoolType: StakingPoolType.FIXED,
@@ -75,11 +78,11 @@ describe.only('Staking Pool FactoryTests', () => {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
-                rewardsAvailableTimestamp:
-                    REWARDS_AVAILABLE_OFFSET +
-                    epochStartTimestamp +
-                    EPOCH_DURATION,
+                rewardsAvailableTimestamp: epochStartTimestamp
+                    .add(REWARDS_AVAILABLE_OFFSET)
+                    .add(EPOCH_DURATION),
                 emergencyMode: false,
+                launchPaused: false,
                 totalStakedAmount: 0,
                 ...stakingPoolEventData
             }
@@ -88,6 +91,7 @@ describe.only('Staking Pool FactoryTests', () => {
                 creator: admin,
                 ...stakingPoolEventData
             }
+
             /*
              * verifyStakingPoolCreated(
              *     stakingPoolEvent,

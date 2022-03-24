@@ -55,6 +55,7 @@ describe.only('Staking Pool Tests', () => {
                     epochStartTimestamp +
                     EPOCH_DURATION,
                 emergencyMode: false,
+                launchPaused: false,
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
@@ -150,6 +151,7 @@ describe.only('Staking Pool Tests', () => {
                         epochStartTimestamp +
                         EPOCH_DURATION,
                     emergencyMode: false,
+                    launchPaused: false,
                     treasury: admin,
                     totalStakedAmount: 0,
                     stakeToken: stakeTokens.address,
@@ -210,6 +212,7 @@ describe.only('Staking Pool Tests', () => {
                     epochStartTimestamp,
                     rewardsAvailableTimestamp,
                     emergencyMode: false,
+                    launchPaused: false,
                     treasury: admin,
                     totalStakedAmount: 0,
                     stakeToken: stakeTokens.address,
@@ -347,7 +350,9 @@ describe.only('Staking Pool Tests', () => {
                     REWARDS_AVAILABLE_OFFSET +
                     epochStartTimestamp +
                     EPOCH_DURATION,
+                launchPaused: false,
                 emergencyMode: false,
+
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,

@@ -39,8 +39,6 @@ export function advanceBlock() {
 }
 
 export const increaseTime = async (time: number, advance = true) => {
-    // eslint-disable-next-line no-console
-    console.log('increasing time by ', time)
     await provider.send('evm_increaseTime', [time])
     if (advance) {
         await advanceBlock()
