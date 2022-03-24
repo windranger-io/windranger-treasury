@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
 /**
  * @title Multiple reward with time lock support.
  *
- * @notice Supports multiple ERC20 rewards with optional an optional time lock on pull based claiming.
+ * @notice Supports multiple ERC20 rewards with an optional time lock on pull based claiming.
  *         Rewards are not accrued, rather they are given to token holder on redemption of their debt token.
  *
  * @dev Each reward has it's own time lock, allowing different rewards to be claimable at different points in time.
