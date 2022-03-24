@@ -195,7 +195,11 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     //slither-disable-next-line naming-convention
     function __TimeLockMultiRewardBond_init() internal onlyInitializing {
         __Context_init();
+
+        //TODO need reward tokens & amounts
     }
+
+    //TODO need a trigger when transfer occurs, override the ERC20 transfer
 
     /**
      * @notice Whether the claimant holds debt tokens.

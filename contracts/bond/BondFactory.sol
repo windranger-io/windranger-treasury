@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "./ERC20SingleCollateralBond.sol";
+import "./SingleCollateralMultiRewardBond.sol";
 import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
 import "./Roles.sol";
@@ -35,7 +35,7 @@ contract BondFactory is
         Bond.Settings memory configuration,
         address treasury
     ) external override whenNotPaused returns (address) {
-        ERC20SingleCollateralBond bond = new ERC20SingleCollateralBond();
+        SingleCollateralMultiRewardBond bond = new SingleCollateralMultiRewardBond();
 
         emit CreateBond(
             address(bond),

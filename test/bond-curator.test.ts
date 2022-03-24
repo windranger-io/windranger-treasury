@@ -10,7 +10,7 @@ import {
     BitDAO,
     BondFactory,
     BondCuratorBox,
-    ERC20SingleCollateralBond
+    ERC20SingleCollateralBondBox
 } from '../typechain-types'
 import {
     deployContract,
@@ -462,7 +462,7 @@ describe('Bond Curator contract', () => {
             })
         })
 
-        let bond: ERC20SingleCollateralBond
+        let bond: ERC20SingleCollateralBondBox
     })
 
     describe('pause', () => {
@@ -521,13 +521,13 @@ describe('Bond Curator contract', () => {
         })
     })
 
-    async function createBond(): Promise<ERC20SingleCollateralBond> {
+    async function createBond(): Promise<ERC20SingleCollateralBondBox> {
         return createBondWithOwner(curator.address)
     }
 
     async function createBondWithOwner(
         owner: string
-    ): Promise<ERC20SingleCollateralBond> {
+    ): Promise<ERC20SingleCollateralBondBox> {
         const receipt = await execute(
             creator.createBond(
                 {name: 'name', symbol: 'symbol', data: ''},

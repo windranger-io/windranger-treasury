@@ -21,7 +21,7 @@ import "../Version.sol";
  *
  * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
  */
-contract ERC20SingleCollateralBond is
+abstract contract ERC20SingleCollateralBond is
     ERC20Upgradeable,
     ExpiryTimestamp,
     SingleCollateralBond,
@@ -110,50 +110,6 @@ contract ERC20SingleCollateralBond is
         string collateralSymbol,
         uint256 collateralAmount
     );
-
-    /**
-     * @param erc20CollateralTokens To avoid being able to break the Bond behaviour, the reference to the collateral
-     *              tokens cannot be be changed after init.
-     *              To update the tokens address, either follow the proxy convention for the collateral,
-     *              or migrate to a new bond.
-     * @param data Metadata not required for the operation of the Bond, but needed by external actors.
-     * @param expiry Timestamp after which the bond may be expired by anyone.
-     * @param minimumDepositHolding Minimum debt holding allowed in the deposit phase. Once the minimum is met,
-     *              any sized deposit from that account is allowed, as the minimum has already been met.
-     */
-    function initialize(
-        string calldata name,
-        string calldata symbol,
-        uint256 debtAmount,
-        address erc20CollateralTokens,
-        address erc20CapableTreasury,
-        uint256 expiry,
-        uint256 minimumDepositHolding,
-        string calldata data
-    ) external initializer {
-        __ERC20_init(name, symbol);
-        __Ownable_init();
-        __Pausable_init();
-        __ExpiryTimestamp_init(expiry);
-        __MetaDataStore_init(data);
-        __Redeemable_init();
-
-        require(
-            erc20CapableTreasury != address(0),
-            "Bond: treasury is zero address"
-        );
-        require(
-            erc20CollateralTokens != address(0),
-            "Bond: collateral is zero address"
-        );
-
-        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
-        _debtTokensInitialSupply = debtAmount;
-        _minimumDeposit = minimumDepositHolding;
-        _treasury = erc20CapableTreasury;
-
-        _mint(debtAmount);
-    }
 
     function allowRedemption(string calldata reason)
         external
@@ -450,6 +406,40 @@ contract ERC20SingleCollateralBond is
 
     function hasFullCollateral() public view returns (bool) {
         return _debtTokensRemaining() == 0;
+    }
+
+    function __ERC20SingleCollateralBond_init(
+        string calldata name,
+        string calldata symbol,
+        uint256 debtAmount,
+        address erc20CollateralTokens,
+        address erc20CapableTreasury,
+        uint256 expiry,
+        uint256 minimumDepositHolding,
+        string calldata data
+    ) internal onlyInitializing {
+        __ERC20_init(name, symbol);
+        __Ownable_init();
+        __Pausable_init();
+        __ExpiryTimestamp_init(expiry);
+        __MetaDataStore_init(data);
+        __Redeemable_init();
+
+        require(
+            erc20CapableTreasury != address(0),
+            "Bond: treasury is zero address"
+        );
+        require(
+            erc20CollateralTokens != address(0),
+            "Bond: collateral is zero address"
+        );
+
+        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
+        _debtTokensInitialSupply = debtAmount;
+        _minimumDeposit = minimumDepositHolding;
+        _treasury = erc20CapableTreasury;
+
+        _mint(debtAmount);
     }
 
     /**

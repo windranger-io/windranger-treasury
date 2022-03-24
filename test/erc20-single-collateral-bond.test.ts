@@ -9,7 +9,7 @@ import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
     BondFactory,
-    ERC20SingleCollateralBond
+    ERC20SingleCollateralBondBox
 } from '../typechain-types'
 import {
     deployContract,
@@ -470,7 +470,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('tokens cannot be zero', async () => {
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
 
             await expect(
                 bond.initialize(
@@ -487,7 +487,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('treasury address cannot be zero', async () => {
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
 
             await expect(
                 bond.initialize(
@@ -504,7 +504,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('collateral tokens address cannot be zero', async () => {
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
 
             await expect(
                 bond.initialize(
@@ -522,7 +522,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('initial debt tokens are recorded', async () => {
             const debtTokens = 554n
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
             expect(await bond.initialDebtTokens()).equals(ZERO)
 
             await bond.initialize(
@@ -541,7 +541,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('metadata is initialised', async () => {
             const debtTokens = 554n
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
             expect(await bond.metaData()).equals('')
 
             await bond.initialize(
@@ -562,7 +562,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             const debtTokens = 554n
             const startMetaData = 'something you will neve know'
             const endMetadata = 'has changed to something else'
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
             await bond.initialize(
                 'My Debt Tokens two',
                 'MDT002',
@@ -1766,7 +1766,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
     async function createBond(
         factory: BondFactory,
         debtTokenAmount: BigNumberish
-    ): Promise<ERC20SingleCollateralBond> {
+    ): Promise<ERC20SingleCollateralBondBox> {
         const receipt = await execute(
             factory.createBond(
                 {
@@ -1791,7 +1791,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
     }
 
     let admin: SignerWithAddress
-    let bond: ERC20SingleCollateralBond
+    let bond: ERC20SingleCollateralBondBox
     let treasury: string
     let collateralTokens: ExtendedERC20
     let collateralSymbol: string
@@ -1818,7 +1818,7 @@ type GuarantorCollateralSetup = {
 
 async function setupGuarantorWithCollateral(
     guarantor: GuarantorCollateralSetup,
-    bond: ERC20SingleCollateralBond,
+    bond: ERC20SingleCollateralBondBox,
     collateral: ExtendedERC20
 ) {
     await collateral.transfer(guarantor.signer.address, guarantor.pledge)
@@ -1830,7 +1830,7 @@ async function setupGuarantorWithCollateral(
 async function verifyBondAndCollateralBalances(
     balance: ExpectedBalance,
     collateral: ExtendedERC20,
-    bond: ERC20SingleCollateralBond
+    bond: ERC20SingleCollateralBondBox
 ): Promise<void> {
     const address =
         typeof balance.address === 'string'
