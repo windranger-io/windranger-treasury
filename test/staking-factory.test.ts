@@ -23,7 +23,7 @@ const START_DELAY = 15
 const REWARDS_AVAILABLE_OFFSET = 20
 const MIN_POOL_STAKE = 500
 
-describe.only('Staking Pool FactoryTests', () => {
+describe('Staking Pool FactoryTests', () => {
     before(async () => {
         admin = (await signer(0)).address
         const symbol = 'EEK'
@@ -38,38 +38,15 @@ describe.only('Staking Pool FactoryTests', () => {
 
     describe('create pools', () => {
         it('create floating pool', async () => {
-            const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
-            const stakingPoolInfo = {
-                daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
-                minimumContribution: 5,
-                epochDuration: EPOCH_DURATION,
-                epochStartTimestamp,
-                rewardsAvailableTimestamp:
-                    REWARDS_AVAILABLE_OFFSET +
-                    epochStartTimestamp +
-                    EPOCH_DURATION,
-                emergencyMode: false,
-                treasury: admin,
-                totalStakedAmount: 0,
-                stakeToken: stakeTokens.address,
-                poolType: StakingPoolType.FLOATING,
-                rewardTokens: [],
-                launchPaused: false
-            }
-            await stakingPoolFactory.createStakingPool(stakingPoolInfo)
-        })
-        it('create fixed pool', async () => {
             const epochStartTimestamp = BigNumber.from(
                 (await getTimestampNow()) + START_DELAY
             )
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
-                stakingPoolType: StakingPoolType.FIXED,
+                poolType: StakingPoolType.FLOATING,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
-                epochDuration: EPOCH_DURATION,
+                epochDuration: BigNumber.from(EPOCH_DURATION),
                 epochStartTimestamp,
                 treasury: admin
             }
@@ -91,25 +68,47 @@ describe.only('Staking Pool FactoryTests', () => {
                 creator: admin,
                 ...stakingPoolEventData
             }
+            await stakingPoolFactory.createStakingPool(stakingPoolInfo)
+        })
+        it('create fixed pool', async () => {
+            const epochStartTimestamp = BigNumber.from(
+                (await getTimestampNow()) + START_DELAY
+            )
+            const stakingPoolEventData = {
+                stakeToken: stakeTokens.address,
+                poolType: StakingPoolType.FIXED,
+                rewardTokens: [],
+                minimumContribution: BigNumber.from(5),
+                epochDuration: BigNumber.from(EPOCH_DURATION),
+                epochStartTimestamp,
+                treasury: admin
+            }
 
-            /*
-             * verifyStakingPoolCreated(
-             *     stakingPoolEvent,
-             *     await createStakingPool(stakingPoolInfo)
-             * )
-             */
+            const stakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                rewardsAvailableTimestamp: epochStartTimestamp
+                    .add(REWARDS_AVAILABLE_OFFSET)
+                    .add(EPOCH_DURATION),
+                emergencyMode: false,
+                launchPaused: false,
+                totalStakedAmount: 0,
+                ...stakingPoolEventData
+            }
+
+            const stakingPoolEvent = {
+                creator: admin,
+                ...stakingPoolEventData
+            }
+            verifyStakingPoolCreated(
+                stakingPoolEvent,
+                await successfulTransaction(
+                    stakingPoolFactory.createStakingPool(stakingPoolInfo)
+                )
+            )
         })
     })
-
-    /*
-     * async function createStakingPool(
-     *     stakingPoolInfo: any
-     * ): Promise<ContractReceipt> {
-     *     return successfulTransaction(
-     *         stakingPoolFactory.createStakingPool(stakingPoolInfo)
-     *     )
-     * }
-     */
 
     let admin: string
     let stakingPoolFactory: StakingPoolFactory

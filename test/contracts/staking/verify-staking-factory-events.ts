@@ -6,6 +6,7 @@ import {
     ActualStakingPoolCreatedEvent,
     stakingPoolCreated
 } from './staking-factory-events'
+import {isAddress} from 'ethers/lib/utils'
 
 export function verifyStakingPoolCreated(
     expected: ActualStakingPoolCreatedEvent,
@@ -14,12 +15,9 @@ export function verifyStakingPoolCreated(
     const actualStakingPoolCreatedEvent: ActualStakingPoolCreatedEvent =
         stakingPoolCreated(event('StakingPoolCreated', receipt))
 
-    expect(actualStakingPoolCreatedEvent.stakingPool).equals(
-        expected.stakingPool
-    )
     expect(actualStakingPoolCreatedEvent.treasury).equals(expected.treasury)
     expect(actualStakingPoolCreatedEvent.creator).equals(expected.creator)
-    expect(actualStakingPoolCreatedEvent.rewardTokens).equals(
+    expect(actualStakingPoolCreatedEvent.rewardTokens).deep.equals(
         expected.rewardTokens
     )
 
@@ -33,7 +31,5 @@ export function verifyStakingPoolCreated(
     expect(actualStakingPoolCreatedEvent.minimumContribution).equals(
         expected.minimumContribution
     )
-    expect(actualStakingPoolCreatedEvent.stakingPoolType).equals(
-        expected.stakingPoolType
-    )
+    expect(actualStakingPoolCreatedEvent.poolType).equals(expected.poolType)
 }

@@ -29,7 +29,7 @@ const REWARDS_AVAILABLE_OFFSET = 20
 const MIN_POOL_STAKE = 500
 const REWARD_TOKEN_1_AMOUNT = 2000
 
-describe.only('Staking Pool Tests', () => {
+describe('Staking Pool Tests', () => {
     describe('Floating Staking Tests', () => {
         before(async () => {
             admin = (await signer(0)).address
@@ -400,6 +400,99 @@ describe.only('Staking Pool Tests', () => {
                     },
                     await userWithdrawRewards(user2)
                 )
+            })
+        })
+    })
+
+    describe('Common admin functions', () => {
+        let epochStartTimestamp: BigNumber
+        let rewardsAvailableTimestamp: BigNumber
+        before(async () => {
+            admin = (await signer(0)).address
+            user = await signer(1)
+            const symbol = 'EEK'
+            stakeTokens = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                symbol
+            )
+
+            epochStartTimestamp = BigNumber.from(await getTimestampNow()).add(
+                Number(START_DELAY)
+            )
+
+            rewardsAvailableTimestamp = BigNumber.from(REWARDS_AVAILABLE_OFFSET)
+                .add(epochStartTimestamp)
+                .add(EPOCH_DURATION)
+
+            rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                'SYM'
+            )
+
+            const stakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                rewardsAvailableTimestamp,
+                emergencyMode: false,
+                launchPaused: false,
+                treasury: admin,
+                totalStakedAmount: 0,
+                stakeToken: stakeTokens.address,
+                poolType: 1,
+                rewardTokens: [
+                    {
+                        token: rewardToken1.address,
+                        totalTokenRewardsAvailable: 2000,
+                        rewardAmountRatio: 0
+                    }
+                ]
+            }
+
+            stakingPool = await deployContract('StakingPool')
+
+            await stakingPool.initialize(stakingPoolInfo)
+            await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
+        })
+        describe('only dao admin', () => {
+            it('can set rewardsReleaseTimestamp', async () => {
+                await stakingPool.setRewardsAvailableTimestamp(
+                    (await getTimestampNow()) + 10
+                )
+            })
+            it('cannot set rewardsReleaseTimestamp in past', async () => {
+                await expect(
+                    stakingPool.setRewardsAvailableTimestamp(
+                        (await getTimestampNow()) - 1
+                    )
+                ).to.be.revertedWith('StakePool: future rewards')
+            })
+            it('cannot set rewardsReleaseTimestamp when already finalized', async () => {
+                await increaseTime(
+                    (await getTimestampNow()) + START_DELAY + EPOCH_DURATION
+                )
+
+                expect(await stakingPool.isStakingPeriodComplete()).to.be.true
+
+                await expect(
+                    stakingPool.setRewardsAvailableTimestamp(
+                        (await getTimestampNow()) + 1
+                    )
+                ).to.be.revertedWith('StakePool: already finalized')
+            })
+            it('cannot emergency reward sweep when not enabled', async () => {
+                await expect(
+                    stakingPool.adminEmergencyRewardSweep()
+                ).to.be.revertedWith('StakingPool: not emergency mode')
+            })
+            it('can emergency reward sweep when enabled', async () => {
+                await stakingPool.enableEmergencyMode()
+                await stakingPool.adminEmergencyRewardSweep()
             })
         })
     })

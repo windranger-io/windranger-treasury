@@ -2,6 +2,7 @@ import {BigNumber, Event} from 'ethers'
 import {StakingPoolCreatedEvent} from '../../../typechain-types/StakingPoolFactory'
 import {expect} from 'chai'
 import {StakingPoolType} from './staking-events'
+import {isAddress} from 'ethers/lib/utils'
 
 type RewardToken = {
     token: string
@@ -16,7 +17,7 @@ export type ActualStakingPoolCreatedEvent = {
     epochStartTimestamp: BigNumber
     epochDuration: BigNumber
     minimumContribution: BigNumber
-    stakingPoolType: StakingPoolType
+    poolType: StakingPoolType
 }
 
 /**
@@ -30,15 +31,18 @@ export function stakingPoolCreated(
 
     const args = event.args
 
-    // expect(args?.stakingPool).is.not.undefined
+    expect(args?.stakingPool).is.not.undefined
+
     expect(args?.treasury).is.not.undefined
+
     expect(args?.creator).is.not.undefined
+
     expect(args?.rewardTokens).is.not.undefined
     expect(args?.stakeToken).is.not.undefined
     expect(args?.epochStartTimestamp).is.not.undefined
     expect(args?.epochDuration).is.not.undefined
     expect(args?.minimumContribution).is.not.undefined
-    expect(args?.stakingPoolType).is.not.undefined
+    expect(args?.poolType).is.not.undefined
 
     return created.args
 }
