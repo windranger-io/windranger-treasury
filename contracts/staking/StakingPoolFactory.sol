@@ -9,6 +9,7 @@ import "./StakingPoolLib.sol";
 import "../RoleAccessControl.sol";
 
 contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
+    //todo: refactor to emit StakingPoolLib.Data struct
     event StakingPoolCreated(
         address indexed stakingPool,
         address treasury,
@@ -31,6 +32,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
 
     function createStakingPool(StakingPoolLib.Data calldata info)
         external
+        whenNotPaused
         atLeastDaoAminRole(info.daoId)
         returns (address)
     {
@@ -49,7 +51,6 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
         );
 
         stakingPool.initialize(info);
-
         return address(stakingPool);
     }
 
