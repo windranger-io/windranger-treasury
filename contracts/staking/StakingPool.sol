@@ -229,7 +229,6 @@ contract StakingPool is
         __Pausable_init();
 
         uint256 now = block.timestamp;
-        console.log("initializing stakepool as type ", uint256(info.poolType));
 
         require(info.epochStartTimestamp >= now, "StakingPool: start time");
         require(
@@ -280,6 +279,13 @@ contract StakingPool is
         atLeastDaoAminRole(_stakingPoolInfo.daoId)
     {
         _stakingPoolInfo.emergencyMode = true;
+    }
+
+    function setRewardsAvailableTimestamp(uint32 timestamp)
+        external
+        atLeastDaoAminRole(_stakingPoolInfo.daoId)
+    {
+        _setRewardsAvailableTimestamp(timestamp);
     }
 
     function computeFloatingRewardsPerShare(uint256 rewardTokenIndex)
@@ -340,6 +346,10 @@ contract StakingPool is
         return _isRewardsAvailable();
     }
 
+    function isStakingPeriodComplete() external view returns (bool) {
+        return _isStakingPeriodComplete();
+    }
+
     function _initializeRewardTokens(
         address treasury,
         StakingPoolLib.RewardToken[] calldata _rewardTokens
@@ -380,6 +390,8 @@ contract StakingPool is
 
     function _setRewardsAvailableTimestamp(uint32 timestamp) internal {
         require(!_isStakingPeriodComplete(), "StakePool: already finalized");
+        require(timestamp > block.timestamp, "StakePool: future rewards");
+
         _stakingPoolInfo.rewardsAvailableTimestamp = timestamp;
         emit RewardsAvailableTimestamp(timestamp);
     }

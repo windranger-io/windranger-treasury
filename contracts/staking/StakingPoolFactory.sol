@@ -19,7 +19,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
         uint128 epochStartTimestamp,
         uint128 epochDuration,
         uint128 minimumContribution,
-        StakingPoolLib.StakingPoolType stakingPoolType
+        StakingPoolLib.StakingPoolType poolType
     );
 
     function pause() external whenNotPaused atLeastSysAdminRole {
