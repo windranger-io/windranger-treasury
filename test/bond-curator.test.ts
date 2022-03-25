@@ -537,6 +537,7 @@ describe('Bond Curator contract', () => {
                     expiryTimestamp: 0n,
                     minimumDeposit: 1n
                 },
+                [],
                 treasury
             )
         )

@@ -35,7 +35,7 @@ export default {
     networks: {
         hardhat: {
             chainId: 33133,
-            allowUnlimitedContractSize: false,
+            allowUnlimitedContractSize: true,
             loggingEnabled: false
         },
         local: {
