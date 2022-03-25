@@ -9,25 +9,26 @@ contract SingleCollateralMultiRewardBond is
     ERC20SingleCollateralBond,
     TimeLockMultiRewardBond
 {
+    function deposit(uint256 amount) external override {
+        address claimant = _msgSender();
+        uint256 claimantDebt = balanceOf(claimant) + amount;
+        _calculateRewardDebt(claimant, claimantDebt, totalSupply());
+        _deposit(amount);
+    }
+
     function initialize(
         Bond.MetaData memory metadata,
         Bond.Settings memory configuration,
         Bond.TimeLockRewardPool[] memory rewards,
-        address treasury
+        address erc20CapableTreasury
     ) external initializer {
-        __ERC20SingleCollateralBond_init(metadata, configuration, treasury);
+        __ERC20SingleCollateralBond_init(
+            metadata,
+            configuration,
+            erc20CapableTreasury
+        );
         __TimeLockMultiRewardBond_init(rewards);
     }
 
-    function _isDetTokenHolder(address claimant)
-        internal
-        view
-        override
-        returns (bool)
-    {
-        return balanceOf(claimant) > 0;
-    }
-
-    //TODO init for rewards
     //TODO after transfer hook - update rewards
 }

@@ -137,43 +137,6 @@ abstract contract ERC20SingleCollateralBond is
         }
     }
 
-    function deposit(uint256 amount)
-        external
-        override
-        whenNotPaused
-        whenNotRedeemable
-    {
-        require(amount > 0, "Bond: too small");
-        require(amount <= _debtTokensRemaining(), "Bond: too large");
-        require(
-            balanceOf(_msgSender()) + amount >= _minimumDeposit,
-            "Bond: below minimum"
-        );
-
-        _collateral += amount;
-        _debtTokensOutstanding += amount;
-
-        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
-
-        bool transferred = _collateralTokens.transferFrom(
-            _msgSender(),
-            address(this),
-            amount
-        );
-        require(transferred, "Bond: collateral transfer failed");
-
-        emit DebtIssue(_msgSender(), symbol(), amount);
-
-        _transfer(address(this), _msgSender(), amount);
-
-        if (hasFullCollateral()) {
-            emit FullCollateral(
-                _collateralTokens.symbol(),
-                _collateralTokens.balanceOf(address(this))
-            );
-        }
-    }
-
     /**
      *  @notice Moves all remaining collateral to the Treasury and pauses the bond.
      *
@@ -408,6 +371,7 @@ abstract contract ERC20SingleCollateralBond is
         return _debtTokensRemaining() == 0;
     }
 
+    //slither-disable-next-line naming-convention
     function __ERC20SingleCollateralBond_init(
         Bond.MetaData memory metadata,
         Bond.Settings memory configuration,
@@ -437,6 +401,38 @@ abstract contract ERC20SingleCollateralBond is
         _treasury = erc20CapableTreasury;
 
         _mint(configuration.debtTokenAmount);
+    }
+
+    function _deposit(uint256 amount) internal whenNotPaused whenNotRedeemable {
+        require(amount > 0, "Bond: too small");
+        require(amount <= _debtTokensRemaining(), "Bond: too large");
+        require(
+            balanceOf(_msgSender()) + amount >= _minimumDeposit,
+            "Bond: below minimum"
+        );
+
+        _collateral += amount;
+        _debtTokensOutstanding += amount;
+
+        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
+
+        bool transferred = _collateralTokens.transferFrom(
+            _msgSender(),
+            address(this),
+            amount
+        );
+        require(transferred, "Bond: collateral transfer failed");
+
+        emit DebtIssue(_msgSender(), symbol(), amount);
+
+        _transfer(address(this), _msgSender(), amount);
+
+        if (hasFullCollateral()) {
+            emit FullCollateral(
+                _collateralTokens.symbol(),
+                _collateralTokens.balanceOf(address(this))
+            );
+        }
     }
 
     /**

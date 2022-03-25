@@ -11,4 +11,8 @@ contract ERC20SingleCollateralBondBox is ERC20SingleCollateralBond {
     ) external initializer {
         __ERC20SingleCollateralBond_init(metadata, configuration, treasury);
     }
+
+    function deposit(uint256 amount) external override {
+        _deposit(amount);
+    }
 }

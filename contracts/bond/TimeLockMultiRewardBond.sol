@@ -11,8 +11,9 @@ import "./Bond.sol";
  *         Rewards are not accrued, rather they are given to token holder on redemption of their debt token.
  *
  * @dev Each reward has it's own time lock, allowing different rewards to be claimable at different points in time.
- *      When a guarantor redeems their debt tokens for collateral `_calculateRewardDebt()` must be invoked to
- *      calculate their rewards.
+ *
+ *      When a guarantor deposits collateral or transfers debt tokens (for a purpose other than redemption), then
+ *      _calculateRewardDebt() must be called to keep their rewards updated.
  */
 abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     mapping(address => mapping(address => uint256))
@@ -25,6 +26,15 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     event RewardDebt(address tokens, address claimant, uint256 rewardDebt);
     event SetRedemptionTimestamp(uint256 timestamp);
     event UpdateRewardTimeLock(address tokens, uint256 timeLock);
+
+    //TODO add pause modifier usage
+
+    //TODO support rewards not being transfered in yet
+    //require(
+    //    IERC20Upgradeable(rewardPool.tokens).balanceOf(address(this)) >=
+    //    rewardPool.amount,
+    //    "Rewards: not enough held"
+    //);
 
     //TODO need cancel reward? slash reward?
     //TODO expose get all available claims for user
@@ -45,74 +55,43 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
     }
 
+    //TODO claim reward by tokens - external
+
     //TODO get all current claimable rewards
 
+    //TODO when a reward is claim, decrement the pool
+
     /**
-     * @notice Whether a claimant has any rewards to claim in this block.
+     * @notice The set of total rewards outstanding for the Bond.
      *
-     * @dev As there are multiple rewards, some may not yet be claimable.
-     */
-    function hasRewardsToClaim(address claimant) external view returns (bool) {
-        require(
-            _isDetTokenHolder(claimant) || _isOwedRewards(claimant),
-            "Rewards: nothing to claim"
-        );
-
-        for (uint256 i = 0; i < _rewardPools.length; i++) {
-            Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
-
-            // Intentional use of timestamp for time lock expiry check
-            //slither-disable-next-line timestamp
-            if (
-                _hasRegisteredRewards(rewardPool) &&
-                _hasTimeLockExpired(rewardPool)
-            ) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * The set of reward ERC20 addresses.
+     * @dev These rewards will be split proportionally between the debt holders.
      *
      * NOTE: Values are copied to a memory array be wary of gas cost if call within a transaction!
      *       Expected usage is by view accessors that are queried without any gas fees.
      */
-    function allRewardTokens() external view returns (address[] memory) {
-        address[] memory tokens = new address[](_rewardPools.length);
+    function allRewards()
+        external
+        view
+        returns (Bond.TimeLockRewardPool[] memory)
+    {
+        Bond.TimeLockRewardPool[]
+            memory rewards = new Bond.TimeLockRewardPool[](_rewardPools.length);
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
-            tokens[i] = _rewardPools[i].tokens;
+            rewards[i] = _rewardPools[i];
         }
-        return tokens;
-    }
-
-    /**
-     * @notice The amount of time after redemption that the reward is locked before being claimable.
-     *
-     * @return Time lock in seconds.
-     */
-    function rewardTimeLock(address tokens) external view returns (uint128) {
-        return _rewardPoolByToken(tokens).timeLock;
-    }
-
-    /**
-     * @notice The amount in ERC20 token of the reward still outstanding.
-     *
-     * @return Time total reward from the given ERC20 contract.
-     */
-    function rewardAmount(address tokens) external view returns (uint256) {
-        return _rewardPoolByToken(tokens).amount;
+        return rewards;
     }
 
     //TODO triggered on deposit collatearl
     //TODO update on erc20 tranfer of debt
     //TODO this needs to change
+
     /**
-     * @dev Must be called before the claimant debt tokens are burnt, as they are used with total supply in
-     *      calculating the rewards.
+     * @notice Calculate the rewards the claimant will be entitled to after redemption and corresponding lock up period.
+     *
+     * @dev Must be called when the guarantor deposits collateral or on transfer of debt tokens, but not when they
+     *      the claimant redeems, otherwise you will erase their rewards.
      */
     function _calculateRewardDebt(
         address claimant,
@@ -178,19 +157,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         _registerRewardPools(rewardPools);
     }
 
-    //TODO on deposit calculate reward debt
-
-    //TODO need a trigger when transfer occurs, override the ERC20 transfer
-
-    /**
-     * @notice Whether the claimant currently holds debt tokens.
-     */
-    function _isDetTokenHolder(address claimant)
-        internal
-        view
-        virtual
-        returns (bool);
-
     function _claimReward(
         Bond.TimeLockRewardPool storage rewardPool,
         address claimant
@@ -241,12 +207,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         );
 
         _rewardPools[index] = rewardPool;
-
-        require(
-            IERC20Upgradeable(rewardPool.tokens).balanceOf(address(this)) >=
-                rewardPool.amount,
-            "Rewards: not enough held"
-        );
     }
 
     // Claiming multiple rewards in a single function, looping is unavoidable
