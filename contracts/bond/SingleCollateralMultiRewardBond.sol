@@ -43,6 +43,7 @@ contract SingleCollateralMultiRewardBond is
 
     function _isDetTokenHolder(address claimant)
         internal
+        view
         override
         returns (bool)
     {

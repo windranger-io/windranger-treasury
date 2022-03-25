@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
 /**
  * @title Multiple reward with time lock support.
@@ -17,17 +14,18 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
  *      calculate their rewards.
  */
 abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
-    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
-
     struct RewardPool {
-        uint256 amount;
-        uint256 timeLock;
+        address tokens;
+        uint128 amount;
+        uint128 timeLock;
     }
+
+    //TODO drop this?
+    uint256 private constant _SUPPORTED_REWARD_POOLS = 5;
 
     mapping(address => mapping(address => uint256))
         private _claimantToRewardPoolDebt;
-    mapping(address => RewardPool) private _rewardPool;
-    EnumerableSetUpgradeable.AddressSet private _tokens;
+    RewardPool[_SUPPORTED_REWARD_POOLS] private _rewardPools;
     uint256 private _redemptionTimestamp;
 
     event ClaimReward(address tokens, uint256 amount);
@@ -47,9 +45,9 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     function claimReward() external whenNotPaused {
         address claimant = _msgSender();
 
-        for (uint256 i = 0; i < EnumerableSetUpgradeable.length(_tokens); i++) {
-            address tokens = EnumerableSetUpgradeable.at(_tokens, i);
-            _claimReward(tokens, claimant);
+        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+            RewardPool storage rewardPool = _rewardPools[i];
+            _claimReward(rewardPool, claimant);
         }
     }
 
@@ -58,18 +56,21 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *
      * @dev As there are multiple rewards, some may not yet be claimable.
      */
-    function hasRewardsToClaim(address claimant) external returns (bool) {
+    function hasRewardsToClaim(address claimant) external view returns (bool) {
         require(
             _isDetTokenHolder(claimant) || _isOwedRewards(claimant),
             "Rewards: nothing to claim"
         );
 
-        for (uint256 i = 0; i < EnumerableSetUpgradeable.length(_tokens); i++) {
-            address tokens = EnumerableSetUpgradeable.at(_tokens, i);
+        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+            RewardPool storage rewardPool = _rewardPools[i];
 
             // Intentional use of timestamp for time lock expiry check
             //slither-disable-next-line timestamp
-            if (_hasRegisteredRewards(tokens) && _hasTimeLockExpired(tokens)) {
+            if (
+                _hasRegisteredRewards(rewardPool) &&
+                _hasTimeLockExpired(rewardPool)
+            ) {
                 return true;
             }
         }
@@ -84,7 +85,12 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *       Expected usage is by view accessors that are queried without any gas fees.
      */
     function rewardTokens() external view returns (address[] memory) {
-        return EnumerableSetUpgradeable.values(_tokens);
+        address[] memory tokens = new address[](_rewardPools.length);
+
+        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+            tokens[i] = _rewardPools[i].tokens;
+        }
+        return tokens;
     }
 
     /**
@@ -92,10 +98,16 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *
      * @return Time lock in seconds.
      */
-    function rewardTimeLock(address tokens) external view returns (uint256) {
-        require(_hasRegisteredRewards(tokens), "Rewards: no reward tokens");
+    function rewardTimeLock(address tokens) external view returns (uint128) {
+        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+            RewardPool storage rewardPool = _rewardPools[i];
 
-        return _rewardPool[tokens].timeLock;
+            if (rewardPool.tokens == tokens) {
+                return rewardPool.timeLock;
+            }
+        }
+
+        revert("Rewards: tokens not found");
     }
 
     /**
@@ -104,9 +116,15 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @return Time total reward from the given ERC20 contract.
      */
     function rewardAmount(address tokens) external view returns (uint256) {
-        require(_hasRegisteredRewards(tokens), "Rewards: no reward tokens");
+        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+            RewardPool storage rewardPool = _rewardPools[i];
 
-        return _rewardPool[tokens].amount;
+            if (rewardPool.tokens == tokens) {
+                return rewardPool.amount;
+            }
+        }
+
+        revert("Rewards: tokens not found");
     }
 
     //TODO this needs to change
@@ -121,46 +139,18 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     ) internal {
         require(claimantDebtTokens < totalSupply, "Rewards: too much debt");
 
-        for (uint256 i = 0; i < EnumerableSetUpgradeable.length(_tokens); i++) {
-            address tokens = EnumerableSetUpgradeable.at(_tokens, i);
-            uint256 rewardDebt = (_rewardPool[tokens].amount *
-                claimantDebtTokens) / totalSupply;
+        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+            RewardPool storage rewardPool = _rewardPools[i];
 
-            _claimantToRewardPoolDebt[claimant][tokens] = rewardDebt;
-            emit RewardDebt(tokens, claimant, rewardDebt);
+            uint256 rewardDebt = (rewardPool.amount * claimantDebtTokens) /
+                totalSupply;
+
+            _claimantToRewardPoolDebt[claimant][rewardPool.tokens] = rewardDebt;
+            emit RewardDebt(rewardPool.tokens, claimant, rewardDebt);
         }
     }
 
-    /**
-     * @notice Registers ERC20 tokens already transferred to the contract, adding them to the existing reward set.
-     *
-     * @dev Must be done before redemption is allowed.
-     *
-     * @param tokens ERC20 register of the tokens to transfer in and later distribute as rewards.
-     * @param amount total number of ERC20 tokens to use for reward.
-     * @param timeLock seconds delay after redemption is allowed, only after which rewards can be claimed.
-     *        Value of zero means rewards can be claimed without delay after redemption is allowed.
-     *        Will overwrite the existing timeLock if there is already a reward from the ERC20 contract.
-     */
-    function _registerReward(
-        address tokens,
-        uint256 amount,
-        uint256 timeLock
-    ) internal whenNotPaused {
-        require(tokens != address(0), "Rewards: address is zero");
-        require(amount > 0, "Rewards: no reward amount");
-
-        emit RegisterReward(tokens, amount, timeLock);
-
-        _rewardPool[tokens].amount += amount;
-        _rewardPool[tokens].timeLock = timeLock;
-
-        require(
-            IERC20Upgradeable(tokens).balanceOf(address(this)) >=
-                _rewardPool[tokens].amount,
-            "Rewards: not enough held"
-        );
-    }
+    //TODO private find method to wrap revert
 
     /**
      * @notice Overwrites the existing time lock for rewards from a single ERC20.
@@ -168,15 +158,21 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @param tokens ERC20 rewards already registered.
      * @param timeLock seconds to lock rewards after redemption is allowed.
      */
-    function _updateRewardTimeLock(address tokens, uint256 timeLock)
+    function _updateRewardTimeLock(address tokens, uint128 timeLock)
         internal
         whenNotPaused
     {
-        require(_hasRegisteredRewards(tokens), "Rewards: no reward tokens");
+        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+            RewardPool storage rewardPool = _rewardPools[i];
 
-        _rewardPool[tokens].timeLock = timeLock;
+            if (rewardPool.tokens == tokens) {
+                rewardPool.timeLock = timeLock;
 
-        emit UpdateRewardTimeLock(tokens, timeLock);
+                emit UpdateRewardTimeLock(tokens, timeLock);
+            }
+        }
+
+        revert("Rewards: tokens not found");
     }
 
     /**
@@ -184,10 +180,11 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *
      * @dev Until a redemption time is set, no rewards are claimable.
      */
-    function _setRedemptionTimestamp(uint256 timestamp) internal whenNotPaused {
-        // Intentional use of timestamp for input validation
-        //slither-disable-next-line timestamp
-        require(timestamp >= block.timestamp, "Rewards: time already past");
+    function _setRedemptionTimestamp(uint128 timestamp) internal whenNotPaused {
+        require(
+            _isPresentOrFutureTime(timestamp),
+            "Rewards: time already past"
+        );
 
         _redemptionTimestamp = timestamp;
 
@@ -200,6 +197,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         __Context_init();
 
         //TODO need reward tokens & amounts
+
+        //TODO enforce unique tokens in rewards
     }
 
     //TODO need a trigger when transfer occurs, override the ERC20 transfer
@@ -209,18 +208,56 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      */
     function _isDetTokenHolder(address claimant)
         internal
+        view
         virtual
         returns (bool);
 
-    function _claimReward(address tokens, address claimant) private {
-        if (_hasTimeLockExpired(tokens)) {
-            uint256 amount = _claimantToRewardPoolDebt[claimant][tokens];
-            delete _claimantToRewardPoolDebt[claimant][tokens];
+    function _claimReward(RewardPool storage rewardPool, address claimant)
+        private
+    {
+        if (_hasTimeLockExpired(rewardPool)) {
+            uint256 amount = _claimantToRewardPoolDebt[claimant][
+                rewardPool.tokens
+            ];
+            delete _claimantToRewardPoolDebt[claimant][rewardPool.tokens];
 
-            emit ClaimReward(tokens, amount);
+            emit ClaimReward(rewardPool.tokens, amount);
 
-            _transferReward(tokens, amount, claimant);
+            _transferReward(rewardPool.tokens, amount, claimant);
         }
+    }
+
+    //TODO must register no init only
+    /**
+     * @notice Registers ERC20 tokens already transferred to the contract, adding them to the existing reward set.
+     *
+     * @dev Must be done before redemption is allowed.
+     *
+     * @param tokens ERC20 register of the tokens to transfer in and later distribute as rewards.
+     * @param amount total number of ERC20 tokens to use for reward.
+     * @param timeLock seconds delay after redemption is allowed, only after which rewards can be claimed.
+     *        Value of zero means rewards can be claimed without delay after redemption is allowed.
+     *        Will overwrite the existing timeLock if there is already a reward from the ERC20 contract.
+     */
+    function _registerReward(
+        uint256 index,
+        address tokens,
+        uint128 amount,
+        uint128 timeLock
+    ) private {
+        require(tokens != address(0), "Rewards: address is zero");
+        require(amount > 0, "Rewards: no reward amount");
+
+        emit RegisterReward(tokens, amount, timeLock);
+
+        _rewardPools[index].tokens = tokens;
+        _rewardPools[index].amount = amount;
+        _rewardPools[index].timeLock = timeLock;
+
+        require(
+            IERC20Upgradeable(tokens).balanceOf(address(this)) >= amount,
+            "Rewards: not enough held"
+        );
     }
 
     // Claiming multiple rewards in a single function, looping is unavoidable
@@ -236,26 +273,43 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         );
     }
 
-    function _hasRegisteredRewards(address tokens) private view returns (bool) {
-        return _rewardPool[tokens].amount > 0;
+    function _hasRegisteredRewards(RewardPool storage reward)
+        private
+        view
+        returns (bool)
+    {
+        return reward.amount > 0;
     }
 
     // Intentional use of timestamp for time lock expiry check
     //slither-disable-next-line timestamp
-    function _hasTimeLockExpired(address tokens) private view returns (bool) {
-        return
-            block.timestamp >=
-            _rewardPool[tokens].timeLock + _redemptionTimestamp;
+    function _hasTimeLockExpired(RewardPool storage reward)
+        private
+        view
+        returns (bool)
+    {
+        return block.timestamp >= reward.timeLock + _redemptionTimestamp;
     }
 
     function _isOwedRewards(address claimant) private view returns (bool) {
-        for (uint256 i = 0; i < EnumerableSetUpgradeable.length(_tokens); i++) {
-            address tokens = EnumerableSetUpgradeable.at(_tokens, i);
-            if (_claimantToRewardPoolDebt[claimant][tokens] > 0) {
+        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+            RewardPool storage rewardPool = _rewardPools[i];
+
+            if (_claimantToRewardPoolDebt[claimant][rewardPool.tokens] > 0) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    // Intentional use of timestamp for input validation
+    //slither-disable-next-line timestamp
+    function _isPresentOrFutureTime(uint128 timestamp)
+        private
+        view
+        returns (bool)
+    {
+        return timestamp >= block.timestamp;
     }
 }
