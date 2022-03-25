@@ -38,6 +38,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
 
     //TODO need cancel reward? slash reward?
     //TODO expose get all available claims for user
+
+    //TODO modifiers for claim
     /**
      * @notice Claims any available rewards for the caller.
      *
@@ -82,10 +84,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
         return rewards;
     }
-
-    //TODO triggered on deposit collatearl
-    //TODO update on erc20 tranfer of debt
-    //TODO this needs to change
 
     /**
      * @notice Calculate the rewards the claimant will be entitled to after redemption and corresponding lock up period.

@@ -39,12 +39,12 @@ abstract contract Redeemable is Initializable {
         _;
     }
 
-    function redeemable() external view returns (bool) {
-        return _redeemable;
-    }
-
     function redemptionReason() external view returns (string memory) {
         return _reason;
+    }
+
+    function redeemable() public view returns (bool) {
+        return _redeemable;
     }
 
     //slither-disable-next-line naming-convention

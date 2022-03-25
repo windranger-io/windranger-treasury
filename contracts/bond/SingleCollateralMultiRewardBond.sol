@@ -30,5 +30,19 @@ contract SingleCollateralMultiRewardBond is
         __TimeLockMultiRewardBond_init(rewards);
     }
 
-    //TODO after transfer hook - update rewards
+    /**
+     * @dev When debt tokens are transferred before redemption is allowed, the new holder gains full proportional
+     *      rewards for the new holding of debt tokens, while the previous holder looses any entitlement.
+     */
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        if (amount > 0 && !redeemable()) {
+            uint256 supply = totalSupply();
+            _calculateRewardDebt(from, balanceOf(from), supply);
+            _calculateRewardDebt(to, balanceOf(to), supply);
+        }
+    }
 }
