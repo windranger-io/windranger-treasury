@@ -32,19 +32,16 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     event SetRedemptionTimestamp(uint256 timestamp);
     event UpdateRewardTimeLock(address tokens, uint256 timeLock);
 
-    //TODO add pause modifier usage
+    /**
+     * @notice Makes a function callable only when the contract is redeemable.
+     *
+     * @dev Reverts unless the redemption timestamp has been set.
+     */
+    modifier whenRedemptionTimestampSet() {
+        require(_redemptionTimestamp > 0, "Rewards: not redeemable");
+        _;
+    }
 
-    //TODO support rewards not being transfered in yet
-    //require(
-    //    IERC20Upgradeable(rewardPool.tokens).balanceOf(address(this)) >=
-    //    rewardPool.amount,
-    //    "Rewards: not enough held"
-    //);
-
-    //TODO need cancel reward? slash reward?
-    //TODO expose get all available claims for user
-
-    //TODO modifiers for claim
     /**
      * @notice Claims any available rewards for the caller.
      *
@@ -53,7 +50,11 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *  NOTE: If there is nothing to claim, the function completes execution without revert. Handle this problem
      *        with UI. Only display a claim when there an available reward to claim.
      */
-    function claimAvailableRewards() external whenNotPaused {
+    function claimAllAvailableRewards()
+        external
+        whenNotPaused
+        whenRedemptionTimestampSet
+    {
         address claimant = _msgSender();
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
@@ -62,14 +63,13 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
     }
 
-    //TODO claim reward by tokens - external
-
-    //TODO when a reward is claimed, decrement the pool
-
     /**
      * @notice The set of total rewards outstanding for the Bond.
      *
      * @dev These rewards will be split proportionally between the debt holders.
+     *
+     *      After claiming, these value remain unchanged (as they are not used after redemption is allowed,
+     *      only for calculations after deposits and transfers).
      *
      * NOTE: Values are copied to a memory array be wary of gas cost if call within a transaction!
      *       Expected usage is by view accessors that are queried without any gas fees.
@@ -131,7 +131,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         address claimant,
         uint256 claimantDebtTokens,
         uint256 totalSupply
-    ) internal {
+    ) internal whenNotPaused {
         require(claimantDebtTokens < totalSupply, "Rewards: too much debt");
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
