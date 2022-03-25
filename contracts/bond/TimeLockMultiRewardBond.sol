@@ -261,14 +261,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         );
     }
 
-    function _hasRegisteredRewards(Bond.TimeLockRewardPool storage reward)
-        private
-        view
-        returns (bool)
-    {
-        return reward.amount > 0;
-    }
-
     function _hasRewardDebt(
         address claimant,
         Bond.TimeLockRewardPool storage rewardPool
@@ -291,18 +283,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         returns (bool)
     {
         return block.timestamp >= rewardPool.timeLock + _redemptionTimestamp;
-    }
-
-    function _isOwedRewards(address claimant) private view returns (bool) {
-        for (uint256 i = 0; i < _rewardPools.length; i++) {
-            Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
-
-            if (_claimantToRewardPoolDebt[claimant][rewardPool.tokens] > 0) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     // Intentional use of timestamp for input validation
