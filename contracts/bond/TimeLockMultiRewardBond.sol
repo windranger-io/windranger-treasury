@@ -96,6 +96,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * NOTE: Values are copied to a memory array be wary of gas cost if call within a transaction!
      *       Expected usage is by view accessors that are queried without any gas fees.
      */
+    // Intentional use of timestamp for time lock expiry check
+    //slither-disable-next-line timestamp
     function availableRewards()
         external
         view
