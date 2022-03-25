@@ -31,6 +31,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     event SetRedemptionTimestamp(uint256 timestamp);
     event UpdateRewardTimeLock(address tokens, uint256 timeLock);
 
+    //TODO expose get all available claims for user
     /**
      * @notice Claims any available rewards for the caller.
      *
@@ -81,7 +82,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * NOTE: Values are copied to a memory array be wary of gas cost if call within a transaction!
      *       Expected usage is by view accessors that are queried without any gas fees.
      */
-    function rewardTokens() external view returns (address[] memory) {
+    function allRewardTokens() external view returns (address[] memory) {
         address[] memory tokens = new address[](_rewardPools.length);
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
@@ -96,15 +97,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @return Time lock in seconds.
      */
     function rewardTimeLock(address tokens) external view returns (uint128) {
-        for (uint256 i = 0; i < _rewardPools.length; i++) {
-            RewardPool storage rewardPool = _rewardPools[i];
-
-            if (rewardPool.tokens == tokens) {
-                return rewardPool.timeLock;
-            }
-        }
-
-        revert("Rewards: tokens not found");
+        return _rewardPoolByToken(tokens).timeLock;
     }
 
     /**
@@ -113,15 +106,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @return Time total reward from the given ERC20 contract.
      */
     function rewardAmount(address tokens) external view returns (uint256) {
-        for (uint256 i = 0; i < _rewardPools.length; i++) {
-            RewardPool storage rewardPool = _rewardPools[i];
-
-            if (rewardPool.tokens == tokens) {
-                return rewardPool.amount;
-            }
-        }
-
-        revert("Rewards: tokens not found");
+        return _rewardPoolByToken(tokens).amount;
     }
 
     //TODO this needs to change
@@ -147,8 +132,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
     }
 
-    //TODO private find method to wrap revert
-
     /**
      * @notice Overwrites the existing time lock for rewards from a single ERC20.
      *
@@ -159,17 +142,11 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         internal
         whenNotPaused
     {
-        for (uint256 i = 0; i < _rewardPools.length; i++) {
-            RewardPool storage rewardPool = _rewardPools[i];
+        RewardPool storage rewardPool = _rewardPoolByToken(tokens);
 
-            if (rewardPool.tokens == tokens) {
-                rewardPool.timeLock = timeLock;
+        rewardPool.timeLock = timeLock;
 
-                emit UpdateRewardTimeLock(tokens, timeLock);
-            }
-        }
-
-        revert("Rewards: tokens not found");
+        emit UpdateRewardTimeLock(tokens, timeLock);
     }
 
     /**
@@ -308,5 +285,21 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         returns (bool)
     {
         return timestamp >= block.timestamp;
+    }
+
+    function _rewardPoolByToken(address tokens)
+        private
+        view
+        returns (RewardPool storage)
+    {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
+            RewardPool storage rewardPool = _rewardPools[i];
+
+            if (rewardPool.tokens == tokens) {
+                return rewardPool;
+            }
+        }
+
+        revert("Rewards: tokens not found");
     }
 }
