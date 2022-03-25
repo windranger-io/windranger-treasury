@@ -20,12 +20,9 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         uint128 timeLock;
     }
 
-    //TODO drop this?
-    uint256 private constant _SUPPORTED_REWARD_POOLS = 5;
-
     mapping(address => mapping(address => uint256))
         private _claimantToRewardPoolDebt;
-    RewardPool[_SUPPORTED_REWARD_POOLS] private _rewardPools;
+    RewardPool[] private _rewardPools;
     uint256 private _redemptionTimestamp;
 
     event ClaimReward(address tokens, uint256 amount);
@@ -45,7 +42,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     function claimReward() external whenNotPaused {
         address claimant = _msgSender();
 
-        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
             RewardPool storage rewardPool = _rewardPools[i];
             _claimReward(rewardPool, claimant);
         }
@@ -62,7 +59,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
             "Rewards: nothing to claim"
         );
 
-        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
             RewardPool storage rewardPool = _rewardPools[i];
 
             // Intentional use of timestamp for time lock expiry check
@@ -87,7 +84,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     function rewardTokens() external view returns (address[] memory) {
         address[] memory tokens = new address[](_rewardPools.length);
 
-        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
             tokens[i] = _rewardPools[i].tokens;
         }
         return tokens;
@@ -99,7 +96,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @return Time lock in seconds.
      */
     function rewardTimeLock(address tokens) external view returns (uint128) {
-        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
             RewardPool storage rewardPool = _rewardPools[i];
 
             if (rewardPool.tokens == tokens) {
@@ -116,7 +113,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @return Time total reward from the given ERC20 contract.
      */
     function rewardAmount(address tokens) external view returns (uint256) {
-        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
             RewardPool storage rewardPool = _rewardPools[i];
 
             if (rewardPool.tokens == tokens) {
@@ -139,7 +136,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     ) internal {
         require(claimantDebtTokens < totalSupply, "Rewards: too much debt");
 
-        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
             RewardPool storage rewardPool = _rewardPools[i];
 
             uint256 rewardDebt = (rewardPool.amount * claimantDebtTokens) /
@@ -162,7 +159,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         internal
         whenNotPaused
     {
-        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
             RewardPool storage rewardPool = _rewardPools[i];
 
             if (rewardPool.tokens == tokens) {
@@ -292,7 +289,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     }
 
     function _isOwedRewards(address claimant) private view returns (bool) {
-        for (uint256 i = 0; i < _SUPPORTED_REWARD_POOLS; i++) {
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
             RewardPool storage rewardPool = _rewardPools[i];
 
             if (_claimantToRewardPoolDebt[claimant][rewardPool.tokens] > 0) {
