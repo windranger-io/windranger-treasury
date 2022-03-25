@@ -45,6 +45,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
     }
 
+    //TODO get all current claimable rewards
+
     /**
      * @notice Whether a claimant has any rewards to claim in this block.
      *
@@ -105,6 +107,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         return _rewardPoolByToken(tokens).amount;
     }
 
+    //TODO triggered on deposit collatearl
+    //TODO update on erc20 tranfer of debt
     //TODO this needs to change
     /**
      * @dev Must be called before the claimant debt tokens are burnt, as they are used with total supply in
@@ -161,17 +165,17 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         emit SetRedemptionTimestamp(timestamp);
     }
 
+    /**
+     * @param rewardPools Set of rewards claimable after a time lock following bond becoming redeemable.
+     */
     //slither-disable-next-line naming-convention
     function __TimeLockMultiRewardBond_init(
         Bond.TimeLockRewardPool[] memory rewardPools
     ) internal onlyInitializing {
-        __Context_init();
+        __Pausable_init();
 
-        //TODO enforce unique tokens in rewards
-
-        for (uint256 i = 0; i < rewardPools.length; i++) {
-            _registerRewardPool(i, rewardPools[i]);
-        }
+        _enforceUniqueRewardTokens(rewardPools);
+        _registerRewardPools(rewardPools);
     }
 
     //TODO on deposit calculate reward debt
@@ -179,7 +183,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     //TODO need a trigger when transfer occurs, override the ERC20 transfer
 
     /**
-     * @notice Whether the claimant holds debt tokens.
+     * @notice Whether the claimant currently holds debt tokens.
      */
     function _isDetTokenHolder(address claimant)
         internal
@@ -200,6 +204,26 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
             emit ClaimReward(rewardPool.tokens, amount);
 
             _transferReward(rewardPool.tokens, amount, claimant);
+        }
+    }
+
+    function _enforceUniqueRewardTokens(
+        Bond.TimeLockRewardPool[] memory rewardPools
+    ) private {
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            for (uint256 j = i; j < rewardPools.length; j++) {
+                if (rewardPools[i].tokens == rewardPools[j].tokens) {
+                    revert("Rewards: tokens must be unique");
+                }
+            }
+        }
+    }
+
+    function _registerRewardPools(Bond.TimeLockRewardPool[] memory rewardPools)
+        private
+    {
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            _registerRewardPool(i, rewardPools[i]);
         }
     }
 
