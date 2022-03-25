@@ -16,6 +16,11 @@ import "./Bond.sol";
  *      _calculateRewardDebt() must be called to keep their rewards updated.
  */
 abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
+    struct ClaimableReward {
+        address tokens;
+        uint256 amount;
+    }
+
     mapping(address => mapping(address => uint256))
         private _claimantToRewardPoolDebt;
     Bond.TimeLockRewardPool[] private _rewardPools;
@@ -48,20 +53,18 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *  NOTE: If there is nothing to claim, the function completes execution without revert. Handle this problem
      *        with UI. Only display a claim when there an available reward to claim.
      */
-    function claimReward() external whenNotPaused {
+    function claimAvailableRewards() external whenNotPaused {
         address claimant = _msgSender();
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
             Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
-            _claimReward(rewardPool, claimant);
+            _claimReward(claimant, rewardPool);
         }
     }
 
     //TODO claim reward by tokens - external
 
-    //TODO get all current claimable rewards
-
-    //TODO when a reward is claim, decrement the pool
+    //TODO when a reward is claimed, decrement the pool
 
     /**
      * @notice The set of total rewards outstanding for the Bond.
@@ -71,7 +74,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * NOTE: Values are copied to a memory array be wary of gas cost if call within a transaction!
      *       Expected usage is by view accessors that are queried without any gas fees.
      */
-    function allRewards()
+    function allRewardPools()
         external
         view
         returns (Bond.TimeLockRewardPool[] memory)
@@ -82,6 +85,39 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         for (uint256 i = 0; i < _rewardPools.length; i++) {
             rewards[i] = _rewardPools[i];
         }
+        return rewards;
+    }
+
+    /**
+     * @notice Retrieves the set full set of rewards, with the amounts populated for only claimable rewards.
+     *
+     * @dev Rewards that are not yet claimable, or have already been claimed are zero.
+     *
+     * NOTE: Values are copied to a memory array be wary of gas cost if call within a transaction!
+     *       Expected usage is by view accessors that are queried without any gas fees.
+     */
+    function availableRewards()
+        external
+        view
+        returns (ClaimableReward[] memory)
+    {
+        ClaimableReward[] memory rewards = new ClaimableReward[](
+            _rewardPools.length
+        );
+        address claimant = _msgSender();
+
+        for (uint256 i = 0; i < _rewardPools.length; i++) {
+            Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
+            rewards[i].tokens = rewardPool.tokens;
+
+            if (
+                _hasTimeLockExpired(rewardPool) &&
+                _hasRewardDebt(claimant, rewardPool)
+            ) {
+                rewards[i].amount = _rewardDebt(claimant, rewardPool);
+            }
+        }
+
         return rewards;
     }
 
@@ -155,19 +191,22 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         _registerRewardPools(rewardPools);
     }
 
+    /**
+     * @dev When there are insufficient fund the transfer causes the transaction to revert,
+     *      either as a revert in the ERC20 or when the return boolean is false.
+     */
     function _claimReward(
-        Bond.TimeLockRewardPool storage rewardPool,
-        address claimant
+        address claimant,
+        Bond.TimeLockRewardPool storage rewardPool
     ) private {
         if (_hasTimeLockExpired(rewardPool)) {
-            uint256 amount = _claimantToRewardPoolDebt[claimant][
-                rewardPool.tokens
-            ];
-            delete _claimantToRewardPoolDebt[claimant][rewardPool.tokens];
+            address tokens = rewardPool.tokens;
+            uint256 amount = _claimantToRewardPoolDebt[claimant][tokens];
+            delete _claimantToRewardPoolDebt[claimant][tokens];
 
-            emit ClaimReward(rewardPool.tokens, amount);
+            emit ClaimReward(tokens, amount);
 
-            _transferReward(rewardPool.tokens, amount, claimant);
+            _transferReward(tokens, amount, claimant);
         }
     }
 
@@ -228,14 +267,28 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         return reward.amount > 0;
     }
 
+    function _hasRewardDebt(
+        address claimant,
+        Bond.TimeLockRewardPool storage rewardPool
+    ) private view returns (bool) {
+        return _claimantToRewardPoolDebt[claimant][rewardPool.tokens] > 0;
+    }
+
+    function _rewardDebt(
+        address claimant,
+        Bond.TimeLockRewardPool storage rewardPool
+    ) private view returns (uint256) {
+        return _claimantToRewardPoolDebt[claimant][rewardPool.tokens];
+    }
+
     // Intentional use of timestamp for time lock expiry check
     //slither-disable-next-line timestamp
-    function _hasTimeLockExpired(Bond.TimeLockRewardPool storage reward)
+    function _hasTimeLockExpired(Bond.TimeLockRewardPool storage rewardPool)
         private
         view
         returns (bool)
     {
-        return block.timestamp >= reward.timeLock + _redemptionTimestamp;
+        return block.timestamp >= rewardPool.timeLock + _redemptionTimestamp;
     }
 
     function _isOwedRewards(address claimant) private view returns (bool) {
