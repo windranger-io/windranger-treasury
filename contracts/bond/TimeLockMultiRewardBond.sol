@@ -184,7 +184,9 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @dev Until a redemption time is set, no rewards are claimable.
      */
     function _setRedemptionTimestamp(uint256 timestamp) internal whenNotPaused {
-        require(timestamp != 0, "Rewards: zero is invalid time");
+        // Intentional use of timestamp for input validation
+        //slither-disable-next-line timestamp
+        require(timestamp >= block.timestamp, "Rewards: time already past");
 
         _redemptionTimestamp = timestamp;
 
