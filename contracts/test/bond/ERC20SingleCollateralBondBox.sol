@@ -19,4 +19,9 @@ contract ERC20SingleCollateralBondBox is ERC20SingleCollateralBond {
     ) external initializer {
         __ERC20SingleCollateralBond_init(metadata, configuration, treasury);
     }
+
+    function updateRewardTimeLock(address tokens, uint128 timeLock)
+        external
+        override
+    {}
 }

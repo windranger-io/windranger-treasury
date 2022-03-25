@@ -35,6 +35,14 @@ contract SingleCollateralMultiRewardBond is
         __TimeLockMultiRewardBond_init(rewards);
     }
 
+    function updateRewardTimeLock(address tokens, uint128 timeLock)
+        external
+        override
+        onlyOwner
+    {
+        _updateRewardTimeLock(tokens, timeLock);
+    }
+
     /**
      * @dev When debt tokens are transferred before redemption is allowed, the new holder gains full proportional
      *      rewards for the new holding of debt tokens, while the previous holder looses any entitlement.

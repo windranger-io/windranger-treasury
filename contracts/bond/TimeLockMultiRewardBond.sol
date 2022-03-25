@@ -33,12 +33,22 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     event UpdateRewardTimeLock(address tokens, uint256 timeLock);
 
     /**
-     * @notice Makes a function callable only when the contract is redeemable.
+     * @notice Makes a function callable only when the contract has the redemption times set.
      *
      * @dev Reverts unless the redemption timestamp has been set.
      */
     modifier whenRedemptionTimestampSet() {
-        require(_redemptionTimestamp > 0, "Rewards: not redeemable");
+        require(_redemptionTimestamp > 0, "Rewards: redemption time not set");
+        _;
+    }
+
+    /**
+     * @notice Makes a function callable only when the contract has not yet had a redemption times set.
+     *
+     * @dev Reverts unless the redemption timestamp has been set.
+     */
+    modifier whenNoRedemptionTimestamp() {
+        require(_redemptionTimestamp > 0, "Rewards: redemption tim set");
         _;
     }
 
@@ -133,7 +143,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         address claimant,
         uint256 claimantDebtTokens,
         uint256 totalSupply
-    ) internal whenNotPaused {
+    ) internal whenNotPaused whenNoRedemptionTimestamp {
         require(claimantDebtTokens < totalSupply, "Rewards: too much debt");
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
@@ -147,15 +157,10 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
     }
 
-    /**
-     * @notice Overwrites the existing time lock for rewards from a single ERC20.
-     *
-     * @param tokens ERC20 rewards already registered.
-     * @param timeLock seconds to lock rewards after redemption is allowed.
-     */
     function _updateRewardTimeLock(address tokens, uint128 timeLock)
         internal
         whenNotPaused
+        whenNoRedemptionTimestamp
     {
         Bond.TimeLockRewardPool storage rewardPool = _rewardPoolByToken(tokens);
 
@@ -169,7 +174,11 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *
      * @dev Until a redemption time is set, no rewards are claimable.
      */
-    function _setRedemptionTimestamp(uint128 timestamp) internal whenNotPaused {
+    function _setRedemptionTimestamp(uint128 timestamp)
+        internal
+        whenNotPaused
+        whenNoRedemptionTimestamp
+    {
         require(
             _isPresentOrFutureTime(timestamp),
             "Rewards: time already past"

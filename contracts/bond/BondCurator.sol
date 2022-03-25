@@ -72,6 +72,17 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         SingleCollateralBond(bond).setTreasury(replacement);
     }
 
+    function bondUpdateRewardTimeLock(
+        uint256 daoId,
+        address bond,
+        address tokens,
+        uint128 timeLock
+    ) external whenNotPaused atLeastDaoAminRole(daoId) {
+        _requireManagingBond(daoId, bond);
+
+        SingleCollateralBond(bond).updateRewardTimeLock(tokens, timeLock);
+    }
+
     function bondUnpause(uint256 daoId, address bond)
         external
         whenNotPaused
