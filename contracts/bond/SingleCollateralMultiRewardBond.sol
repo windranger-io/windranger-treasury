@@ -9,6 +9,11 @@ contract SingleCollateralMultiRewardBond is
     ERC20SingleCollateralBond,
     TimeLockMultiRewardBond
 {
+    function allowRedemption(string calldata reason) external override {
+        _allowRedemption(reason);
+        _setRedemptionTimestamp(uint128(block.timestamp));
+    }
+
     function deposit(uint256 amount) external override {
         address claimant = _msgSender();
         uint256 claimantDebt = balanceOf(claimant) + amount;

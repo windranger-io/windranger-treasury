@@ -55,7 +55,7 @@ abstract contract Redeemable is Initializable {
      *
      * No affect if state is already transitioned.
      */
-    function _allowRedemption(string calldata reason) internal {
+    function _setAsRedeemable(string calldata reason) internal {
         _redeemable = true;
         _reason = reason;
     }

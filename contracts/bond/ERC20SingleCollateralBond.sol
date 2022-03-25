@@ -111,32 +111,6 @@ abstract contract ERC20SingleCollateralBond is
         uint256 collateralAmount
     );
 
-    function allowRedemption(string calldata reason)
-        external
-        override
-        whenNotPaused
-        whenNotRedeemable
-        onlyOwner
-    {
-        _allowRedemption(reason);
-        emit AllowRedemption(_msgSender(), reason);
-
-        if (_hasDebtTokensRemaining()) {
-            _debtTokensRedemptionExcess = _debtTokensRemaining();
-
-            emit PartialCollateral(
-                _collateralTokens.symbol(),
-                _collateralTokens.balanceOf(address(this)),
-                symbol(),
-                _debtTokensRemaining()
-            );
-        }
-
-        if (_hasBeenSlashed()) {
-            _redemptionRatio = _calculateRedemptionRatio();
-        }
-    }
-
     /**
      *  @notice Moves all remaining collateral to the Treasury and pauses the bond.
      *
@@ -401,6 +375,31 @@ abstract contract ERC20SingleCollateralBond is
         _treasury = erc20CapableTreasury;
 
         _mint(configuration.debtTokenAmount);
+    }
+
+    function _allowRedemption(string calldata reason)
+        internal
+        whenNotPaused
+        whenNotRedeemable
+        onlyOwner
+    {
+        _setAsRedeemable(reason);
+        emit AllowRedemption(_msgSender(), reason);
+
+        if (_hasDebtTokensRemaining()) {
+            _debtTokensRedemptionExcess = _debtTokensRemaining();
+
+            emit PartialCollateral(
+                _collateralTokens.symbol(),
+                _collateralTokens.balanceOf(address(this)),
+                symbol(),
+                _debtTokensRemaining()
+            );
+        }
+
+        if (_hasBeenSlashed()) {
+            _redemptionRatio = _calculateRedemptionRatio();
+        }
     }
 
     function _deposit(uint256 amount) internal whenNotPaused whenNotRedeemable {
