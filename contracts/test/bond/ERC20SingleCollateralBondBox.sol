@@ -5,24 +5,10 @@ import "../../bond/ERC20SingleCollateralBond.sol";
 
 contract ERC20SingleCollateralBondBox is ERC20SingleCollateralBond {
     function initialize(
-        string calldata name,
-        string calldata symbol,
-        uint256 debtAmount,
-        address erc20CollateralTokens,
-        address erc20CapableTreasury,
-        uint256 expiry,
-        uint256 minimumDepositHolding,
-        string calldata data
+        Bond.MetaData memory metadata,
+        Bond.Settings memory configuration,
+        address treasury
     ) external initializer {
-        __ERC20SingleCollateralBond_init(
-            name,
-            symbol,
-            debtAmount,
-            erc20CollateralTokens,
-            erc20CapableTreasury,
-            expiry,
-            minimumDepositHolding,
-            data
-        );
+        __ERC20SingleCollateralBond_init(metadata, configuration, treasury);
     }
 }

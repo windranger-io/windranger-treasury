@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "./Bond.sol";
 
 /**
  * @title Multiple reward with time lock support.
@@ -14,15 +15,9 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
  *      calculate their rewards.
  */
 abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
-    struct RewardPool {
-        address tokens;
-        uint128 amount;
-        uint128 timeLock;
-    }
-
     mapping(address => mapping(address => uint256))
         private _claimantToRewardPoolDebt;
-    RewardPool[] private _rewardPools;
+    Bond.TimeLockRewardPool[] private _rewardPools;
     uint256 private _redemptionTimestamp;
 
     event ClaimReward(address tokens, uint256 amount);
@@ -31,6 +26,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     event SetRedemptionTimestamp(uint256 timestamp);
     event UpdateRewardTimeLock(address tokens, uint256 timeLock);
 
+    //TODO need cancel reward? slash reward?
     //TODO expose get all available claims for user
     /**
      * @notice Claims any available rewards for the caller.
@@ -44,7 +40,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         address claimant = _msgSender();
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
-            RewardPool storage rewardPool = _rewardPools[i];
+            Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
             _claimReward(rewardPool, claimant);
         }
     }
@@ -61,7 +57,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         );
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
-            RewardPool storage rewardPool = _rewardPools[i];
+            Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
 
             // Intentional use of timestamp for time lock expiry check
             //slither-disable-next-line timestamp
@@ -122,7 +118,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         require(claimantDebtTokens < totalSupply, "Rewards: too much debt");
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
-            RewardPool storage rewardPool = _rewardPools[i];
+            Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
 
             uint256 rewardDebt = (rewardPool.amount * claimantDebtTokens) /
                 totalSupply;
@@ -142,7 +138,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         internal
         whenNotPaused
     {
-        RewardPool storage rewardPool = _rewardPoolByToken(tokens);
+        Bond.TimeLockRewardPool storage rewardPool = _rewardPoolByToken(tokens);
 
         rewardPool.timeLock = timeLock;
 
@@ -165,15 +161,20 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         emit SetRedemptionTimestamp(timestamp);
     }
 
-    //TODO init with rewards?
     //slither-disable-next-line naming-convention
-    function __TimeLockMultiRewardBond_init() internal onlyInitializing {
+    function __TimeLockMultiRewardBond_init(
+        Bond.TimeLockRewardPool[] memory rewardPools
+    ) internal onlyInitializing {
         __Context_init();
 
-        //TODO need reward tokens & amounts
-
         //TODO enforce unique tokens in rewards
+
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            _registerRewardPool(i, rewardPools[i]);
+        }
     }
+
+    //TODO on deposit calculate reward debt
 
     //TODO need a trigger when transfer occurs, override the ERC20 transfer
 
@@ -186,9 +187,10 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         virtual
         returns (bool);
 
-    function _claimReward(RewardPool storage rewardPool, address claimant)
-        private
-    {
+    function _claimReward(
+        Bond.TimeLockRewardPool storage rewardPool,
+        address claimant
+    ) private {
         if (_hasTimeLockExpired(rewardPool)) {
             uint256 amount = _claimantToRewardPoolDebt[claimant][
                 rewardPool.tokens
@@ -201,35 +203,24 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
     }
 
-    //TODO must register no init only
-    /**
-     * @notice Registers ERC20 tokens already transferred to the contract, adding them to the existing reward set.
-     *
-     * @dev Must be done before redemption is allowed.
-     *
-     * @param tokens ERC20 register of the tokens to transfer in and later distribute as rewards.
-     * @param amount total number of ERC20 tokens to use for reward.
-     * @param timeLock seconds delay after redemption is allowed, only after which rewards can be claimed.
-     *        Value of zero means rewards can be claimed without delay after redemption is allowed.
-     *        Will overwrite the existing timeLock if there is already a reward from the ERC20 contract.
-     */
-    function _registerReward(
+    function _registerRewardPool(
         uint256 index,
-        address tokens,
-        uint128 amount,
-        uint128 timeLock
+        Bond.TimeLockRewardPool memory rewardPool
     ) private {
-        require(tokens != address(0), "Rewards: address is zero");
-        require(amount > 0, "Rewards: no reward amount");
+        require(rewardPool.tokens != address(0), "Rewards: address is zero");
+        require(rewardPool.amount > 0, "Rewards: no reward amount");
 
-        emit RegisterReward(tokens, amount, timeLock);
+        emit RegisterReward(
+            rewardPool.tokens,
+            rewardPool.amount,
+            rewardPool.timeLock
+        );
 
-        _rewardPools[index].tokens = tokens;
-        _rewardPools[index].amount = amount;
-        _rewardPools[index].timeLock = timeLock;
+        _rewardPools[index] = rewardPool;
 
         require(
-            IERC20Upgradeable(tokens).balanceOf(address(this)) >= amount,
+            IERC20Upgradeable(rewardPool.tokens).balanceOf(address(this)) >=
+                rewardPool.amount,
             "Rewards: not enough held"
         );
     }
@@ -247,7 +238,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         );
     }
 
-    function _hasRegisteredRewards(RewardPool storage reward)
+    function _hasRegisteredRewards(Bond.TimeLockRewardPool storage reward)
         private
         view
         returns (bool)
@@ -257,7 +248,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
 
     // Intentional use of timestamp for time lock expiry check
     //slither-disable-next-line timestamp
-    function _hasTimeLockExpired(RewardPool storage reward)
+    function _hasTimeLockExpired(Bond.TimeLockRewardPool storage reward)
         private
         view
         returns (bool)
@@ -267,7 +258,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
 
     function _isOwedRewards(address claimant) private view returns (bool) {
         for (uint256 i = 0; i < _rewardPools.length; i++) {
-            RewardPool storage rewardPool = _rewardPools[i];
+            Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
 
             if (_claimantToRewardPoolDebt[claimant][rewardPool.tokens] > 0) {
                 return true;
@@ -290,10 +281,10 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     function _rewardPoolByToken(address tokens)
         private
         view
-        returns (RewardPool storage)
+        returns (Bond.TimeLockRewardPool storage)
     {
         for (uint256 i = 0; i < _rewardPools.length; i++) {
-            RewardPool storage rewardPool = _rewardPools[i];
+            Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
 
             if (rewardPool.tokens == tokens) {
                 return rewardPool;

@@ -10,6 +10,7 @@ import "./SingleCollateralBond.sol";
 import "./MetaDataStore.sol";
 import "./Redeemable.sol";
 import "../Version.sol";
+import "./Bond.sol";
 
 /**
  * @title A Bond is an issuance of debt tokens, which are exchange for deposit of collateral.
@@ -409,20 +410,15 @@ abstract contract ERC20SingleCollateralBond is
     }
 
     function __ERC20SingleCollateralBond_init(
-        string calldata name,
-        string calldata symbol,
-        uint256 debtAmount,
-        address erc20CollateralTokens,
-        address erc20CapableTreasury,
-        uint256 expiry,
-        uint256 minimumDepositHolding,
-        string calldata data
+        Bond.MetaData memory metadata,
+        Bond.Settings memory configuration,
+        address erc20CapableTreasury
     ) internal onlyInitializing {
-        __ERC20_init(name, symbol);
+        __ERC20_init(metadata.name, metadata.symbol);
         __Ownable_init();
         __Pausable_init();
-        __ExpiryTimestamp_init(expiry);
-        __MetaDataStore_init(data);
+        __ExpiryTimestamp_init(configuration.expiryTimestamp);
+        __MetaDataStore_init(metadata.data);
         __Redeemable_init();
 
         require(
@@ -430,16 +426,18 @@ abstract contract ERC20SingleCollateralBond is
             "Bond: treasury is zero address"
         );
         require(
-            erc20CollateralTokens != address(0),
+            configuration.collateralTokens != address(0),
             "Bond: collateral is zero address"
         );
 
-        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
-        _debtTokensInitialSupply = debtAmount;
-        _minimumDeposit = minimumDepositHolding;
+        _collateralTokens = IERC20MetadataUpgradeable(
+            configuration.collateralTokens
+        );
+        _debtTokensInitialSupply = configuration.debtTokenAmount;
+        _minimumDeposit = configuration.minimumDeposit;
         _treasury = erc20CapableTreasury;
 
-        _mint(debtAmount);
+        _mint(configuration.debtTokenAmount);
     }
 
     /**

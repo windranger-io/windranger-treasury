@@ -10,15 +10,12 @@ import "./Bond.sol";
  */
 interface BondCreator {
     event CreateBond(
-        address indexed bond,
-        string name,
-        string debtSymbol,
-        uint256 debtAmount,
         address indexed creator,
-        address treasury,
-        uint256 expiryTimestamp,
-        uint256 minimumDeposit,
-        string data
+        address indexed bond,
+        Bond.MetaData metadata,
+        Bond.Settings configuration,
+        Bond.TimeLockRewardPool[] rewards,
+        address treasury
     );
 
     /**
@@ -26,11 +23,13 @@ interface BondCreator {
      *
      * @param metadata General details about the Bond no essential for operation.
      * @param configuration Values to use during the Bond creation process.
+     * @param rewards Motivation for the guarantors to deposit, available after redemption.
      * @param treasury Receiver of any slashed or swept tokens or collateral.
      */
     function createBond(
         Bond.MetaData memory metadata,
         Bond.Settings memory configuration,
+        Bond.TimeLockRewardPool[] calldata rewards,
         address treasury
     ) external returns (address);
 }

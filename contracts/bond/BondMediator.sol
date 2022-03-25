@@ -62,7 +62,8 @@ contract BondMediator is
     function createManagedBond(
         uint256 daoId,
         Bond.MetaData memory metadata,
-        Bond.Settings memory configuration
+        Bond.Settings memory configuration,
+        Bond.TimeLockRewardPool[] memory rewards
     )
         external
         override
@@ -79,6 +80,7 @@ contract BondMediator is
         address bond = _creator.createBond(
             metadata,
             configuration,
+            rewards,
             _daoTreasury(daoId)
         );
 
