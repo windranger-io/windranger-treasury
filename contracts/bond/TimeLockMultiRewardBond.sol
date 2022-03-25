@@ -90,7 +90,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     /**
      * @notice The amount of time after redemption that the reward is locked before being claimable.
      *
-     * @return Time lock in ms.
+     * @return Time lock in seconds.
      */
     function rewardTimeLock(address tokens) external view returns (uint256) {
         require(_hasRegisteredRewards(tokens), "Rewards: no reward tokens");
@@ -109,6 +109,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         return _rewardPool[tokens].amount;
     }
 
+    //TODO this needs to change
     /**
      * @dev Must be called before the claimant debt tokens are burnt, as they are used with total supply in
      *      calculating the rewards.
@@ -137,7 +138,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *
      * @param tokens ERC20 register of the tokens to transfer in and later distribute as rewards.
      * @param amount total number of ERC20 tokens to use for reward.
-     * @param timeLock ms delay after redemption is allowed, only after which rewards can be claimed.
+     * @param timeLock seconds delay after redemption is allowed, only after which rewards can be claimed.
      *        Value of zero means rewards can be claimed without delay after redemption is allowed.
      *        Will overwrite the existing timeLock if there is already a reward from the ERC20 contract.
      */
@@ -165,7 +166,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @notice Overwrites the existing time lock for rewards from a single ERC20.
      *
      * @param tokens ERC20 rewards already registered.
-     * @param timeLock ms to lock rewards after redemption is allowed.
+     * @param timeLock seconds to lock rewards after redemption is allowed.
      */
     function _updateRewardTimeLock(address tokens, uint256 timeLock)
         internal
