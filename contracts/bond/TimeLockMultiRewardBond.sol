@@ -48,7 +48,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @dev Reverts unless the redemption timestamp has been set.
      */
     modifier whenNoRedemptionTimestamp() {
-        require(_redemptionTimestamp > 0, "Rewards: redemption tim set");
+        require(_redemptionTimestamp == 0, "Rewards: redemption time set");
         _;
     }
 
@@ -144,7 +144,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         uint256 claimantDebtTokens,
         uint256 totalSupply
     ) internal whenNotPaused whenNoRedemptionTimestamp {
-        require(claimantDebtTokens < totalSupply, "Rewards: too much debt");
+        require(claimantDebtTokens <= totalSupply, "Rewards: too much debt");
 
         for (uint256 i = 0; i < _rewardPools.length; i++) {
             Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
