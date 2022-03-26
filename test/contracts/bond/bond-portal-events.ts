@@ -18,7 +18,7 @@ export function createDaoEvents(events: Event[]): ActualCreateDaoEvent[] {
         const create = event as CreateDaoEvent
         expect(event.args).is.not.undefined
 
-        const args = event.args
+        const args = create.args
         expect(args?.id).is.not.undefined
         expect(args?.treasury).is.not.undefined
 

@@ -14,10 +14,10 @@ export function addBondEvents(events: Event[]): ActualAddBondEvent[] {
     const bonds: ActualAddBondEvent[] = []
 
     for (const event of events) {
-        const create = event as AddBondEvent
         expect(event.args).is.not.undefined
+        const create = event as AddBondEvent
 
-        const args = event.args
+        const args = create.args
         expect(args?.bond).is.not.undefined
 
         bonds.push(create.args)
