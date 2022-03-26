@@ -1,4 +1,4 @@
-import {BigNumber, ContractReceipt} from 'ethers'
+import {ContractReceipt} from 'ethers'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {
@@ -26,22 +26,10 @@ export type ExpectSlashEvent = {
     amount: bigint
 }
 
-export type ExpectTokenTransferEvent = {
-    from: string
-    to: string
-    amount: bigint
-}
-
 export type ExpectFlushTransferEvent = {
     to: string
     symbol: string
     amount: bigint
-}
-
-export type ActualTokenTransferEvent = {
-    from: string
-    to: string
-    value: BigNumber
 }
 
 export type ExpectAllowRedemptionEvent = {

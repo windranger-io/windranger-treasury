@@ -10,17 +10,21 @@ import {
 } from '../../../typechain-types/TimeLockMultiRewardBond'
 
 export type ActualClaimRewardEvent = {tokens: string; amount: BigNumber}
+
 export type ActualRegisterRewardEvent = {
     tokens: string
     amount: BigNumber
     timeLock: BigNumber
 }
+
 export type ActualRewardDebtEvent = {
     tokens: string
     claimant: string
     rewardDebt: BigNumber
 }
+
 export type ActualSetRedemptionTimestampEvent = {timestamp: BigNumber}
+
 export type ActualUpdateRewardTimeLockEvent = {
     tokens: string
     timeLock: BigNumber
