@@ -134,6 +134,19 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     }
 
     /**
+     * @notice Reward debt currently assigned to claimant.
+     *
+     * @dev These rewards are the sum owed pending the time lock after redemption timestamp.
+     */
+    function rewardDebtOwed(address claimant, address tokens)
+        external
+        view
+        returns (uint256)
+    {
+        return _claimantToRewardPoolDebt[claimant][tokens];
+    }
+
+    /**
      * @notice Calculate the rewards the claimant will be entitled to after redemption and corresponding lock up period.
      *
      * @dev Must be called when the guarantor deposits collateral or on transfer of debt tokens, but not when they
@@ -225,9 +238,13 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         Bond.TimeLockRewardPool[] memory rewardPools
     ) private {
         for (uint256 i = 0; i < rewardPools.length; i++) {
-            for (uint256 j = i; j < rewardPools.length; j++) {
-                if (rewardPools[i].tokens == rewardPools[j].tokens) {
-                    revert("Rewards: tokens must be unique");
+            // Ensure no later entries contain the same tokens address
+            uint256 next = i + 1;
+            if (next < rewardPools.length) {
+                for (uint256 j = next; j < rewardPools.length; j++) {
+                    if (rewardPools[i].tokens == rewardPools[j].tokens) {
+                        revert("Rewards: tokens must be unique");
+                    }
                 }
             }
         }
@@ -237,14 +254,13 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         private
     {
         for (uint256 i = 0; i < rewardPools.length; i++) {
-            _registerRewardPool(i, rewardPools[i]);
+            _registerRewardPool(rewardPools[i]);
         }
     }
 
-    function _registerRewardPool(
-        uint256 index,
-        Bond.TimeLockRewardPool memory rewardPool
-    ) private {
+    function _registerRewardPool(Bond.TimeLockRewardPool memory rewardPool)
+        private
+    {
         require(rewardPool.tokens != address(0), "Rewards: address is zero");
         require(rewardPool.amount > 0, "Rewards: no reward amount");
 
@@ -254,7 +270,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
             rewardPool.timeLock
         );
 
-        _rewardPools[index] = rewardPool;
+        _rewardPools.push(rewardPool);
     }
 
     // Claiming multiple rewards in a single function, looping is unavoidable

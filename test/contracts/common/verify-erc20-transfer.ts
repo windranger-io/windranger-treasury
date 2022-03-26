@@ -32,9 +32,9 @@ export function verifyERC20TransferEvents(
  * Verifies the content matches at least on of the Transfer events from EventLogs
  */
 export function verifyERC20TransferEventLogs<T extends BaseContract>(
-    expectedEvents: ExpectedERC20Transfer[],
     emitter: T,
-    receipt: ContractReceipt
+    receipt: ContractReceipt,
+    expectedEvents: ExpectedERC20Transfer[]
 ): void {
     const transferEventLogs = erc20TransferEventLogs(
         eventLog('Transfer', emitter, receipt)

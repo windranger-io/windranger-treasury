@@ -30,3 +30,7 @@ function sleep(ms: number): Promise<unknown> {
         setTimeout(resolve, ms)
     })
 }
+
+export function currentTimeInSeconds(): number {
+    return Math.floor(Date.now() / 1000)
+}

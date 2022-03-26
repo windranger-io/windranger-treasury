@@ -171,12 +171,12 @@ export function registerRewardEventLogs(
         expect(event?.tokens).is.not.undefined
         expect(event?.tokens).to.be.a('string')
         expect(event?.amount).is.not.undefined
-        expect(event?.timelock).is.not.undefined
+        expect(event?.timeLock).is.not.undefined
 
         rewards.push({
             tokens: String(event.tokens),
             amount: BigNumber.from(event.amount),
-            timeLock: BigNumber.from(event.timelcok)
+            timeLock: BigNumber.from(event.timeLock)
         })
     }
 
