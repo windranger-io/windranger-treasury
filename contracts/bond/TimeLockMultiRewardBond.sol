@@ -38,7 +38,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @dev Reverts unless the redemption timestamp has been set.
      */
     modifier whenRedemptionTimestampSet() {
-        require(_redemptionTimestamp > 0, "Rewards: redemption time not set");
+        require(_isRedemptionTimeSet(), "Rewards: redemption time not set");
         _;
     }
 
@@ -48,7 +48,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * @dev Reverts unless the redemption timestamp has been set.
      */
     modifier whenNoRedemptionTimestamp() {
-        require(_redemptionTimestamp == 0, "Rewards: redemption time set");
+        require(!_isRedemptionTimeSet(), "Rewards: redemption time set");
         _;
     }
 
@@ -302,6 +302,10 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         returns (bool)
     {
         return timestamp >= block.timestamp;
+    }
+
+    function _isRedemptionTimeSet() private view returns (bool) {
+        return _redemptionTimestamp > 0;
     }
 
     function _rewardPoolByToken(address tokens)
