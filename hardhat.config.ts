@@ -3,6 +3,7 @@ import '@nomiclabs/hardhat-ethers'
 import '@nomiclabs/hardhat-etherscan'
 import '@nomiclabs/hardhat-waffle'
 import '@openzeppelin/hardhat-upgrades'
+import 'hardhat-contract-sizer'
 import {task} from 'hardhat/config'
 import {log} from './config/logging'
 
@@ -69,5 +70,10 @@ export default {
     },
     etherscan: {
         apiKey: ''
+    },
+    contractSizer: {
+        alphaSort: true,
+        runOnCompile: false,
+        disambiguatePaths: false
     }
 }
