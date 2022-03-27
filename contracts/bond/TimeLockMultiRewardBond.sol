@@ -133,6 +133,10 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         return rewards;
     }
 
+    function redemptionTimestamp() external view returns (uint256) {
+        return _redemptionTimestamp;
+    }
+
     /**
      * @notice Reward debt currently assigned to claimant.
      *

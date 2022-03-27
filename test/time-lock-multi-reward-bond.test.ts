@@ -30,11 +30,10 @@ import {ContractReceipt} from '@ethersproject/contracts/src.ts'
 import {BigNumber} from 'ethers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {verifyERC20TransferEventLogs} from './contracts/common/verify-erc20-transfer'
+import {DAY_IN_SECONDS} from './framework/time'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
-
-const DAY_IN_SECONDS = 60 * 60 * 24
 
 describe('TimeLockMultiRewardBond contract', () => {
     before(async () => {

@@ -1,5 +1,7 @@
 const PAUSE_TIME_INCREMENT_MS = 100
 
+export const DAY_IN_SECONDS = 60 * 60 * 24
+
 /**
  * Whether the side effects being awaited have occurred.
  */
