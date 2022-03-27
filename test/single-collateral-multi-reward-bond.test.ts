@@ -9,16 +9,20 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {deployContract, signer} from './framework/contracts'
 import {DAY_IN_SECONDS} from './framework/time'
-import {BigNumber, ethers} from 'ethers'
+import {BigNumber, ContractReceipt, ethers} from 'ethers'
 import {expect} from 'chai'
 import {successfulTransaction} from './framework/transaction'
 import {
+    ExpectTokenBalance,
     verifyAllowRedemptionEvent,
-    verifyDepositEvent
+    verifyDepositEvent,
+    verifyRedemptionEvent
 } from './contracts/bond/verify-single-collateral-bond-events'
 import {
+    ExpectedRewardDebtEvent,
     ExpectedUpdateRewardTimeLockEvent,
     verifyRewardDebtEvents,
+    verifyRewardDebtLogEvents,
     verifySetRedemptionTimestampEvents,
     verifySetRedemptionTimestampLogEvents,
     verifySetUpdateRewardTimeLockLogEvents,
@@ -252,18 +256,97 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
         })
 
         it('updates claimant reward debt', async () => {
-            // TODO code
+            /*
+             * TODO code
+             * const expectedRewardDebtEvents:ExpectedRewardDebtEvent[] = [
+             *     {
+             *         tokens: rewardPools[0].tokens,
+             *         claimant: guarantor.address,
+             *         rewardDebt: divideBigNumberish(rewardPools[0].amount, divisor)
+             *     },
+             *     {
+             *         tokens: rewardPools[1].tokens,
+             *         claimant: guarantor.address,
+             *         rewardDebt: divideBigNumberish(rewardPools[1].amount, divisor)
+             *     },
+             *     {
+             *         tokens: rewardPools[2].tokens,
+             *         claimant: guarantor.address,
+             *         rewardDebt: divideBigNumberish(rewardPools[2].amount, divisor)
+             *     }
+             * ]
+             * verifyRewardDebtEvents(receipt, expectedRewardDebtEvents)
+             * verifyRewardDebtLogEvents(bond, receipt, expectedRewardDebtEvents)
+             */
         })
     })
 
     describe('redeem debt tokens', () => {
+        afterEach(async () => {
+            bond = await createBond()
+        })
+        before(() => {
+            divisor = 35n
+            pledge = TOTAL_SUPPLY / divisor
+        })
+        beforeEach(async () => {
+            await setupGuarantorWithCollateral(
+                {signer: guarantor, pledge: pledge},
+                bond,
+                collateralTokens
+            )
+            await successfulTransaction(bond.connect(guarantor).deposit(pledge))
+            await successfulTransaction(bond.allowRedemption(''))
+        })
+
         it('amount zero', async () => {
-            // TODO code
+            expect(await bond.balanceOf(guarantor.address)).equals(pledge)
+
+            await expect(bond.connect(guarantor).redeem(0)).to.be.revertedWith(
+                'Bond: too small'
+            )
         })
 
         it('updates claimant reward debt', async () => {
-            // TODO code
+            expect(await bond.balanceOf(guarantor.address)).equals(pledge)
+            const beforeRewardsOne = await bond.rewardDebt(
+                guarantor.address,
+                rewardPools[0].tokens
+            )
+            const beforeRewardsTwo = await bond.rewardDebt(
+                guarantor.address,
+                rewardPools[1].tokens
+            )
+            const beforeRewardsThree = await bond.rewardDebt(
+                guarantor.address,
+                rewardPools[2].tokens
+            )
+
+            const receipt = await successfulTransaction(
+                bond.connect(guarantor).redeem(pledge)
+            )
+
+            expect(await bond.balanceOf(guarantor.address)).equals(0)
+            expect(
+                await bond.rewardDebt(guarantor.address, rewardPools[0].tokens)
+            ).equals(beforeRewardsOne)
+            expect(
+                await bond.rewardDebt(guarantor.address, rewardPools[1].tokens)
+            ).equals(beforeRewardsTwo)
+            expect(
+                await bond.rewardDebt(guarantor.address, rewardPools[2].tokens)
+            ).equals(beforeRewardsThree)
+
+            verifyRedemptionEvent(
+                receipt,
+                guarantor.address,
+                {symbol: 'MDT007', amount: pledge},
+                {symbol: collateralSymbol, amount: pledge}
+            )
         })
+
+        let pledge: bigint
+        let divisor: bigint
     })
 
     async function createBond(): Promise<SingleCollateralMultiRewardBond> {
