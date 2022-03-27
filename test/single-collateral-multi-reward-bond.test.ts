@@ -5,12 +5,11 @@ import '@nomiclabs/hardhat-ethers'
 
 import {before} from 'mocha'
 import {BitDAO, SingleCollateralMultiRewardBond} from '../typechain-types'
-import {Bond} from '../typechain-types/TimeLockMultiRewardBondBox'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {deployContract, signer} from './framework/contracts'
 import {DAY_IN_SECONDS} from './framework/time'
-import {ethers} from 'ethers'
+import {BigNumber, ethers} from 'ethers'
 import {expect} from 'chai'
 import {successfulTransaction} from './framework/transaction'
 import {
@@ -18,12 +17,16 @@ import {
     verifyDepositEvent
 } from './contracts/bond/verify-single-collateral-bond-events'
 import {
+    ExpectedUpdateRewardTimeLockEvent,
     verifyRewardDebtEvents,
     verifySetRedemptionTimestampEvents,
-    verifySetRedemptionTimestampLogEvents
+    verifySetRedemptionTimestampLogEvents,
+    verifySetUpdateRewardTimeLockLogEvents,
+    verifyUpdateRewardTimeLockpEvents
 } from './contracts/bond/verify-time-lock-multi-reward-bond-events'
 import {GuarantorCollateralSetup} from './erc20-single-collateral-bond.test'
 import {divideBigNumberish} from './framework/maths'
+import {Bond} from '../typechain-types/SingleCollateralMultiRewardBond'
 
 const TOTAL_SUPPLY = 5000n
 const BOND_EXPIRY = 750000n
@@ -211,11 +214,35 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
 
     describe('update reward time lock', () => {
         it('only chosen reward', async () => {
-            // TODO code
-        })
+            const updatedTimeLock = 55678n
+            const beforePools = await bond.allRewardPools()
 
-        it('emits events', async () => {
-            // TODO code
+            const receipt = await successfulTransaction(
+                bond.updateRewardTimeLock(
+                    rewardPools[1].tokens,
+                    updatedTimeLock
+                )
+            )
+
+            const afterPools = await bond.allRewardPools()
+            expect(afterPools.length).equals(beforePools.length)
+            expect(afterPools[0]).deep.equal(beforePools[0])
+            expect(afterPools[1].tokens).equals(beforePools[1].tokens)
+            expect(afterPools[1].amount).equals(beforePools[1].amount)
+            expect(afterPools[1].timeLock).equals(
+                BigNumber.from(updatedTimeLock)
+            )
+            expect(afterPools[2]).to.deep.equal(beforePools[2])
+
+            const expectedEvents: ExpectedUpdateRewardTimeLockEvent[] = [
+                {tokens: rewardPools[1].tokens, timeLock: updatedTimeLock}
+            ]
+            verifyUpdateRewardTimeLockpEvents(receipt, expectedEvents)
+            verifySetUpdateRewardTimeLockLogEvents(
+                bond,
+                receipt,
+                expectedEvents
+            )
         })
     })
 
@@ -227,10 +254,6 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
         it('updates claimant reward debt', async () => {
             // TODO code
         })
-
-        it('emits events', async () => {
-            // TODO code
-        })
     })
 
     describe('redeem debt tokens', () => {
@@ -239,10 +262,6 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
         })
 
         it('updates claimant reward debt', async () => {
-            // TODO code
-        })
-
-        it('emits events', async () => {
             // TODO code
         })
     })

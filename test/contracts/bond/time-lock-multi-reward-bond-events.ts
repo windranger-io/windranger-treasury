@@ -236,11 +236,11 @@ export function updateRewardTimeLockEventLogs(
     for (const event of events) {
         expect(event?.tokens).is.not.undefined
         expect(event?.tokens).to.be.a('string')
-        expect(event?.timelock).is.not.undefined
+        expect(event?.timeLock).is.not.undefined
 
         rewards.push({
             tokens: String(event.tokens),
-            timeLock: BigNumber.from(event.timelcok)
+            timeLock: BigNumber.from(event.timeLock)
         })
     }
 
