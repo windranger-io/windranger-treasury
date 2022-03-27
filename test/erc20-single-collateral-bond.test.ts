@@ -1806,7 +1806,7 @@ type ExpectedBalance = {
     collateral: bigint
 }
 
-type GuarantorCollateralSetup = {
+export type GuarantorCollateralSetup = {
     signer: SignerWithAddress
     pledge: bigint
 }

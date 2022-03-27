@@ -13,20 +13,26 @@ import {DAY_IN_SECONDS} from './framework/time'
 import {ethers} from 'ethers'
 import {expect} from 'chai'
 import {successfulTransaction} from './framework/transaction'
-import {verifyAllowRedemptionEvent} from './contracts/bond/verify-single-collateral-bond-events'
 import {
+    verifyAllowRedemptionEvent,
+    verifyDepositEvent
+} from './contracts/bond/verify-single-collateral-bond-events'
+import {
+    verifyRewardDebtEvents,
     verifySetRedemptionTimestampEvents,
     verifySetRedemptionTimestampLogEvents
 } from './contracts/bond/verify-time-lock-multi-reward-bond-events'
+import {GuarantorCollateralSetup} from './erc20-single-collateral-bond.test'
+import {divideBigNumberish} from './framework/maths'
 
 const TOTAL_SUPPLY = 5000n
 const BOND_EXPIRY = 750000n
 const MINIMUM_DEPOSIT = 100n
 
-describe('TimeLockMultiRewardBond contract', () => {
+describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
     before(async () => {
         admin = await signer(0)
-        claimant = await signer(1)
+        guarantor = await signer(1)
         treasury = (await signer(2)).address
 
         rewardTokenOne = (await deployContract<BitDAO>(
@@ -70,7 +76,7 @@ describe('TimeLockMultiRewardBond contract', () => {
     })
 
     describe('allow redemption', () => {
-        beforeEach(async () => {
+        afterEach(async () => {
             bond = await createBond()
         })
         it('sets as redeemable ', async () => {
@@ -105,13 +111,102 @@ describe('TimeLockMultiRewardBond contract', () => {
     })
 
     describe('deposit', () => {
-        it('updates claimant reward debt', async () => {
-            // TODO code
+        afterEach(async () => {
+            bond = await createBond()
+        })
+        before(() => {
+            divisor = 10n
+            pledge = TOTAL_SUPPLY / divisor
+        })
+        beforeEach(async () => {
+            await setupGuarantorWithCollateral(
+                {signer: guarantor, pledge: pledge},
+                bond,
+                collateralTokens
+            )
         })
 
-        it('emits events', async () => {
-            // TODO code
+        it('transfers debt tokens', async () => {
+            const beforeCollateralBalance = await collateralTokens.balanceOf(
+                guarantor.address
+            )
+            const beforeDebtBalance = await bond.balanceOf(guarantor.address)
+
+            const receipt = await successfulTransaction(
+                bond.connect(guarantor).deposit(pledge)
+            )
+
+            expect(await bond.balanceOf(guarantor.address)).equals(
+                beforeDebtBalance.add(pledge)
+            )
+            expect(await collateralTokens.balanceOf(guarantor.address)).equals(
+                beforeCollateralBalance.sub(pledge)
+            )
+
+            verifyDepositEvent(receipt, guarantor.address, {
+                symbol: collateralSymbol,
+                amount: pledge
+            })
         })
+
+        it('updates claimant reward debt', async () => {
+            const beforeRewardDebtOne = await bond.rewardDebt(
+                guarantor.address,
+                rewardPools[0].tokens
+            )
+            const beforeRewardDebtTwo = await bond.rewardDebt(
+                guarantor.address,
+                rewardPools[1].tokens
+            )
+            const beforeRewardDebtThree = await bond.rewardDebt(
+                guarantor.address,
+                rewardPools[2].tokens
+            )
+            expect(beforeRewardDebtOne).equals(0)
+            expect(beforeRewardDebtTwo).equals(0)
+            expect(beforeRewardDebtThree).equals(0)
+
+            const receipt = await successfulTransaction(
+                bond.connect(guarantor).deposit(pledge)
+            )
+
+            const rewardOne = divideBigNumberish(rewardPools[0].amount, divisor)
+            const rewardTwo = divideBigNumberish(rewardPools[1].amount, divisor)
+            const rewardThree = divideBigNumberish(
+                rewardPools[2].amount,
+                divisor
+            )
+            expect(
+                await bond.rewardDebt(guarantor.address, rewardPools[0].tokens)
+            ).equals(rewardOne)
+            expect(
+                await bond.rewardDebt(guarantor.address, rewardPools[1].tokens)
+            ).equals(rewardTwo)
+            expect(
+                await bond.rewardDebt(guarantor.address, rewardPools[2].tokens)
+            ).equals(rewardThree)
+
+            verifyRewardDebtEvents(receipt, [
+                {
+                    tokens: rewardPools[0].tokens,
+                    claimant: guarantor.address,
+                    rewardDebt: rewardOne
+                },
+                {
+                    tokens: rewardPools[1].tokens,
+                    claimant: guarantor.address,
+                    rewardDebt: rewardTwo
+                },
+                {
+                    tokens: rewardPools[2].tokens,
+                    claimant: guarantor.address,
+                    rewardDebt: rewardThree
+                }
+            ])
+        })
+
+        let pledge: bigint
+        let divisor: bigint
     })
 
     describe('update reward time lock', () => {
@@ -180,11 +275,22 @@ describe('TimeLockMultiRewardBond contract', () => {
     let admin: SignerWithAddress
     let bond: SingleCollateralMultiRewardBond
     let rewardPools: Bond.TimeLockRewardPoolStruct[]
-    let claimant: SignerWithAddress
-    let treasury: string
     let collateralSymbol: string
     let collateralTokens: ExtendedERC20
+    let guarantor: SignerWithAddress
     let rewardTokenOne: ExtendedERC20
     let rewardTokenTwo: ExtendedERC20
     let rewardTokenThree: ExtendedERC20
+    let treasury: string
 })
+
+async function setupGuarantorWithCollateral(
+    guarantor: GuarantorCollateralSetup,
+    bond: SingleCollateralMultiRewardBond,
+    collateral: ExtendedERC20
+) {
+    await collateral.transfer(guarantor.signer.address, guarantor.pledge)
+    await collateral
+        .connect(guarantor.signer)
+        .increaseAllowance(bond.address, guarantor.pledge)
+}

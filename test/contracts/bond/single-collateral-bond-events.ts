@@ -3,6 +3,7 @@ import {expect} from 'chai'
 import {
     AllowRedemptionEvent,
     DebtIssueEvent,
+    DepositEvent,
     ExpireEvent,
     FullCollateralEvent,
     PartialCollateralEvent,
@@ -20,6 +21,12 @@ export type ActualDebtIssueEvent = {
     receiver: string
     debSymbol: string
     debtAmount: BigNumber
+}
+
+export type ActualDepositEvent = {
+    depositor: string
+    collateralSymbol: string
+    collateralAmount: BigNumber
 }
 
 export type ActualExpireEvent = {
@@ -97,6 +104,21 @@ export function debtIssueEvent(event: Event): ActualDebtIssueEvent {
     expect(args?.receiver).is.not.undefined
     expect(args?.debSymbol).is.not.undefined
     expect(args?.debtAmount).is.not.undefined
+
+    return debt.args
+}
+
+/**
+ * Shape check and conversion for a DepositEvent.
+ */
+export function depositEvent(event: Event): ActualDepositEvent {
+    const debt = event as DepositEvent
+    expect(debt.args).is.not.undefined
+
+    const args = debt.args
+    expect(args?.depositor).is.not.undefined
+    expect(args?.collateralSymbol).is.not.undefined
+    expect(args?.collateralAmount).is.not.undefined
 
     return debt.args
 }

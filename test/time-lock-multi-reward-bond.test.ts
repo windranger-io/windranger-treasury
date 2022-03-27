@@ -220,19 +220,13 @@ describe('TimeLockMultiRewardBond contract', () => {
             await claimantDebt(totalSupplyDivisor)
             await successfulTransaction(bond.setRedemptionTimestamp())
             expect(
-                await bond.rewardDebtOwed(
-                    claimant.address,
-                    rewardTokenOne.address
-                )
+                await bond.rewardDebt(claimant.address, rewardTokenOne.address)
             ).to.equal(expectedRewardTokenOne)
             expect(
-                await bond.rewardDebtOwed(
-                    claimant.address,
-                    rewardTokenTwo.address
-                )
+                await bond.rewardDebt(claimant.address, rewardTokenTwo.address)
             ).to.equal(expectedRewardTokenTwo)
             expect(
-                await bond.rewardDebtOwed(
+                await bond.rewardDebt(
                     claimant.address,
                     rewardTokenThree.address
                 )
@@ -243,19 +237,13 @@ describe('TimeLockMultiRewardBond contract', () => {
             )
 
             expect(
-                await bond.rewardDebtOwed(
-                    claimant.address,
-                    rewardTokenOne.address
-                )
+                await bond.rewardDebt(claimant.address, rewardTokenOne.address)
             ).to.equal(0)
             expect(
-                await bond.rewardDebtOwed(
-                    claimant.address,
-                    rewardTokenTwo.address
-                )
+                await bond.rewardDebt(claimant.address, rewardTokenTwo.address)
             ).to.equal(expectedRewardTokenTwo)
             expect(
-                await bond.rewardDebtOwed(
+                await bond.rewardDebt(
                     claimant.address,
                     rewardTokenThree.address
                 )

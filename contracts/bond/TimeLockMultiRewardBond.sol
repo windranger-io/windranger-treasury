@@ -142,7 +142,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *
      * @dev These rewards are the sum owed pending the time lock after redemption timestamp.
      */
-    function rewardDebtOwed(address claimant, address tokens)
+    function rewardDebt(address claimant, address tokens)
         external
         view
         returns (uint256)

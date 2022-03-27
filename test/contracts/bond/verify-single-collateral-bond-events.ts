@@ -4,6 +4,7 @@ import {expect} from 'chai'
 import {
     allowRedemptionEvent,
     debtIssueEvent,
+    depositEvent,
     expireEvent,
     fullCollateralEvent,
     partialCollateralEvent,
@@ -80,6 +81,24 @@ export function verifyDebtIssueEvent(
     expect(depositOneEvent.receiver, 'Debt token receiver').equals(guarantor)
     expect(depositOneEvent.debSymbol, 'Debt token symbol').equals(debt.symbol)
     expect(depositOneEvent.debtAmount, 'Debt token amount').equals(debt.amount)
+}
+
+/**
+ * Verifies the content for a Deposit event.
+ */
+export function verifyDepositEvent(
+    receipt: ContractReceipt,
+    guarantor: string,
+    collateral: ExpectTokenBalance
+): void {
+    const depositOneEvent = depositEvent(event('Deposit', receipt))
+    expect(depositOneEvent.depositor, 'depositor').equals(guarantor)
+    expect(depositOneEvent.collateralSymbol, 'Collateral token symbol').equals(
+        collateral.symbol
+    )
+    expect(depositOneEvent.collateralAmount, 'Collateral amount').equals(
+        collateral.amount
+    )
 }
 
 /**
