@@ -21,13 +21,7 @@ export function event(name: string, receipt: ContractReceipt): Event {
  */
 export function events(name: string, receipt: ContractReceipt): Event[] {
     const availableEvents = receiptEvents(receipt)
-    const found = []
-
-    for (let i = 0; i < availableEvents.length; i++) {
-        if (availableEvents[i]?.event === name) {
-            found.push(availableEvents[i])
-        }
-    }
+    const found = filterEvents(name, availableEvents)
 
     expect(
         found.length,
@@ -38,6 +32,19 @@ export function events(name: string, receipt: ContractReceipt): Event[] {
 }
 
 /**
+ * The number of events with the given name.
+ *
+ * @param name  name of the event(s) expected within the given contracts.
+ * @param receipt expected to contain the events matching the given name.
+ */
+export function countEvents(name: string, receipt: ContractReceipt): number {
+    const availableEvents = receiptEvents(receipt)
+    const found = filterEvents(name, availableEvents)
+
+    return found.length
+}
+
+/**
  * Checks the shape of the event array, failing when expectation are not met.
  */
 function receiptEvents(receipt: ContractReceipt): Event[] {
@@ -45,4 +52,16 @@ function receiptEvents(receipt: ContractReceipt): Event[] {
     const availableEvents = receipt.events
     expect(availableEvents, 'Receipt events are undefined').is.not.undefined
     return availableEvents ? availableEvents : []
+}
+
+function filterEvents(name: string, availableEvents: Event[]) {
+    const found = []
+
+    for (let i = 0; i < availableEvents.length; i++) {
+        if (availableEvents[i]?.event === name) {
+            found.push(availableEvents[i])
+        }
+    }
+
+    return found
 }

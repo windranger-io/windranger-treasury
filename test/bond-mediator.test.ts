@@ -232,7 +232,8 @@ describe('Bond Mediator contract', () => {
                             debtTokenAmount: 101n,
                             expiryTimestamp: 0n,
                             minimumDeposit: 0n
-                        }
+                        },
+                        []
                     )
                 ).to.be.revertedWith('BM: collateral not whitelisted')
             })
@@ -252,7 +253,8 @@ describe('Bond Mediator contract', () => {
                             debtTokenAmount: 201n,
                             expiryTimestamp: 0n,
                             minimumDeposit: 0n
-                        }
+                        },
+                        []
                     )
                 ).to.be.revertedWith('BM: invalid DAO Id')
             })
@@ -271,7 +273,8 @@ describe('Bond Mediator contract', () => {
                             debtTokenAmount: 1n,
                             expiryTimestamp: 0n,
                             minimumDeposit: 100n
-                        }
+                        },
+                        []
                     )
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
@@ -302,7 +305,8 @@ describe('Bond Mediator contract', () => {
                             debtTokenAmount: debtTokens,
                             expiryTimestamp: expiryTimestamp,
                             minimumDeposit: minimumDeposit
-                        }
+                        },
+                        []
                     )
                 )
 
@@ -363,7 +367,8 @@ describe('Bond Mediator contract', () => {
                             debtTokenAmount: 5n,
                             expiryTimestamp: 2n,
                             minimumDeposit: 70n
-                        }
+                        },
+                        []
                     )
                 ).to.be.revertedWith('Pausable: paused')
             })

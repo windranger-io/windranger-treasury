@@ -1,9 +1,10 @@
-import {BigNumber, ContractReceipt} from 'ethers'
+import {ContractReceipt} from 'ethers'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {
     allowRedemptionEvent,
     debtIssueEvent,
+    depositEvent,
     expireEvent,
     fullCollateralEvent,
     partialCollateralEvent,
@@ -26,22 +27,10 @@ export type ExpectSlashEvent = {
     amount: bigint
 }
 
-export type ExpectTokenTransferEvent = {
-    from: string
-    to: string
-    amount: bigint
-}
-
 export type ExpectFlushTransferEvent = {
     to: string
     symbol: string
     amount: bigint
-}
-
-export type ActualTokenTransferEvent = {
-    from: string
-    to: string
-    value: BigNumber
 }
 
 export type ExpectAllowRedemptionEvent = {
@@ -92,6 +81,24 @@ export function verifyDebtIssueEvent(
     expect(depositOneEvent.receiver, 'Debt token receiver').equals(guarantor)
     expect(depositOneEvent.debSymbol, 'Debt token symbol').equals(debt.symbol)
     expect(depositOneEvent.debtAmount, 'Debt token amount').equals(debt.amount)
+}
+
+/**
+ * Verifies the content for a Deposit event.
+ */
+export function verifyDepositEvent(
+    receipt: ContractReceipt,
+    guarantor: string,
+    collateral: ExpectTokenBalance
+): void {
+    const depositOneEvent = depositEvent(event('Deposit', receipt))
+    expect(depositOneEvent.depositor, 'depositor').equals(guarantor)
+    expect(depositOneEvent.collateralSymbol, 'Collateral token symbol').equals(
+        collateral.symbol
+    )
+    expect(depositOneEvent.collateralAmount, 'Collateral amount').equals(
+        collateral.amount
+    )
 }
 
 /**

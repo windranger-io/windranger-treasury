@@ -6,19 +6,9 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {
-    BitDAO,
-    BondFactory,
-    ERC20SingleCollateralBond
-} from '../typechain-types'
-import {
-    deployContract,
-    deployContractWithProxy,
-    execute,
-    signer
-} from './framework/contracts'
+import {BitDAO, ERC20SingleCollateralBondBox} from '../typechain-types'
+import {deployContract, signer} from './framework/contracts'
 import {BigNumberish, ContractReceipt, constants, ethers} from 'ethers'
-import {event} from './framework/events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from './framework/transaction'
 import {
@@ -31,8 +21,6 @@ import {
     verifySlashDepositsEvent,
     verifyWithdrawCollateralEvent
 } from './contracts/bond/verify-single-collateral-bond-events'
-import {createBondEvent} from './contracts/bond/bond-creator-events'
-import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
 import {verifyERC20TransferEvents} from './contracts/common/verify-erc20-transfer'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 
@@ -66,12 +54,11 @@ describe('ERC20 Single Collateral Bond contract', () => {
             admin.address
         )) as ExtendedERC20
         collateralSymbol = await collateralTokens.symbol()
-        bonds = await deployContractWithProxy<BondFactory>('BondFactory')
     })
 
     describe('allow redemption', () => {
         it('changes state', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
             expect(await bond.redeemable()).is.false
 
             await bond.allowRedemption(REDEMPTION_REASON)
@@ -80,7 +67,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only when not paused', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
             await bond.pause()
 
             await expect(
@@ -89,7 +76,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only when not redeemable', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
             await bond.allowRedemption(REDEMPTION_REASON)
 
             await expect(
@@ -98,7 +85,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only owner', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
 
             await expect(
                 bond.connect(guarantorOne).allowRedemption(REDEMPTION_REASON)
@@ -111,7 +98,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             const pledgeOne = 998877n
             const pledgeTwo = 99n
             const totalPledge = pledgeOne + pledgeTwo
-            bond = await createBond(bonds, totalPledge)
+            bond = await createBond(totalPledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: totalPledge}
             ])
@@ -131,7 +118,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             const redemptionOne = 400n
             const redemptionTwo = 5000n
             const pledge = redemptionOne + redemptionTwo + 50n
-            bond = await createBond(bonds, pledge)
+            bond = await createBond(pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -157,7 +144,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const slashTwo = 44300n
         it('increases', async () => {
             const pledge = slashOne + slashTwo + 675n
-            bond = await createBond(bonds, pledge)
+            bond = await createBond(pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -196,7 +183,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
     describe('debt tokens', () => {
         it('initial supply', async () => {
             const initialSupply = 97500n
-            bond = await createBond(bonds, initialSupply)
+            bond = await createBond(initialSupply)
 
             expect(await bond.debtTokens()).equals(initialSupply)
         })
@@ -206,7 +193,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             const pledgeOne = 500n
             const pledgeTwo = 7500n
             const pledgeTotal = pledgeOne + pledgeTwo
-            bond = await createBond(bonds, initialSupply)
+            bond = await createBond(initialSupply)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledgeTotal}
             ])
@@ -224,7 +211,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         it('unaffected by redemption', async () => {
             const initialSupply = 9500n
             const pledge = 300n
-            bond = await createBond(bonds, initialSupply)
+            bond = await createBond(initialSupply)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -244,7 +231,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             const pledgeOne = 500n
             const pledgeTwo = 7500n
             const pledgeTotal = pledgeOne + pledgeTwo
-            bond = await createBond(bonds, initialSupply)
+            bond = await createBond(initialSupply)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledgeTotal}
             ])
@@ -264,7 +251,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             const pledgeOne = 500n
             const pledgeTwo = 7500n
             const pledgeTotal = pledgeOne + pledgeTwo
-            bond = await createBond(bonds, initialSupply)
+            bond = await createBond(initialSupply)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledgeTotal}
             ])
@@ -287,7 +274,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
     describe('deposit', () => {
         it('cannot be zero', async () => {
-            bond = await createBond(bonds, 5566777n)
+            bond = await createBond(5566777n)
 
             await expect(bond.deposit(ZERO)).to.be.revertedWith(
                 'Bond: too small'
@@ -296,7 +283,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('cannot be greater than available Debt Tokens', async () => {
             const debtTokens = 500000n
-            bond = await createBond(bonds, debtTokens)
+            bond = await createBond(debtTokens)
 
             await expect(bond.deposit(debtTokens + 1n)).to.be.revertedWith(
                 'Bond: too large'
@@ -305,7 +292,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('cannot be below minimum deposit', async () => {
             const belowMinimum = MINIMUM_DEPOSIT - 1n
-            bond = await createBond(bonds, 5566777n)
+            bond = await createBond(5566777n)
 
             await expect(bond.deposit(belowMinimum)).to.be.revertedWith(
                 'Bond: below minimum'
@@ -314,7 +301,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('only when not paused', async () => {
             const pledge = 60n
-            bond = await createBond(bonds, pledge)
+            bond = await createBond(pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -327,7 +314,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('only when not redeemable', async () => {
             const pledge = 60n
-            bond = await createBond(bonds, 235666777n)
+            bond = await createBond(235666777n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -340,7 +327,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('with full collateral', async () => {
             const pledge = 5040n
-            bond = await createBond(bonds, pledge)
+            bond = await createBond(pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -355,7 +342,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
     describe('expire', () => {
         it('when called by non-owner', async () => {
             const pledge = 445n
-            bond = await createBond(bonds, pledge)
+            bond = await createBond(pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -374,7 +361,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('during redemption', async () => {
             const pledge = 9899n
-            bond = await createBond(bonds, pledge)
+            bond = await createBond(pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -396,7 +383,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('when paused', async () => {
             const pledge = 667777n
-            bond = await createBond(bonds, pledge)
+            bond = await createBond(pledge)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -415,7 +402,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only when there is collateral to move', async () => {
-            bond = await createBond(bonds, 500n)
+            bond = await createBond(500n)
 
             await expect(
                 bond.connect(guarantorOne).expire()
@@ -423,24 +410,22 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only after expiry', async () => {
-            const receipt = await execute(
-                bonds.createBond(
-                    {
-                        name: 'Special Debt Certificate',
-                        symbol: 'SDC001',
-                        data: DATA
-                    },
-                    {
-                        debtTokenAmount: 500n,
-                        collateralTokens: collateralTokens.address,
-                        expiryTimestamp: Date.now() + ONE_DAY_MS,
-                        minimumDeposit: MINIMUM_DEPOSIT
-                    },
-                    treasury
-                )
-            )
-            bond = await erc20SingleCollateralBondContractAt(
-                createBondEvent(event('CreateBond', receipt)).bond
+            bond = await deployContract('ERC20SingleCollateralBondBox')
+            expect(ethers.utils.isAddress(bond.address)).is.true
+
+            await bond.initialize(
+                {
+                    name: 'Special Debt Certificate',
+                    symbol: 'SDC001',
+                    data: DATA
+                },
+                {
+                    debtTokenAmount: 500n,
+                    collateralTokens: collateralTokens.address,
+                    expiryTimestamp: Date.now() + ONE_DAY_MS,
+                    minimumDeposit: MINIMUM_DEPOSIT
+                },
+                treasury
             )
 
             await expect(bond.expire()).to.be.revertedWith(
@@ -451,18 +436,22 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
     describe('init', () => {
         it('can only call once', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
 
             await expect(
                 bond.initialize(
-                    'My Debt Tokens one',
-                    'MDT001',
-                    ONE,
-                    collateralTokens.address,
-                    treasury,
-                    BOND_EXPIRY,
-                    MINIMUM_DEPOSIT,
-                    DATA
+                    {
+                        name: 'MDT002',
+                        data: DATA,
+                        symbol: 'My Debt Tokens two'
+                    },
+                    {
+                        debtTokenAmount: ONE,
+                        collateralTokens: collateralTokens.address,
+                        expiryTimestamp: BOND_EXPIRY,
+                        minimumDeposit: MINIMUM_DEPOSIT
+                    },
+                    treasury
                 )
             ).to.be.revertedWith(
                 'Initializable: contract is already initialized'
@@ -470,70 +459,74 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('tokens cannot be zero', async () => {
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
 
             await expect(
                 bond.initialize(
-                    'My Debt Tokens two',
-                    'MDT002',
-                    ZERO,
-                    collateralTokens.address,
-                    treasury,
-                    BOND_EXPIRY,
-                    MINIMUM_DEPOSIT,
-                    DATA
+                    {
+                        name: 'MDT002',
+                        data: DATA,
+                        symbol: 'My Debt Tokens two'
+                    },
+                    {
+                        debtTokenAmount: ZERO,
+                        collateralTokens: collateralTokens.address,
+                        expiryTimestamp: BOND_EXPIRY,
+                        minimumDeposit: MINIMUM_DEPOSIT
+                    },
+                    treasury
                 )
             ).to.be.revertedWith('Bond::mint: too small')
         })
 
         it('treasury address cannot be zero', async () => {
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
 
             await expect(
                 bond.initialize(
-                    'My Debt Tokens two',
-                    'MDT002',
-                    ONE,
-                    collateralTokens.address,
-                    ADDRESS_ZERO,
-                    BOND_EXPIRY,
-                    MINIMUM_DEPOSIT,
-                    DATA
+                    {name: 'My Debt Tokens two', symbol: 'MDT002', data: DATA},
+                    {
+                        debtTokenAmount: ONE,
+                        collateralTokens: collateralTokens.address,
+                        expiryTimestamp: BOND_EXPIRY,
+                        minimumDeposit: MINIMUM_DEPOSIT
+                    },
+                    ADDRESS_ZERO
                 )
             ).to.be.revertedWith('Bond: treasury is zero address')
         })
 
         it('collateral tokens address cannot be zero', async () => {
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
 
             await expect(
                 bond.initialize(
-                    'My Debt Tokens two',
-                    'MDT002',
-                    ONE,
-                    ADDRESS_ZERO,
-                    treasury,
-                    BOND_EXPIRY,
-                    MINIMUM_DEPOSIT,
-                    DATA
+                    {name: 'My Debt Tokens two', symbol: 'MDT003', data: DATA},
+                    {
+                        debtTokenAmount: ONE,
+                        collateralTokens: ADDRESS_ZERO,
+                        expiryTimestamp: BOND_EXPIRY,
+                        minimumDeposit: MINIMUM_DEPOSIT
+                    },
+                    treasury
                 )
             ).to.be.revertedWith('Bond: collateral is zero address')
         })
 
         it('initial debt tokens are recorded', async () => {
             const debtTokens = 554n
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
             expect(await bond.initialDebtTokens()).equals(ZERO)
 
             await bond.initialize(
-                'My Debt Tokens two',
-                'MDT002',
-                debtTokens,
-                collateralTokens.address,
-                treasury,
-                BOND_EXPIRY,
-                MINIMUM_DEPOSIT,
-                DATA
+                {name: 'My Debt Tokens two', symbol: 'MDT004', data: ''},
+                {
+                    debtTokenAmount: debtTokens,
+                    collateralTokens: collateralTokens.address,
+                    expiryTimestamp: BOND_EXPIRY,
+                    minimumDeposit: MINIMUM_DEPOSIT
+                },
+                treasury
             )
 
             expect(await bond.initialDebtTokens()).equals(debtTokens)
@@ -541,18 +534,18 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('metadata is initialised', async () => {
             const debtTokens = 554n
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
             expect(await bond.metaData()).equals('')
 
             await bond.initialize(
-                'My Debt Tokens two',
-                'MDT002',
-                debtTokens,
-                collateralTokens.address,
-                treasury,
-                BOND_EXPIRY,
-                MINIMUM_DEPOSIT,
-                DATA
+                {name: 'My Debt Tokens two', symbol: 'MDT006', data: DATA},
+                {
+                    debtTokenAmount: debtTokens,
+                    collateralTokens: collateralTokens.address,
+                    expiryTimestamp: BOND_EXPIRY,
+                    minimumDeposit: MINIMUM_DEPOSIT
+                },
+                treasury
             )
 
             expect(await bond.metaData()).equals(DATA)
@@ -562,17 +555,23 @@ describe('ERC20 Single Collateral Bond contract', () => {
             const debtTokens = 554n
             const startMetaData = 'something you will neve know'
             const endMetadata = 'has changed to something else'
-            bond = await deployContract('ERC20SingleCollateralBond')
+            bond = await deployContract('ERC20SingleCollateralBondBox')
+
             await bond.initialize(
-                'My Debt Tokens two',
-                'MDT002',
-                debtTokens,
-                collateralTokens.address,
-                treasury,
-                BOND_EXPIRY,
-                MINIMUM_DEPOSIT,
-                startMetaData
+                {
+                    name: 'My Debt Tokens two',
+                    symbol: 'MDT007',
+                    data: startMetaData
+                },
+                {
+                    debtTokenAmount: debtTokens,
+                    collateralTokens: collateralTokens.address,
+                    expiryTimestamp: BOND_EXPIRY,
+                    minimumDeposit: MINIMUM_DEPOSIT
+                },
+                treasury
             )
+
             expect(await bond.metaData()).equals(startMetaData)
 
             await successfulTransaction(bond.setMetaData(endMetadata))
@@ -583,7 +582,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
     describe('pause', () => {
         it('changes state', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
             expect(await bond.paused()).is.false
 
             await bond.pause()
@@ -592,14 +591,14 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only when not paused', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
             await bond.pause()
 
             await expect(bond.pause()).to.be.revertedWith('Pausable: paused')
         })
 
         it('only owner', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
 
             await expect(bond.connect(guarantorTwo).pause()).to.be.revertedWith(
                 'Ownable: caller is not the owner'
@@ -610,7 +609,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
     describe('redeem', () => {
         it('cannot be zero', async () => {
             const pledge = 500n
-            bond = await createBond(bonds, 23336777n)
+            bond = await createBond(23336777n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -624,7 +623,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('only when redeemable', async () => {
             const pledge = 500n
-            bond = await createBond(bonds, 238877n)
+            bond = await createBond(238877n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -637,7 +636,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('only when not paused', async () => {
             const pledge = 500n
-            bond = await createBond(bonds, 238877n)
+            bond = await createBond(238877n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -657,7 +656,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             const oneThirdOfSlash = 100n
             const slashAmount = 3n * oneThirdOfSlash
             const remainingCollateral = pledge - slashAmount
-            bond = await createBond(bonds, debtTokens)
+            bond = await createBond(debtTokens)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -680,7 +679,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('cannot be zero', async () => {
             const pledge = 500n
-            bond = await createBond(bonds, 2356666n)
+            bond = await createBond(2356666n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -693,7 +692,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('cannot be greater than collateral held', async () => {
             const pledge = 500n
-            bond = await createBond(bonds, 23563377n)
+            bond = await createBond(23563377n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -706,7 +705,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('ony when not redeemable', async () => {
             const pledge = 500n
-            bond = await createBond(bonds, 2356677n)
+            bond = await createBond(2356677n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -720,7 +719,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('ony when not paused', async () => {
             const pledge = 500n
-            bond = await createBond(bonds, 2356677n)
+            bond = await createBond(2356677n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -734,7 +733,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         it('ony owner', async () => {
             const pledge = 500n
-            bond = await createBond(bonds, 2356677n)
+            bond = await createBond(2356677n)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: pledge}
             ])
@@ -748,7 +747,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
     describe('treasury', () => {
         it('update address', async () => {
-            bond = await createBond(bonds, 555666777n)
+            bond = await createBond(555666777n)
 
             const treasuryBefore = await bond.treasury()
             expect(treasuryBefore).equals(treasury)
@@ -761,7 +760,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
     describe('unpause', () => {
         it('changes state', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
             await bond.pause()
             expect(await bond.paused()).is.true
 
@@ -771,7 +770,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only when paused', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
 
             await expect(bond.unpause()).to.be.revertedWith(
                 'Pausable: not paused'
@@ -779,7 +778,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only owner', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
 
             await expect(bond.connect(guarantorTwo).pause()).to.be.revertedWith(
                 'Ownable: caller is not the owner'
@@ -789,7 +788,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
     describe('withdraw collateral', () => {
         it('needs collateral remaining', async () => {
-            bond = await createBond(bonds, MINIMUM_DEPOSIT)
+            bond = await createBond(MINIMUM_DEPOSIT)
             await setupGuarantorsWithCollateral([
                 {signer: guarantorOne, pledge: MINIMUM_DEPOSIT}
             ])
@@ -803,7 +802,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only when not paused', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
             await allowRedemption(REDEMPTION_REASON)
             await bond.pause()
 
@@ -813,7 +812,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only when redeemable', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
 
             await expect(bond.withdrawCollateral()).to.be.revertedWith(
                 'whenRedeemable: not redeemable'
@@ -821,7 +820,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
 
         it('only owner', async () => {
-            bond = await createBond(bonds, ONE)
+            bond = await createBond(ONE)
             await allowRedemption(REDEMPTION_REASON)
 
             await expect(
@@ -835,7 +834,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const debtTokens = pledge
         const collateralAmount = debtTokens
         const slashedCollateral = debtTokens
-        bond = await createBond(bonds, debtTokens)
+        bond = await createBond(debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledge}
@@ -939,7 +938,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const unmatchedDebtTokens = 750n
         const debtTokens = pledge + unmatchedDebtTokens
         const slashedCollateral = slash(pledge, FORTY_PERCENT)
-        bond = await createBond(bonds, debtTokens)
+        bond = await createBond(debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledge}
@@ -1071,7 +1070,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const pledgeTwo = 99500n
         const debtTokens = pledgeOne + pledgeTwo
         const collateralAmount = debtTokens
-        bond = await createBond(bonds, debtTokens)
+        bond = await createBond(debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledgeOne},
@@ -1199,7 +1198,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const pledgeSlashed = slash(pledge, FIFTY_PERCENT)
         const debtTokens = pledge
         const slashedCollateral = debtTokens - slash(debtTokens, FIFTY_PERCENT)
-        bond = await createBond(bonds, debtTokens)
+        bond = await createBond(debtTokens)
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledge}
         ])
@@ -1252,7 +1251,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const pledgeTwo = 59500n
         const unmatchedPledge = 500n
         const debtTokens = pledgeOne + pledgeTwo + unmatchedPledge
-        bond = await createBond(bonds, debtTokens)
+        bond = await createBond(debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledgeOne},
@@ -1386,7 +1385,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const debtTokens = pledgeOne + pledgeTwo
         const collateral = debtTokens
         const slashedCollateral = slash(collateral, FORTY_PERCENT)
-        bond = await createBond(bonds, debtTokens)
+        bond = await createBond(debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledgeOne},
@@ -1510,7 +1509,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const debtTokens = pledgeOne + pledgeTwo + pledgeThree
         const slashedCollateral = debtTokens - slash(debtTokens, FORTY_PERCENT)
         const remainingCollateral = debtTokens - slashedCollateral
-        bond = await createBond(bonds, debtTokens)
+        bond = await createBond(debtTokens)
         const debtSymbol = await bond.symbol()
         await setupGuarantorsWithCollateral([
             {signer: guarantorOne, pledge: pledgeOne},
@@ -1764,41 +1763,37 @@ describe('ERC20 Single Collateral Bond contract', () => {
     }
 
     async function createBond(
-        factory: BondFactory,
         debtTokenAmount: BigNumberish
-    ): Promise<ERC20SingleCollateralBond> {
-        const receipt = await execute(
-            factory.createBond(
-                {
-                    name: 'Special Debt Certificate',
-                    symbol: 'SDC001',
-                    data: DATA
-                },
-                {
-                    debtTokenAmount: debtTokenAmount,
-                    collateralTokens: collateralTokens.address,
-                    expiryTimestamp: BOND_EXPIRY,
-                    minimumDeposit: MINIMUM_DEPOSIT
-                },
-                treasury
-            )
-        )
-        const creationEvent = createBondEvent(event('CreateBond', receipt))
-        const bondAddress = creationEvent.bond
-        expect(ethers.utils.isAddress(bondAddress)).is.true
+    ): Promise<ERC20SingleCollateralBondBox> {
+        bond = await deployContract('ERC20SingleCollateralBondBox')
+        expect(ethers.utils.isAddress(bond.address)).is.true
 
-        return erc20SingleCollateralBondContractAt(bondAddress)
+        await bond.initialize(
+            {
+                name: 'My Debt Tokens two',
+                symbol: 'MDT007',
+                data: DATA
+            },
+            {
+                debtTokenAmount: debtTokenAmount,
+                collateralTokens: collateralTokens.address,
+                expiryTimestamp: BOND_EXPIRY,
+                minimumDeposit: MINIMUM_DEPOSIT
+            },
+            treasury
+        )
+
+        return bond
     }
 
     let admin: SignerWithAddress
-    let bond: ERC20SingleCollateralBond
+    let bond: ERC20SingleCollateralBondBox
     let treasury: string
     let collateralTokens: ExtendedERC20
     let collateralSymbol: string
     let guarantorOne: SignerWithAddress
     let guarantorTwo: SignerWithAddress
     let guarantorThree: SignerWithAddress
-    let bonds: BondFactory
 })
 
 function slash(amount: bigint, percent: bigint): bigint {
@@ -1811,14 +1806,14 @@ type ExpectedBalance = {
     collateral: bigint
 }
 
-type GuarantorCollateralSetup = {
+export type GuarantorCollateralSetup = {
     signer: SignerWithAddress
     pledge: bigint
 }
 
 async function setupGuarantorWithCollateral(
     guarantor: GuarantorCollateralSetup,
-    bond: ERC20SingleCollateralBond,
+    bond: ERC20SingleCollateralBondBox,
     collateral: ExtendedERC20
 ) {
     await collateral.transfer(guarantor.signer.address, guarantor.pledge)
@@ -1830,7 +1825,7 @@ async function setupGuarantorWithCollateral(
 async function verifyBondAndCollateralBalances(
     balance: ExpectedBalance,
     collateral: ExtendedERC20,
-    bond: ERC20SingleCollateralBond
+    bond: ERC20SingleCollateralBondBox
 ): Promise<void> {
     const address =
         typeof balance.address === 'string'

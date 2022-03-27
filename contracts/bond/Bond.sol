@@ -30,4 +30,13 @@ library Bond {
          */
         uint256 minimumDeposit;
     }
+
+    struct TimeLockRewardPool {
+        /** Tokens being used for the reward. */
+        address tokens;
+        /** Total number of tokens awarded to guarantors. */
+        uint128 amount;
+        /** Seconds reward is locked up after redemption is allowed. */
+        uint128 timeLock;
+    }
 }

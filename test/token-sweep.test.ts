@@ -122,17 +122,13 @@ describe('Token Sweep contracts', () => {
                 ERC20_TOKEN_AMOUNT
             )
 
-            verifyERC20TransferEventLogs(
-                [
-                    {
-                        from: erc20SweepHarness.address,
-                        to: beneficary,
-                        amount: ERC20_TOKEN_AMOUNT
-                    }
-                ],
-                erc20,
-                receipt
-            )
+            verifyERC20TransferEventLogs(erc20, receipt, [
+                {
+                    from: erc20SweepHarness.address,
+                    to: beneficary,
+                    amount: ERC20_TOKEN_AMOUNT
+                }
+            ])
         })
     })
 

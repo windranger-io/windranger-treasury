@@ -55,19 +55,23 @@ describe('Bond Factory contract', () => {
                         expiryTimestamp: expiryTimestamp,
                         minimumDeposit: minimumDeposit
                     },
+                    [],
                     treasury
                 )
             )
 
             await verifyCreateBondEvent(
                 {
-                    name: bondName,
-                    debtSymbol: bondSymbol,
-                    debtAmount: debtTokenAmount,
                     creator: admin,
-                    treasury: treasury,
-                    expiryTimestamp: expiryTimestamp,
-                    data: data
+                    metadata: {name: bondName, symbol: bondSymbol, data: data},
+                    configuration: {
+                        debtTokenAmount: debtTokenAmount,
+                        collateralTokens: collateralTokens.address,
+                        expiryTimestamp: expiryTimestamp,
+                        minimumDeposit: minimumDeposit
+                    },
+                    rewards: [],
+                    treasury: treasury
                 },
                 receipt
             )
@@ -85,6 +89,7 @@ describe('Bond Factory contract', () => {
                         expiryTimestamp: 0n,
                         minimumDeposit: 0n
                     },
+                    [],
                     treasury
                 )
             ).to.be.revertedWith('Pausable: paused')

@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "./ERC20SingleCollateralBond.sol";
+import "./SingleCollateralMultiRewardBond.sol";
 import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
-import "./Roles.sol";
 import "../Version.sol";
 
 /**
@@ -33,32 +31,21 @@ contract BondFactory is
     function createBond(
         Bond.MetaData memory metadata,
         Bond.Settings memory configuration,
+        Bond.TimeLockRewardPool[] memory rewards,
         address treasury
     ) external override whenNotPaused returns (address) {
-        ERC20SingleCollateralBond bond = new ERC20SingleCollateralBond();
+        SingleCollateralMultiRewardBond bond = new SingleCollateralMultiRewardBond();
 
         emit CreateBond(
-            address(bond),
-            metadata.name,
-            metadata.symbol,
-            configuration.debtTokenAmount,
             _msgSender(),
-            treasury,
-            configuration.expiryTimestamp,
-            configuration.minimumDeposit,
-            metadata.data
+            address(bond),
+            metadata,
+            configuration,
+            rewards,
+            treasury
         );
 
-        bond.initialize(
-            metadata.name,
-            metadata.symbol,
-            configuration.debtTokenAmount,
-            configuration.collateralTokens,
-            treasury,
-            configuration.expiryTimestamp,
-            configuration.minimumDeposit,
-            metadata.data
-        );
+        bond.initialize(metadata, configuration, rewards, treasury);
         bond.transferOwnership(_msgSender());
 
         return address(bond);

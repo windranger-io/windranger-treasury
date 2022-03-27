@@ -71,7 +71,7 @@ interface SingleCollateralBond {
     function setMetaData(string calldata data) external;
 
     /**
-     * Permits the owner to update the Treasury address.
+     * @notice Permits the owner to update the Treasury address.
      *
      * @dev treasury is the recipient of slashed, expired or withdrawn collateral.
      *          Must be a non-zero address.
@@ -81,11 +81,19 @@ interface SingleCollateralBond {
     function setTreasury(address replacement) external;
 
     /**
- * @notice Permits the owner to transfer all collateral held by the Bond to the Treasury.
+     * @notice Overwrites the existing time lock for a Bond reward.
      *
-     * @dev Intention is to sweeping up excess collateral from redemption ration calculation.
-     *         when there has been slashing. Slashing can result in collateral remaining due to flooring.
+     * @param tokens ERC20 rewards already registered.
+     * @param timeLock seconds to lock rewards after redemption is allowed.
+     */
+    function updateRewardTimeLock(address tokens, uint128 timeLock) external;
 
+    /**
+     * @notice Permits the owner to transfer all collateral held by the Bond to the Treasury.
+     *
+     * @dev Intention is to sweeping up excess collateral from redemption ration calculation, such as  when there has
+     *      been slashing. Slashing can result in collateral remaining due to flooring.
+     *
      *  Can also provide an emergency extracting moving of funds out of the Bond by the owner.
      */
     function withdrawCollateral() external;

@@ -3,13 +3,13 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./ExpiryTimestamp.sol";
 import "./SingleCollateralBond.sol";
 import "./MetaDataStore.sol";
 import "./Redeemable.sol";
 import "../Version.sol";
+import "./Bond.sol";
 
 /**
  * @title A Bond is an issuance of debt tokens, which are exchange for deposit of collateral.
@@ -21,7 +21,7 @@ import "../Version.sol";
  *
  * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
  */
-contract ERC20SingleCollateralBond is
+abstract contract ERC20SingleCollateralBond is
     ERC20Upgradeable,
     ExpiryTimestamp,
     SingleCollateralBond,
@@ -110,113 +110,6 @@ contract ERC20SingleCollateralBond is
         string collateralSymbol,
         uint256 collateralAmount
     );
-
-    /**
-     * @param erc20CollateralTokens To avoid being able to break the Bond behaviour, the reference to the collateral
-     *              tokens cannot be be changed after init.
-     *              To update the tokens address, either follow the proxy convention for the collateral,
-     *              or migrate to a new bond.
-     * @param data Metadata not required for the operation of the Bond, but needed by external actors.
-     * @param expiry Timestamp after which the bond may be expired by anyone.
-     * @param minimumDepositHolding Minimum debt holding allowed in the deposit phase. Once the minimum is met,
-     *              any sized deposit from that account is allowed, as the minimum has already been met.
-     */
-    function initialize(
-        string calldata name,
-        string calldata symbol,
-        uint256 debtAmount,
-        address erc20CollateralTokens,
-        address erc20CapableTreasury,
-        uint256 expiry,
-        uint256 minimumDepositHolding,
-        string calldata data
-    ) external initializer {
-        __ERC20_init(name, symbol);
-        __Ownable_init();
-        __Pausable_init();
-        __ExpiryTimestamp_init(expiry);
-        __MetaDataStore_init(data);
-        __Redeemable_init();
-
-        require(
-            erc20CapableTreasury != address(0),
-            "Bond: treasury is zero address"
-        );
-        require(
-            erc20CollateralTokens != address(0),
-            "Bond: collateral is zero address"
-        );
-
-        _collateralTokens = IERC20MetadataUpgradeable(erc20CollateralTokens);
-        _debtTokensInitialSupply = debtAmount;
-        _minimumDeposit = minimumDepositHolding;
-        _treasury = erc20CapableTreasury;
-
-        _mint(debtAmount);
-    }
-
-    function allowRedemption(string calldata reason)
-        external
-        override
-        whenNotPaused
-        whenNotRedeemable
-        onlyOwner
-    {
-        _allowRedemption(reason);
-        emit AllowRedemption(_msgSender(), reason);
-
-        if (_hasDebtTokensRemaining()) {
-            _debtTokensRedemptionExcess = _debtTokensRemaining();
-
-            emit PartialCollateral(
-                _collateralTokens.symbol(),
-                _collateralTokens.balanceOf(address(this)),
-                symbol(),
-                _debtTokensRemaining()
-            );
-        }
-
-        if (_hasBeenSlashed()) {
-            _redemptionRatio = _calculateRedemptionRatio();
-        }
-    }
-
-    function deposit(uint256 amount)
-        external
-        override
-        whenNotPaused
-        whenNotRedeemable
-    {
-        require(amount > 0, "Bond: too small");
-        require(amount <= _debtTokensRemaining(), "Bond: too large");
-        require(
-            balanceOf(_msgSender()) + amount >= _minimumDeposit,
-            "Bond: below minimum"
-        );
-
-        _collateral += amount;
-        _debtTokensOutstanding += amount;
-
-        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
-
-        bool transferred = _collateralTokens.transferFrom(
-            _msgSender(),
-            address(this),
-            amount
-        );
-        require(transferred, "Bond: collateral transfer failed");
-
-        emit DebtIssue(_msgSender(), symbol(), amount);
-
-        _transfer(address(this), _msgSender(), amount);
-
-        if (hasFullCollateral()) {
-            emit FullCollateral(
-                _collateralTokens.symbol(),
-                _collateralTokens.balanceOf(address(this))
-            );
-        }
-    }
 
     /**
      *  @notice Moves all remaining collateral to the Treasury and pauses the bond.
@@ -450,6 +343,95 @@ contract ERC20SingleCollateralBond is
 
     function hasFullCollateral() public view returns (bool) {
         return _debtTokensRemaining() == 0;
+    }
+
+    //slither-disable-next-line naming-convention
+    function __ERC20SingleCollateralBond_init(
+        Bond.MetaData memory metadata,
+        Bond.Settings memory configuration,
+        address erc20CapableTreasury
+    ) internal onlyInitializing {
+        __ERC20_init(metadata.name, metadata.symbol);
+        __Ownable_init();
+        __Pausable_init();
+        __ExpiryTimestamp_init(configuration.expiryTimestamp);
+        __MetaDataStore_init(metadata.data);
+        __Redeemable_init();
+
+        require(
+            erc20CapableTreasury != address(0),
+            "Bond: treasury is zero address"
+        );
+        require(
+            configuration.collateralTokens != address(0),
+            "Bond: collateral is zero address"
+        );
+
+        _collateralTokens = IERC20MetadataUpgradeable(
+            configuration.collateralTokens
+        );
+        _debtTokensInitialSupply = configuration.debtTokenAmount;
+        _minimumDeposit = configuration.minimumDeposit;
+        _treasury = erc20CapableTreasury;
+
+        _mint(configuration.debtTokenAmount);
+    }
+
+    function _allowRedemption(string calldata reason)
+        internal
+        whenNotPaused
+        whenNotRedeemable
+        onlyOwner
+    {
+        _setAsRedeemable(reason);
+        emit AllowRedemption(_msgSender(), reason);
+
+        if (_hasDebtTokensRemaining()) {
+            _debtTokensRedemptionExcess = _debtTokensRemaining();
+
+            emit PartialCollateral(
+                _collateralTokens.symbol(),
+                _collateralTokens.balanceOf(address(this)),
+                symbol(),
+                _debtTokensRemaining()
+            );
+        }
+
+        if (_hasBeenSlashed()) {
+            _redemptionRatio = _calculateRedemptionRatio();
+        }
+    }
+
+    function _deposit(uint256 amount) internal whenNotPaused whenNotRedeemable {
+        require(amount > 0, "Bond: too small");
+        require(amount <= _debtTokensRemaining(), "Bond: too large");
+        require(
+            balanceOf(_msgSender()) + amount >= _minimumDeposit,
+            "Bond: below minimum"
+        );
+
+        _collateral += amount;
+        _debtTokensOutstanding += amount;
+
+        emit Deposit(_msgSender(), _collateralTokens.symbol(), amount);
+
+        bool transferred = _collateralTokens.transferFrom(
+            _msgSender(),
+            address(this),
+            amount
+        );
+        require(transferred, "Bond: collateral transfer failed");
+
+        emit DebtIssue(_msgSender(), symbol(), amount);
+
+        _transfer(address(this), _msgSender(), amount);
+
+        if (hasFullCollateral()) {
+            emit FullCollateral(
+                _collateralTokens.symbol(),
+                _collateralTokens.balanceOf(address(this))
+            );
+        }
     }
 
     /**
