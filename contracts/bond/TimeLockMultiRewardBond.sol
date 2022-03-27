@@ -166,11 +166,11 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         for (uint256 i = 0; i < _rewardPools.length; i++) {
             Bond.TimeLockRewardPool storage rewardPool = _rewardPools[i];
 
-            uint256 rewardDebt = (rewardPool.amount * claimantDebtTokens) /
+            uint256 owed = (rewardPool.amount * claimantDebtTokens) /
                 totalSupply;
 
-            _claimantToRewardPoolDebt[claimant][rewardPool.tokens] = rewardDebt;
-            emit RewardDebt(rewardPool.tokens, claimant, rewardDebt);
+            _claimantToRewardPoolDebt[claimant][rewardPool.tokens] = owed;
+            emit RewardDebt(rewardPool.tokens, claimant, owed);
         }
     }
 

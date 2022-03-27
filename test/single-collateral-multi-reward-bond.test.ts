@@ -9,11 +9,10 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from './contracts/cast/extended-erc20'
 import {deployContract, signer} from './framework/contracts'
 import {DAY_IN_SECONDS} from './framework/time'
-import {BigNumber, ContractReceipt, ethers} from 'ethers'
+import {BigNumber, ethers} from 'ethers'
 import {expect} from 'chai'
 import {successfulTransaction} from './framework/transaction'
 import {
-    ExpectTokenBalance,
     verifyAllowRedemptionEvent,
     verifyDepositEvent,
     verifyRedemptionEvent
@@ -31,6 +30,7 @@ import {
 import {GuarantorCollateralSetup} from './erc20-single-collateral-bond.test'
 import {divideBigNumberish} from './framework/maths'
 import {Bond} from '../typechain-types/SingleCollateralMultiRewardBond'
+import {countEvents} from './framework/events'
 
 const TOTAL_SUPPLY = 5000n
 const BOND_EXPIRY = 750000n
@@ -251,34 +251,243 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
     })
 
     describe('transfer debt tokens', () => {
-        it('amount zero', async () => {
-            // TODO code
+        afterEach(async () => {
+            bond = await createBond()
+        })
+        before(async () => {
+            divisor = 22n
+            pledge = TOTAL_SUPPLY / divisor
+            debtPurchaser = (await signer(9)).address
+        })
+        beforeEach(async () => {
+            await setupGuarantorWithCollateral(
+                {signer: guarantor, pledge: pledge},
+                bond,
+                collateralTokens
+            )
+            await successfulTransaction(bond.connect(guarantor).deposit(pledge))
         })
 
-        it('updates claimant reward debt', async () => {
-            /*
-             * TODO code
-             * const expectedRewardDebtEvents:ExpectedRewardDebtEvent[] = [
-             *     {
-             *         tokens: rewardPools[0].tokens,
-             *         claimant: guarantor.address,
-             *         rewardDebt: divideBigNumberish(rewardPools[0].amount, divisor)
-             *     },
-             *     {
-             *         tokens: rewardPools[1].tokens,
-             *         claimant: guarantor.address,
-             *         rewardDebt: divideBigNumberish(rewardPools[1].amount, divisor)
-             *     },
-             *     {
-             *         tokens: rewardPools[2].tokens,
-             *         claimant: guarantor.address,
-             *         rewardDebt: divideBigNumberish(rewardPools[2].amount, divisor)
-             *     }
-             * ]
-             * verifyRewardDebtEvents(receipt, expectedRewardDebtEvents)
-             * verifyRewardDebtLogEvents(bond, receipt, expectedRewardDebtEvents)
-             */
+        describe('after redemption allowed', () => {
+            it('amount zero', async () => {
+                const receipt = await successfulTransaction(
+                    bond.connect(guarantor).transfer(debtPurchaser, 0)
+                )
+
+                expect(countEvents('RewardDebt', receipt)).equals(0)
+            })
+            it('no update of claimant reward debt', async () => {
+                await successfulTransaction(bond.allowRedemption(''))
+                const rewardOne = await bond.rewardDebt(
+                    guarantor.address,
+                    rewardPools[0].tokens
+                )
+                const rewardTwo = await bond.rewardDebt(
+                    guarantor.address,
+                    rewardPools[1].tokens
+                )
+                const rewardThree = await bond.rewardDebt(
+                    guarantor.address,
+                    rewardPools[2].tokens
+                )
+                expect(await bond.balanceOf(guarantor.address)).equals(pledge)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[0].tokens
+                    )
+                ).equals(rewardOne)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[1].tokens
+                    )
+                ).equals(rewardTwo)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[2].tokens
+                    )
+                ).equals(rewardThree)
+                expect(await bond.balanceOf(debtPurchaser)).equals(0)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[0].tokens)
+                ).equals(0)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[1].tokens)
+                ).equals(0)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[2].tokens)
+                ).equals(0)
+
+                await successfulTransaction(
+                    bond.connect(guarantor).transfer(debtPurchaser, pledge)
+                )
+
+                expect(await bond.balanceOf(guarantor.address)).equals(0)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[0].tokens
+                    )
+                ).equals(rewardOne)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[1].tokens
+                    )
+                ).equals(rewardTwo)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[2].tokens
+                    )
+                ).equals(rewardThree)
+                expect(await bond.balanceOf(debtPurchaser)).equals(pledge)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[0].tokens)
+                ).equals(0)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[1].tokens)
+                ).equals(0)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[2].tokens)
+                ).equals(0)
+            })
         })
+
+        describe('before redemption', () => {
+            after(async () => {
+                bond = await createBond()
+            })
+            it('amount zero', async () => {
+                const receipt = await successfulTransaction(
+                    bond.connect(guarantor).transfer(debtPurchaser, 0)
+                )
+
+                expect(countEvents('RewardDebt', receipt)).equals(0)
+            })
+            it('updates claimant reward debt', async () => {
+                const rewardOne = await bond.rewardDebt(
+                    guarantor.address,
+                    rewardPools[0].tokens
+                )
+                const rewardTwo = await bond.rewardDebt(
+                    guarantor.address,
+                    rewardPools[1].tokens
+                )
+                const rewardThree = await bond.rewardDebt(
+                    guarantor.address,
+                    rewardPools[2].tokens
+                )
+                expect(await bond.balanceOf(guarantor.address)).equals(pledge)
+                expect(await bond.balanceOf(debtPurchaser)).equals(0)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[0].tokens
+                    )
+                ).equals(rewardOne)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[1].tokens
+                    )
+                ).equals(rewardTwo)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[2].tokens
+                    )
+                ).equals(rewardThree)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[0].tokens)
+                ).equals(0)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[1].tokens)
+                ).equals(0)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[2].tokens)
+                ).equals(0)
+
+                const receipt = await successfulTransaction(
+                    bond.connect(guarantor).transfer(debtPurchaser, pledge)
+                )
+
+                expect(await bond.balanceOf(guarantor.address)).equals(0)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[0].tokens
+                    )
+                ).equals(0)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[1].tokens
+                    )
+                ).equals(0)
+                expect(
+                    await bond.rewardDebt(
+                        guarantor.address,
+                        rewardPools[2].tokens
+                    )
+                ).equals(0)
+                expect(await bond.balanceOf(debtPurchaser)).equals(pledge)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[0].tokens)
+                ).equals(rewardOne)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[1].tokens)
+                ).equals(rewardTwo)
+                expect(
+                    await bond.rewardDebt(debtPurchaser, rewardPools[2].tokens)
+                ).equals(rewardThree)
+
+                const expectedRewardDebtEvents: ExpectedRewardDebtEvent[] = [
+                    {
+                        tokens: rewardPools[0].tokens,
+                        claimant: guarantor.address,
+                        rewardDebt: 0n
+                    },
+                    {
+                        tokens: rewardPools[1].tokens,
+                        claimant: guarantor.address,
+                        rewardDebt: 0n
+                    },
+                    {
+                        tokens: rewardPools[2].tokens,
+                        claimant: guarantor.address,
+                        rewardDebt: 0n
+                    },
+                    {
+                        tokens: rewardPools[0].tokens,
+                        claimant: debtPurchaser,
+                        rewardDebt: rewardOne.toBigInt()
+                    },
+                    {
+                        tokens: rewardPools[1].tokens,
+                        claimant: debtPurchaser,
+                        rewardDebt: rewardTwo.toBigInt()
+                    },
+                    {
+                        tokens: rewardPools[2].tokens,
+                        claimant: debtPurchaser,
+                        rewardDebt: rewardThree.toBigInt()
+                    }
+                ]
+                verifyRewardDebtEvents(receipt, expectedRewardDebtEvents)
+                verifyRewardDebtLogEvents(
+                    bond,
+                    receipt,
+                    expectedRewardDebtEvents
+                )
+            })
+        })
+
+        let pledge: bigint
+        let divisor: bigint
+        let debtPurchaser: string
     })
 
     describe('redeem debt tokens', () => {
