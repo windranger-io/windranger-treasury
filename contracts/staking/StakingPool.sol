@@ -153,6 +153,7 @@ contract StakingPool is
 
         StakingPoolLib.Data storage _info = _stakingPoolInfo;
 
+        //slither-disable-next-line reentrancy-events
         _transferStake(user.depositAmount, IERC20(_info.stakeToken));
 
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
@@ -168,6 +169,7 @@ contract StakingPool is
                 // fixed
                 amount = uint256(user.rewardAmounts[i]);
             }
+            //slither-disable-next-line calls-loop
             _transferRewards(amount, IERC20(_info.rewardTokens[i].token));
         }
     }
@@ -207,6 +209,7 @@ contract StakingPool is
             .rewardTokens;
 
         for (uint256 i = 0; i < rewards.length; i++) {
+            //slither-disable-next-line calls-loop
             _transferRewards(user.rewardAmounts[i], IERC20(rewards[i].token));
         }
     }
@@ -403,6 +406,7 @@ contract StakingPool is
 
     function _transferRewards(uint256 amount, IERC20 rewardsToken) internal {
         emit WithdrawRewards(_msgSender(), address(rewardsToken), amount);
+        //slither-disable-next-line calls-loop
         require(
             rewardsToken.transfer(_msgSender(), amount),
             "StakingPool: rewards tx failed"
