@@ -34,7 +34,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
     function bondPause(uint256 daoId, address bond)
         external
         whenNotPaused
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -66,7 +66,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         uint256 daoId,
         address bond,
         address replacement
-    ) external whenNotPaused atLeastDaoAminRole(daoId) {
+    ) external whenNotPaused atLeastDaoAdminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).setTreasury(replacement);
@@ -77,7 +77,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         address bond,
         address tokens,
         uint128 timeLock
-    ) external whenNotPaused atLeastDaoAminRole(daoId) {
+    ) external whenNotPaused atLeastDaoAdminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
         SingleCollateralBond(bond).updateRewardTimeLock(tokens, timeLock);
@@ -86,7 +86,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
     function bondUnpause(uint256 daoId, address bond)
         external
         whenNotPaused
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
@@ -96,7 +96,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
     function bondWithdrawCollateral(uint256 daoId, address bond)
         external
         whenNotPaused
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
