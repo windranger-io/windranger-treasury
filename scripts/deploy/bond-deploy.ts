@@ -1,6 +1,9 @@
 import {BondFactory, BondMediator} from '../../typechain-types'
-import {awaitContractPropagation, verifyContract} from '../utils/contract'
-import {deployContractWithProxy} from '../../test/framework/contracts'
+import {
+    awaitContractPropagation,
+    deployContractWithProxy,
+    verifyContract
+} from '../utils/contract'
 
 export async function deployPerformanceBonds(): Promise<void> {
     const factory = await deployContractWithProxy<BondFactory>('BondFactory')

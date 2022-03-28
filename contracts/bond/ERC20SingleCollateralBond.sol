@@ -347,8 +347,8 @@ abstract contract ERC20SingleCollateralBond is
 
     //slither-disable-next-line naming-convention
     function __ERC20SingleCollateralBond_init(
-        Bond.MetaData memory metadata,
-        Bond.Settings memory configuration,
+        Bond.MetaData calldata metadata,
+        Bond.Settings calldata configuration,
         address erc20CapableTreasury
     ) internal onlyInitializing {
         __ERC20_init(metadata.name, metadata.symbol);

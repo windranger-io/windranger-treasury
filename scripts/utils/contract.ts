@@ -1,4 +1,4 @@
-import {ethers, run} from 'hardhat'
+import {ethers, run, upgrades} from 'hardhat'
 import {log} from '../../config/logging'
 
 export interface DeployableContract<T> {
@@ -12,6 +12,22 @@ export async function deployContract<T extends DeployableContract<T>>(
 ): Promise<T> {
     const factory = await ethers.getContractFactory(name)
     const contract = <T>(<unknown>await factory.deploy(...args))
+
+    log.info('%s deployed to: %s', name, contract.address)
+
+    return contract.deployed()
+}
+
+export async function deployContractWithProxy<T extends DeployableContract<T>>(
+    name: string,
+    ...args: Array<unknown>
+): Promise<T> {
+    const factory = await ethers.getContractFactory(name)
+    const contract = <T>(
+        (<unknown>(
+            await upgrades.deployProxy(factory, [...args], {kind: 'uups'})
+        ))
+    )
 
     log.info('%s deployed to: %s', name, contract.address)
 

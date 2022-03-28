@@ -211,7 +211,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      */
     //slither-disable-next-line naming-convention
     function __TimeLockMultiRewardBond_init(
-        Bond.TimeLockRewardPool[] memory rewardPools
+        Bond.TimeLockRewardPool[] calldata rewardPools
     ) internal onlyInitializing {
         __Pausable_init();
 
@@ -235,22 +235,6 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
             emit ClaimReward(tokens, amount);
 
             _transferReward(tokens, amount, claimant);
-        }
-    }
-
-    function _enforceUniqueRewardTokens(
-        Bond.TimeLockRewardPool[] memory rewardPools
-    ) private {
-        for (uint256 i = 0; i < rewardPools.length; i++) {
-            // Ensure no later entries contain the same tokens address
-            uint256 next = i + 1;
-            if (next < rewardPools.length) {
-                for (uint256 j = next; j < rewardPools.length; j++) {
-                    if (rewardPools[i].tokens == rewardPools[j].tokens) {
-                        revert("Rewards: tokens must be unique");
-                    }
-                }
-            }
         }
     }
 
@@ -342,5 +326,21 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         }
 
         revert("Rewards: tokens not found");
+    }
+
+    function _enforceUniqueRewardTokens(
+        Bond.TimeLockRewardPool[] calldata rewardPools
+    ) private pure {
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            // Ensure no later entries contain the same tokens address
+            uint256 next = i + 1;
+            if (next < rewardPools.length) {
+                for (uint256 j = next; j < rewardPools.length; j++) {
+                    if (rewardPools[i].tokens == rewardPools[j].tokens) {
+                        revert("Rewards: tokens must be unique");
+                    }
+                }
+            }
+        }
     }
 }

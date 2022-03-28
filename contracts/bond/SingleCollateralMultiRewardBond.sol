@@ -22,9 +22,9 @@ contract SingleCollateralMultiRewardBond is
     }
 
     function initialize(
-        Bond.MetaData memory metadata,
-        Bond.Settings memory configuration,
-        Bond.TimeLockRewardPool[] memory rewards,
+        Bond.MetaData calldata metadata,
+        Bond.Settings calldata configuration,
+        Bond.TimeLockRewardPool[] calldata rewards,
         address erc20CapableTreasury
     ) external initializer {
         __ERC20SingleCollateralBond_init(

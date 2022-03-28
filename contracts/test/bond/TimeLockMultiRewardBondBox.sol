@@ -11,7 +11,7 @@ contract TimeLockMultiRewardBondBox is TimeLockMultiRewardBond {
         _calculateRewardDebt(claimant, amount, totalSupply());
     }
 
-    function initialize(Bond.TimeLockRewardPool[] memory rewards)
+    function initialize(Bond.TimeLockRewardPool[] calldata rewards)
         external
         initializer
     {
@@ -22,7 +22,7 @@ contract TimeLockMultiRewardBondBox is TimeLockMultiRewardBond {
         _setRedemptionTimestamp(uint128(block.timestamp));
     }
 
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() public pure returns (uint256) {
         return _TOTAL_SUPPLY;
     }
 }

@@ -27,8 +27,8 @@ interface BondCreator {
      * @param treasury Receiver of any slashed or swept tokens or collateral.
      */
     function createBond(
-        Bond.MetaData memory metadata,
-        Bond.Settings memory configuration,
+        Bond.MetaData calldata metadata,
+        Bond.Settings calldata configuration,
         Bond.TimeLockRewardPool[] calldata rewards,
         address treasury
     ) external returns (address);
