@@ -2,9 +2,12 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ethers, upgrades} from 'hardhat'
 import {expect} from 'chai'
 import {ContractReceipt, ContractTransaction} from 'ethers'
+import {log} from '../../config/logging'
 
 interface DeployableContract<T> {
     deployed(): Promise<T>
+
+    address: string
 }
 
 /**
@@ -38,6 +41,8 @@ export async function deployContractWithProxy<T extends DeployableContract<T>>(
             await upgrades.deployProxy(factory, [...args], {kind: 'uups'})
         ))
     )
+
+    log.info('%s deployed to: %s', name, contract.address)
 
     return contract.deployed()
 }

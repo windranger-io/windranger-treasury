@@ -42,7 +42,7 @@ export default {
         local: {
             url: 'http://localhost:8545',
             chainId: 33133,
-            allowUnlimitedContractSize: false,
+            allowUnlimitedContractSize: true,
             loggingEnabled: true
         }
     },
