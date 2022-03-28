@@ -13,8 +13,8 @@ contract ERC20SingleCollateralBondBox is ERC20SingleCollateralBond {
     }
 
     function initialize(
-        Bond.MetaData memory metadata,
-        Bond.Settings memory configuration,
+        Bond.MetaData calldata metadata,
+        Bond.Settings calldata configuration,
         address treasury
     ) external initializer {
         __ERC20SingleCollateralBond_init(metadata, configuration, treasury);

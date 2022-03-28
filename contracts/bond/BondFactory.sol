@@ -29,9 +29,9 @@ contract BondFactory is
     }
 
     function createBond(
-        Bond.MetaData memory metadata,
-        Bond.Settings memory configuration,
-        Bond.TimeLockRewardPool[] memory rewards,
+        Bond.MetaData calldata metadata,
+        Bond.Settings calldata configuration,
+        Bond.TimeLockRewardPool[] calldata rewards,
         address treasury
     ) external override whenNotPaused returns (address) {
         SingleCollateralMultiRewardBond bond = new SingleCollateralMultiRewardBond();

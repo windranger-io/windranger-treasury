@@ -36,8 +36,8 @@ interface BondPortal {
      */
     function createManagedBond(
         uint256 daoId,
-        Bond.MetaData memory metadata,
-        Bond.Settings memory configuration,
-        Bond.TimeLockRewardPool[] memory rewards
+        Bond.MetaData calldata metadata,
+        Bond.Settings calldata configuration,
+        Bond.TimeLockRewardPool[] calldata rewards
     ) external returns (address);
 }

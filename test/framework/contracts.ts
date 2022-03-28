@@ -42,8 +42,6 @@ export async function deployContractWithProxy<T extends DeployableContract<T>>(
         ))
     )
 
-    log.info('%s deployed to: %s', name, contract.address)
-
     return contract.deployed()
 }
 
