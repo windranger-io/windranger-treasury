@@ -19,6 +19,15 @@ contract BondFactory is
     UUPSUpgradeable,
     Version
 {
+    event CreateBond(
+        address indexed creator,
+        address indexed bond,
+        Bond.MetaData metadata,
+        Bond.Settings configuration,
+        Bond.TimeLockRewardPool[] rewards,
+        address indexed treasury
+    );
+
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.

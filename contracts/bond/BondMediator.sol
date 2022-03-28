@@ -26,6 +26,8 @@ contract BondMediator is
 {
     BondCreator private _creator;
 
+    event CreateDao(uint256 indexed id, address indexed treasury);
+
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.

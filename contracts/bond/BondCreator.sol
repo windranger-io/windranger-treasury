@@ -9,15 +9,6 @@ import "./Bond.sol";
  * @notice Creating a Bond involves the two steps of deploying and initialising.
  */
 interface BondCreator {
-    event CreateBond(
-        address indexed creator,
-        address indexed bond,
-        Bond.MetaData metadata,
-        Bond.Settings configuration,
-        Bond.TimeLockRewardPool[] rewards,
-        address indexed treasury
-    );
-
     /**
      * @notice Deploys and initialises a new Bond.
      *
