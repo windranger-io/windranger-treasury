@@ -25,9 +25,9 @@ contract StakingPool is
         uint128[5] rewardAmounts; // todo: use constant from library
     }
 
-    mapping(address => User) internal _users;
+    mapping(address => User) private _users;
 
-    StakingPoolLib.Data internal _stakingPoolInfo;
+    StakingPoolLib.Data private _stakingPoolInfo;
 
     event WithdrawRewards(
         address indexed user,
@@ -203,14 +203,11 @@ contract StakingPool is
 
         delete _users[_msgSender()];
 
-        StakingPoolLib.RewardToken[] memory rewardTokens = _stakingPoolInfo
+        StakingPoolLib.RewardToken[] memory rewards = _stakingPoolInfo
             .rewardTokens;
 
-        for (uint256 i = 0; i < rewardTokens.length; i++) {
-            _transferRewards(
-                user.rewardAmounts[i],
-                IERC20(rewardTokens[i].token)
-            );
+        for (uint256 i = 0; i < rewards.length; i++) {
+            _transferRewards(user.rewardAmounts[i], IERC20(rewards[i].token));
         }
     }
 
@@ -228,6 +225,7 @@ contract StakingPool is
         __Context_init_unchained();
         __Pausable_init();
 
+        //slither-disable-next-line timestamp
         require(
             info.epochStartTimestamp >= block.timestamp,
             "StakingPool: start time"
@@ -236,6 +234,7 @@ contract StakingPool is
             address(info.stakeToken) != address(0),
             "StakingPool: stake token defined"
         );
+        //slither-disable-next-line timestamp
         require(
             info.rewardsAvailableTimestamp >
                 info.epochStartTimestamp + info.epochDuration,
@@ -262,9 +261,9 @@ contract StakingPool is
 
     function initializeRewardTokens(
         address treasury,
-        StakingPoolLib.RewardToken[] calldata rewardTokens
+        StakingPoolLib.RewardToken[] calldata rewards
     ) external atLeastDaoMeepleRole(_stakingPoolInfo.daoId) {
-        _initializeRewardTokens(treasury, rewardTokens);
+        _initializeRewardTokens(treasury, rewards);
     }
 
     function adminEmergencyRewardSweep()
@@ -335,6 +334,7 @@ contract StakingPool is
     }
 
     function isRedeemable() external view returns (bool) {
+        //slither-disable-next-line timestamp
         return _isRewardsAvailable() && _isStakingPeriodComplete();
     }
 
@@ -386,6 +386,7 @@ contract StakingPool is
 
     function _setRewardsAvailableTimestamp(uint32 timestamp) internal {
         require(!_isStakingPeriodComplete(), "StakePool: already finalized");
+        //slither-disable-next-line timestamp
         require(timestamp > block.timestamp, "StakePool: future rewards");
 
         _stakingPoolInfo.rewardsAvailableTimestamp = timestamp;
@@ -409,17 +410,14 @@ contract StakingPool is
     }
 
     function _adminEmergencyRewardSweep() internal {
-        StakingPoolLib.RewardToken[] memory rewardTokens = _stakingPoolInfo
+        StakingPoolLib.RewardToken[] memory rewards = _stakingPoolInfo
             .rewardTokens;
         address treasury = _stakingPoolInfo.treasury;
 
-        for (uint256 i = 0; i < rewardTokens.length; i++) {
-            IERC20 token = IERC20(rewardTokens[i].token);
+        for (uint256 i = 0; i < rewards.length; i++) {
+            IERC20 token = IERC20(rewards[i].token);
             require(
-                token.transfer(
-                    treasury,
-                    rewardTokens[i].totalTokenRewardsAvailable
-                ),
+                token.transfer(treasury, rewards[i].totalTokenRewardsAvailable),
                 "StakingPool: withdraw tx failed"
             );
         }
