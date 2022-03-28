@@ -12,15 +12,15 @@ import {
     DaoBondConfigurationBox,
     ERC20,
     ERC20PresetMinterPauser
-} from '../typechain-types'
-import {deployContract, signer} from './framework/contracts'
+} from '../../../typechain-types'
+import {deployContract, signer} from '../../framework/contracts'
 import {constants, Wallet} from 'ethers'
-import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {successfulTransaction} from './framework/transaction'
+import {ExtendedERC20} from '../../cast/extended-erc20'
+import {successfulTransaction} from '../../framework/transaction'
 import {
     verifyAddCollateralEvents,
     verifyRemoveCollateralEvents
-} from './contracts/bond/verify-whitelist-events'
+} from '../../event/bond/verify-whitelist-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

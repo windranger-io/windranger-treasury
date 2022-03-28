@@ -8,5 +8,5 @@ cache
 dist
 docs
 node_modules
-test/contracts/cast
+test/cast
 typechain-types

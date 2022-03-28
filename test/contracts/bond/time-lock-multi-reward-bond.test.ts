@@ -6,13 +6,13 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {deployContract, signer} from './framework/contracts'
-import {BitDAO, TimeLockMultiRewardBondBox} from '../typechain-types'
-import {successfulTransaction} from './framework/transaction'
+import {deployContract, signer} from '../../framework/contracts'
+import {BitDAO, TimeLockMultiRewardBondBox} from '../../../typechain-types'
+import {successfulTransaction} from '../../framework/transaction'
 import {
     Bond,
     TimeLockMultiRewardBond
-} from '../typechain-types/TimeLockMultiRewardBondBox'
+} from '../../../typechain-types/TimeLockMultiRewardBondBox'
 import {
     ExpectedClaimRewardEvent,
     ExpectedRegisterRewardEvent,
@@ -23,14 +23,14 @@ import {
     verifyRegisterRewardLogEvents,
     verifyRewardDebtEvents,
     verifyRewardDebtLogEvents
-} from './contracts/bond/verify-time-lock-multi-reward-bond-events'
+} from '../../event/bond/verify-time-lock-multi-reward-bond-events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {divideBigNumberish} from './framework/maths'
+import {divideBigNumberish} from '../../framework/maths'
 import {ContractReceipt} from '@ethersproject/contracts/src.ts'
 import {BigNumber} from 'ethers'
-import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {verifyERC20TransferEventLogs} from './contracts/common/verify-erc20-transfer'
-import {DAY_IN_SECONDS} from './framework/time'
+import {ExtendedERC20} from '../../cast/extended-erc20'
+import {verifyERC20TransferEventLogs} from '../../event/erc20/verify-erc20-events'
+import {DAY_IN_SECONDS} from '../../framework/time'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

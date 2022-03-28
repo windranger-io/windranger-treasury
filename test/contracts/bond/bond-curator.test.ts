@@ -11,25 +11,25 @@ import {
     BondFactory,
     BondCuratorBox,
     ERC20SingleCollateralBondBox
-} from '../typechain-types'
+} from '../../../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
     execute,
     signer
-} from './framework/contracts'
+} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {successfulTransaction} from './framework/transaction'
-import {erc20SingleCollateralBondContractAt} from './contracts/bond/single-collateral-bond-contract'
-import {createBondEvent} from './contracts/bond/bond-creator-events'
-import {event} from './framework/events'
-import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from './contracts/bond/roles'
-import {accessControlRevertMessageMissingGlobalRole} from './contracts/bond/access-control-messages'
+import {successfulTransaction} from '../../framework/transaction'
+import {erc20SingleCollateralBondContractAt} from '../../event/bond/single-collateral-bond-contract'
+import {createBondEvent} from '../../event/bond/bond-creator-events'
+import {event} from '../../framework/events'
+import {ExtendedERC20} from '../../cast/extended-erc20'
+import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from '../../event/bond/roles'
+import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
 import {
     verifyAddBondEvents,
     verifyAddBondLogEvents
-} from './contracts/bond/verify-curator-events'
+} from '../../event/bond/verify-curator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

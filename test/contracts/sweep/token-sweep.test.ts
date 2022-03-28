@@ -11,12 +11,12 @@ import {
     SweepERC721TokensHarness,
     ERC721PresetMinterPauserAutoId,
     ERC20PresetMinterPauser
-} from '../typechain-types'
-import {deployContract, signer} from './framework/contracts'
+} from '../../../typechain-types'
+import {deployContract, signer} from '../../framework/contracts'
 import {constants, ContractReceipt, Wallet} from 'ethers'
-import {verifyERC20TransferEventLogs} from './contracts/common/verify-erc20-transfer'
-import {successfulTransaction} from './framework/transaction'
-import {verifyERC721TransferEventLogs} from './contracts/common/verify-erc721-transfer'
+import {verifyERC20TransferEventLogs} from '../../event/erc20/verify-erc20-events'
+import {successfulTransaction} from '../../framework/transaction'
+import {verifyERC721TransferEventLogs} from '../../event/erc721/verify-erc721-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

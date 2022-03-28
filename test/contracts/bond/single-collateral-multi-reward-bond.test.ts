@@ -4,19 +4,19 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import {before} from 'mocha'
-import {BitDAO, SingleCollateralMultiRewardBond} from '../typechain-types'
+import {BitDAO, SingleCollateralMultiRewardBond} from '../../../typechain-types'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {deployContract, signer} from './framework/contracts'
-import {DAY_IN_SECONDS} from './framework/time'
+import {ExtendedERC20} from '../../cast/extended-erc20'
+import {deployContract, signer} from '../../framework/contracts'
+import {DAY_IN_SECONDS} from '../../framework/time'
 import {BigNumber, ethers} from 'ethers'
 import {expect} from 'chai'
-import {successfulTransaction} from './framework/transaction'
+import {successfulTransaction} from '../../framework/transaction'
 import {
     verifyAllowRedemptionEvent,
     verifyDepositEvent,
     verifyRedemptionEvent
-} from './contracts/bond/verify-single-collateral-bond-events'
+} from '../../event/bond/verify-single-collateral-bond-events'
 import {
     ExpectedRewardDebtEvent,
     ExpectedUpdateRewardTimeLockEvent,
@@ -26,11 +26,11 @@ import {
     verifySetRedemptionTimestampLogEvents,
     verifySetUpdateRewardTimeLockLogEvents,
     verifyUpdateRewardTimeLockpEvents
-} from './contracts/bond/verify-time-lock-multi-reward-bond-events'
+} from '../../event/bond/verify-time-lock-multi-reward-bond-events'
 import {GuarantorCollateralSetup} from './erc20-single-collateral-bond.test'
-import {divideBigNumberish} from './framework/maths'
-import {Bond} from '../typechain-types/SingleCollateralMultiRewardBond'
-import {countEvents} from './framework/events'
+import {divideBigNumberish} from '../../framework/maths'
+import {Bond} from '../../../typechain-types/SingleCollateralMultiRewardBond'
+import {countEvents} from '../../framework/events'
 
 const TOTAL_SUPPLY = 5000n
 const BOND_EXPIRY = 750000n
