@@ -2,7 +2,6 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ethers, upgrades} from 'hardhat'
 import {expect} from 'chai'
 import {ContractReceipt, ContractTransaction} from 'ethers'
-import {log} from '../../config/logging'
 
 interface DeployableContract<T> {
     deployed(): Promise<T>
