@@ -26,10 +26,18 @@ abstract contract RoleMembership is Initializable {
     // Global roles to members; apply across all DAOs
     mapping(bytes32 => mapping(address => bool)) private _globalRoleMembers;
 
-    event GrantDaoRole(uint256 daoId, bytes32 role, address account);
-    event GrantGlobalRole(bytes32 role, address account);
-    event RevokeDaoRole(uint256 daoId, bytes32 role, address account);
-    event RevokeGlobalRole(bytes32 role, address account);
+    event GrantDaoRole(
+        uint256 indexed daoId,
+        bytes32 indexed role,
+        address indexed account
+    );
+    event GrantGlobalRole(bytes32 indexedrole, address indexed account);
+    event RevokeDaoRole(
+        uint256 indexed daoId,
+        bytes32 indexed role,
+        address indexed account
+    );
+    event RevokeGlobalRole(bytes32 indexed role, address indexed account);
 
     function hasGlobalRole(bytes32 role, address account)
         external

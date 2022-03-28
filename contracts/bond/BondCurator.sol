@@ -19,7 +19,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
 
     mapping(uint256 => EnumerableSetUpgradeable.AddressSet) private _bonds;
 
-    event AddBond(uint256 daiId, address bond);
+    event AddBond(uint256 indexed daiId, address indexed bond);
 
     function bondAllowRedemption(
         uint256 daoId,

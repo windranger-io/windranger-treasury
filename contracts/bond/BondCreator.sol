@@ -15,7 +15,7 @@ interface BondCreator {
         Bond.MetaData metadata,
         Bond.Settings configuration,
         Bond.TimeLockRewardPool[] rewards,
-        address treasury
+        address indexed treasury
     );
 
     /**
