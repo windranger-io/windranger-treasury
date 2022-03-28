@@ -2,18 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-<<<<<<< HEAD
 import "./SingleCollateralMultiRewardBond.sol";
 import "./RoleAccessControl.sol";
-=======
-import "./ERC20SingleCollateralBond.sol";
-import "../RoleAccessControl.sol";
->>>>>>> 831dd46 (implemented new access control - compiling)
 import "./BondCreator.sol";
-<<<<<<< HEAD
-=======
 import "../Roles.sol";
->>>>>>> 2272a43 (building)
 import "../Version.sol";
 
 /**
