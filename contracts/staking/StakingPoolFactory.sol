@@ -9,7 +9,6 @@ import "./StakingPoolLib.sol";
 import "../RoleAccessControl.sol";
 
 contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
-    //todo: refactor to emit StakingPoolLib.Data struct
     event StakingPoolCreated(
         address indexed stakingPool,
         address treasury,
