@@ -51,7 +51,7 @@ abstract contract RoleAccessControl is RoleMembership, ContextUpgradeable {
         _;
     }
 
-    modifier atLeastDaoAminRole(uint256 daoId) {
+    modifier atLeastDaoAdminRole(uint256 daoId) {
         if (
             _isMissingGlobalRole(Roles.SUPER_USER, _msgSender()) &&
             _isMissingDaoRole(daoId, Roles.DAO_ADMIN, _msgSender())
@@ -98,14 +98,14 @@ abstract contract RoleAccessControl is RoleMembership, ContextUpgradeable {
 
     function grantDaoAdminRole(uint256 daoId, address account)
         external
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _grantDaoRole(daoId, Roles.DAO_ADMIN, account);
     }
 
     function grantDaoMeepleRole(uint256 daoId, address account)
         external
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _grantDaoRole(daoId, Roles.DAO_MEEPLE, account);
     }
@@ -124,14 +124,14 @@ abstract contract RoleAccessControl is RoleMembership, ContextUpgradeable {
 
     function revokeDaoAdminRole(uint256 daoId, address account)
         external
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _revokeDaoRole(daoId, Roles.DAO_ADMIN, account);
     }
 
     function revokeDaoMeepleRole(uint256 daoId, address account)
         external
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _revokeDaoRole(daoId, Roles.DAO_MEEPLE, account);
     }

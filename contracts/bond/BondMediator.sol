@@ -101,7 +101,7 @@ contract BondMediator is
     function setDaoTreasury(uint256 daoId, address replacement)
         external
         whenNotPaused
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _setDaoTreasury(daoId, replacement);
     }
@@ -117,7 +117,7 @@ contract BondMediator is
     function removeWhitelistedCollateral(
         uint256 daoId,
         address erc20CollateralTokens
-    ) external whenNotPaused atLeastDaoAminRole(daoId) {
+    ) external whenNotPaused atLeastDaoAdminRole(daoId) {
         _removeWhitelistedDaoCollateral(daoId, erc20CollateralTokens);
     }
 
@@ -133,7 +133,7 @@ contract BondMediator is
     function whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
         external
         whenNotPaused
-        atLeastDaoAminRole(daoId)
+        atLeastDaoAdminRole(daoId)
     {
         _whitelistDaoCollateral(daoId, erc20CollateralTokens);
     }
