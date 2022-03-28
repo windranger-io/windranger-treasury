@@ -98,6 +98,11 @@ contract StakingPool is
         _unpause();
     }
 
+    /**
+     * @notice Only entry point for a user to deposit into the staking pool
+     *
+     * @param amount Amount of stake tokens to deposit
+     */
     function deposit(uint256 amount)
         external
         whenNotPaused
@@ -140,6 +145,9 @@ contract StakingPool is
         );
     }
 
+    /**
+     * @notice Withdraw both stake and reward tokens when the stake period is complete
+     */
     function withdraw()
         external
         stakingPeriodComplete
@@ -156,6 +164,7 @@ contract StakingPool is
         //slither-disable-next-line reentrancy-events
         _transferStake(user.depositAmount, IERC20(_info.stakeToken));
 
+        // calculate the rewardAmounts due to the user
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             uint256 amount = 0;
 
@@ -174,7 +183,9 @@ contract StakingPool is
         }
     }
 
-    // withdraw stake separately from rewards (rewards may not be available yet due to rewardsAvailableTimestamp)
+    /**
+     * @notice Withdraw only stake tokens. Reward tokens may not be available/unlocked yet.
+     */
     function withdrawStake() external stakingPeriodComplete nonReentrant {
         User storage user = _users[_msgSender()];
         require(user.depositAmount > 0, "StakingPool: not eligible");
@@ -183,9 +194,8 @@ contract StakingPool is
         user.depositAmount = 0;
 
         StakingPoolLib.Data storage _info = _stakingPoolInfo;
-        // do we want to decrement _info.totalStakedAmount here?
 
-        // calc the amount of rewards the user is due for the floating pool type
+        // calculate the amount of rewards the user is due for the floating pool type
         // fixed amounts are calculated on deposit.
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
@@ -198,7 +208,9 @@ contract StakingPool is
         _transferStake(currentDepositBalance, IERC20(_info.stakeToken));
     }
 
-    // to be called after withdrawStake()
+    /**
+     * @notice Withdraw only reward tokens. Stake may have already been withdrawn.
+     */
     function withdrawRewards() external stakingPeriodComplete rewardsAvailable {
         User memory user = _users[_msgSender()];
         require(user.rewardAmounts[0] > 0, "StakingPool: No rewards"); // this is safe?
@@ -233,6 +245,8 @@ contract StakingPool is
             info.epochStartTimestamp >= block.timestamp,
             "StakingPool: start time"
         );
+
+        // todo should we check if stakeToken != any of the reward tokens?
         require(
             address(info.stakeToken) != address(0),
             "StakingPool: stake token defined"
@@ -299,7 +313,6 @@ contract StakingPool is
         return _computeFloatingRewardsPerShare(rewardTokenIndex);
     }
 
-    // floating
     function currentExpectedReward(address user)
         external
         view
@@ -323,7 +336,6 @@ contract StakingPool is
         return rewards;
     }
 
-    //fixed
     function computeFixedRewards(address recipient, uint256 rewardTokenIndex)
         external
         view
