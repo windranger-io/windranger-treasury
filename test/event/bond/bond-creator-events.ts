@@ -1,10 +1,8 @@
 import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
-import {Bond, CreateBondEvent} from '../../../typechain-types/BondCreator'
 import {Result} from '@ethersproject/abi'
-import TimeLockRewardPoolStruct = Bond.TimeLockRewardPoolStruct
-import SettingsStruct = Bond.SettingsStruct
-import MetaDataStruct = Bond.MetaDataStruct
+import {CreateBondEvent} from '../../../typechain-types/BondFactory'
+import {Bond} from '../../../typechain-types/BondCreator'
 
 export type ActualBondMetaData = {
     name: string
@@ -69,12 +67,14 @@ export function createBondEventLogs(events: Result[]): ActualCreateBondEvent[] {
         results.push({
             creator: String(event.creator),
             bond: String(event.bond),
-            metadata: createBondMetaData(event?.metadata as MetaDataStruct),
+            metadata: createBondMetaData(
+                event?.metadata as Bond.MetaDataStruct
+            ),
             configuration: createBondConfiguration(
-                event?.configuration as SettingsStruct
+                event?.configuration as Bond.SettingsStruct
             ),
             rewards: createRewardPools(
-                event?.rewards as TimeLockRewardPoolStruct[]
+                event?.rewards as Bond.TimeLockRewardPoolStruct[]
             ),
             treasury: String(event.treasury)
         })
@@ -84,7 +84,7 @@ export function createBondEventLogs(events: Result[]): ActualCreateBondEvent[] {
 }
 
 function createRewardPools(
-    rewards: TimeLockRewardPoolStruct[]
+    rewards: Bond.TimeLockRewardPoolStruct[]
 ): ActualTimeLockRewardPool[] {
     const rewardPools: ActualTimeLockRewardPool[] = []
 
@@ -103,7 +103,9 @@ function createRewardPools(
     return rewardPools
 }
 
-function createBondConfiguration(config: SettingsStruct): ActualBondSettings {
+function createBondConfiguration(
+    config: Bond.SettingsStruct
+): ActualBondSettings {
     expect(config.debtTokenAmount).is.not.undefined
     expect(config?.collateralTokens).is.not.undefined
     expect(config?.expiryTimestamp).is.not.undefined
@@ -117,7 +119,7 @@ function createBondConfiguration(config: SettingsStruct): ActualBondSettings {
     }
 }
 
-function createBondMetaData(metaData: MetaDataStruct): ActualBondMetaData {
+function createBondMetaData(metaData: Bond.MetaDataStruct): ActualBondMetaData {
     expect(metaData?.name).is.not.undefined
     expect(metaData?.symbol).is.not.undefined
     expect(metaData?.data).is.not.undefined

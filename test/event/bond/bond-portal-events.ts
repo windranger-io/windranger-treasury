@@ -1,7 +1,7 @@
 import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {CreateDaoEvent} from '../../../typechain-types/BondPortal'
+import {CreateDaoEvent} from '../../../typechain-types/BondMediator'
 
 export type ActualCreateDaoEvent = {
     id: BigNumber
