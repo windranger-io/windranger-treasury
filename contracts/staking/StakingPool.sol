@@ -22,10 +22,8 @@ contract StakingPool is
 {
     struct User {
         uint128 depositAmount;
-        uint128[5] rewardAmounts; // todo: once constants are allowed get rid of this magic number
+        uint128[5] rewardAmounts; // todo: use constant from library
     }
-
-    uint256 internal constant _MAX_REWARDS_TOKENS = 5;
 
     mapping(address => User) internal _users;
 
@@ -56,6 +54,7 @@ contract StakingPool is
     }
 
     modifier stakingPoolRequirementsUnmet() {
+        //slither-disable-next-line timestamp
         require(
             (_stakingPoolInfo.totalStakedAmount <
                 _stakingPoolInfo.minTotalPoolStake) &&
@@ -74,6 +73,7 @@ contract StakingPool is
     }
 
     modifier stakingPeriodNotStarted() {
+        //slither-disable-next-line timestamp
         require(
             block.timestamp >= _stakingPoolInfo.epochStartTimestamp,
             "StakingPool: too early"
@@ -183,8 +183,6 @@ contract StakingPool is
         StakingPoolLib.Data storage _info = _stakingPoolInfo;
         // do we want to decrement _info.totalStakedAmount here?
 
-        _transferStake(currentDepositBalance, IERC20(_info.stakeToken));
-
         // calc the amount of rewards the user is due for the floating pool type
         // fixed amounts are calculated on deposit.
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
@@ -194,6 +192,8 @@ contract StakingPool is
                 );
             }
         }
+
+        _transferStake(currentDepositBalance, IERC20(_info.stakeToken));
     }
 
     // to be called after withdrawStake()
@@ -228,9 +228,10 @@ contract StakingPool is
         __Context_init_unchained();
         __Pausable_init();
 
-        uint256 now = block.timestamp;
-
-        require(info.epochStartTimestamp >= now, "StakingPool: start time");
+        require(
+            info.epochStartTimestamp >= block.timestamp,
+            "StakingPool: start time"
+        );
         require(
             address(info.stakeToken) != address(0),
             "StakingPool: stake token defined"
@@ -241,7 +242,7 @@ contract StakingPool is
             "StakingPool: init rewards"
         );
         require(info.treasury != address(0), "StakePool: nonzero treasury"); // TODO: are we checking if the treasury is whitelisted to that daoId
-        require(info.emergencyMode != true, "StakePool: init emergency mode");
+        require(!info.emergencyMode, "StakePool: init emergency mode");
 
         require(info.maxTotalPoolStake > 0, "StakePool: maxTotalPoolStake > 0"); // is this check pointless?
         require(info.epochDuration > 0, "StakePool: epochDuration > 0"); // is this check pointless?
@@ -303,19 +304,14 @@ contract StakingPool is
         returns (uint256[] memory)
     {
         User memory _user = _users[user];
-        StakingPoolLib.Data memory _stakingPoolInfo = _stakingPoolInfo;
+        StakingPoolLib.Data memory _info = _stakingPoolInfo;
 
-        uint256[] memory rewards = new uint256[](
-            _stakingPoolInfo.rewardTokens.length
-        );
+        uint256[] memory rewards = new uint256[](_info.rewardTokens.length);
 
-        for (uint256 i = 0; i < _stakingPoolInfo.rewardTokens.length; i++) {
-            if (
-                _stakingPoolInfo.poolType ==
-                StakingPoolLib.StakingPoolType.FLOATING
-            ) {
+        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
+            if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 rewards[i] = uint256(
-                    (_stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
+                    (_info.rewardTokens[i].rewardAmountRatio *
                         _user.depositAmount) / 1 ether
                 );
             } else {
@@ -450,20 +446,22 @@ contract StakingPool is
         view
         returns (uint256)
     {
-        StakingPoolLib.Data memory _stakingPoolInfo = _stakingPoolInfo;
+        StakingPoolLib.Data memory _info = _stakingPoolInfo;
 
-        uint256 availableTokenRewards = _stakingPoolInfo
+        uint256 availableTokenRewards = _info
             .rewardTokens[rewardTokenIndex]
             .totalTokenRewardsAvailable;
 
-        return availableTokenRewards / _stakingPoolInfo.totalStakedAmount;
+        return availableTokenRewards / _info.totalStakedAmount;
     }
 
     function _isRewardsAvailable() internal view returns (bool) {
+        //slither-disable-next-line timestamp
         return block.timestamp >= _stakingPoolInfo.rewardsAvailableTimestamp;
     }
 
     function _isStakingPeriodComplete() internal view returns (bool) {
+        //slither-disable-next-line timestamp
         return
             block.timestamp >=
             (_stakingPoolInfo.epochStartTimestamp +
