@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./SingleCollateralMultiRewardBond.sol";
-import "./RoleAccessControl.sol";
+import "../RoleAccessControl.sol";
 import "./BondCreator.sol";
 import "../Roles.sol";
 import "../Version.sol";
