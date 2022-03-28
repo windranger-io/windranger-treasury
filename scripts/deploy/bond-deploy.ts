@@ -1,34 +1,16 @@
-import {run} from 'hardhat'
-import {log} from '../../config/logging'
-import {BitDAO, BondFactory, BondMediator} from '../../typechain-types'
-import {
-    awaitContractPropagation,
-    deployContract,
-    verifyContract
-} from '../utils/contract'
-import {signer} from '../../test/framework/contracts'
+import {BondFactory, BondMediator} from '../../typechain-types'
+import {awaitContractPropagation, verifyContract} from '../utils/contract'
+import {deployContractWithProxy} from '../../test/framework/contracts'
 
-async function main() {
-    await run('compile')
-
-    const deployer = await signer(0)
-    const tokens = await deployContract<BitDAO>('BitDAO', deployer.address)
-
-    const factory = await deployContract<BondFactory>('BondFactory')
-    await factory.initialize()
-    const mediator = await deployContract<BondMediator>('BondMediator')
-    await mediator.initialize(factory.address)
+export async function deployPerformanceBonds(): Promise<void> {
+    const factory = await deployContractWithProxy<BondFactory>('BondFactory')
+    const mediator = await deployContractWithProxy<BondMediator>(
+        'BondMediator',
+        factory.address
+    )
 
     await awaitContractPropagation()
 
-    await verifyContract<BitDAO>(tokens, deployer.address)
     await verifyContract<BondFactory>(factory)
     await verifyContract<BondMediator>(mediator)
 }
-
-main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-        log.error(error)
-        process.exit(1)
-    })

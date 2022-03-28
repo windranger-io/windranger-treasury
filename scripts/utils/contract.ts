@@ -31,7 +31,7 @@ export async function verifyContract<T extends DeployableContract<T>>(
 }
 export async function awaitContractPropagation() {
     const sleepyTimeMs = 1500
-    log.info('Awaiting contract propagation for: %s ms', sleepyTimeMs)
+    log.info('Awaiting contract propagation: %s ms', sleepyTimeMs)
 
     return new Promise((resolve) => {
         setTimeout(resolve, sleepyTimeMs)

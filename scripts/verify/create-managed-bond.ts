@@ -33,7 +33,14 @@ async function createManagedBond(
             collateralTokens: collateralTokensAddress,
             expiryTimestamp: 1640010122n,
             minimumDeposit: 25n
-        }
+        },
+        [
+            {
+                tokens: collateralTokensAddress,
+                amount: 1000,
+                timeLock: 24 * 60 * 60
+            }
+        ]
     )
 
     const receipt = await transaction.wait()

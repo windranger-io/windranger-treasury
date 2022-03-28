@@ -11,20 +11,34 @@ npx hardhat node
 ## Deploy contracts
 Contracts are best deployed to a local Hardhat JSON-RPC node with scripts.
 
-### Performance Bonds
+### Local Environment 
+A JSON-RPC node running locally, without a Etherscan service available.
 
+#### Performance Bonds
 ```shell
-npx hardhat run ./scripts/deploy/bond-deploy.ts --network localhost
+npx hardhat run ./scripts/deploy/deploy-all-no-etherscan.ts --network localhost
 ```
-The terminal running the JSON-RPC node will output the contract addresses, 
-set these as environment variables to allow the other script to run.
-
+The terminal running the JSON-RPC node will output the contract addresses, these are needed for later:
 - `${BondMediator}` : Bond Mediator contract address. 
 - `${BondFactory}` : Bond Factory contract address.
 - `${BitToken}` : Collateral token contract address (BIT).
 - `${Treausy}` : Any valid address to use as the treasury.
 
-#### MacOS
+### Integration Environment onwards
+Any environment with an Etherscan service available, which should the case for at least pre-production and production.
+
+#### Performance Bonds
+```shell
+npx hardhat run ./scripts/deploy/deploy-all.ts --network rinkeby
+```
+
+## Verify contract behaviour
+Check the contract deployment and operation with the test scripts.
+
+### Performance Bonds
+Before any Bonds can be created, a number of setup steps are needed.
+
+##### MacOS
 Set the temporary environment variables by substituting the value running the lines in your terminal.
 ```shell
 export BOND_MEDIATOR_CONTRACT=${BondMediator}
@@ -33,18 +47,12 @@ export COLLATERAL_TOKENS_CONTRACT=${BitToken}
 export TREASURY_ADDRESS=${Treausy}
 ```
 
-## Verify contracts
-Check the contract deployment and operation with the test scripts.
-
-### Performance Bonds
-Before any Bonds can be create a number of setup steps are needed.
-
 #### Create a DAO
 All Bond operations occur within the scope of a DAO.
 
 The script creates a new DAO using `BOND_MEDIATOR_CONTRACT` and `TREASURY_ADDRESS`
 ```shell
-npx hardhat run ./scripts/local/create-dao.ts --network localhost
+npx hardhat run ./scripts/verify/create-dao.ts --network localhost
 ```
 
 Note the `BigNumber` values from the `CreateDao` event, convert from hex to decimal and that is the DAO id.
@@ -60,7 +68,7 @@ Only whitelisted tokens are accepted as collateral.
 
 The script whitelists the value of the environment variable `COLLATERAL_TOKENS_CONTRACT` with the `BOND_MEDIATOR_CONTRACT`.
 ```shell
-npx hardhat run ./scripts/local/whitelist-collateral.ts --network localhost
+npx hardhat run ./scripts/verify/whitelist-collateral.ts --network localhost
 ```
 
 #### Create a Bond
@@ -68,5 +76,5 @@ A Bond managed within the scope of a DAO.
 
 The script creates a bond using the environment variables `BOND_MEDIATOR_CONTRACT`, `BOND_FACTORY_CONTRACT` and `DAO_ID`
 ```shell
-npx hardhat run ./scripts/local/create-managed-bond.ts --network localhost
+npx hardhat run ./scripts/verify/create-managed-bond.ts --network localhost
 ```
