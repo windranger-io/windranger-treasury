@@ -26,11 +26,19 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     Bond.TimeLockRewardPool[] private _rewardPools;
     uint256 private _redemptionTimestamp;
 
-    event ClaimReward(address tokens, uint256 amount);
-    event RegisterReward(address tokens, uint256 amount, uint256 timeLock);
-    event RewardDebt(address tokens, address claimant, uint256 rewardDebt);
+    event ClaimReward(address indexed tokens, uint256 amount);
+    event RegisterReward(
+        address indexed tokens,
+        uint256 amount,
+        uint256 timeLock
+    );
+    event RewardDebt(
+        address indexed tokens,
+        address indexed claimant,
+        uint256 rewardDebt
+    );
     event SetRedemptionTimestamp(uint256 timestamp);
-    event UpdateRewardTimeLock(address tokens, uint256 timeLock);
+    event UpdateRewardTimeLock(address indexed tokens, uint256 timeLock);
 
     /**
      * @notice Makes a function callable only when the contract has the redemption times set.

@@ -19,7 +19,7 @@ import "../Version.sol";
  * @dev Orchestrates the various Bond contracts to provide a single function to aggregate the various calls.
  */
 interface BondPortal {
-    event CreateDao(uint256 id, address treasury);
+    event CreateDao(uint256 indexed id, address indexed treasury);
 
     /**
      * @notice Initialises a new DAO with essential configuration.

@@ -73,16 +73,20 @@ abstract contract ERC20SingleCollateralBond is
 
     address private _treasury;
 
-    event AllowRedemption(address authorizer, string reason);
-    event DebtIssue(address receiver, string debSymbol, uint256 debtAmount);
+    event AllowRedemption(address indexed authorizer, string reason);
+    event DebtIssue(
+        address indexed receiver,
+        string debSymbol,
+        uint256 debtAmount
+    );
     event Deposit(
-        address depositor,
+        address indexed depositor,
         string collateralSymbol,
         uint256 collateralAmount
     );
     event Expire(
-        address sender,
-        address treasury,
+        address indexed sender,
+        address indexed treasury,
         string collateralSymbol,
         uint256 collateralAmount
     );
@@ -94,7 +98,7 @@ abstract contract ERC20SingleCollateralBond is
     );
     event FullCollateral(string collateralSymbol, uint256 collateralAmount);
     event Redemption(
-        address redeemer,
+        address indexed redeemer,
         string debtSymbol,
         uint256 debtAmount,
         string collateralSymbol,
@@ -106,7 +110,7 @@ abstract contract ERC20SingleCollateralBond is
         string reason
     );
     event WithdrawCollateral(
-        address treasury,
+        address indexed treasury,
         string collateralSymbol,
         uint256 collateralAmount
     );
