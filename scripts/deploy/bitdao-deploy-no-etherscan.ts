@@ -1,5 +1,5 @@
 import {BitDAO} from '../../typechain-types'
-import {awaitContractPropagation, deployContract} from '../utils/contract'
+import {deployContract} from '../utils/contract'
 import {signer} from '../../test/framework/contracts'
 
 export async function deployBitDao(): Promise<void> {

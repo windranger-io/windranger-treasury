@@ -77,7 +77,6 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             'BitDAO',
             admin.address
         )) as ExtendedERC20
-        collateralSymbol = await collateralTokens.symbol()
 
         bond = await createBond()
     })
@@ -151,7 +150,7 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             )
 
             verifyDepositEvent(receipt, guarantor.address, {
-                symbol: collateralSymbol,
+                tokens: collateralTokens.address,
                 amount: pledge
             })
         })
@@ -549,8 +548,8 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             verifyRedemptionEvent(
                 receipt,
                 guarantor.address,
-                {symbol: 'MDT007', amount: pledge},
-                {symbol: collateralSymbol, amount: pledge}
+                {tokens: bond.address, amount: pledge},
+                {tokens: collateralTokens.address, amount: pledge}
             )
         })
 
@@ -586,7 +585,6 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
     let admin: SignerWithAddress
     let bond: SingleCollateralMultiRewardBond
     let rewardPools: Bond.TimeLockRewardPoolStruct[]
-    let collateralSymbol: string
     let collateralTokens: ExtendedERC20
     let guarantor: SignerWithAddress
     let rewardTokenOne: ExtendedERC20
