@@ -165,3 +165,13 @@ Alternatively to run using a `slither.json` config file:
 cd test-me
 slither . --config-file slither.json
 ```
+
+## Tools
+
+### Contract sizing
+
+The size of all contract can be display in a table using a custom task that runs under `yarn`
+
+```shell
+yarn run hardhat size-contracts
+```
