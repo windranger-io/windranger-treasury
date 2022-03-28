@@ -9,7 +9,7 @@ import {
     ExpectedERC20Transfer,
     erc20TransferEventLogs,
     ActualERC20Transfer
-} from './erc20-transfer'
+} from './erc20-events'
 
 /**
  * Verifies the content matches at least one of the Transfer events.

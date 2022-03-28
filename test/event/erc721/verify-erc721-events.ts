@@ -9,7 +9,7 @@ import {
     erc721TransferEvents,
     deepEqualsERC721TokenTransfer,
     erc721TransferEventLogs
-} from './erc721-transfer'
+} from './erc721-events'
 
 /**
  * Verifies the content matches at least one of the Transfer events.

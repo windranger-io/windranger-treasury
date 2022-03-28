@@ -6,7 +6,7 @@ import {
 } from '../../typechain-types'
 import {log} from '../../config/logging'
 import {checkContractVersionAgainstReleaseTag} from './check'
-import {Version} from '../../test/contracts/cast/version'
+import {Version} from '../../test/cast/version'
 import {deployContract} from '../utils/contract'
 
 function deployAndCheckVersion<T extends Version>(contractName: string) {

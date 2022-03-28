@@ -1,5 +1,5 @@
 import {ContractReceipt, Event} from 'ethers'
-import {createBondEventLogs} from '../../test/contracts/bond/bond-creator-events'
+import {createBondEventLogs} from '../../test/event/bond/bond-creator-events'
 import {eventLog} from '../../test/framework/event-logs'
 import {log} from '../../config/logging'
 import {BondFactory} from '../../typechain-types'

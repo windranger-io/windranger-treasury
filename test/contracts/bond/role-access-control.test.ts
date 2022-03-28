@@ -11,19 +11,19 @@ import {
     Role,
     SUPER_USER,
     SYSTEM_ADMIN
-} from './contracts/bond/roles'
+} from '../../event/bond/roles'
 import {before} from 'mocha'
-import {deployContract, signer} from './framework/contracts'
-import {BondAccessControlBox} from '../typechain-types'
+import {deployContract, signer} from '../../framework/contracts'
+import {BondAccessControlBox} from '../../../typechain-types'
 import {solidity} from 'ethereum-waffle'
 import {
     accessControlRevertMessageAlreadyDaoRoleMember,
     accessControlRevertMessageAlreadyGlobalRoleMember,
     accessControlRevertMessageMissingDaoRole,
     accessControlRevertMessageMissingGlobalRole
-} from './contracts/bond/access-control-messages'
+} from '../../event/bond/access-control-messages'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {successfulTransaction} from './framework/transaction'
+import {successfulTransaction} from '../../framework/transaction'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

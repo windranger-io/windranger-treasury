@@ -6,19 +6,19 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondFactory} from '../typechain-types'
+import {BitDAO, BondFactory} from '../../../typechain-types'
 import {
     deployContract,
     deployContractWithProxy,
     execute,
     signer
-} from './framework/contracts'
+} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {verifyCreateBondEvent} from './contracts/bond/verify-bond-creator-events'
-import {ExtendedERC20} from './contracts/cast/extended-erc20'
-import {SYSTEM_ADMIN} from './contracts/bond/roles'
-import {successfulTransaction} from './framework/transaction'
-import {accessControlRevertMessageMissingGlobalRole} from './contracts/bond/access-control-messages'
+import {verifyCreateBondEvent} from '../../event/bond/verify-bond-creator-events'
+import {ExtendedERC20} from '../../cast/extended-erc20'
+import {SYSTEM_ADMIN} from '../../event/bond/roles'
+import {successfulTransaction} from '../../framework/transaction'
+import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
