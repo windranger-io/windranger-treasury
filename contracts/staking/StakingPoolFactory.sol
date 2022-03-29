@@ -32,7 +32,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
     function createStakingPool(StakingPoolLib.Data calldata info)
         external
         whenNotPaused
-        atLeastDaoAminRole(info.daoId)
+        atLeastDaoAdminRole(info.daoId)
         returns (address)
     {
         StakingPool stakingPool = new StakingPool();

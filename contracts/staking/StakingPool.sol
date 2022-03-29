@@ -290,7 +290,7 @@ contract StakingPool is
 
     function adminEmergencyRewardSweep()
         external
-        atLeastDaoAminRole(_stakingPoolInfo.daoId)
+        atLeastDaoAdminRole(_stakingPoolInfo.daoId)
         emergencyModeEnabled
     {
         _adminEmergencyRewardSweep();
@@ -298,14 +298,14 @@ contract StakingPool is
 
     function enableEmergencyMode()
         external
-        atLeastDaoAminRole(_stakingPoolInfo.daoId)
+        atLeastDaoAdminRole(_stakingPoolInfo.daoId)
     {
         _stakingPoolInfo.emergencyMode = true;
     }
 
     function setRewardsAvailableTimestamp(uint32 timestamp)
         external
-        atLeastDaoAminRole(_stakingPoolInfo.daoId)
+        atLeastDaoAdminRole(_stakingPoolInfo.daoId)
     {
         _setRewardsAvailableTimestamp(timestamp);
     }

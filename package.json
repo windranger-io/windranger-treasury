@@ -24,7 +24,8 @@
     "lint-sol": "solhint 'contracts/**/*.sol'",
     "plant": "npx node-plantuml ./docs/specs",
     "prepare": "husky install",
-    "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register \"test/**/*.test.ts\""
+    "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register \"test/**/*.test.ts\"",
+    "coverage": "TS_NODE_TRANSPILE_ONLY=true hardhat coverage"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "2.0.5",
@@ -58,6 +59,7 @@
     "prettier": "^2.5.0",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "3.3.7",
+    "solidity-coverage": "^0.7.20",
     "ts-node": "10.7.0",
     "typechain": "^7.0.0",
     "typescript": "4.6.2"
