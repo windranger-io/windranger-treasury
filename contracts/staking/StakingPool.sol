@@ -90,11 +90,19 @@ contract StakingPool is
         _;
     }
 
-    function pause() external whenNotPaused atLeastSysAdminRole {
+    function pause()
+        external
+        whenNotPaused
+        atLeastDaoMeepleRole(_stakingPoolInfo.daoId)
+    {
         _pause();
     }
 
-    function unpause() external whenPaused atLeastSysAdminRole {
+    function unpause()
+        external
+        whenPaused
+        atLeastDaoMeepleRole(_stakingPoolInfo.daoId)
+    {
         _unpause();
     }
 
