@@ -30,6 +30,54 @@ const MIN_POOL_STAKE = 500
 const REWARD_TOKEN_1_AMOUNT = 2000
 
 describe('Staking Pool Tests', () => {
+    describe('Initialization', () => {
+        it('launch paused then unpause', async () => {
+            admin = (await signer(0)).address
+            user = await signer(1)
+            user2 = await signer(2)
+
+            const symbol = 'EEK'
+            stakeTokens = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                symbol
+            )
+
+            const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+            const stakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                rewardsAvailableTimestamp:
+                    REWARDS_AVAILABLE_OFFSET +
+                    epochStartTimestamp +
+                    EPOCH_DURATION,
+                emergencyMode: false,
+                launchPaused: true,
+                treasury: admin,
+                totalStakedAmount: 0,
+                stakeToken: stakeTokens.address,
+                poolType: StakingPoolType.FLOATING,
+                rewardTokens: []
+            }
+
+            stakingPool = await deployContract('StakingPool')
+            await stakingPool.initialize(stakingPoolInfo)
+
+            await expect(
+                userDeposit(user, BigNumber.from(20))
+            ).to.be.revertedWith('Pausable: paused')
+
+            await increaseTime(START_DELAY)
+            await stakingPool.unpause()
+
+            expect(await userDeposit(user, BigNumber.from(5)))
+        })
+    })
+
     describe('Floating Staking Tests', () => {
         before(async () => {
             admin = (await signer(0)).address
@@ -500,8 +548,6 @@ describe('Staking Pool Tests', () => {
     async function userWithdrawStake(
         user: SignerWithAddress
     ): Promise<ContractReceipt> {
-        // eslint-disable-next-line no-console
-        console.log('userWithdrawStake')
         return successfulTransaction(stakingPool.connect(user).withdrawStake())
     }
     async function userWithdrawRewards(
