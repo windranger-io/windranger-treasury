@@ -1,17 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 /**
  * @title Encapsulates the state of being redeemable.
  *
  * @notice The state of being redeemable is boolean and single direction transition from false to true.
  */
-abstract contract Redeemable is Initializable {
+abstract contract Redeemable is ContextUpgradeable {
     bool private _redeemable;
 
     string private _reason;
+
+    event Redeemable(address indexed instigator);
 
     /**
      * @notice Makes a function callable only when the contract is not redeemable.
@@ -58,5 +60,6 @@ abstract contract Redeemable is Initializable {
     function _setAsRedeemable(string calldata reason) internal {
         _redeemable = true;
         _reason = reason;
+        emit Redeemable(_msgSender());
     }
 }
