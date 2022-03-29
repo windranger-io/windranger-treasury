@@ -23,7 +23,7 @@ export function verifyRedeemableEvents(
         actualEvents,
         metaData,
         (actual: ActualRedeemableEvent, expected: ExpectedRedeemableEvent) =>
-            deepEqualsSetMetaDataEvent(actual, expected)
+            deepEqualsRedeemableEvent(actual, expected)
     )
 }
 
@@ -43,11 +43,11 @@ export function verifyRedeemableLogEvents<T extends BaseContract>(
         actualEvents,
         metaData,
         (actual: ActualRedeemableEvent, expected: ExpectedRedeemableEvent) =>
-            deepEqualsSetMetaDataEvent(actual, expected)
+            deepEqualsRedeemableEvent(actual, expected)
     )
 }
 
-function deepEqualsSetMetaDataEvent(
+function deepEqualsRedeemableEvent(
     actual: ActualRedeemableEvent,
     expected: ExpectedRedeemableEvent
 ): boolean {
