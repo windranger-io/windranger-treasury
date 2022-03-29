@@ -23,6 +23,11 @@ import {
 } from '../../event/bond/verify-single-collateral-bond-events'
 import {verifyERC20TransferEvents} from '../../event/erc20/verify-erc20-events'
 import {ExtendedERC20} from '../../cast/extended-erc20'
+import {
+    ExpectedSetMetaDataEvent,
+    verifySetMetaDataEvents,
+    verifySetMetaDataLogEvents
+} from '../../event/bond/verify-meta-data-store-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -536,18 +541,25 @@ describe('ERC20 Single Collateral Bond contract', () => {
             bond = await deployContract('ERC20SingleCollateralBondBox')
             expect(await bond.metaData()).equals('')
 
-            await bond.initialize(
-                {name: 'My Debt Tokens two', symbol: 'MDT006', data: DATA},
-                {
-                    debtTokenAmount: debtTokens,
-                    collateralTokens: collateralTokens.address,
-                    expiryTimestamp: BOND_EXPIRY,
-                    minimumDeposit: MINIMUM_DEPOSIT
-                },
-                treasury
+            const receipt = await successfulTransaction(
+                bond.initialize(
+                    {name: 'My Debt Tokens two', symbol: 'MDT006', data: DATA},
+                    {
+                        debtTokenAmount: debtTokens,
+                        collateralTokens: collateralTokens.address,
+                        expiryTimestamp: BOND_EXPIRY,
+                        minimumDeposit: MINIMUM_DEPOSIT
+                    },
+                    treasury
+                )
             )
 
             expect(await bond.metaData()).equals(DATA)
+            const setMetaDataEvent: ExpectedSetMetaDataEvent[] = [
+                {data: DATA, instigator: admin.address}
+            ]
+            verifySetMetaDataEvents(receipt, setMetaDataEvent)
+            verifySetMetaDataLogEvents(bond, receipt, setMetaDataEvent)
         })
 
         it('metadata is updatable', async () => {
@@ -573,9 +585,16 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
             expect(await bond.metaData()).equals(startMetaData)
 
-            await successfulTransaction(bond.setMetaData(endMetadata))
+            const receipt = await successfulTransaction(
+                bond.setMetaData(endMetadata)
+            )
 
             expect(await bond.metaData()).equals(endMetadata)
+            const setMetaDataEvent: ExpectedSetMetaDataEvent[] = [
+                {data: endMetadata, instigator: admin.address}
+            ]
+            verifySetMetaDataEvents(receipt, setMetaDataEvent)
+            verifySetMetaDataLogEvents(bond, receipt, setMetaDataEvent)
         })
     })
 

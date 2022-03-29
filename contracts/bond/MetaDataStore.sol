@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 /**
  * @title A string storage bucket for metadata.
@@ -11,8 +11,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  *
  * @dev Metadata could include UI related pieces, perhaps in a delimited format to support multiple items.
  */
-abstract contract MetaDataStore is Initializable {
+abstract contract MetaDataStore is ContextUpgradeable {
     string private _metaData;
+
+    event SetMetaData(string data, address indexed instigator);
 
     /**
      * @notice The storage box for metadata. Information not required by the contract for operations.
@@ -24,11 +26,11 @@ abstract contract MetaDataStore is Initializable {
     }
 
     //slither-disable-next-line naming-convention
-    function __MetaDataStore_init(string memory data)
+    function __MetaDataStore_init(string calldata data)
         internal
         onlyInitializing
     {
-        _metaData = data;
+        _setMetaData(data);
     }
 
     /**
@@ -38,5 +40,6 @@ abstract contract MetaDataStore is Initializable {
      */
     function _setMetaData(string calldata data) internal {
         _metaData = data;
+        emit SetMetaData(data, _msgSender());
     }
 }
