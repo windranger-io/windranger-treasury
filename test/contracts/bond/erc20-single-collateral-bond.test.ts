@@ -28,6 +28,11 @@ import {
     verifySetMetaDataEvents,
     verifySetMetaDataLogEvents
 } from '../../event/bond/verify-meta-data-store-events'
+import {
+    ExpectedRedeemableEvent,
+    verifyRedeemableEvents,
+    verifyRedeemableLogEvents
+} from '../../event/bond/verify-redeemable-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -632,11 +637,16 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 {signer: guarantorOne, pledge: pledge}
             ])
             await depositBond(guarantorOne, pledge)
-            await allowRedemption(REDEMPTION_REASON)
+            const receipt = await allowRedemption(REDEMPTION_REASON)
 
             await expect(redeem(guarantorOne, ZERO)).to.be.revertedWith(
                 'Bond: too small'
             )
+            const redeemableEvents: ExpectedRedeemableEvent[] = [
+                {instigator: admin.address}
+            ]
+            verifyRedeemableEvents(receipt, redeemableEvents)
+            verifyRedeemableLogEvents(bond, receipt, redeemableEvents)
         })
 
         it('only when redeemable', async () => {
