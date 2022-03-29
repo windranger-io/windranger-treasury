@@ -26,19 +26,29 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     Bond.TimeLockRewardPool[] private _rewardPools;
     uint256 private _redemptionTimestamp;
 
-    event ClaimReward(address indexed tokens, uint256 amount);
+    event ClaimReward(
+        address indexed tokens,
+        uint256 amount,
+        address indexed instigator
+    );
     event RegisterReward(
         address indexed tokens,
         uint256 amount,
-        uint256 timeLock
+        uint256 timeLock,
+        address indexed instigator
     );
     event RewardDebt(
         address indexed tokens,
         address indexed claimant,
-        uint256 rewardDebt
+        uint256 rewardDebt,
+        address indexed instigator
     );
-    event SetRedemptionTimestamp(uint256 timestamp);
-    event UpdateRewardTimeLock(address indexed tokens, uint256 timeLock);
+    event SetRedemptionTimestamp(uint256 timestamp, address indexed instigator);
+    event UpdateRewardTimeLock(
+        address indexed tokens,
+        uint256 timeLock,
+        address indexed instigator
+    );
 
     /**
      * @notice Makes a function callable only when the contract has the redemption times set.
@@ -178,7 +188,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
                 totalSupply;
 
             _claimantToRewardPoolDebt[claimant][rewardPool.tokens] = owed;
-            emit RewardDebt(rewardPool.tokens, claimant, owed);
+            emit RewardDebt(rewardPool.tokens, claimant, owed, _msgSender());
         }
     }
 
@@ -191,7 +201,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
 
         rewardPool.timeLock = timeLock;
 
-        emit UpdateRewardTimeLock(tokens, timeLock);
+        emit UpdateRewardTimeLock(tokens, timeLock, _msgSender());
     }
 
     /**
@@ -211,7 +221,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
 
         _redemptionTimestamp = timestamp;
 
-        emit SetRedemptionTimestamp(timestamp);
+        emit SetRedemptionTimestamp(timestamp, _msgSender());
     }
 
     /**
@@ -240,7 +250,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
             uint256 amount = _claimantToRewardPoolDebt[claimant][tokens];
             delete _claimantToRewardPoolDebt[claimant][tokens];
 
-            emit ClaimReward(tokens, amount);
+            emit ClaimReward(tokens, amount, _msgSender());
 
             _transferReward(tokens, amount, claimant);
         }
@@ -263,7 +273,8 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         emit RegisterReward(
             rewardPool.tokens,
             rewardPool.amount,
-            rewardPool.timeLock
+            rewardPool.timeLock,
+            _msgSender()
         );
 
         _rewardPools.push(rewardPool);

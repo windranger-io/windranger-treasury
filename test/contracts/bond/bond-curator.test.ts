@@ -100,7 +100,9 @@ describe('Bond Curator contract', () => {
                 await curator.bondAt(DAO_ID, createdBondIndex.sub(1n))
             ).equals(bond.address)
 
-            const expectedAddBondEvents = [{bond: bond.address}]
+            const expectedAddBondEvents = [
+                {bond: bond.address, instigator: admin}
+            ]
             verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
             verifyAddBondEvents(receipt, expectedAddBondEvents)
         })

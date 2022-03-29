@@ -19,18 +19,21 @@ import {
 export type ExpectTokenBalance = {
     tokens: string
     amount: bigint
+    instigator: string
 }
 
 export type ExpectSlashEvent = {
     reason: string
     tokens: string
     amount: bigint
+    instigator: string
 }
 
 export type ExpectFlushTransferEvent = {
     to: string
     tokens: string
     amount: bigint
+    instigator: string
 }
 
 export type ExpectAllowRedemptionEvent = {
@@ -67,6 +70,9 @@ export function verifyFullCollateralEvent(
     expect(fullCollateral.collateralAmount, 'Debt token amount').equals(
         collateral.amount
     )
+    expect(fullCollateral.instigator, 'Instigator address').equals(
+        collateral.instigator
+    )
 }
 
 /**
@@ -77,10 +83,11 @@ export function verifyDebtIssueEvent(
     guarantor: string,
     debt: ExpectTokenBalance
 ): void {
-    const depositOneEvent = debtIssueEvent(event('DebtIssue', receipt))
-    expect(depositOneEvent.receiver, 'Debt token receiver').equals(guarantor)
-    expect(depositOneEvent.debTokens, 'Debt token address').equals(debt.tokens)
-    expect(depositOneEvent.debtAmount, 'Debt token amount').equals(debt.amount)
+    const debtIssue = debtIssueEvent(event('DebtIssue', receipt))
+    expect(debtIssue.receiver, 'Debt token receiver').equals(guarantor)
+    expect(debtIssue.debTokens, 'Debt token address').equals(debt.tokens)
+    expect(debtIssue.debtAmount, 'Debt token amount').equals(debt.amount)
+    expect(debtIssue.instigator, 'Instigator address').equals(debt.instigator)
 }
 
 /**
@@ -91,13 +98,16 @@ export function verifyDepositEvent(
     guarantor: string,
     collateral: ExpectTokenBalance
 ): void {
-    const depositOneEvent = depositEvent(event('Deposit', receipt))
-    expect(depositOneEvent.depositor, 'depositor').equals(guarantor)
-    expect(depositOneEvent.collateralTokens, 'Collateral token address').equals(
+    const deposit = depositEvent(event('Deposit', receipt))
+    expect(deposit.depositor, 'depositor').equals(guarantor)
+    expect(deposit.collateralTokens, 'Collateral token address').equals(
         collateral.tokens
     )
-    expect(depositOneEvent.collateralAmount, 'Collateral amount').equals(
+    expect(deposit.collateralAmount, 'Collateral amount').equals(
         collateral.amount
+    )
+    expect(deposit.instigator, 'Instigator address').equals(
+        collateral.instigator
     )
 }
 
@@ -110,14 +120,16 @@ export function verifyExpireEvent(
     treasury: string,
     collateral: ExpectTokenBalance
 ): void {
-    const depositOneEvent = expireEvent(event('Expire', receipt))
-    expect(depositOneEvent.sender, 'Debt token receiver').equals(sender)
-    expect(depositOneEvent.treasury, 'Debt token receiver').equals(treasury)
-    expect(depositOneEvent.collateralTokens, 'Debt token address').equals(
+    const expire = expireEvent(event('Expire', receipt))
+    expect(expire.treasury, 'Debt token receiver').equals(treasury)
+    expect(expire.collateralTokens, 'Debt token address').equals(
         collateral.tokens
     )
-    expect(depositOneEvent.collateralAmount, 'Debt token amount').equals(
+    expect(expire.collateralAmount, 'Debt token amount').equals(
         collateral.amount
+    )
+    expect(expire.instigator, 'Instigator address').equals(
+        collateral.instigator
     )
 }
 
@@ -146,6 +158,9 @@ export function verifyPartialCollateralEvent(
     expect(partialCollateral.debtRemaining, 'Debt tokens remaining').equals(
         debt.amount
     )
+    expect(partialCollateral.instigator, 'Instigator address').equals(
+        debt.instigator
+    )
 }
 
 /**
@@ -157,22 +172,16 @@ export function verifyRedemptionEvent(
     debt: ExpectTokenBalance,
     collateral: ExpectTokenBalance
 ): void {
-    const redemptionTwoEvent = redemptionEvent(event('Redemption', receipt))
-    expect(redemptionTwoEvent.redeemer, 'Redemption redeemer').equals(redeemer)
-    expect(redemptionTwoEvent.debtTokens, 'Redemption debt address').equals(
-        debt.tokens
+    const redemption = redemptionEvent(event('Redemption', receipt))
+    expect(redemption.redeemer, 'Redemption redeemer').equals(redeemer)
+    expect(redemption.debtTokens, 'Redemption debt address').equals(debt.tokens)
+    expect(redemption.debtAmount, 'Redemption debt amount').equals(debt.amount)
+    expect(redemption.collateralTokens, 'Redemption collateral address').equals(
+        collateral.tokens
     )
-    expect(redemptionTwoEvent.debtAmount, 'Redemption debt amount').equals(
-        debt.amount
+    expect(redemption.collateralAmount, 'Redemption collateral amount').equals(
+        collateral.amount
     )
-    expect(
-        redemptionTwoEvent.collateralTokens,
-        'Redemption collateral address'
-    ).equals(collateral.tokens)
-    expect(
-        redemptionTwoEvent.collateralAmount,
-        'Redemption collateral amount'
-    ).equals(collateral.amount)
 }
 
 /**
@@ -182,15 +191,18 @@ export function verifySlashDepositsEvent(
     receipt: ContractReceipt,
     expectedSlashEvent: ExpectSlashEvent
 ): void {
-    const onlySlashEvent = slashDepositsEvent(event('SlashDeposits', receipt))
-    expect(onlySlashEvent.collateralTokens, 'Collateral tokens address').equals(
+    const slashDeposit = slashDepositsEvent(event('SlashDeposits', receipt))
+    expect(slashDeposit.collateralTokens, 'Collateral tokens address').equals(
         expectedSlashEvent.tokens
     )
-    expect(onlySlashEvent.collateralAmount, 'Slash amount').equals(
+    expect(slashDeposit.collateralAmount, 'Slash amount').equals(
         expectedSlashEvent.amount
     )
-    expect(onlySlashEvent.reason, 'Slash reason').equals(
+    expect(slashDeposit.reason, 'Slash reason').equals(
         expectedSlashEvent.reason
+    )
+    expect(slashDeposit.instigator, 'Instigator address').equals(
+        expectedSlashEvent.instigator
     )
 }
 
@@ -201,15 +213,18 @@ export function verifyWithdrawCollateralEvent(
     receipt: ContractReceipt,
     transfer: ExpectFlushTransferEvent
 ): void {
-    const onlyTransferEvent = withdrawCollateralEvent(
+    const withdrawCollateral = withdrawCollateralEvent(
         event('WithdrawCollateral', receipt)
     )
-    expect(onlyTransferEvent.treasury, 'Transfer from').equals(transfer.to)
+    expect(withdrawCollateral.treasury, 'Transfer from').equals(transfer.to)
     expect(
-        onlyTransferEvent.collateralTokens,
+        withdrawCollateral.collateralTokens,
         'Collateral tokens address'
     ).equals(transfer.tokens)
-    expect(onlyTransferEvent.collateralAmount, 'Transfer amount').equals(
+    expect(withdrawCollateral.collateralAmount, 'Transfer amount').equals(
         transfer.amount
+    )
+    expect(withdrawCollateral.instigator, 'Instigator address').equals(
+        transfer.instigator
     )
 }

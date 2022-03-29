@@ -37,7 +37,7 @@ chai.use(solidity)
 
 describe('TimeLockMultiRewardBond contract', () => {
     before(async () => {
-        const admin = await signer(0)
+        admin = await signer(0)
         rewardTokenOne = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
@@ -101,7 +101,8 @@ describe('TimeLockMultiRewardBond contract', () => {
                     rewardDebt: divideBigNumberish(
                         rewardPools[0].amount,
                         totalSupplyDivisor
-                    )
+                    ),
+                    instigator: claimant.address
                 },
                 {
                     tokens: rewardPools[1].tokens,
@@ -109,7 +110,8 @@ describe('TimeLockMultiRewardBond contract', () => {
                     rewardDebt: divideBigNumberish(
                         rewardPools[1].amount,
                         totalSupplyDivisor
-                    )
+                    ),
+                    instigator: claimant.address
                 },
                 {
                     tokens: rewardPools[2].tokens,
@@ -117,7 +119,8 @@ describe('TimeLockMultiRewardBond contract', () => {
                     rewardDebt: divideBigNumberish(
                         rewardPools[2].amount,
                         totalSupplyDivisor
-                    )
+                    ),
+                    instigator: claimant.address
                 }
             ]
 
@@ -252,11 +255,13 @@ describe('TimeLockMultiRewardBond contract', () => {
             const expectedRewardEvents: ExpectedClaimRewardEvent[] = [
                 {
                     tokens: rewardTokenOne.address,
-                    amount: expectedRewardTokenOne
+                    amount: expectedRewardTokenOne,
+                    instigator: claimant.address
                 },
                 {
                     tokens: rewardTokenThree.address,
-                    amount: expectedRewardTokenThree
+                    amount: expectedRewardTokenThree,
+                    instigator: claimant.address
                 }
             ]
 
@@ -291,17 +296,20 @@ describe('TimeLockMultiRewardBond contract', () => {
             {
                 tokens: rewardPools[0].tokens,
                 amount: BigNumber.from(rewardPools[0].amount).toBigInt(),
-                timeLock: BigNumber.from(rewardPools[0].timeLock).toBigInt()
+                timeLock: BigNumber.from(rewardPools[0].timeLock).toBigInt(),
+                instigator: admin.address
             },
             {
                 tokens: rewardPools[1].tokens,
                 amount: BigNumber.from(rewardPools[1].amount).toBigInt(),
-                timeLock: BigNumber.from(rewardPools[1].timeLock).toBigInt()
+                timeLock: BigNumber.from(rewardPools[1].timeLock).toBigInt(),
+                instigator: admin.address
             },
             {
                 tokens: rewardPools[2].tokens,
                 amount: BigNumber.from(rewardPools[2].amount).toBigInt(),
-                timeLock: BigNumber.from(rewardPools[2].timeLock).toBigInt()
+                timeLock: BigNumber.from(rewardPools[2].timeLock).toBigInt(),
+                instigator: admin.address
             }
         ]
 
@@ -318,10 +326,10 @@ describe('TimeLockMultiRewardBond contract', () => {
         return successfulTransaction(bond.connect(claimant).claimantDebt(debt))
     }
 
+    let admin: SignerWithAddress
     let bond: TimeLockMultiRewardBondBox
     let rewardPools: Bond.TimeLockRewardPoolStruct[]
     let claimant: SignerWithAddress
-
     let rewardTokenOne: ExtendedERC20
     let rewardTokenTwo: ExtendedERC20
     let rewardTokenThree: ExtendedERC20

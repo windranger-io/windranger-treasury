@@ -21,24 +21,27 @@ export type ActualDebtIssueEvent = {
     receiver: string
     debTokens: string
     debtAmount: BigNumber
+    instigator: string
 }
 
 export type ActualDepositEvent = {
     depositor: string
     collateralTokens: string
     collateralAmount: BigNumber
+    instigator: string
 }
 
 export type ActualExpireEvent = {
-    sender: string
     treasury: string
     collateralTokens: string
     collateralAmount: BigNumber
+    instigator: string
 }
 
 export type ActualFullCollateralEvent = {
     collateralTokens: string
     collateralAmount: BigNumber
+    instigator: string
 }
 
 export type ActualPartialCollateralEvent = {
@@ -46,6 +49,7 @@ export type ActualPartialCollateralEvent = {
     collateralAmount: BigNumber
     debtTokens: string
     debtRemaining: BigNumber
+    instigator: string
 }
 
 export type ActualRedemptionEvent = {
@@ -60,12 +64,14 @@ export type ActualSlashEvent = {
     collateralTokens: string
     collateralAmount: BigNumber
     reason: string
+    instigator: string
 }
 
 export type ActualWithdrawCollateralEvent = {
     treasury: string
     collateralTokens: string
     collateralAmount: BigNumber
+    instigator: string
 }
 
 /**
@@ -77,13 +83,9 @@ export function allowRedemptionEvent(event: Event): ActualAllowRedemptionEvent {
 
     const args = redemption.args
     expect(args?.authorizer).is.not.undefined
-
     expect(args?.reason).is.not.undefined
 
-    return {
-        authorizer: redemption.args.authorizer,
-        reason: redemption.args.reason
-    }
+    return redemption.args
 }
 
 /**
@@ -97,6 +99,7 @@ export function debtIssueEvent(event: Event): ActualDebtIssueEvent {
     expect(args?.receiver).is.not.undefined
     expect(args?.debTokens).is.not.undefined
     expect(args?.debtAmount).is.not.undefined
+    expect(args?.instigator).is.not.undefined
 
     return debt.args
 }
@@ -112,6 +115,7 @@ export function depositEvent(event: Event): ActualDepositEvent {
     expect(args?.depositor).is.not.undefined
     expect(args?.collateralTokens).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
+    expect(args?.instigator).is.not.undefined
 
     return debt.args
 }
@@ -124,10 +128,10 @@ export function expireEvent(event: Event): ActualExpireEvent {
     expect(expire.args).is.not.undefined
 
     const args = expire.args
-    expect(args?.sender).is.not.undefined
     expect(args?.treasury).is.not.undefined
     expect(args?.collateralTokens).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
+    expect(args?.instigator).is.not.undefined
 
     return expire.args
 }
@@ -142,6 +146,7 @@ export function fullCollateralEvent(event: Event): ActualFullCollateralEvent {
     const args = collateral.args
     expect(args?.collateralTokens).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
+    expect(args?.instigator).is.not.undefined
 
     return collateral.args
 }
@@ -160,6 +165,7 @@ export function partialCollateralEvent(
     expect(args?.collateralAmount).is.not.undefined
     expect(args?.debtTokens).is.not.undefined
     expect(args?.debtRemaining).is.not.undefined
+    expect(args?.instigator).is.not.undefined
 
     return collateral.args
 }
@@ -191,8 +197,8 @@ export function slashDepositsEvent(event: Event): ActualSlashEvent {
     const args = slash.args
     expect(args?.collateralTokens).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
-
     expect(args?.reason).is.not.undefined
+    expect(args?.instigator).is.not.undefined
 
     return slash.args
 }
@@ -210,6 +216,7 @@ export function withdrawCollateralEvent(
     expect(args?.treasury).is.not.undefined
     expect(args?.collateralTokens).is.not.undefined
     expect(args?.collateralAmount).is.not.undefined
+    expect(args?.instigator).is.not.undefined
 
     return withdraw.args
 }

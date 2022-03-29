@@ -26,7 +26,11 @@ contract BondMediator is
 {
     BondCreator private _creator;
 
-    event CreateDao(uint256 indexed id, address indexed treasury);
+    event CreateDao(
+        uint256 indexed id,
+        address indexed treasury,
+        address indexed instigator
+    );
 
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
@@ -56,7 +60,7 @@ contract BondMediator is
         uint256 id = _daoBondConfiguration(erc20CapableTreasury);
         _grantDaoCreatorAdminRoleInTheirDao(id);
 
-        emit CreateDao(id, erc20CapableTreasury);
+        emit CreateDao(id, erc20CapableTreasury, _msgSender());
 
         return id;
     }

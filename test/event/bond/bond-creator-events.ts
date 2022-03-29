@@ -24,12 +24,12 @@ export type ActualTimeLockRewardPool = {
 }
 
 export type ActualCreateBondEvent = {
-    creator: string
     bond: string
     metadata: ActualBondMetaData
     configuration: ActualBondSettings
     rewards: ActualTimeLockRewardPool[]
     treasury: string
+    instigator: string
 }
 
 /**
@@ -40,12 +40,12 @@ export function createBondEvent(event: Event): ActualCreateBondEvent {
     expect(event.args).is.not.undefined
 
     const args = event.args
-    expect(args?.creator).is.not.undefined
     expect(args?.bond).is.not.undefined
     expect(args?.metadata).is.not.undefined
     expect(args?.configuration).is.not.undefined
     expect(args?.rewards).is.not.undefined
     expect(args?.treasury).is.not.undefined
+    expect(args?.instigator).is.not.undefined
 
     return create.args
 }
@@ -57,15 +57,14 @@ export function createBondEventLogs(events: Result[]): ActualCreateBondEvent[] {
     const results: ActualCreateBondEvent[] = []
 
     for (const event of events) {
-        expect(event?.creator).is.not.undefined
         expect(event?.bond).is.not.undefined
         expect(event?.metadata).is.not.undefined
         expect(event?.configuration).is.not.undefined
         expect(event?.rewards).is.not.undefined
         expect(event?.treasury).is.not.undefined
+        expect(event?.instigator).is.not.undefined
 
         results.push({
-            creator: String(event.creator),
             bond: String(event.bond),
             metadata: createBondMetaData(
                 event?.metadata as Bond.MetaDataStruct
@@ -76,7 +75,8 @@ export function createBondEventLogs(events: Result[]): ActualCreateBondEvent[] {
             rewards: createRewardPools(
                 event?.rewards as Bond.TimeLockRewardPoolStruct[]
             ),
-            treasury: String(event.treasury)
+            treasury: String(event.treasury),
+            instigator: String(event.creator)
         })
     }
 

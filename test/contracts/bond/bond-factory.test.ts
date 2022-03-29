@@ -62,7 +62,6 @@ describe('Bond Factory contract', () => {
 
             await verifyCreateBondEvent(
                 {
-                    creator: admin,
                     metadata: {name: bondName, symbol: bondSymbol, data: data},
                     configuration: {
                         debtTokenAmount: debtTokenAmount,
@@ -71,7 +70,8 @@ describe('Bond Factory contract', () => {
                         minimumDeposit: minimumDeposit
                     },
                     rewards: [],
-                    treasury: treasury
+                    treasury: treasury,
+                    instigator: admin
                 },
                 receipt
             )

@@ -20,12 +20,12 @@ contract BondFactory is
     Version
 {
     event CreateBond(
-        address indexed creator,
         address indexed bond,
         Bond.MetaData metadata,
         Bond.Settings configuration,
         Bond.TimeLockRewardPool[] rewards,
-        address indexed treasury
+        address treasury,
+        address indexed instigator
     );
 
     /**
@@ -46,12 +46,12 @@ contract BondFactory is
         SingleCollateralMultiRewardBond bond = new SingleCollateralMultiRewardBond();
 
         emit CreateBond(
-            _msgSender(),
             address(bond),
             metadata,
             configuration,
             rewards,
-            treasury
+            treasury,
+            _msgSender()
         );
 
         bond.initialize(metadata, configuration, rewards, treasury);

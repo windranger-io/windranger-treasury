@@ -6,6 +6,7 @@ import {CreateDaoEvent} from '../../../typechain-types/BondMediator'
 export type ActualCreateDaoEvent = {
     id: BigNumber
     treasury: string
+    instigator: string
 }
 
 /**
@@ -21,6 +22,7 @@ export function createDaoEvents(events: Event[]): ActualCreateDaoEvent[] {
         const args = create.args
         expect(args?.id).is.not.undefined
         expect(args?.treasury).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
         bonds.push(create.args)
     }
@@ -36,12 +38,15 @@ export function createDaoEventLogs(events: Result[]): ActualCreateDaoEvent[] {
 
     for (const event of events) {
         expect(event?.id).is.not.undefined
-
         expect(event?.treasury).is.not.undefined
         expect(event?.treasury).to.be.a('string')
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
+
         results.push({
             id: BigNumber.from(event.id),
-            treasury: String(event.bond)
+            treasury: String(event.bond),
+            instigator: String(event.instigator)
         })
     }
 
