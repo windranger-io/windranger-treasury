@@ -38,6 +38,7 @@ const REWARD_TOKEN_1_AMOUNT = 2000
 
 describe('Staking Pool Tests', () => {
     describe.only('Initialization', () => {
+        const amount = BigNumber.from(9090)
         before(async () => {
             rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
                 'ERC20PresetMinterPauser',
@@ -90,8 +91,18 @@ describe('Staking Pool Tests', () => {
 
             expect(await userDeposit(user, BigNumber.from(5)))
         })
+        it('initialize rewards fails no allowance', async () => {
+            await expect(
+                stakingPool.initializeRewardTokens(admin, [
+                    {
+                        token: rewardToken1.address,
+                        rewardAmountRatio: BigNumber.from(1),
+                        totalTokenRewardsAvailable: amount
+                    }
+                ])
+            ).to.be.revertedWith('StakingPool: invalid allowance')
+        })
         it('initialize rewards', async () => {
-            const amount = BigNumber.from(9090)
             await rewardToken1.mint(admin, amount)
             verifyInitializeRewardsEvent(
                 {rewardTokens: rewardToken1.address, amount},
