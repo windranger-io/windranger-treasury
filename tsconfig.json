@@ -20,5 +20,5 @@
   },
   "files": ["./hardhat.config.ts"],
   "include": ["./config/**/*.ts", "./scripts/**/*.ts", "./test/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".solcover.js"]
 }
