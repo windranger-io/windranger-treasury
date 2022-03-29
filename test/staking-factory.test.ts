@@ -6,14 +6,10 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {
-    StakingPoolFactory,
-    ERC20PresetMinterPauser,
-    StakingPoolInfo
-} from '../typechain-types'
+import {StakingPoolFactory, ERC20PresetMinterPauser} from '../typechain-types'
 import {deployContract, signer} from './framework/contracts'
 import {getTimestampNow} from './framework/time'
-import {BigNumber, ContractReceipt} from 'ethers'
+import {BigNumber} from 'ethers'
 
 import {StakingPoolType} from './contracts/staking/staking-events'
 import {verifyStakingPoolCreated} from './contracts/staking/verify-staking-factory-events'
