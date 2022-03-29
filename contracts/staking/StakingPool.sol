@@ -3,13 +3,12 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
-import "../RoleAccessControl.sol";
-import "./StakingPoolLib.sol";
-
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+
+import "../RoleAccessControl.sol";
+import "./StakingPoolLib.sol";
 
 contract StakingPool is
     Initializable,
@@ -36,7 +35,7 @@ contract StakingPool is
 
     event Deposit(address indexed user, uint256 depositAmount);
 
-    event RewardsInitialized(address rewardTokens, uint256 amount);
+    event InitializeRewards(address rewardTokens, uint256 amount);
 
     event RewardsAvailableTimestamp(uint32 rewardsAvailableTimestamp);
 
@@ -373,7 +372,7 @@ contract StakingPool is
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
             IERC20 token = IERC20(_rewardTokens[i].token);
 
-            emit RewardsInitialized(
+            emit InitializeRewards(
                 address(token),
                 _rewardTokens[i].totalTokenRewardsAvailable
             );

@@ -1,5 +1,6 @@
 import {
     depositEvent,
+    initializeRewardsEvent,
     withdrawEvent,
     withdrawRewardsEvent
 } from './staking-events'
@@ -19,6 +20,10 @@ export type ActualWithdrawRewardsEvent = {
     user: string
     rewardToken: string
     rewards: BigNumber
+}
+export type ActualInitializeRewardsEvent = {
+    rewardTokens: string
+    amount: BigNumber
 }
 
 export function verifyDepositEvent(
@@ -52,4 +57,15 @@ export function verifyWithdrawRewardsEvent(
     expect(actualWithdrawRewardsEvent.user).equals(expected.user)
     expect(actualWithdrawRewardsEvent.rewardToken).equals(expected.rewardToken)
     expect(actualWithdrawRewardsEvent.rewards).equals(expected.rewards)
+}
+
+export function verifyInitializeRewardsEvent(
+    expected: ActualInitializeRewardsEvent,
+    receipt: ContractReceipt
+) {
+    const actualInitRewardsEvent: ActualInitializeRewardsEvent =
+        initializeRewardsEvent(event('InitializeRewards', receipt))
+
+    expect(actualInitRewardsEvent.rewardTokens).equals(expected.rewardTokens)
+    expect(actualInitRewardsEvent.amount).equals(expected.amount)
 }

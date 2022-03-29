@@ -15,6 +15,7 @@ import {BigNumber, ContractReceipt} from 'ethers'
 
 import {
     verifyDepositEvent,
+    verifyInitializeRewardsEvent,
     verifyWithdrawEvent,
     verifyWithdrawRewardsEvent
 } from './contracts/staking/verify-staking-events'
@@ -23,6 +24,12 @@ import {StakingPoolType} from './contracts/staking/staking-events'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
+type RewardToken = {
+    token: string
+    rewardAmountRatio: BigNumber
+    totalTokenRewardsAvailable: BigNumber
+}
+
 const EPOCH_DURATION = 60
 const START_DELAY = 15
 const REWARDS_AVAILABLE_OFFSET = 20
@@ -30,7 +37,14 @@ const MIN_POOL_STAKE = 500
 const REWARD_TOKEN_1_AMOUNT = 2000
 
 describe('Staking Pool Tests', () => {
-    describe('Initialization', () => {
+    describe.only('Initialization', () => {
+        before(async () => {
+            rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                'SYM'
+            )
+        })
         it('launch paused then unpause', async () => {
             admin = (await signer(0)).address
             user = await signer(1)
@@ -75,6 +89,19 @@ describe('Staking Pool Tests', () => {
             await stakingPool.unpause()
 
             expect(await userDeposit(user, BigNumber.from(5)))
+        })
+        it('initialize rewards', async () => {
+            const amount = BigNumber.from(9090)
+            await rewardToken1.mint(admin, amount)
+            verifyInitializeRewardsEvent(
+                {rewardTokens: rewardToken1.address, amount},
+                await initializeRewards(
+                    rewardToken1,
+                    admin,
+                    amount,
+                    BigNumber.from(1)
+                )
+            )
         })
     })
 
@@ -578,6 +605,24 @@ describe('Staking Pool Tests', () => {
     ): Promise<ContractReceipt> {
         return successfulTransaction(
             stakingPool.connect(user).withdrawWithoutRewards()
+        )
+    }
+    async function initializeRewards(
+        rewardToken: ERC20PresetMinterPauser,
+        treasury: string,
+        amount: BigNumber,
+        rewardAmountRatio: BigNumber
+    ): Promise<ContractReceipt> {
+        await rewardToken.increaseAllowance(stakingPool.address, amount)
+
+        return successfulTransaction(
+            stakingPool.initializeRewardTokens(treasury, [
+                {
+                    token: rewardToken.address,
+                    rewardAmountRatio,
+                    totalTokenRewardsAvailable: amount
+                }
+            ])
         )
     }
 
