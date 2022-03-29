@@ -11,6 +11,12 @@ import {deployContract, signer} from '../../framework/contracts'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from '../../cast/extended-erc20'
+import {successfulTransaction} from '../../framework/transaction'
+import {
+    ExpectedSetDaoTreasuryEvent,
+    verifySetDaoTreasuryEvents,
+    verifySetDaoTreasuryLogEvents
+} from '../../event/bond/verify-dao-bond-configuration-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -34,6 +40,26 @@ describe('DAO Bond Configuration contract', () => {
     })
 
     describe('treasury', () => {
+        it('init', async () => {
+            const configuration = await deployContract<DaoBondConfigurationBox>(
+                'DaoBondConfigurationBox'
+            )
+            const receipt = await successfulTransaction(
+                configuration.daoBondConfiguration(treasury)
+            )
+
+            expect(await config.daoTreasury(DAO_ID)).equals(treasury)
+            const treasuryEvents: ExpectedSetDaoTreasuryEvent[] = [
+                {daoId: DAO_ID, treasury: treasury, instigator: admin}
+            ]
+            verifySetDaoTreasuryEvents(receipt, treasuryEvents)
+            verifySetDaoTreasuryLogEvents(
+                configuration,
+                receipt,
+                treasuryEvents
+            )
+        })
+
         describe('retrieve', () => {
             it('invalid DAO id', async () => {
                 expect(await config.daoTreasury(INVALID_DAO_ID)).equals(
@@ -52,11 +78,22 @@ describe('DAO Bond Configuration contract', () => {
             it('to a valid address', async () => {
                 expect(await config.daoTreasury(DAO_ID)).equals(treasury)
 
-                await config.setDaoTreasury(DAO_ID, nonAdmin.address)
+                const receipt = await successfulTransaction(
+                    config.setDaoTreasury(DAO_ID, nonAdmin.address)
+                )
 
                 expect(await config.daoTreasury(DAO_ID)).equals(
                     nonAdmin.address
                 )
+                const treasuryEvents: ExpectedSetDaoTreasuryEvent[] = [
+                    {
+                        daoId: DAO_ID,
+                        treasury: nonAdmin.address,
+                        instigator: admin
+                    }
+                ]
+                verifySetDaoTreasuryEvents(receipt, treasuryEvents)
+                verifySetDaoTreasuryLogEvents(config, receipt, treasuryEvents)
             })
 
             it('cannot be identical', async () => {

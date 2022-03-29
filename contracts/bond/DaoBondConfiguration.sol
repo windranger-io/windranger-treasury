@@ -13,6 +13,12 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
     mapping(uint256 => DaoBondConfig) private _daoConfig;
     uint256 private _daoConfigLastId;
 
+    event SetDaoTreasury(
+        uint256 indexed daoId,
+        address indexed treasury,
+        address indexed instigator
+    );
+
     function daoTreasury(uint256 daoId) external view returns (address) {
         return _daoConfig[daoId].treasury;
     }
@@ -41,8 +47,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
 
         _daoConfigLastId++;
 
-        DaoBondConfig storage config = _daoConfig[_daoConfigLastId];
-        config.treasury = erc20CapableTreasury;
+        _setTreasury(_daoConfigLastId, erc20CapableTreasury);
 
         return _daoConfigLastId;
     }
@@ -59,7 +64,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
             _daoConfig[daoId].treasury != replacementTreasury,
             "DAO Treasury: identical address"
         );
-        _daoConfig[daoId].treasury = replacementTreasury;
+        _setTreasury(daoId, replacementTreasury);
     }
 
     function _daoCollateralWhitelist(uint256 daoId)
@@ -82,5 +87,10 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         returns (bool)
     {
         return _daoConfig[daoId].treasury != address(0);
+    }
+
+    function _setTreasury(uint256 daoId, address treasury) private {
+        _daoConfig[daoId].treasury = treasury;
+        emit SetDaoTreasury(daoId, treasury, _msgSender());
     }
 }
