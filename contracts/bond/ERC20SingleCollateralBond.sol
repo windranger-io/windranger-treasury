@@ -77,28 +77,32 @@ abstract contract ERC20SingleCollateralBond is
     event DebtIssue(
         address indexed receiver,
         address indexed debTokens,
-        uint256 debtAmount
+        uint256 debtAmount,
+        address indexed instigator
     );
     event Deposit(
         address indexed depositor,
         address indexed collateralTokens,
-        uint256 collateralAmount
+        uint256 collateralAmount,
+        address indexed instigator
     );
     event Expire(
-        address indexed sender,
         address indexed treasury,
         address indexed collateralTokens,
-        uint256 collateralAmount
+        uint256 collateralAmount,
+        address indexed instigator
     );
     event PartialCollateral(
         address indexed collateralTokens,
         uint256 collateralAmount,
         address indexed debtTokens,
-        uint256 debtRemaining
+        uint256 debtRemaining,
+        address indexed instigator
     );
     event FullCollateral(
         address indexed collateralTokens,
-        uint256 collateralAmount
+        uint256 collateralAmount,
+        address indexed instigator
     );
     event Redemption(
         address indexed redeemer,
@@ -110,12 +114,14 @@ abstract contract ERC20SingleCollateralBond is
     event SlashDeposits(
         address indexed collateralTokens,
         uint256 collateralAmount,
-        string reason
+        string reason,
+        address indexed instigator
     );
     event WithdrawCollateral(
         address indexed treasury,
         address indexed collateralTokens,
-        uint256 collateralAmount
+        uint256 collateralAmount,
+        address indexed instigator
     );
 
     /**
@@ -133,10 +139,10 @@ abstract contract ERC20SingleCollateralBond is
         require(collateralBalance > 0, "Bond: no collateral remains");
 
         emit Expire(
-            _msgSender(),
             _treasury,
             _collateralTokens,
-            collateralBalance
+            collateralBalance,
+            _msgSender()
         );
 
         bool transferred = IERC20Upgradeable(_collateralTokens).transfer(
@@ -203,7 +209,7 @@ abstract contract ERC20SingleCollateralBond is
         _collateral -= amount;
         _collateralSlashed += amount;
 
-        emit SlashDeposits(_collateralTokens, amount, reason);
+        emit SlashDeposits(_collateralTokens, amount, reason, _msgSender());
 
         _slashes.push(Slash(reason, amount));
 
@@ -247,7 +253,8 @@ abstract contract ERC20SingleCollateralBond is
         emit WithdrawCollateral(
             _treasury,
             _collateralTokens,
-            collateralBalance
+            collateralBalance,
+            _msgSender()
         );
 
         bool transferred = IERC20Upgradeable(_collateralTokens).transfer(
@@ -403,7 +410,8 @@ abstract contract ERC20SingleCollateralBond is
                 _collateralTokens,
                 IERC20Upgradeable(_collateralTokens).balanceOf(address(this)),
                 address(this),
-                _debtTokensRemaining()
+                _debtTokensRemaining(),
+                _msgSender()
             );
         }
 
@@ -423,7 +431,7 @@ abstract contract ERC20SingleCollateralBond is
         _collateral += amount;
         _debtTokensOutstanding += amount;
 
-        emit Deposit(_msgSender(), _collateralTokens, amount);
+        emit Deposit(_msgSender(), _collateralTokens, amount, _msgSender());
 
         bool transferred = IERC20Upgradeable(_collateralTokens).transferFrom(
             _msgSender(),
@@ -432,14 +440,15 @@ abstract contract ERC20SingleCollateralBond is
         );
         require(transferred, "Bond: collateral transfer failed");
 
-        emit DebtIssue(_msgSender(), address(this), amount);
+        emit DebtIssue(_msgSender(), address(this), amount, _msgSender());
 
         _transfer(address(this), _msgSender(), amount);
 
         if (hasFullCollateral()) {
             emit FullCollateral(
                 _collateralTokens,
-                IERC20Upgradeable(_collateralTokens).balanceOf(address(this))
+                IERC20Upgradeable(_collateralTokens).balanceOf(address(this)),
+                _msgSender()
             );
         }
     }

@@ -9,8 +9,8 @@ import {
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
 
-type ExpectedAddCollateralEvent = {address: string}
-type ExpectedRemoveCollateralEvent = {address: string}
+type ExpectedAddCollateralEvent = {address: string; instigator: string}
+type ExpectedRemoveCollateralEvent = {address: string; instigator: string}
 
 /**
  * Verifies the content for an Add Collateral event.
@@ -19,7 +19,9 @@ export function verifyAddCollateralEvents(
     receipt: ContractReceipt,
     collateralAddedEvents: ExpectedAddCollateralEvent[]
 ): void {
-    const actualEvents = addCollateralEvent(events('AddCollateral', receipt))
+    const actualEvents = addCollateralEvent(
+        events('AddCollateralWhitelist', receipt)
+    )
 
     verifyOrderedEvents(
         actualEvents,
@@ -39,7 +41,7 @@ export function verifyRemoveCollateralEvents(
     removeCollateralEvents: ExpectedRemoveCollateralEvent[]
 ): void {
     const actualEvents = removeCollateralEvent(
-        events('RemoveCollateral', receipt)
+        events('RemoveCollateralWhitelist', receipt)
     )
 
     verifyOrderedEvents(
@@ -56,5 +58,8 @@ function deepEqualsCollateralEvent(
     actual: ActualAddCollateralEvent | ActualRemoveCollateralEvent,
     expected: ExpectedAddCollateralEvent | ExpectedRemoveCollateralEvent
 ): boolean {
-    return actual.address === expected.address
+    return (
+        actual.address === expected.address &&
+        actual.instigator === expected.instigator
+    )
 }

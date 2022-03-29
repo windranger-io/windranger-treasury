@@ -9,25 +9,35 @@ import {
     UpdateRewardTimeLockEvent
 } from '../../../typechain-types/TimeLockMultiRewardBond'
 
-export type ActualClaimRewardEvent = {tokens: string; amount: BigNumber}
+export type ActualClaimRewardEvent = {
+    tokens: string
+    amount: BigNumber
+    instigator: string
+}
 
 export type ActualRegisterRewardEvent = {
     tokens: string
     amount: BigNumber
     timeLock: BigNumber
+    instigator: string
 }
 
 export type ActualRewardDebtEvent = {
     tokens: string
     claimant: string
     rewardDebt: BigNumber
+    instigator: string
 }
 
-export type ActualSetRedemptionTimestampEvent = {timestamp: BigNumber}
+export type ActualSetRedemptionTimestampEvent = {
+    timestamp: BigNumber
+    instigator: string
+}
 
 export type ActualUpdateRewardTimeLockEvent = {
     tokens: string
     timeLock: BigNumber
+    instigator: string
 }
 
 /**
@@ -43,6 +53,7 @@ export function claimRewardEvents(events: Event[]): ActualClaimRewardEvent[] {
         const args = claimed.args
         expect(args?.tokens).is.not.undefined
         expect(args?.amount).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
         rewards.push(claimed.args)
     }
@@ -66,6 +77,7 @@ export function registerRewardEvents(
         expect(args?.tokens).is.not.undefined
         expect(args?.amount).is.not.undefined
         expect(args?.timeLock).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
         rewards.push(reward.args)
     }
@@ -87,6 +99,7 @@ export function rewardDebtEvents(events: Event[]): ActualRewardDebtEvent[] {
         expect(args?.tokens).is.not.undefined
         expect(args?.claimant).is.not.undefined
         expect(args?.rewardDebt).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
         rewards.push(debt.args)
     }
@@ -108,6 +121,7 @@ export function setRedemptionTimestampEvents(
 
         const args = debt.args
         expect(args?.timestamp).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
         rewards.push(debt.args)
     }
@@ -130,6 +144,7 @@ export function updateRewardTimeLockEvents(
         const args = debt.args
         expect(args?.tokens).is.not.undefined
         expect(args?.timeLock).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
         rewards.push(debt.args)
     }
@@ -149,10 +164,13 @@ export function claimRewardEventLogs(
         expect(event?.tokens).is.not.undefined
         expect(event?.tokens).to.be.a('string')
         expect(event?.amount).is.not.undefined
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
 
         rewards.push({
             tokens: String(event.tokens),
-            amount: BigNumber.from(event.amount)
+            amount: BigNumber.from(event.amount),
+            instigator: String(event.instigator)
         })
     }
 
@@ -172,11 +190,14 @@ export function registerRewardEventLogs(
         expect(event?.tokens).to.be.a('string')
         expect(event?.amount).is.not.undefined
         expect(event?.timeLock).is.not.undefined
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
 
         rewards.push({
             tokens: String(event.tokens),
             amount: BigNumber.from(event.amount),
-            timeLock: BigNumber.from(event.timeLock)
+            timeLock: BigNumber.from(event.timeLock),
+            instigator: String(event.instigator)
         })
     }
 
@@ -195,11 +216,14 @@ export function rewardDebtEventLogs(events: Result[]): ActualRewardDebtEvent[] {
         expect(event?.claimant).is.not.undefined
         expect(event?.claimant).to.be.a('string')
         expect(event?.rewardDebt).is.not.undefined
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
 
         rewards.push({
             tokens: String(event.tokens),
             claimant: String(event.claimant),
-            rewardDebt: BigNumber.from(event.rewardDebt)
+            rewardDebt: BigNumber.from(event.rewardDebt),
+            instigator: String(event.instigator)
         })
     }
 
@@ -216,9 +240,12 @@ export function setRedemptionTimestampEventLogs(
 
     for (const event of events) {
         expect(event?.timestamp).is.not.undefined
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
 
         rewards.push({
-            timestamp: BigNumber.from(event.timestamp)
+            timestamp: BigNumber.from(event.timestamp),
+            instigator: String(event.instigator)
         })
     }
 
@@ -237,10 +264,13 @@ export function updateRewardTimeLockEventLogs(
         expect(event?.tokens).is.not.undefined
         expect(event?.tokens).to.be.a('string')
         expect(event?.timeLock).is.not.undefined
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
 
         rewards.push({
             tokens: String(event.tokens),
-            timeLock: BigNumber.from(event.timeLock)
+            timeLock: BigNumber.from(event.timeLock),
+            instigator: String(event.instigator)
         })
     }
 

@@ -1,16 +1,18 @@
 import {Event} from 'ethers'
 import {expect} from 'chai'
 import {
-    AddCollateralEvent,
-    RemoveCollateralEvent
-} from '../../../typechain-types/DaoBondCollateralWhitelist'
+    AddCollateralWhitelistEvent,
+    RemoveCollateralWhitelistEvent
+} from '../../../typechain-types/DaoBondConfiguration'
 
 export type ActualAddCollateralEvent = {
     address: string
+    instigator: string
 }
 
 export type ActualRemoveCollateralEvent = {
     address: string
+    instigator: string
 }
 
 /**
@@ -22,17 +24,17 @@ export function addCollateralEvent(
     const tokensAdded: ActualAddCollateralEvent[] = []
 
     for (const event of events) {
-        const collateral = event as AddCollateralEvent
-        expect(event.args).is.not.undefined
+        const collateral = event as AddCollateralWhitelistEvent
+        expect(collateral.args).is.not.undefined
 
-        const args = event.args
+        const args = collateral.args
         expect(args?.collateralTokens).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
-        const token: ActualAddCollateralEvent = {
-            address: collateral.args.collateralTokens
-        }
-
-        tokensAdded.push(token)
+        tokensAdded.push({
+            address: args.collateralTokens,
+            instigator: args.instigator
+        })
     }
 
     return tokensAdded
@@ -47,17 +49,17 @@ export function removeCollateralEvent(
     const tokensRemoved: ActualRemoveCollateralEvent[] = []
 
     for (const event of events) {
-        const collateral = event as RemoveCollateralEvent
-        expect(event.args).is.not.undefined
+        const collateral = event as RemoveCollateralWhitelistEvent
+        expect(collateral.args).is.not.undefined
 
-        const args = event.args
+        const args = collateral.args
         expect(args?.collateralTokens).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
-        const token: ActualAddCollateralEvent = {
-            address: collateral.args.collateralTokens
-        }
-
-        tokensRemoved.push(token)
+        tokensRemoved.push({
+            address: args.collateralTokens,
+            instigator: args.instigator
+        })
     }
 
     return tokensRemoved

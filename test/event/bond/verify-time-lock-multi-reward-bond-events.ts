@@ -20,25 +20,35 @@ import {
     updateRewardTimeLockEvents
 } from './time-lock-multi-reward-bond-events'
 
-export type ExpectedClaimRewardEvent = {tokens: string; amount: bigint}
+export type ExpectedClaimRewardEvent = {
+    tokens: string
+    amount: bigint
+    instigator: string
+}
 
 export type ExpectedRegisterRewardEvent = {
     tokens: string
     amount: bigint
     timeLock: bigint
+    instigator: string
 }
 
 export type ExpectedRewardDebtEvent = {
     tokens: string
     claimant: string
     rewardDebt: bigint
+    instigator: string
 }
 
-export type ExpectedSetRedemptionTimestampEvent = {timestamp: bigint}
+export type ExpectedSetRedemptionTimestampEvent = {
+    timestamp: bigint
+    instigator: string
+}
 
 export type ExpectedUpdateRewardTimeLockEvent = {
     tokens: string
     timeLock: bigint
+    instigator: string
 }
 
 /**
@@ -248,7 +258,8 @@ function deepEqualsClaimRewardEvent(
 ): boolean {
     return (
         actual.tokens === expected.tokens &&
-        actual.amount.toBigInt() === expected.amount
+        actual.amount.toBigInt() === expected.amount &&
+        actual.instigator === expected.instigator
     )
 }
 
@@ -259,7 +270,8 @@ function deepEqualsRegisterRewardEvent(
     return (
         actual.tokens === expected.tokens &&
         actual.amount.toBigInt() === expected.amount &&
-        actual.timeLock.toBigInt() === expected.timeLock
+        actual.timeLock.toBigInt() === expected.timeLock &&
+        actual.instigator === expected.instigator
     )
 }
 
@@ -270,7 +282,8 @@ function deepEqualsRewardDebtEvent(
     return (
         actual.tokens === expected.tokens &&
         actual.claimant === expected.claimant &&
-        actual.rewardDebt.toBigInt() === expected.rewardDebt
+        actual.rewardDebt.toBigInt() === expected.rewardDebt &&
+        actual.instigator === expected.instigator
     )
 }
 
@@ -278,7 +291,10 @@ function deepEqualsSetRedemptionTimestampEvent(
     actual: ActualSetRedemptionTimestampEvent,
     expected: ExpectedSetRedemptionTimestampEvent
 ): boolean {
-    return actual.timestamp.toBigInt() === expected.timestamp
+    return (
+        actual.timestamp.toBigInt() === expected.timestamp &&
+        actual.instigator === expected.instigator
+    )
 }
 
 function deepEqualsUpdateRewardTimeLockEvent(
@@ -287,6 +303,7 @@ function deepEqualsUpdateRewardTimeLockEvent(
 ): boolean {
     return (
         actual.tokens === expected.tokens &&
-        actual.timeLock.toBigInt() === expected.timeLock
+        actual.timeLock.toBigInt() === expected.timeLock &&
+        actual.instigator === expected.instigator
     )
 }

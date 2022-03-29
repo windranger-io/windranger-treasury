@@ -3,9 +3,10 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
-abstract contract DaoBondCollateralWhitelist is Initializable {
+abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     struct CollateralWhitelist {
@@ -15,8 +16,14 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
         mapping(address => string) symbols;
     }
 
-    event AddCollateral(address indexed collateralTokens);
-    event RemoveCollateral(address indexed collateralTokens);
+    event AddCollateralWhitelist(
+        address indexed collateralTokens,
+        address indexed instigator
+    );
+    event RemoveCollateralWhitelist(
+        address indexed collateralTokens,
+        address indexed instigator
+    );
 
     /**
      * @notice Returns a list of the whitelisted tokens' symbols.
@@ -84,7 +91,7 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
             erc20CollateralTokens
         ] = IERC20MetadataUpgradeable(erc20CollateralTokens).symbol();
 
-        emit AddCollateral(erc20CollateralTokens);
+        emit AddCollateralWhitelist(erc20CollateralTokens, _msgSender());
     }
 
     /**
@@ -111,7 +118,7 @@ abstract contract DaoBondCollateralWhitelist is Initializable {
 
         delete _daoCollateralWhitelist(daoId).symbols[erc20CollateralTokens];
 
-        emit RemoveCollateral(erc20CollateralTokens);
+        emit RemoveCollateralWhitelist(erc20CollateralTokens, _msgSender());
     }
 
     /**

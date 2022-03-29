@@ -110,7 +110,12 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
 
             const redemptionTime = await bond.redemptionTimestamp()
             expect(redemptionTime.gt(0)).is.true
-            const expectedEvents = [{timestamp: redemptionTime.toBigInt()}]
+            const expectedEvents = [
+                {
+                    timestamp: redemptionTime.toBigInt(),
+                    instigator: admin.address
+                }
+            ]
             verifySetRedemptionTimestampEvents(receipt, expectedEvents)
             verifySetRedemptionTimestampLogEvents(bond, receipt, expectedEvents)
         })
@@ -151,7 +156,8 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
 
             verifyDepositEvent(receipt, guarantor.address, {
                 tokens: collateralTokens.address,
-                amount: pledge
+                amount: pledge,
+                instigator: guarantor.address
             })
         })
 
@@ -196,17 +202,20 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
                 {
                     tokens: rewardPools[0].tokens,
                     claimant: guarantor.address,
-                    rewardDebt: rewardOne
+                    rewardDebt: rewardOne,
+                    instigator: guarantor.address
                 },
                 {
                     tokens: rewardPools[1].tokens,
                     claimant: guarantor.address,
-                    rewardDebt: rewardTwo
+                    rewardDebt: rewardTwo,
+                    instigator: guarantor.address
                 },
                 {
                     tokens: rewardPools[2].tokens,
                     claimant: guarantor.address,
-                    rewardDebt: rewardThree
+                    rewardDebt: rewardThree,
+                    instigator: guarantor.address
                 }
             ])
         })
@@ -238,7 +247,11 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             expect(afterPools[2]).to.deep.equal(beforePools[2])
 
             const expectedEvents: ExpectedUpdateRewardTimeLockEvent[] = [
-                {tokens: rewardPools[1].tokens, timeLock: updatedTimeLock}
+                {
+                    tokens: rewardPools[1].tokens,
+                    timeLock: updatedTimeLock,
+                    instigator: admin.address
+                }
             ]
             verifyUpdateRewardTimeLockpEvents(receipt, expectedEvents)
             verifySetUpdateRewardTimeLockLogEvents(
@@ -447,32 +460,38 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
                     {
                         tokens: rewardPools[0].tokens,
                         claimant: guarantor.address,
-                        rewardDebt: 0n
+                        rewardDebt: 0n,
+                        instigator: guarantor.address
                     },
                     {
                         tokens: rewardPools[1].tokens,
                         claimant: guarantor.address,
-                        rewardDebt: 0n
+                        rewardDebt: 0n,
+                        instigator: guarantor.address
                     },
                     {
                         tokens: rewardPools[2].tokens,
                         claimant: guarantor.address,
-                        rewardDebt: 0n
+                        rewardDebt: 0n,
+                        instigator: guarantor.address
                     },
                     {
                         tokens: rewardPools[0].tokens,
                         claimant: debtPurchaser,
-                        rewardDebt: rewardOne.toBigInt()
+                        rewardDebt: rewardOne.toBigInt(),
+                        instigator: guarantor.address
                     },
                     {
                         tokens: rewardPools[1].tokens,
                         claimant: debtPurchaser,
-                        rewardDebt: rewardTwo.toBigInt()
+                        rewardDebt: rewardTwo.toBigInt(),
+                        instigator: guarantor.address
                     },
                     {
                         tokens: rewardPools[2].tokens,
                         claimant: debtPurchaser,
-                        rewardDebt: rewardThree.toBigInt()
+                        rewardDebt: rewardThree.toBigInt(),
+                        instigator: guarantor.address
                     }
                 ]
                 verifyRewardDebtEvents(receipt, expectedRewardDebtEvents)
@@ -548,8 +567,16 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             verifyRedemptionEvent(
                 receipt,
                 guarantor.address,
-                {tokens: bond.address, amount: pledge},
-                {tokens: collateralTokens.address, amount: pledge}
+                {
+                    tokens: bond.address,
+                    amount: pledge,
+                    instigator: admin.address
+                },
+                {
+                    tokens: collateralTokens.address,
+                    amount: pledge,
+                    instigator: admin.address
+                }
             )
         })
 

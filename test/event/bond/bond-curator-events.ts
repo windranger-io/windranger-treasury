@@ -1,10 +1,12 @@
-import {Event} from 'ethers'
+import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 import {AddBondEvent} from '../../../typechain-types/BondCurator'
 
 export type ActualAddBondEvent = {
+    daoId: BigNumber
     bond: string
+    instigator: string
 }
 
 /**
@@ -18,7 +20,9 @@ export function addBondEvents(events: Event[]): ActualAddBondEvent[] {
         const create = event as AddBondEvent
 
         const args = create.args
+        expect(args?.daoId).is.not.undefined
         expect(args?.bond).is.not.undefined
+        expect(args?.instigator).is.not.undefined
 
         bonds.push(create.args)
     }
@@ -33,9 +37,16 @@ export function addBondEventLogs(events: Result[]): ActualAddBondEvent[] {
     const results: ActualAddBondEvent[] = []
 
     for (const event of events) {
+        expect(event?.daoId).is.not.undefined
         expect(event?.bond).is.not.undefined
         expect(event?.bond).to.be.a('string')
-        results.push({bond: String(event.bond)})
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
+        results.push({
+            daoId: BigNumber.from(event.daoId),
+            bond: String(event.bond),
+            instigator: String(event.instigator)
+        })
     }
 
     return results

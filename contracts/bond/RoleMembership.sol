@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
 /**
@@ -18,7 +19,7 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
  * @dev Meaningful application of role membership is expected to come from derived contracts.
  *      e.g. access control.
  */
-abstract contract RoleMembership is Initializable {
+abstract contract RoleMembership is ContextUpgradeable {
     // DAOs to their roles to members; scoped to an individual DAO
     mapping(uint256 => mapping(bytes32 => mapping(address => bool)))
         private _daoRoleMembers;
@@ -29,15 +30,25 @@ abstract contract RoleMembership is Initializable {
     event GrantDaoRole(
         uint256 indexed daoId,
         bytes32 indexed role,
-        address indexed account
+        address account,
+        address indexed instigator
     );
-    event GrantGlobalRole(bytes32 indexedrole, address indexed account);
+    event GrantGlobalRole(
+        bytes32 indexedrole,
+        address account,
+        address indexed instigator
+    );
     event RevokeDaoRole(
         uint256 indexed daoId,
         bytes32 indexed role,
-        address indexed account
+        address account,
+        address indexed instigator
     );
-    event RevokeGlobalRole(bytes32 indexed role, address indexed account);
+    event RevokeGlobalRole(
+        bytes32 indexed role,
+        address account,
+        address indexed instigator
+    );
 
     function hasGlobalRole(bytes32 role, address account)
         external
@@ -65,7 +76,7 @@ abstract contract RoleMembership is Initializable {
         }
 
         _daoRoleMembers[daoId][role][account] = true;
-        emit GrantDaoRole(daoId, role, account);
+        emit GrantDaoRole(daoId, role, account, _msgSender());
     }
 
     function _grantGlobalRole(bytes32 role, address account) internal {
@@ -74,7 +85,7 @@ abstract contract RoleMembership is Initializable {
         }
 
         _globalRoleMembers[role][account] = true;
-        emit GrantGlobalRole(role, account);
+        emit GrantGlobalRole(role, account, _msgSender());
     }
 
     function _revokeDaoRole(
@@ -87,7 +98,7 @@ abstract contract RoleMembership is Initializable {
         }
 
         delete _daoRoleMembers[daoId][role][account];
-        emit RevokeDaoRole(daoId, role, account);
+        emit RevokeDaoRole(daoId, role, account, _msgSender());
     }
 
     function _revokeGlobalRole(bytes32 role, address account) internal {
@@ -96,7 +107,7 @@ abstract contract RoleMembership is Initializable {
         }
 
         delete _globalRoleMembers[role][account];
-        emit RevokeGlobalRole(role, account);
+        emit RevokeGlobalRole(role, account, _msgSender());
     }
 
     //slither-disable-next-line naming-convention

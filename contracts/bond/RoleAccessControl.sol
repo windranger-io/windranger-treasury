@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "./RoleMembership.sol";
 import "./Roles.sol";
 
@@ -14,7 +13,7 @@ import "./Roles.sol";
  * - Global; permissions granted across all DAOs.
  * - Dao; permissions granted only in a single DAO.
  */
-abstract contract RoleAccessControl is RoleMembership, ContextUpgradeable {
+abstract contract RoleAccessControl is RoleMembership {
     modifier onlySuperUserRole() {
         if (_isMissingGlobalRole(Roles.SUPER_USER, _msgSender())) {
             revert(

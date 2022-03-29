@@ -29,11 +29,11 @@ export type ExpectedTimeLockRewardPool = {
 }
 
 export type ExpectedCreateBondEvent = {
-    creator: string
     metadata: ExpectedBondMetaData
     configuration: ExpectedBondSettings
     rewards: ExpectedTimeLockRewardPool[]
     treasury: string
+    instigator: string
 }
 
 /**
@@ -45,11 +45,14 @@ export async function verifyCreateBondEvent(
 ): Promise<void> {
     const creationEvent = createBondEvent(event('CreateBond', receipt))
     expect(ethers.utils.isAddress(creationEvent.bond)).is.true
-    expect(creationEvent.bond).is.not.equal(expected.creator)
-    expect(creationEvent.bond).is.not.equal(expected.treasury)
-    expect(creationEvent.creator).equals(expected.creator)
-    expect(creationEvent.treasury).equals(expected.treasury)
     expect(await ethers.provider.getCode(creationEvent.bond)).is.not.undefined
+    expect(creationEvent.bond).is.not.equal(expected.instigator)
+    expect(creationEvent.bond).is.not.equal(expected.treasury)
+    expect(creationEvent.instigator).equals(expected.instigator)
+    expect(creationEvent.treasury).equals(expected.treasury)
+    expect(creationEvent.instigator, 'Instigator address').equals(
+        expected.instigator
+    )
 
     verifyBondMetaData(expected.metadata, creationEvent.metadata)
     verifyBondSettings(expected.configuration, creationEvent.configuration)
