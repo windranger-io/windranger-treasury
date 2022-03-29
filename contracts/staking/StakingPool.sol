@@ -19,7 +19,7 @@ contract StakingPool is
 {
     struct User {
         uint128 depositAmount;
-        uint128[5] rewardAmounts; // todo: use constant from library
+        uint128[5] rewardAmounts;
     }
 
     mapping(address => User) private _users;
