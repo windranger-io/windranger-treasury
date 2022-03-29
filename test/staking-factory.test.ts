@@ -6,7 +6,11 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {StakingPoolFactory, ERC20PresetMinterPauser} from '../typechain-types'
+import {
+    StakingPoolFactory,
+    ERC20PresetMinterPauser,
+    StakingPoolInfo
+} from '../typechain-types'
 import {deployContract, signer} from './framework/contracts'
 import {getTimestampNow} from './framework/time'
 import {BigNumber, ContractReceipt} from 'ethers'
@@ -23,7 +27,25 @@ const START_DELAY = 15
 const REWARDS_AVAILABLE_OFFSET = 20
 const MIN_POOL_STAKE = 500
 
+export type StakingPoolLibData = {
+    stakeToken: string
+    poolType: number
+    rewardTokens: never[]
+    minimumContribution: BigNumber
+    epochDuration: BigNumber
+    epochStartTimestamp: BigNumber
+    treasury: string
+    daoId: number
+    minTotalPoolStake: number
+    maxTotalPoolStake: number
+    rewardsAvailableTimestamp: BigNumber
+    emergencyMode: boolean
+    launchPaused: boolean
+    totalStakedAmount: number
+}
+
 describe('Staking Pool FactoryTests', () => {
+    let stakingPoolInfo: StakingPoolLibData
     before(async () => {
         admin = (await signer(0)).address
         const symbol = 'EEK'
@@ -51,7 +73,7 @@ describe('Staking Pool FactoryTests', () => {
                 treasury: admin
             }
 
-            const stakingPoolInfo = {
+            stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
@@ -70,6 +92,15 @@ describe('Staking Pool FactoryTests', () => {
             }
             await stakingPoolFactory.createStakingPool(stakingPoolInfo)
         })
+
+        it('paused cannot create pool', async () => {
+            await stakingPoolFactory.pause()
+            await expect(
+                stakingPoolFactory.createStakingPool(stakingPoolInfo)
+            ).to.be.revertedWith('Pausable: paused')
+            await stakingPoolFactory.unpause()
+        })
+
         it('create fixed pool', async () => {
             const epochStartTimestamp = BigNumber.from(
                 (await getTimestampNow()) + START_DELAY
@@ -84,7 +115,7 @@ describe('Staking Pool FactoryTests', () => {
                 treasury: admin
             }
 
-            const stakingPoolInfo = {
+            stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
