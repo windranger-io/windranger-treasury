@@ -20,12 +20,10 @@ abstract contract TokenSweep is ContextUpgradeable {
         return _beneficiary;
     }
 
-    function __TokenSweep_init(address tokenSweepBeneficiary)
-        internal
-        onlyInitializing
-    {
+    //slither-disable-next-line naming-convention
+    function __TokenSweep_init(address beneficiary) internal onlyInitializing {
         __Context_init();
-        _setTokenSweepBeneficiary(tokenSweepBeneficiary);
+        _setTokenSweepBeneficiary(beneficiary);
     }
 
     /**
