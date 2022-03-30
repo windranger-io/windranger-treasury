@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "./TokenSweep.sol";
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 /**
