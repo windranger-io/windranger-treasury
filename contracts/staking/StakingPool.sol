@@ -18,7 +18,7 @@ contract StakingPool is
 {
     struct User {
         uint128 depositAmount;
-        uint128[5] rewardAmounts;
+        uint128[5] rewardAmounts; // should we make this a set so we can check for uniqueness?
     }
 
     mapping(address => User) private _users;
@@ -128,10 +128,13 @@ contract StakingPool is
         // calculate/update rewards
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                // floating: update the global rewards ratio
+                // floating: update the global rewards ratio for each reward token
                 _info
                     .rewardTokens[i]
-                    .rewardAmountRatio = _computeFloatingRewardsPerShare(i);
+                    .rewardAmountRatio = _computeFloatingRewardsPerShare(
+                    _info.rewardTokens[i].totalTokenRewardsAvailable,
+                    _info.totalStakedAmount
+                );
             } else {
                 // fixed: set the reward amount per user now
                 user.rewardAmounts[i] += uint128(
@@ -173,9 +176,9 @@ contract StakingPool is
 
             // floating
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                amount = uint256(
-                    (_info.rewardTokens[i].rewardAmountRatio *
-                        user.depositAmount) / 1 ether
+                amount = _calculateRewardFromShare(
+                    _info.rewardTokens[i].rewardAmountRatio,
+                    user.depositAmount
                 );
             } else {
                 // fixed
@@ -202,9 +205,9 @@ contract StakingPool is
         // fixed amounts are calculated and fixed on depositing
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                user.rewardAmounts[i] = uint128(
-                    (_info.rewardTokens[i].rewardAmountRatio *
-                        currentDepositBalance) / 1 ether
+                user.rewardAmounts[i] = _calculateRewardFromShare(
+                    _info.rewardTokens[i].rewardAmountRatio,
+                    currentDepositBalance
                 );
             }
         }
@@ -317,14 +320,6 @@ contract StakingPool is
         return _stakingPoolInfo;
     }
 
-    function computeFloatingRewardsPerShare(uint256 rewardTokenIndex)
-        external
-        view
-        returns (uint256)
-    {
-        return _computeFloatingRewardsPerShare(rewardTokenIndex);
-    }
-
     function currentExpectedReward(address user)
         external
         view
@@ -338,12 +333,13 @@ contract StakingPool is
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 if (_user.depositAmount == 0) {
-                    // user has already withdrawn
+                    // user has already withdrawn stake
                     rewards[i] = _user.rewardAmounts[i];
                 } else {
-                    rewards[i] = uint256(
-                        (_info.rewardTokens[i].rewardAmountRatio *
-                            _user.depositAmount) / 1 ether
+                    // user has not withdraw stake yet
+                    rewards[i] = _calculateRewardFromShare(
+                        _info.rewardTokens[i].rewardAmountRatio,
+                        _user.depositAmount
                     );
                 }
             } else {
@@ -446,17 +442,11 @@ contract StakingPool is
     }
 
     //floating
-    function _computeFloatingRewardsPerShare(uint256 rewardTokenIndex)
-        internal
-        view
-        returns (uint256)
-    {
-        StakingPoolLib.Data memory _info = _stakingPoolInfo;
-
-        uint256 availableTokenRewards = _info
-            .rewardTokens[rewardTokenIndex]
-            .totalTokenRewardsAvailable;
-        return (availableTokenRewards * 1 ether) / _info.totalStakedAmount;
+    function _computeFloatingRewardsPerShare(
+        uint256 availableTokenRewards,
+        uint256 totalStakedAmount
+    ) internal view returns (uint256) {
+        return (availableTokenRewards * 1 ether) / totalStakedAmount;
     }
 
     function _isRewardsAvailable() internal view returns (bool) {
@@ -470,5 +460,12 @@ contract StakingPool is
             block.timestamp >=
             (_stakingPoolInfo.epochStartTimestamp +
                 _stakingPoolInfo.epochDuration);
+    }
+
+    function _calculateRewardFromShare(
+        uint256 rewardAmountRatio,
+        uint128 depositAmount
+    ) internal pure returns (uint128) {
+        return uint128((rewardAmountRatio * depositAmount) / 1 ether);
     }
 }
