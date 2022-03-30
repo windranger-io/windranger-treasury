@@ -176,7 +176,7 @@ contract StakingPool is
 
             // floating
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                amount = _calculateRewardFromShare(
+                amount = _calculateFloatingReward(
                     _info.rewardTokens[i].rewardAmountRatio,
                     user.depositAmount
                 );
@@ -205,7 +205,7 @@ contract StakingPool is
         // fixed amounts are calculated and fixed on depositing
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                user.rewardAmounts[i] = _calculateRewardFromShare(
+                user.rewardAmounts[i] = _calculateFloatingReward(
                     _info.rewardTokens[i].rewardAmountRatio,
                     currentDepositBalance
                 );
@@ -337,7 +337,7 @@ contract StakingPool is
                     rewards[i] = _user.rewardAmounts[i];
                 } else {
                     // user has not withdraw stake yet
-                    rewards[i] = _calculateRewardFromShare(
+                    rewards[i] = _calculateFloatingReward(
                         _info.rewardTokens[i].rewardAmountRatio,
                         _user.depositAmount
                     );
@@ -441,14 +441,6 @@ contract StakingPool is
         }
     }
 
-    //floating
-    function _computeFloatingRewardsPerShare(
-        uint256 availableTokenRewards,
-        uint256 totalStakedAmount
-    ) internal view returns (uint256) {
-        return (availableTokenRewards * 1 ether) / totalStakedAmount;
-    }
-
     function _isRewardsAvailable() internal view returns (bool) {
         //slither-disable-next-line timestamp
         return block.timestamp >= _stakingPoolInfo.rewardsAvailableTimestamp;
@@ -462,10 +454,17 @@ contract StakingPool is
                 _stakingPoolInfo.epochDuration);
     }
 
-    function _calculateRewardFromShare(
+    function _calculateFloatingReward(
         uint256 rewardAmountRatio,
         uint128 depositAmount
     ) internal pure returns (uint128) {
         return uint128((rewardAmountRatio * depositAmount) / 1 ether);
+    }
+
+    function _computeFloatingRewardsPerShare(
+        uint256 availableTokenRewards,
+        uint256 totalStakedAmount
+    ) internal pure returns (uint256) {
+        return (availableTokenRewards * 1 ether) / totalStakedAmount;
     }
 }
