@@ -1,18 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+
 /**
  * @title Abstract upgradeable contract providing the ability to sweep tokens to a nominated beneficiary address.
  *
  * @dev Access control implementation is required for many functions by design.
  */
-abstract contract TokenSweep {
+abstract contract TokenSweep is ContextUpgradeable {
     address private _beneficiary;
 
-    event BeneficiaryUpdate(address indexed beneficiary);
+    event BeneficiaryUpdate(
+        address indexed beneficiary,
+        address indexed instigator
+    );
 
     function tokenSweepBeneficiary() public view returns (address) {
         return _beneficiary;
+    }
+
+    function __TokenSweep_init(address tokenSweepBeneficiary)
+        internal
+        onlyInitializing
+    {
+        __Context_init();
+        _setTokenSweepBeneficiary(tokenSweepBeneficiary);
     }
 
     /**
@@ -28,6 +41,6 @@ abstract contract TokenSweep {
         require(newBeneficiary != _beneficiary, "TokenSweep: beneficiary same");
 
         _beneficiary = newBeneficiary;
-        emit BeneficiaryUpdate(newBeneficiary);
+        emit BeneficiaryUpdate(newBeneficiary, _msgSender());
     }
 }

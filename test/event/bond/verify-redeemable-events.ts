@@ -15,13 +15,13 @@ export type ExpectedRedeemableEvent = {instigator: string}
  */
 export function verifyRedeemableEvents(
     receipt: ContractReceipt,
-    metaData: ExpectedRedeemableEvent[]
+    expectedEvents: ExpectedRedeemableEvent[]
 ): void {
     const actualEvents = redeemableEvents(events('Redeemable', receipt))
 
     verifyOrderedEvents(
         actualEvents,
-        metaData,
+        expectedEvents,
         (actual: ActualRedeemableEvent, expected: ExpectedRedeemableEvent) =>
             deepEqualsRedeemableEvent(actual, expected)
     )
@@ -33,7 +33,7 @@ export function verifyRedeemableEvents(
 export function verifyRedeemableLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    metaData: ExpectedRedeemableEvent[]
+    expectedEvents: ExpectedRedeemableEvent[]
 ): void {
     const actualEvents = redeemableEventLogs(
         eventLog('Redeemable', emitter, receipt)
@@ -41,7 +41,7 @@ export function verifyRedeemableLogEvents<T extends BaseContract>(
 
     verifyOrderedEvents(
         actualEvents,
-        metaData,
+        expectedEvents,
         (actual: ActualRedeemableEvent, expected: ExpectedRedeemableEvent) =>
             deepEqualsRedeemableEvent(actual, expected)
     )
