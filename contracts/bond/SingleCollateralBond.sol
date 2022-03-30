@@ -43,6 +43,14 @@ interface SingleCollateralBond {
     function redeem(uint256 amount) external;
 
     /**
+     * @notice Sweep any non collateral ERC20 tokens to the beneficiary address
+     *
+     * @param tokens The registry for the ERC20 token to transfer,
+     * @param amount How many tokens, in the ERC20's decimals to transfer.
+     */
+    function sweepERC20Tokens(address tokens, uint256 amount) external;
+
+    /**
      * @notice Resumes all paused side affecting functions.
      */
     function unpause() external;

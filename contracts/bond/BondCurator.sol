@@ -76,6 +76,17 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         SingleCollateralBond(bond).setTreasury(replacement);
     }
 
+    function bondSweepERC20Tokens(
+        uint256 daoId,
+        address bond,
+        address tokens,
+        uint256 amount
+    ) external whenNotPaused atLeastDaoAdminRole(daoId) {
+        _requireManagingBond(daoId, bond);
+
+        SingleCollateralBond(bond).sweepERC20Tokens(tokens, amount);
+    }
+
     function bondUpdateRewardTimeLock(
         uint256 daoId,
         address bond,

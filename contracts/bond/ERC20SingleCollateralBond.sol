@@ -244,6 +244,7 @@ abstract contract ERC20SingleCollateralBond is
 
     function sweepERC20Tokens(address tokens, uint256 amount)
         external
+        override
         whenNotPaused
         onlyOwner
     {
