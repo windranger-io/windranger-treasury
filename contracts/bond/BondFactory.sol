@@ -69,8 +69,9 @@ contract BondFactory is
         _pause();
     }
 
-    function updateTokenSweepBeneficiary(address newBeneficiary)
+    function setTokenSweepBeneficiary(address newBeneficiary)
         external
+        whenNotPaused
         onlySuperUserRole
     {
         _setTokenSweepBeneficiary(newBeneficiary);

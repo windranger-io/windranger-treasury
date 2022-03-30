@@ -10,6 +10,7 @@ import "./MetaDataStore.sol";
 import "./Redeemable.sol";
 import "../Version.sol";
 import "./Bond.sol";
+import "../sweep/SweepERC20.sol";
 
 /**
  * @title A Bond is an issuance of debt tokens, which are exchange for deposit of collateral.
@@ -29,6 +30,7 @@ abstract contract ERC20SingleCollateralBond is
     OwnableUpgradeable,
     PausableUpgradeable,
     Redeemable,
+    SweepERC20,
     Version
 {
     struct Slash {
@@ -237,6 +239,16 @@ abstract contract ERC20SingleCollateralBond is
     {
         require(replacement != address(0), "Bond: treasury is zero address");
         _treasury = replacement;
+        _setTokenSweepBeneficiary(replacement);
+    }
+
+    function sweepERC20Tokens(address tokens, uint256 amount)
+        external
+        whenNotPaused
+        onlyOwner
+    {
+        require(tokens != _collateralTokens, "Bond: no collateral sweeping");
+        _sweepERC20Tokens(tokens, amount);
     }
 
     function withdrawCollateral()
@@ -370,13 +382,6 @@ abstract contract ERC20SingleCollateralBond is
         Bond.Settings calldata configuration,
         address erc20CapableTreasury
     ) internal onlyInitializing {
-        __ERC20_init(metadata.name, metadata.symbol);
-        __Ownable_init();
-        __Pausable_init();
-        __ExpiryTimestamp_init(configuration.expiryTimestamp);
-        __MetaDataStore_init(metadata.data);
-        __Redeemable_init();
-
         require(
             erc20CapableTreasury != address(0),
             "Bond: treasury is zero address"
@@ -385,6 +390,14 @@ abstract contract ERC20SingleCollateralBond is
             configuration.collateralTokens != address(0),
             "Bond: collateral is zero address"
         );
+
+        __ERC20_init(metadata.name, metadata.symbol);
+        __Ownable_init();
+        __Pausable_init();
+        __ExpiryTimestamp_init(configuration.expiryTimestamp);
+        __MetaDataStore_init(metadata.data);
+        __Redeemable_init();
+        __TokenSweep_init(erc20CapableTreasury);
 
         _collateralTokens = configuration.collateralTokens;
         _debtTokensInitialSupply = configuration.debtTokenAmount;

@@ -128,7 +128,7 @@ describe('Bond Factory contract', () => {
         })
 
         describe('update beneficiary', () => {
-            afterEach(async () => {
+            after(async () => {
                 bonds = await deployContractWithProxy<BondFactory>(
                     'BondFactory',
                     treasury
@@ -139,7 +139,7 @@ describe('Bond Factory contract', () => {
                 expect(await bonds.tokenSweepBeneficiary()).equals(treasury)
 
                 const receipt = await successfulTransaction(
-                    bonds.updateTokenSweepBeneficiary(nonAdmin.address)
+                    bonds.setTokenSweepBeneficiary(nonAdmin.address)
                 )
 
                 expect(await bonds.tokenSweepBeneficiary()).equals(
@@ -159,7 +159,7 @@ describe('Bond Factory contract', () => {
                 await expect(
                     bonds
                         .connect(nonAdmin)
-                        .updateTokenSweepBeneficiary(nonAdmin.address)
+                        .setTokenSweepBeneficiary(nonAdmin.address)
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonAdmin,
@@ -167,9 +167,26 @@ describe('Bond Factory contract', () => {
                     )
                 )
             })
+            it('only when not paused', async () => {
+                bonds = await deployContractWithProxy<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
+                await bonds.pause()
+
+                await expect(
+                    bonds.setTokenSweepBeneficiary(nonAdmin.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
 
         describe('ERC20 token sweep', () => {
+            after(async () => {
+                bonds = await deployContractWithProxy<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
+            })
             it('side effects', async () => {
                 const seedFunds = 100n
                 const sweepAmount = 55n
@@ -217,6 +234,18 @@ describe('Bond Factory contract', () => {
                         SUPER_USER
                     )
                 )
+            })
+
+            it('only when not paused', async () => {
+                bonds = await deployContractWithProxy<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
+                await bonds.pause()
+
+                await expect(
+                    bonds.sweepERC20Tokens(collateralTokens.address, 5)
+                ).to.be.revertedWith('Pausable: paused')
             })
         })
     })

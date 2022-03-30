@@ -119,6 +119,7 @@ contract BondMediator is
 
     function updateTokenSweepBeneficiary(address newBeneficiary)
         external
+        whenNotPaused
         onlySuperUserRole
     {
         _setTokenSweepBeneficiary(newBeneficiary);

@@ -481,7 +481,7 @@ describe('Bond Mediator contract', () => {
         })
 
         describe('update beneficiary', () => {
-            afterEach(async () => {
+            after(async () => {
                 mediator = await deployContractWithProxy<BondMediator>(
                     'BondMediator',
                     creator.address,
@@ -525,9 +525,24 @@ describe('Bond Mediator contract', () => {
                     )
                 )
             })
+
+            it('only when not paused', async () => {
+                await mediator.pause()
+
+                await expect(
+                    mediator.updateTokenSweepBeneficiary(nonAdmin.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
 
         describe('ERC20 token sweep', () => {
+            after(async () => {
+                mediator = await deployContractWithProxy<BondMediator>(
+                    'BondMediator',
+                    creator.address,
+                    treasury
+                )
+            })
             it('side effects', async () => {
                 const seedFunds = 100n
                 const sweepAmount = 55n
@@ -575,6 +590,14 @@ describe('Bond Mediator contract', () => {
                         SUPER_USER
                     )
                 )
+            })
+
+            it('only when not paused', async () => {
+                await mediator.pause()
+
+                await expect(
+                    mediator.sweepERC20Tokens(collateralTokens.address, 5)
+                ).to.be.revertedWith('Pausable: paused')
             })
         })
     })
