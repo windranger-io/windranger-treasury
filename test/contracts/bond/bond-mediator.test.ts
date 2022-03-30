@@ -22,6 +22,7 @@ import {
     DAO_ADMIN,
     DAO_CREATOR,
     DAO_MEEPLE,
+    SUPER_USER,
     SYSTEM_ADMIN
 } from '../../event/bond/roles'
 import {successfulTransaction} from '../../framework/transaction'
@@ -35,6 +36,16 @@ import {createDaoEvents} from '../../event/bond/bond-portal-events'
 import {events} from '../../framework/events'
 import {createBondEventLogs} from '../../event/bond/bond-creator-events'
 import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
+import {
+    ExpectedBeneficiaryUpdateEvent,
+    verifyBeneficiaryUpdateEvents,
+    verifyBeneficiaryUpdateLogEvents
+} from '../../event/sweep/verify-token-sweep-events'
+import {
+    ExpectedERC20SweepEvent,
+    verifyERC20SweepEvents,
+    verifyERC20SweepLogEvents
+} from '../../event/sweep/verify-sweep-erc20-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -53,10 +64,14 @@ describe('Bond Mediator contract', () => {
             'Name',
             'SYMBOL'
         )
-        creator = await deployContractWithProxy<BondFactory>('BondFactory')
+        creator = await deployContractWithProxy<BondFactory>(
+            'BondFactory',
+            treasury
+        )
         mediator = await deployContractWithProxy<BondMediator>(
             'BondMediator',
-            creator.address
+            creator.address,
+            treasury
         )
 
         await mediator.grantDaoCreatorRole(daoCreator.address)
@@ -375,7 +390,7 @@ describe('Bond Mediator contract', () => {
         })
     })
 
-    describe('treasury', () => {
+    describe('DAO treasury', () => {
         describe('retrieve', () => {
             it(' by anyone', async () => {
                 expect(
@@ -440,6 +455,127 @@ describe('Bond Mediator contract', () => {
             await expect(mediator.pause()).to.be.revertedWith(
                 'Pausable: paused'
             )
+        })
+    })
+
+    describe('ERC20 token sweep', () => {
+        it('init', async () => {
+            const bondMediator = await deployContract<BondMediator>(
+                'BondMediator'
+            )
+
+            const receipt = await successfulTransaction(
+                bondMediator.initialize(creator.address, treasury)
+            )
+
+            expect(await bondMediator.tokenSweepBeneficiary()).equals(treasury)
+            const expectedEvents = [
+                {beneficiary: treasury, instigator: superUser}
+            ]
+            verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
+            verifyBeneficiaryUpdateLogEvents(
+                bondMediator,
+                receipt,
+                expectedEvents
+            )
+        })
+
+        describe('update beneficiary', () => {
+            afterEach(async () => {
+                mediator = await deployContractWithProxy<BondMediator>(
+                    'BondMediator',
+                    creator.address,
+                    treasury
+                )
+            })
+
+            it('side effects', async () => {
+                expect(await mediator.tokenSweepBeneficiary()).equals(treasury)
+
+                const receipt = await successfulTransaction(
+                    mediator.updateTokenSweepBeneficiary(nonAdmin.address)
+                )
+
+                expect(await mediator.tokenSweepBeneficiary()).equals(
+                    nonAdmin.address
+                )
+                const expectedEvents: ExpectedBeneficiaryUpdateEvent[] = [
+                    {
+                        beneficiary: nonAdmin.address,
+                        instigator: superUser
+                    }
+                ]
+                verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
+                verifyBeneficiaryUpdateLogEvents(
+                    mediator,
+                    receipt,
+                    expectedEvents
+                )
+            })
+
+            it('only Super User', async () => {
+                await expect(
+                    mediator
+                        .connect(nonAdmin)
+                        .updateTokenSweepBeneficiary(nonAdmin.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        SUPER_USER
+                    )
+                )
+            })
+        })
+
+        describe('ERC20 token sweep', () => {
+            it('side effects', async () => {
+                const seedFunds = 100n
+                const sweepAmount = 55n
+                await successfulTransaction(
+                    collateralTokens.transfer(mediator.address, seedFunds)
+                )
+                expect(
+                    await collateralTokens.balanceOf(mediator.address)
+                ).equals(seedFunds)
+                expect(await collateralTokens.balanceOf(treasury)).equals(0)
+
+                const receipt = await successfulTransaction(
+                    mediator.sweepERC20Tokens(
+                        collateralTokens.address,
+                        sweepAmount
+                    )
+                )
+
+                expect(
+                    await collateralTokens.balanceOf(mediator.address)
+                ).equals(seedFunds - sweepAmount)
+                expect(await collateralTokens.balanceOf(treasury)).equals(
+                    sweepAmount
+                )
+                const expectedEvents: ExpectedERC20SweepEvent[] = [
+                    {
+                        beneficiary: treasury,
+                        tokens: collateralTokens.address,
+                        amount: sweepAmount,
+                        instigator: superUser
+                    }
+                ]
+                verifyERC20SweepEvents(receipt, expectedEvents)
+                verifyERC20SweepLogEvents(mediator, receipt, expectedEvents)
+            })
+
+            it('only Super User', async () => {
+                await expect(
+                    mediator
+                        .connect(nonAdmin)
+                        .sweepERC20Tokens(collateralTokens.address, 5)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        SUPER_USER
+                    )
+                )
+            })
         })
     })
 

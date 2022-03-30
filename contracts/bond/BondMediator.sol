@@ -10,6 +10,7 @@ import "./BondPortal.sol";
 import "./Bond.sol";
 import "./DaoBondConfiguration.sol";
 import "../Version.sol";
+import "../sweep/SweepERC20.sol";
 
 /**
  * @title Mediates between a Bond creator and Bond curator.
@@ -21,6 +22,7 @@ contract BondMediator is
     BondCurator,
     BondPortal,
     DaoBondConfiguration,
+    SweepERC20,
     UUPSUpgradeable,
     Version
 {
@@ -37,8 +39,12 @@ contract BondMediator is
      *      have been setup.
      *
      * @param factory A deployed BondCreator contract to use when creating bonds.
+     * @param treasury Beneficiary of any token sweeping.
      */
-    function initialize(address factory) external initializer {
+    function initialize(address factory, address treasury)
+        external
+        initializer
+    {
         require(
             AddressUpgradeable.isContract(factory),
             "BM: creator not a contract"
@@ -47,6 +53,7 @@ contract BondMediator is
         __BondCurator_init();
         __DaoBondConfiguration_init();
         __UUPSUpgradeable_init();
+        __TokenSweep_init(treasury);
 
         _creator = BondCreator(factory);
     }
@@ -110,6 +117,13 @@ contract BondMediator is
         _setDaoTreasury(daoId, replacement);
     }
 
+    function updateTokenSweepBeneficiary(address newBeneficiary)
+        external
+        onlySuperUserRole
+    {
+        _setTokenSweepBeneficiary(newBeneficiary);
+    }
+
     /**
      * @notice Permits the owner to remove a collateral token from being accepted in future bonds.
      *
@@ -123,6 +137,14 @@ contract BondMediator is
         address erc20CollateralTokens
     ) external whenNotPaused atLeastDaoAdminRole(daoId) {
         _removeWhitelistedDaoCollateral(daoId, erc20CollateralTokens);
+    }
+
+    function sweepERC20Tokens(address tokens, uint256 amount)
+        external
+        whenNotPaused
+        onlySuperUserRole
+    {
+        _sweepERC20Tokens(tokens, amount);
     }
 
     /**

@@ -45,7 +45,10 @@ describe('Bond Curator contract', () => {
         nonBondAdmin = await signer(1)
         treasury = (await signer(2)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        creator = await deployContractWithProxy<BondFactory>('BondFactory')
+        creator = await deployContractWithProxy<BondFactory>(
+            'BondFactory',
+            treasury
+        )
         curator = await deployContract<BondCuratorBox>('BondCuratorBox')
         await successfulTransaction(curator.initialize())
     })
