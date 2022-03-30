@@ -30,6 +30,10 @@ import {
     verifyAddBondEvents,
     verifyAddBondLogEvents
 } from '../../event/bond/verify-curator-events'
+import {
+    ExpectedERC20SweepEvent,
+    verifyERC20SweepLogEvents
+} from '../../event/sweep/verify-sweep-erc20-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -45,7 +49,11 @@ describe('Bond Curator contract', () => {
         nonBondAdmin = await signer(1)
         treasury = (await signer(2)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        creator = await deployContractWithProxy<BondFactory>('BondFactory')
+        otherCollateralTokens = await deployContract<BitDAO>('BitDAO', admin)
+        creator = await deployContractWithProxy<BondFactory>(
+            'BondFactory',
+            treasury
+        )
         curator = await deployContract<BondCuratorBox>('BondCuratorBox')
         await successfulTransaction(curator.initialize())
     })
@@ -377,6 +385,71 @@ describe('Bond Curator contract', () => {
             })
         })
 
+        describe('token sweep', () => {
+            it('side effects', async () => {
+                const seedFunds = 100n
+                const sweepAmount = 55n
+                await curator.addBond(DAO_ID, bond.address)
+                await successfulTransaction(
+                    otherCollateralTokens.transfer(bond.address, seedFunds)
+                )
+                expect(
+                    await otherCollateralTokens.balanceOf(bond.address)
+                ).equals(seedFunds)
+                expect(await otherCollateralTokens.balanceOf(treasury)).equals(
+                    0
+                )
+
+                const receipt = await successfulTransaction(
+                    curator.bondSweepERC20Tokens(
+                        DAO_ID,
+                        bond.address,
+                        otherCollateralTokens.address,
+                        sweepAmount
+                    )
+                )
+
+                expect(
+                    await otherCollateralTokens.balanceOf(bond.address)
+                ).equals(seedFunds - sweepAmount)
+                expect(await otherCollateralTokens.balanceOf(treasury)).equals(
+                    sweepAmount
+                )
+            })
+
+            it('at least dao admin role', async () => {
+                await expect(
+                    curator
+                        .connect(nonBondAdmin)
+                        .bondSweepERC20Tokens(
+                            DAO_ID,
+                            bond.address,
+                            collateralTokens.address,
+                            10
+                        )
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonBondAdmin,
+                        DAO_ADMIN
+                    )
+                )
+            })
+
+            it('only when not paused', async () => {
+                await successfulTransaction(curator.pause())
+                expect(await curator.paused()).is.true
+
+                await expect(
+                    curator.bondSweepERC20Tokens(
+                        DAO_ID,
+                        bond.address,
+                        collateralTokens.address,
+                        10
+                    )
+                ).to.be.revertedWith('Pausable: paused')
+            })
+        })
+
         describe('unpause', () => {
             it('delegates', async () => {
                 expect(await bond.paused()).is.false
@@ -558,5 +631,6 @@ describe('Bond Curator contract', () => {
     let nonBondAdmin: SignerWithAddress
     let curator: BondCuratorBox
     let collateralTokens: ExtendedERC20
+    let otherCollateralTokens: ExtendedERC20
     let creator: BondFactory
 })

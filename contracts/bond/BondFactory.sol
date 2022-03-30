@@ -6,6 +6,7 @@ import "./SingleCollateralMultiRewardBond.sol";
 import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
 import "../Version.sol";
+import "../sweep/SweepERC20.sol";
 
 /**
  * @title Creates Bond contracts.
@@ -16,6 +17,7 @@ contract BondFactory is
     RoleAccessControl,
     BondCreator,
     PausableUpgradeable,
+    SweepERC20,
     UUPSUpgradeable,
     Version
 {
@@ -24,17 +26,17 @@ contract BondFactory is
         Bond.MetaData metadata,
         Bond.Settings configuration,
         Bond.TimeLockRewardPool[] rewards,
-        address treasury,
+        address indexed treasury,
         address indexed instigator
     );
 
     /**
-     * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
-     *      have been setup.
+     * @param treasury Beneficiary of any token sweeping.
      */
-    function initialize() external virtual initializer {
+    function initialize(address treasury) external virtual initializer {
         __RoleAccessControl_init();
         __UUPSUpgradeable_init();
+        __TokenSweep_init(treasury);
     }
 
     function createBond(
@@ -67,11 +69,27 @@ contract BondFactory is
         _pause();
     }
 
+    function setTokenSweepBeneficiary(address newBeneficiary)
+        external
+        whenNotPaused
+        onlySuperUserRole
+    {
+        _setTokenSweepBeneficiary(newBeneficiary);
+    }
+
     /**
      * @notice Resumes all paused side affecting functions.
      */
     function unpause() external whenPaused atLeastSysAdminRole {
         _unpause();
+    }
+
+    function sweepERC20Tokens(address tokens, uint256 amount)
+        external
+        whenNotPaused
+        onlySuperUserRole
+    {
+        _sweepERC20Tokens(tokens, amount);
     }
 
     /**

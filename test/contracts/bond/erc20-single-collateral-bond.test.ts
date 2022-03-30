@@ -33,6 +33,15 @@ import {
     verifyRedeemableEvents,
     verifyRedeemableLogEvents
 } from '../../event/bond/verify-redeemable-events'
+import {
+    verifyBeneficiaryUpdateEvents,
+    verifyBeneficiaryUpdateLogEvents
+} from '../../event/sweep/verify-token-sweep-events'
+import {
+    ExpectedERC20SweepEvent,
+    verifyERC20SweepEvents,
+    verifyERC20SweepLogEvents
+} from '../../event/sweep/verify-sweep-erc20-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -541,7 +550,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
             expect(await bond.initialDebtTokens()).equals(debtTokens)
         })
 
-        it('metadata is initialised', async () => {
+        it('metadata', async () => {
             const debtTokens = 554n
             bond = await deployContract('ERC20SingleCollateralBondBox')
             expect(await bond.metaData()).equals('')
@@ -567,7 +576,35 @@ describe('ERC20 Single Collateral Bond contract', () => {
             verifySetMetaDataLogEvents(bond, receipt, setMetaDataEvent)
         })
 
-        it('metadata is updatable', async () => {
+        it('token beneficiary', async () => {
+            const debtTokens = 554n
+            bond = await deployContract('ERC20SingleCollateralBondBox')
+            expect(await bond.tokenSweepBeneficiary()).equals(ADDRESS_ZERO)
+
+            const receipt = await successfulTransaction(
+                bond.initialize(
+                    {name: 'My Debt Tokens two', symbol: 'MDT006', data: DATA},
+                    {
+                        debtTokenAmount: debtTokens,
+                        collateralTokens: collateralTokens.address,
+                        expiryTimestamp: BOND_EXPIRY,
+                        minimumDeposit: MINIMUM_DEPOSIT
+                    },
+                    treasury
+                )
+            )
+
+            expect(await bond.tokenSweepBeneficiary()).equals(treasury)
+            const expectedEvents = [
+                {beneficiary: treasury, instigator: admin.address}
+            ]
+            verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
+            verifyBeneficiaryUpdateLogEvents(bond, receipt, expectedEvents)
+        })
+    })
+
+    describe('MetaData', () => {
+        it('updatable', async () => {
             const debtTokens = 554n
             const startMetaData = 'something you will neve know'
             const endMetadata = 'has changed to something else'
@@ -773,16 +810,68 @@ describe('ERC20 Single Collateral Bond contract', () => {
         })
     })
 
+    describe('ERC20 token sweep', () => {
+        it('side effects', async () => {
+            const seedFunds = 100n
+            const sweepAmount = 55n
+            await successfulTransaction(
+                collateralTokens.transfer(bond.address, seedFunds)
+            )
+            expect(await collateralTokens.balanceOf(bond.address)).equals(
+                seedFunds
+            )
+            expect(await collateralTokens.balanceOf(treasury)).equals(0)
+
+            const receipt = await successfulTransaction(
+                bond.sweepERC20Tokens(collateralTokens.address, sweepAmount)
+            )
+
+            expect(await collateralTokens.balanceOf(bond.address)).equals(
+                seedFunds - sweepAmount
+            )
+            expect(await collateralTokens.balanceOf(treasury)).equals(
+                sweepAmount
+            )
+            const expectedEvents: ExpectedERC20SweepEvent[] = [
+                {
+                    beneficiary: treasury,
+                    tokens: collateralTokens.address,
+                    amount: sweepAmount,
+                    instigator: admin.address
+                }
+            ]
+            verifyERC20SweepEvents(receipt, expectedEvents)
+            verifyERC20SweepLogEvents(bond, receipt, expectedEvents)
+        })
+
+        it('only owner', async () => {
+            await expect(
+                bond
+                    .connect(guarantorThree)
+                    .sweepERC20Tokens(collateralTokens.address, 5)
+            ).to.be.revertedWith('Ownable: caller is not the owner')
+        })
+
+        it('only when not paused', async () => {
+            bond = await createBond(ONE)
+            await bond.pause()
+
+            await expect(
+                bond.sweepERC20Tokens(collateralTokens.address, 5)
+            ).to.be.revertedWith('Pausable: paused')
+        })
+    })
+
     describe('treasury', () => {
         it('update address', async () => {
             bond = await createBond(555666777n)
-
-            const treasuryBefore = await bond.treasury()
-            expect(treasuryBefore).equals(treasury)
+            expect(await bond.treasury()).equals(treasury)
+            expect(await bond.tokenSweepBeneficiary()).equals(treasury)
 
             await bond.setTreasury(admin.address)
-            const treasuryAfter = await bond.treasury()
-            expect(treasuryAfter).equals(admin.address)
+
+            expect(await bond.treasury()).equals(admin.address)
+            expect(await bond.tokenSweepBeneficiary()).equals(admin.address)
         })
     })
 

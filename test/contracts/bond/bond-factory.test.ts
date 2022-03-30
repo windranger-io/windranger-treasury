@@ -16,9 +16,19 @@ import {
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from '../../event/bond/verify-bond-creator-events'
 import {ExtendedERC20} from '../../cast/extended-erc20'
-import {SYSTEM_ADMIN} from '../../event/bond/roles'
+import {SUPER_USER, SYSTEM_ADMIN} from '../../event/bond/roles'
 import {successfulTransaction} from '../../framework/transaction'
 import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
+import {
+    ExpectedBeneficiaryUpdateEvent,
+    verifyBeneficiaryUpdateEvents,
+    verifyBeneficiaryUpdateLogEvents
+} from '../../event/sweep/verify-token-sweep-events'
+import {
+    ExpectedERC20SweepEvent,
+    verifyERC20SweepEvents,
+    verifyERC20SweepLogEvents
+} from '../../event/sweep/verify-sweep-erc20-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -29,7 +39,10 @@ describe('Bond Factory contract', () => {
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        bonds = await deployContractWithProxy<BondFactory>('BondFactory')
+        bonds = await deployContractWithProxy<BondFactory>(
+            'BondFactory',
+            treasury
+        )
     })
 
     describe('create bond', () => {
@@ -93,6 +106,147 @@ describe('Bond Factory contract', () => {
                     treasury
                 )
             ).to.be.revertedWith('Pausable: paused')
+        })
+    })
+
+    describe('ERC20 token sweep', () => {
+        it('init', async () => {
+            const bondFactory = await deployContract<BondFactory>('BondFactory')
+
+            const receipt = await successfulTransaction(
+                bondFactory.initialize(treasury)
+            )
+
+            expect(await bondFactory.tokenSweepBeneficiary()).equals(treasury)
+            const expectedEvents = [{beneficiary: treasury, instigator: admin}]
+            verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
+            verifyBeneficiaryUpdateLogEvents(
+                bondFactory,
+                receipt,
+                expectedEvents
+            )
+        })
+
+        describe('update beneficiary', () => {
+            after(async () => {
+                bonds = await deployContractWithProxy<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
+            })
+
+            it('side effects', async () => {
+                expect(await bonds.tokenSweepBeneficiary()).equals(treasury)
+
+                const receipt = await successfulTransaction(
+                    bonds.setTokenSweepBeneficiary(nonAdmin.address)
+                )
+
+                expect(await bonds.tokenSweepBeneficiary()).equals(
+                    nonAdmin.address
+                )
+                const expectedEvents: ExpectedBeneficiaryUpdateEvent[] = [
+                    {
+                        beneficiary: nonAdmin.address,
+                        instigator: admin
+                    }
+                ]
+                verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
+                verifyBeneficiaryUpdateLogEvents(bonds, receipt, expectedEvents)
+            })
+
+            it('only Super User', async () => {
+                await expect(
+                    bonds
+                        .connect(nonAdmin)
+                        .setTokenSweepBeneficiary(nonAdmin.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        SUPER_USER
+                    )
+                )
+            })
+            it('only when not paused', async () => {
+                bonds = await deployContractWithProxy<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
+                await bonds.pause()
+
+                await expect(
+                    bonds.setTokenSweepBeneficiary(nonAdmin.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
+        })
+
+        describe('ERC20 token sweep', () => {
+            after(async () => {
+                bonds = await deployContractWithProxy<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
+            })
+            it('side effects', async () => {
+                const seedFunds = 100n
+                const sweepAmount = 55n
+                await successfulTransaction(
+                    collateralTokens.transfer(bonds.address, seedFunds)
+                )
+                expect(await collateralTokens.balanceOf(bonds.address)).equals(
+                    seedFunds
+                )
+                expect(await collateralTokens.balanceOf(treasury)).equals(0)
+
+                const receipt = await successfulTransaction(
+                    bonds.sweepERC20Tokens(
+                        collateralTokens.address,
+                        sweepAmount
+                    )
+                )
+
+                expect(await collateralTokens.balanceOf(bonds.address)).equals(
+                    seedFunds - sweepAmount
+                )
+                expect(await collateralTokens.balanceOf(treasury)).equals(
+                    sweepAmount
+                )
+                const expectedEvents: ExpectedERC20SweepEvent[] = [
+                    {
+                        beneficiary: treasury,
+                        tokens: collateralTokens.address,
+                        amount: sweepAmount,
+                        instigator: admin
+                    }
+                ]
+                verifyERC20SweepEvents(receipt, expectedEvents)
+                verifyERC20SweepLogEvents(bonds, receipt, expectedEvents)
+            })
+
+            it('only Super User', async () => {
+                await expect(
+                    bonds
+                        .connect(nonAdmin)
+                        .sweepERC20Tokens(collateralTokens.address, 5)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        SUPER_USER
+                    )
+                )
+            })
+
+            it('only when not paused', async () => {
+                bonds = await deployContractWithProxy<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
+                await bonds.pause()
+
+                await expect(
+                    bonds.sweepERC20Tokens(collateralTokens.address, 5)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
     })
 
