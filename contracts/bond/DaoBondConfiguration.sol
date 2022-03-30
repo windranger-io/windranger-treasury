@@ -13,11 +13,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
     mapping(uint256 => DaoBondConfig) private _daoConfig;
     uint256 private _daoConfigLastId;
 
-    function daoTreasury(uint256 daoId) external view returns (address) {
-        return _daoConfig[daoId].treasury;
-    }
-
-    event DaoTreasuryUpdate(
+    event SetDaoTreasury(
         uint256 indexed daoId,
         address indexed treasury,
         address indexed instigator
