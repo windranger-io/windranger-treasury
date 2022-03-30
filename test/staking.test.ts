@@ -34,10 +34,10 @@ const EPOCH_DURATION = 60
 const START_DELAY = 15
 const REWARDS_AVAILABLE_OFFSET = 20
 const MIN_POOL_STAKE = 500
-const REWARD_TOKEN_1_AMOUNT = 2000
+const REWARD_TOKEN_1_AMOUNT = 4000
 
 describe('Staking Pool Tests', () => {
-    describe.only('Initialization', () => {
+    describe('Initialization', () => {
         const amount = BigNumber.from(9090)
         before(async () => {
             rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
@@ -191,13 +191,14 @@ describe('Staking Pool Tests', () => {
         describe('withdraw', () => {
             const amount = BigNumber.from(20)
             it('cant withdraw since not past reward start date', async () => {
-                // await increaseTime(START_DELAY + REWARDS_AVAILABLE_OFFSET)
+                expect(await stakingPool.isRewardsAvailable()).to.be.false
                 await expect(userWithdraw(user)).to.be.revertedWith(
                     'StakingPool: still stake period'
                 )
             })
 
             it('cant withdraw staking period not complete', async () => {
+                expect(await stakingPool.isRedeemable()).to.be.false
                 await expect(userWithdraw(user)).to.be.revertedWith(
                     'StakingPool: still stake period'
                 )
@@ -206,10 +207,11 @@ describe('Staking Pool Tests', () => {
             it('allows a user to withdraw', async () => {
                 await userDeposit(user2, amount)
                 await increaseTime(EPOCH_DURATION)
-                const withdrawReceipt = await userWithdraw(user2)
+                expect(await stakingPool.isRedeemable()).to.be.true
+                expect(await stakingPool.isRewardsAvailable()).to.be.true
                 verifyWithdrawEvent(
                     {user: user2.address, stake: amount},
-                    withdrawReceipt
+                    await userWithdraw(user2)
                 )
             })
 
@@ -302,11 +304,11 @@ describe('Staking Pool Tests', () => {
                     treasury: admin,
                     totalStakedAmount: 0,
                     stakeToken: stakeTokens.address,
-                    poolType: 1,
+                    poolType: StakingPoolType.FLOATING,
                     rewardTokens: [
                         {
                             token: rewardToken1.address,
-                            totalTokenRewardsAvailable: 2000,
+                            totalTokenRewardsAvailable: REWARD_TOKEN_1_AMOUNT,
                             rewardAmountRatio: 0
                         }
                     ]
@@ -364,21 +366,29 @@ describe('Staking Pool Tests', () => {
 
                 await userWithdrawStake(user)
                 await increaseTime(REWARDS_AVAILABLE_OFFSET)
-                const receipt = await userWithdrawRewards(user)
+
                 verifyWithdrawRewardsEvent(
                     {
                         user: user.address,
                         rewards: BigNumber.from(REWARD_TOKEN_1_AMOUNT),
                         rewardToken: rewardToken1.address
                     },
-                    receipt
+                    await userWithdrawRewards(user)
                 )
             })
 
             it('2 users split rewards', async () => {
                 await increaseTime(START_DELAY)
-
+                const splitRewards = BigNumber.from(REWARD_TOKEN_1_AMOUNT).div(
+                    2
+                )
                 await userDeposit(user, amount)
+
+                // 1 user would get 100pc of the rewards
+                expect(
+                    (await stakingPool.currentExpectedReward(user.address))[0]
+                ).to.equal(REWARD_TOKEN_1_AMOUNT)
+
                 await userDeposit(user2, amount)
 
                 // increase past staking period
@@ -387,10 +397,15 @@ describe('Staking Pool Tests', () => {
                 await userWithdrawStake(user)
                 await userWithdrawStake(user2)
                 await increaseTime(REWARDS_AVAILABLE_OFFSET)
+
+                expect(
+                    (await stakingPool.currentExpectedReward(user.address))[0]
+                ).to.equal(splitRewards)
+
                 verifyWithdrawRewardsEvent(
                     {
                         user: user.address,
-                        rewards: BigNumber.from(REWARD_TOKEN_1_AMOUNT).div(2),
+                        rewards: splitRewards,
                         rewardToken: rewardToken1.address
                     },
                     await userWithdrawRewards(user)
@@ -398,7 +413,7 @@ describe('Staking Pool Tests', () => {
                 verifyWithdrawRewardsEvent(
                     {
                         user: user2.address,
-                        rewards: BigNumber.from(REWARD_TOKEN_1_AMOUNT).div(2),
+                        rewards: splitRewards,
                         rewardToken: rewardToken1.address
                     },
                     await userWithdrawRewards(user2)
@@ -470,6 +485,14 @@ describe('Staking Pool Tests', () => {
                 await userWithdrawStake(user)
                 await userWithdrawStake(user2)
                 await increaseTime(REWARDS_AVAILABLE_OFFSET)
+
+                expect(
+                    (await stakingPool.currentExpectedReward(user.address))[0]
+                ).to.equal(amount.mul(rewardAmountRatio))
+                expect(
+                    (await stakingPool.currentExpectedReward(user2.address))[0]
+                ).to.equal(amount.mul(rewardAmountRatio))
+
                 verifyWithdrawRewardsEvent(
                     {
                         user: user.address,

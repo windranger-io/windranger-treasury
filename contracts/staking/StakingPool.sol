@@ -129,14 +129,13 @@ contract StakingPool is
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 // floating: update the global rewards ratio
-                _info.rewardTokens[i].rewardAmountRatio = uint32(
-                    _computeFloatingRewardsPerShare(i)
-                );
+                _info
+                    .rewardTokens[i]
+                    .rewardAmountRatio = _computeFloatingRewardsPerShare(i);
             } else {
                 // fixed: set the reward amount per user now
-                user.rewardAmounts[i] += _computeFixedRewards(
-                    uint128(amount),
-                    i
+                user.rewardAmounts[i] += uint128(
+                    (amount * _info.rewardTokens[i].rewardAmountRatio)
                 );
             }
         }
@@ -175,8 +174,8 @@ contract StakingPool is
             // floating
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 amount = uint256(
-                    _stakingPoolInfo.rewardTokens[i].rewardAmountRatio *
-                        user.depositAmount
+                    (_info.rewardTokens[i].rewardAmountRatio *
+                        user.depositAmount) / 1 ether
                 );
             } else {
                 // fixed
@@ -200,11 +199,12 @@ contract StakingPool is
         StakingPoolLib.Data storage _info = _stakingPoolInfo;
 
         // calculate the amount of rewards the user is due for the floating pool type
-        // fixed amounts are calculated on deposit.
+        // fixed amounts are calculated and fixed on depositing
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
                 user.rewardAmounts[i] = uint128(
-                    _computeFloatingRewardsPerShare(i) * currentDepositBalance
+                    (_info.rewardTokens[i].rewardAmountRatio *
+                        currentDepositBalance) / 1 ether
                 );
             }
         }
@@ -309,6 +309,14 @@ contract StakingPool is
         _setRewardsAvailableTimestamp(timestamp);
     }
 
+    function stakingPoolData()
+        external
+        view
+        returns (StakingPoolLib.Data memory)
+    {
+        return _stakingPoolInfo;
+    }
+
     function computeFloatingRewardsPerShare(uint256 rewardTokenIndex)
         external
         view
@@ -329,27 +337,21 @@ contract StakingPool is
 
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
-                rewards[i] = uint256(
-                    (_info.rewardTokens[i].rewardAmountRatio *
-                        _user.depositAmount) / 1 ether
-                );
+                if (_user.depositAmount == 0) {
+                    // user has already withdrawn
+                    rewards[i] = _user.rewardAmounts[i];
+                } else {
+                    rewards[i] = uint256(
+                        (_info.rewardTokens[i].rewardAmountRatio *
+                            _user.depositAmount) / 1 ether
+                    );
+                }
             } else {
-                rewards[i] = _computeFixedRewards(_user.depositAmount, i);
+                // fixed pool type
+                rewards[i] = _user.rewardAmounts[i];
             }
         }
         return rewards;
-    }
-
-    function computeFixedRewards(address recipient, uint256 rewardTokenIndex)
-        external
-        view
-        returns (uint128)
-    {
-        return
-            _computeFixedRewards(
-                _users[recipient].depositAmount,
-                rewardTokenIndex
-            );
     }
 
     function isRedeemable() external view returns (bool) {
@@ -357,7 +359,7 @@ contract StakingPool is
         return _isRewardsAvailable() && _isStakingPeriodComplete();
     }
 
-    function isRewardsFinalized() external view returns (bool) {
+    function isRewardsAvailable() external view returns (bool) {
         return _isRewardsAvailable();
     }
 
@@ -443,21 +445,6 @@ contract StakingPool is
         }
     }
 
-    // fixed
-    function _computeFixedRewards(uint128 amount, uint256 rewardTokenIndex)
-        internal
-        view
-        returns (uint128)
-    {
-        return
-            uint128(
-                (amount *
-                    _stakingPoolInfo
-                        .rewardTokens[rewardTokenIndex]
-                        .rewardAmountRatio)
-            );
-    }
-
     //floating
     function _computeFloatingRewardsPerShare(uint256 rewardTokenIndex)
         internal
@@ -469,8 +456,7 @@ contract StakingPool is
         uint256 availableTokenRewards = _info
             .rewardTokens[rewardTokenIndex]
             .totalTokenRewardsAvailable;
-
-        return availableTokenRewards / _info.totalStakedAmount;
+        return (availableTokenRewards * 1 ether) / _info.totalStakedAmount;
     }
 
     function _isRewardsAvailable() internal view returns (bool) {

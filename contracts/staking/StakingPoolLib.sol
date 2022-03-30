@@ -10,7 +10,7 @@ library StakingPoolLib {
 
     struct RewardToken {
         address token;
-        uint32 rewardAmountRatio;
+        uint256 rewardAmountRatio;
         uint256 totalTokenRewardsAvailable;
     }
 
