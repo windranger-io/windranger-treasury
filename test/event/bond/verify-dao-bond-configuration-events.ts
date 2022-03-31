@@ -3,111 +3,115 @@ import {eventLog} from '../../framework/event-logs'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
 import {
-    ActualSetDaoMetaDataEvent,
-    ActualSetDaoTreasuryEvent,
-    setDaoMetaDataEventLogs,
-    setDaoMetaDataEvents,
-    setDaoTreasuryEventLogs,
-    setDaoTreasuryEvents
+    ActualDaoMetaDataUpdateEvent,
+    ActualDaoTreasuryUpdateEvent,
+    daoMetaDataUpdateEventLogs,
+    daoMetaDataUpdateEvents,
+    daoTreasuryUpdateEventLogs,
+    daoTreasuryUpdateEvents
 } from './dao-bond-configuration-events'
 
-export type ExpectedSetDaoTreasuryEvent = {
+export type ExpectedDaoTreasuryUpdateEvent = {
     daoId: bigint
     treasury: string
     instigator: string
 }
 
-export type ExpectedSetDaoMetaDataEvent = {
+export type ExpectedDaoMetaDataUpdateEvent = {
     daoId: bigint
     data: string
     instigator: string
 }
 
 /**
- * Verifies the content for a Set Dao MetaData event.
+ * Verifies the content for a Dao MetaData Update event.
  */
-export function verifySetDaoMetaDataEvents(
+export function verifyDaoMetaDataUpdateEvents(
     receipt: ContractReceipt,
-    metaData: ExpectedSetDaoMetaDataEvent[]
+    metaData: ExpectedDaoMetaDataUpdateEvent[]
 ): void {
-    const actualEvents = setDaoMetaDataEvents(events('SetMetaData', receipt))
+    const actualEvents = daoMetaDataUpdateEvents(
+        events('DaoMetaDataUpdate', receipt)
+    )
 
     verifyOrderedEvents(
         actualEvents,
         metaData,
         (
-            actual: ActualSetDaoMetaDataEvent,
-            expected: ExpectedSetDaoMetaDataEvent
-        ) => deepEqualsSetDaoMetaDataEvent(actual, expected)
+            actual: ActualDaoMetaDataUpdateEvent,
+            expected: ExpectedDaoMetaDataUpdateEvent
+        ) => deepEqualsDaoMetaDataUpdateEvent(actual, expected)
     )
 }
 
 /**
- * Verifies the event log entries contain the expected Set Dao MetaData events.
+ * Verifies the event log entries contain the expected Dao MetaData Update events.
  */
-export function verifySetDaoMetaDataLogEvents<T extends BaseContract>(
+export function verifyDaoMetaDataUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    metaData: ExpectedSetDaoMetaDataEvent[]
+    metaData: ExpectedDaoMetaDataUpdateEvent[]
 ): void {
-    const actualEvents = setDaoMetaDataEventLogs(
-        eventLog('SetMetaData', emitter, receipt)
+    const actualEvents = daoMetaDataUpdateEventLogs(
+        eventLog('DaoMetaDataUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
         metaData,
         (
-            actual: ActualSetDaoMetaDataEvent,
-            expected: ExpectedSetDaoMetaDataEvent
-        ) => deepEqualsSetDaoMetaDataEvent(actual, expected)
+            actual: ActualDaoMetaDataUpdateEvent,
+            expected: ExpectedDaoMetaDataUpdateEvent
+        ) => deepEqualsDaoMetaDataUpdateEvent(actual, expected)
     )
 }
 
 /**
- * Verifies the content for a Set Dao Treasury event.
+ * Verifies the content for a Dao Treasury Update event.
  */
-export function verifySetDaoTreasuryEvents(
+export function verifyDaoTreasuryUpdateEvents(
     receipt: ContractReceipt,
-    metaData: ExpectedSetDaoTreasuryEvent[]
+    metaData: ExpectedDaoTreasuryUpdateEvent[]
 ): void {
-    const actualEvents = setDaoTreasuryEvents(events('SetDaoTreasury', receipt))
+    const actualEvents = daoTreasuryUpdateEvents(
+        events('DaoTreasuryUpdate', receipt)
+    )
 
     verifyOrderedEvents(
         actualEvents,
         metaData,
         (
-            actual: ActualSetDaoTreasuryEvent,
-            expected: ExpectedSetDaoTreasuryEvent
-        ) => deepEqualsSetDaoTreasuryEvent(actual, expected)
+            actual: ActualDaoTreasuryUpdateEvent,
+            expected: ExpectedDaoTreasuryUpdateEvent
+        ) => deepEqualsDaoTreasuryUpdateEvent(actual, expected)
     )
 }
 
 /**
- * Verifies the event log entries contain the expected Set Dao Treasury events.
+ * Verifies the event log entries contain the expected Dao Treasury Update events.
  */
-export function verifySetDaoTreasuryLogEvents<T extends BaseContract>(
+export function verifyDaoTreasuryUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    metaData: ExpectedSetDaoTreasuryEvent[]
+    metaData: ExpectedDaoTreasuryUpdateEvent[]
 ): void {
-    const actualEvents = setDaoTreasuryEventLogs(
-        eventLog('SetDaoTreasury', emitter, receipt)
+    const actualEvents = daoTreasuryUpdateEventLogs(
+        eventLog('DaoTreasuryUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
         metaData,
         (
-            actual: ActualSetDaoTreasuryEvent,
-            expected: ExpectedSetDaoTreasuryEvent
-        ) => deepEqualsSetDaoTreasuryEvent(actual, expected)
+            actual: ActualDaoTreasuryUpdateEvent,
+            expected: ExpectedDaoTreasuryUpdateEvent
+        ) => deepEqualsDaoTreasuryUpdateEvent(actual, expected)
     )
 }
 
-function deepEqualsSetDaoMetaDataEvent(
-    actual: ActualSetDaoMetaDataEvent,
-    expected: ExpectedSetDaoMetaDataEvent
+function deepEqualsDaoMetaDataUpdateEvent(
+    actual: ActualDaoMetaDataUpdateEvent,
+    expected: ExpectedDaoMetaDataUpdateEvent
 ): boolean {
     return (
         actual.daoId.toBigInt() === expected.daoId &&
@@ -116,9 +120,9 @@ function deepEqualsSetDaoMetaDataEvent(
     )
 }
 
-function deepEqualsSetDaoTreasuryEvent(
-    actual: ActualSetDaoTreasuryEvent,
-    expected: ExpectedSetDaoTreasuryEvent
+function deepEqualsDaoTreasuryUpdateEvent(
+    actual: ActualDaoTreasuryUpdateEvent,
+    expected: ExpectedDaoTreasuryUpdateEvent
 ): boolean {
     return (
         actual.daoId.toBigInt() === expected.daoId &&

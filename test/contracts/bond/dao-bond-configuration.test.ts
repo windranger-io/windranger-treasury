@@ -13,12 +13,12 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from '../../cast/extended-erc20'
 import {successfulTransaction} from '../../framework/transaction'
 import {
-    ExpectedSetDaoMetaDataEvent,
-    ExpectedSetDaoTreasuryEvent,
-    verifySetDaoMetaDataEvents,
-    verifySetDaoMetaDataLogEvents,
-    verifySetDaoTreasuryEvents,
-    verifySetDaoTreasuryLogEvents
+    ExpectedDaoMetaDataUpdateEvent,
+    ExpectedDaoTreasuryUpdateEvent,
+    verifyDaoMetaDataUpdateEvents,
+    verifyDaoMetaDataUpdateLogEvents,
+    verifyDaoTreasuryUpdateEvents,
+    verifyDaoTreasuryUpdateLogEvents
 } from '../../event/bond/verify-dao-bond-configuration-events'
 
 // Wires up Waffle with Chai
@@ -60,15 +60,15 @@ describe('DAO Bond Configuration contract', () => {
             expect(await configuration.daoMetaData(DAO_ID)).equals(
                 metaDataUpdate
             )
-            const expectedEvents: ExpectedSetDaoMetaDataEvent[] = [
+            const expectedEvents: ExpectedDaoMetaDataUpdateEvent[] = [
                 {
                     daoId: DAO_ID,
                     data: metaDataUpdate,
                     instigator: admin
                 }
             ]
-            verifySetDaoMetaDataEvents(receipt, expectedEvents)
-            verifySetDaoMetaDataLogEvents(
+            verifyDaoMetaDataUpdateEvents(receipt, expectedEvents)
+            verifyDaoMetaDataUpdateLogEvents(
                 configuration,
                 receipt,
                 expectedEvents
@@ -86,11 +86,11 @@ describe('DAO Bond Configuration contract', () => {
             )
 
             expect(await config.daoTreasury(DAO_ID)).equals(treasury)
-            const treasuryEvents: ExpectedSetDaoTreasuryEvent[] = [
+            const treasuryEvents: ExpectedDaoTreasuryUpdateEvent[] = [
                 {daoId: DAO_ID, treasury: treasury, instigator: admin}
             ]
-            verifySetDaoTreasuryEvents(receipt, treasuryEvents)
-            verifySetDaoTreasuryLogEvents(
+            verifyDaoTreasuryUpdateEvents(receipt, treasuryEvents)
+            verifyDaoTreasuryUpdateLogEvents(
                 configuration,
                 receipt,
                 treasuryEvents
@@ -122,15 +122,19 @@ describe('DAO Bond Configuration contract', () => {
                 expect(await config.daoTreasury(DAO_ID)).equals(
                     nonAdmin.address
                 )
-                const treasuryEvents: ExpectedSetDaoTreasuryEvent[] = [
+                const treasuryEvents: ExpectedDaoTreasuryUpdateEvent[] = [
                     {
                         daoId: DAO_ID,
                         treasury: nonAdmin.address,
                         instigator: admin
                     }
                 ]
-                verifySetDaoTreasuryEvents(receipt, treasuryEvents)
-                verifySetDaoTreasuryLogEvents(config, receipt, treasuryEvents)
+                verifyDaoTreasuryUpdateEvents(receipt, treasuryEvents)
+                verifyDaoTreasuryUpdateLogEvents(
+                    config,
+                    receipt,
+                    treasuryEvents
+                )
             })
 
             it('cannot be identical', async () => {
