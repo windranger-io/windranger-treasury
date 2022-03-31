@@ -141,7 +141,7 @@ describe('Bond Factory contract', () => {
                 )
             })
 
-            it('only ownerr', async () => {
+            it('only owner', async () => {
                 await expect(
                     creator
                         .connect(nonAdmin)
