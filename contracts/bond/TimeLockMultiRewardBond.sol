@@ -43,8 +43,11 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         uint256 rewardDebt,
         address indexed instigator
     );
-    event SetRedemptionTimestamp(uint256 timestamp, address indexed instigator);
-    event UpdateRewardTimeLock(
+    event RedemptionTimestampUpdate(
+        uint256 timestamp,
+        address indexed instigator
+    );
+    event RewardTimeLockUpdate(
         address indexed tokens,
         uint256 timeLock,
         address indexed instigator
@@ -201,7 +204,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
 
         rewardPool.timeLock = timeLock;
 
-        emit UpdateRewardTimeLock(tokens, timeLock, _msgSender());
+        emit RewardTimeLockUpdate(tokens, timeLock, _msgSender());
     }
 
     /**
@@ -221,7 +224,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
 
         _redemptionTimestamp = timestamp;
 
-        emit SetRedemptionTimestamp(timestamp, _msgSender());
+        emit RedemptionTimestampUpdate(timestamp, _msgSender());
     }
 
     /**

@@ -2,33 +2,33 @@ import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 import {
-    SetDaoTreasuryEvent,
-    SetMetaDataEvent
+    DaoMetaDataUpdateEvent,
+    DaoTreasuryUpdateEvent
 } from '../../../typechain-types/DaoBondConfiguration'
 
-export type ActualSetDaoTreasuryEvent = {
+export type ActualDaoTreasuryUpdateEvent = {
     daoId: BigNumber
     treasury: string
     instigator: string
 }
 
-export type ActualSetDaoMetaDataEvent = {
+export type ActualDaoMetaDataUpdateEvent = {
     daoId: BigNumber
     data: string
     instigator: string
 }
 
 /**
- * Shape check and conversion for a SetDaoMetaData event.
+ * Shape check and conversion for a DaoMetaDataUpdate event.
  */
-export function setDaoMetaDataEvents(
+export function daoMetaDataUpdateEvents(
     events: Event[]
-): ActualSetDaoMetaDataEvent[] {
-    const metaData: ActualSetDaoMetaDataEvent[] = []
+): ActualDaoMetaDataUpdateEvent[] {
+    const metaData: ActualDaoMetaDataUpdateEvent[] = []
 
     for (const event of events) {
         expect(event.args).is.not.undefined
-        const create = event as SetMetaDataEvent
+        const create = event as DaoMetaDataUpdateEvent
 
         const args = create.args
         expect(args?.daoId).is.not.undefined
@@ -42,12 +42,12 @@ export function setDaoMetaDataEvents(
 }
 
 /**
- * Shape check and conversion for an event log entry for SetDaoMetaData.
+ * Shape check and conversion for an event log entry for DaoMetaDataUpdate.
  */
-export function setDaoMetaDataEventLogs(
+export function daoMetaDataUpdateEventLogs(
     events: Result[]
-): ActualSetDaoMetaDataEvent[] {
-    const results: ActualSetDaoMetaDataEvent[] = []
+): ActualDaoMetaDataUpdateEvent[] {
+    const results: ActualDaoMetaDataUpdateEvent[] = []
 
     for (const event of events) {
         expect(event?.daoId).is.not.undefined
@@ -67,16 +67,16 @@ export function setDaoMetaDataEventLogs(
 }
 
 /**
- * Shape check and conversion for a SetDaoTreasury event.
+ * Shape check and conversion for a DaoTreasuryUpdate event.
  */
-export function setDaoTreasuryEvents(
+export function daoTreasuryUpdateEvents(
     events: Event[]
-): ActualSetDaoTreasuryEvent[] {
-    const metaData: ActualSetDaoTreasuryEvent[] = []
+): ActualDaoTreasuryUpdateEvent[] {
+    const metaData: ActualDaoTreasuryUpdateEvent[] = []
 
     for (const event of events) {
         expect(event.args).is.not.undefined
-        const create = event as SetDaoTreasuryEvent
+        const create = event as DaoTreasuryUpdateEvent
 
         const args = create.args
         expect(args?.daoId).is.not.undefined
@@ -90,12 +90,12 @@ export function setDaoTreasuryEvents(
 }
 
 /**
- * Shape check and conversion for an event log entry for SetDaoTreasury.
+ * Shape check and conversion for an event log entry for DaoTreasuryUpdate.
  */
-export function setDaoTreasuryEventLogs(
+export function daoTreasuryUpdateEventLogs(
     events: Result[]
-): ActualSetDaoTreasuryEvent[] {
-    const results: ActualSetDaoTreasuryEvent[] = []
+): ActualDaoTreasuryUpdateEvent[] {
+    const results: ActualDaoTreasuryUpdateEvent[] = []
 
     for (const event of events) {
         expect(event?.daoId).is.not.undefined

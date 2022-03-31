@@ -14,7 +14,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 abstract contract MetaDataStore is ContextUpgradeable {
     string private _metaData;
 
-    event SetMetaData(string data, address indexed instigator);
+    event MetaDataUpdate(string data, address indexed instigator);
 
     /**
      * @notice The storage box for metadata. Information not required by the contract for operations.
@@ -40,6 +40,6 @@ abstract contract MetaDataStore is ContextUpgradeable {
      */
     function _setMetaData(string calldata data) internal {
         _metaData = data;
-        emit SetMetaData(data, _msgSender());
+        emit MetaDataUpdate(data, _msgSender());
     }
 }

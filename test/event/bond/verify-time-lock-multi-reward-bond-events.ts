@@ -6,18 +6,18 @@ import {
     ActualClaimRewardEvent,
     ActualRegisterRewardEvent,
     ActualRewardDebtEvent,
-    ActualSetRedemptionTimestampEvent,
-    ActualUpdateRewardTimeLockEvent,
+    ActualRedemptionTimestampUpdateEvent,
+    ActualRewardTimeLockUpdateEvent,
     claimRewardEventLogs,
     claimRewardEvents,
     registerRewardEventLogs,
     registerRewardEvents,
     rewardDebtEventLogs,
     rewardDebtEvents,
-    setRedemptionTimestampEventLogs,
-    setRedemptionTimestampEvents,
-    updateRewardTimeLockEventLogs,
-    updateRewardTimeLockEvents
+    redemptionTimestampUpdateEventLogs,
+    redemptionTimestampUpdateEvents,
+    rewardTimeLockUpdateEventLogs,
+    rewardTimeLockUpdateEvents
 } from './time-lock-multi-reward-bond-events'
 
 export type ExpectedClaimRewardEvent = {
@@ -40,12 +40,12 @@ export type ExpectedRewardDebtEvent = {
     instigator: string
 }
 
-export type ExpectedSetRedemptionTimestampEvent = {
+export type ExpectedRedemptionTimestampUpdateEvent = {
     timestamp: bigint
     instigator: string
 }
 
-export type ExpectedUpdateRewardTimeLockEvent = {
+export type ExpectedRewardTimeLockUpdateEvent = {
     tokens: string
     timeLock: bigint
     instigator: string
@@ -167,88 +167,90 @@ export function verifyRewardDebtLogEvents<T extends BaseContract>(
 }
 
 /**
- * Verifies the content for SetRedemptionTimestamp events.
+ * Verifies the content for RedemptionTimestampUpdate events.
  */
-export function verifySetRedemptionTimestampEvents(
+export function verifyRedemptionTimestampUpdateEvents(
     receipt: ContractReceipt,
-    expectedEvents: ExpectedSetRedemptionTimestampEvent[]
+    expectedEvents: ExpectedRedemptionTimestampUpdateEvent[]
 ): void {
-    const actualEvents = setRedemptionTimestampEvents(
-        events('SetRedemptionTimestamp', receipt)
+    const actualEvents = redemptionTimestampUpdateEvents(
+        events('RedemptionTimestampUpdate', receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
         expectedEvents,
         (
-            actual: ActualSetRedemptionTimestampEvent,
-            expected: ExpectedSetRedemptionTimestampEvent
-        ) => deepEqualsSetRedemptionTimestampEvent(actual, expected)
+            actual: ActualRedemptionTimestampUpdateEvent,
+            expected: ExpectedRedemptionTimestampUpdateEvent
+        ) => deepEqualsRedemptionTimestampUpdateEvent(actual, expected)
     )
 }
 
 /**
  * Verifies the event log entries contain the expected SetRedemptionTimestamp events.
  */
-export function verifySetRedemptionTimestampLogEvents<T extends BaseContract>(
+export function verifyRedemptionTimestampUpdateLogEvents<
+    T extends BaseContract
+>(
     emitter: T,
     receipt: ContractReceipt,
-    expectedEvent: ExpectedSetRedemptionTimestampEvent[]
+    expectedEvent: ExpectedRedemptionTimestampUpdateEvent[]
 ): void {
-    const actualEvents = setRedemptionTimestampEventLogs(
-        eventLog('SetRedemptionTimestamp', emitter, receipt)
+    const actualEvents = redemptionTimestampUpdateEventLogs(
+        eventLog('RedemptionTimestampUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
         expectedEvent,
         (
-            actual: ActualSetRedemptionTimestampEvent,
-            expected: ExpectedSetRedemptionTimestampEvent
-        ) => deepEqualsSetRedemptionTimestampEvent(actual, expected)
+            actual: ActualRedemptionTimestampUpdateEvent,
+            expected: ExpectedRedemptionTimestampUpdateEvent
+        ) => deepEqualsRedemptionTimestampUpdateEvent(actual, expected)
     )
 }
 
 /**
  * Verifies the content for SetRedemptionTimestamp events.
  */
-export function verifyUpdateRewardTimeLockpEvents(
+export function verifyRewardTimeLockUpdateEvents(
     receipt: ContractReceipt,
-    expectedEvents: ExpectedUpdateRewardTimeLockEvent[]
+    expectedEvents: ExpectedRewardTimeLockUpdateEvent[]
 ): void {
-    const actualEvents = updateRewardTimeLockEvents(
-        events('UpdateRewardTimeLock', receipt)
+    const actualEvents = rewardTimeLockUpdateEvents(
+        events('RewardTimeLockUpdate', receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
         expectedEvents,
         (
-            actual: ActualUpdateRewardTimeLockEvent,
-            expected: ExpectedUpdateRewardTimeLockEvent
-        ) => deepEqualsUpdateRewardTimeLockEvent(actual, expected)
+            actual: ActualRewardTimeLockUpdateEvent,
+            expected: ExpectedRewardTimeLockUpdateEvent
+        ) => deepEqualsRewardTimeLockUpdateEvent(actual, expected)
     )
 }
 
 /**
  * Verifies the event log entries contain the expected SetRedemptionTimestamp events.
  */
-export function verifySetUpdateRewardTimeLockLogEvents<T extends BaseContract>(
+export function verifyRewardTimeLockUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    expectedEvent: ExpectedUpdateRewardTimeLockEvent[]
+    expectedEvent: ExpectedRewardTimeLockUpdateEvent[]
 ): void {
-    const actualEvents = updateRewardTimeLockEventLogs(
-        eventLog('UpdateRewardTimeLock', emitter, receipt)
+    const actualEvents = rewardTimeLockUpdateEventLogs(
+        eventLog('RewardTimeLockUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
         expectedEvent,
         (
-            actual: ActualUpdateRewardTimeLockEvent,
-            expected: ExpectedUpdateRewardTimeLockEvent
-        ) => deepEqualsUpdateRewardTimeLockEvent(actual, expected)
+            actual: ActualRewardTimeLockUpdateEvent,
+            expected: ExpectedRewardTimeLockUpdateEvent
+        ) => deepEqualsRewardTimeLockUpdateEvent(actual, expected)
     )
 }
 
@@ -287,9 +289,9 @@ function deepEqualsRewardDebtEvent(
     )
 }
 
-function deepEqualsSetRedemptionTimestampEvent(
-    actual: ActualSetRedemptionTimestampEvent,
-    expected: ExpectedSetRedemptionTimestampEvent
+function deepEqualsRedemptionTimestampUpdateEvent(
+    actual: ActualRedemptionTimestampUpdateEvent,
+    expected: ExpectedRedemptionTimestampUpdateEvent
 ): boolean {
     return (
         actual.timestamp.toBigInt() === expected.timestamp &&
@@ -297,9 +299,9 @@ function deepEqualsSetRedemptionTimestampEvent(
     )
 }
 
-function deepEqualsUpdateRewardTimeLockEvent(
-    actual: ActualUpdateRewardTimeLockEvent,
-    expected: ExpectedUpdateRewardTimeLockEvent
+function deepEqualsRewardTimeLockUpdateEvent(
+    actual: ActualRewardTimeLockUpdateEvent,
+    expected: ExpectedRewardTimeLockUpdateEvent
 ): boolean {
     return (
         actual.tokens === expected.tokens &&

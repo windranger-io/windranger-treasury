@@ -3,53 +3,57 @@ import {eventLog} from '../../framework/event-logs'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
 import {
-    ActualSetMetaDataEvent,
-    setMetaDataEventLogs,
-    setMetaDataEvents
+    ActualMetaDataUpdateEvent,
+    metaDataUpdateEventLogs,
+    metaDataUpdateEvents
 } from './meta-data-store-events'
 
-export type ExpectedSetMetaDataEvent = {data: string; instigator: string}
+export type ExpectedMetaDataUpdateEvent = {data: string; instigator: string}
 
 /**
- * Verifies the content for a Set MetaData event.
+ * Verifies the content for a MetaDataUpdate event.
  */
-export function verifySetMetaDataEvents(
+export function verifyMetaDataUpdateEvents(
     receipt: ContractReceipt,
-    metaData: ExpectedSetMetaDataEvent[]
+    metaData: ExpectedMetaDataUpdateEvent[]
 ): void {
-    const actualEvents = setMetaDataEvents(events('SetMetaData', receipt))
+    const actualEvents = metaDataUpdateEvents(events('MetaDataUpdate', receipt))
 
     verifyOrderedEvents(
         actualEvents,
         metaData,
-        (actual: ActualSetMetaDataEvent, expected: ExpectedSetMetaDataEvent) =>
-            deepEqualsSetMetaDataEvent(actual, expected)
+        (
+            actual: ActualMetaDataUpdateEvent,
+            expected: ExpectedMetaDataUpdateEvent
+        ) => deepEqualsMetaDataUpdateEvent(actual, expected)
     )
 }
 
 /**
- * Verifies the event log entries contain the expected Set MetaData events.
+ * Verifies the event log entries contain the expected MetaDataUpdate events.
  */
-export function verifySetMetaDataLogEvents<T extends BaseContract>(
+export function verifyMetaDataUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    metaData: ExpectedSetMetaDataEvent[]
+    metaData: ExpectedMetaDataUpdateEvent[]
 ): void {
-    const actualEvents = setMetaDataEventLogs(
-        eventLog('SetMetaData', emitter, receipt)
+    const actualEvents = metaDataUpdateEventLogs(
+        eventLog('MetaDataUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
         metaData,
-        (actual: ActualSetMetaDataEvent, expected: ExpectedSetMetaDataEvent) =>
-            deepEqualsSetMetaDataEvent(actual, expected)
+        (
+            actual: ActualMetaDataUpdateEvent,
+            expected: ExpectedMetaDataUpdateEvent
+        ) => deepEqualsMetaDataUpdateEvent(actual, expected)
     )
 }
 
-function deepEqualsSetMetaDataEvent(
-    actual: ActualSetMetaDataEvent,
-    expected: ExpectedSetMetaDataEvent
+function deepEqualsMetaDataUpdateEvent(
+    actual: ActualMetaDataUpdateEvent,
+    expected: ExpectedMetaDataUpdateEvent
 ): boolean {
     return (
         actual.data === expected.data &&

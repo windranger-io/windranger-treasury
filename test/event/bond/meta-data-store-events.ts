@@ -1,22 +1,24 @@
 import {Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {SetMetaDataEvent} from '../../../typechain-types/MetaDataStore'
+import {MetaDataUpdateEvent} from '../../../typechain-types/MetaDataStore'
 
-export type ActualSetMetaDataEvent = {
+export type ActualMetaDataUpdateEvent = {
     data: string
     instigator: string
 }
 
 /**
- * Shape check and conversion for a SetMetaData event.
+ * Shape check and conversion for a MetaDataUpdate event.
  */
-export function setMetaDataEvents(events: Event[]): ActualSetMetaDataEvent[] {
-    const metaData: ActualSetMetaDataEvent[] = []
+export function metaDataUpdateEvents(
+    events: Event[]
+): ActualMetaDataUpdateEvent[] {
+    const metaData: ActualMetaDataUpdateEvent[] = []
 
     for (const event of events) {
         expect(event.args).is.not.undefined
-        const create = event as SetMetaDataEvent
+        const create = event as MetaDataUpdateEvent
 
         const args = create.args
         expect(args?.data).is.not.undefined
@@ -29,12 +31,12 @@ export function setMetaDataEvents(events: Event[]): ActualSetMetaDataEvent[] {
 }
 
 /**
- * Shape check and conversion for a event log entry for SetMetaData.
+ * Shape check and conversion for a event log entry for MetaDataUpdate.
  */
-export function setMetaDataEventLogs(
+export function metaDataUpdateEventLogs(
     events: Result[]
-): ActualSetMetaDataEvent[] {
-    const results: ActualSetMetaDataEvent[] = []
+): ActualMetaDataUpdateEvent[] {
+    const results: ActualMetaDataUpdateEvent[] = []
 
     for (const event of events) {
         expect(event?.data).is.not.undefined

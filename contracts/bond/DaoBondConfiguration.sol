@@ -14,13 +14,13 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
     mapping(uint256 => DaoBondConfig) private _daoConfig;
     uint256 private _daoConfigLastId;
 
-    event SetDaoTreasury(
+    event DaoTreasuryUpdate(
         uint256 indexed daoId,
         address indexed treasury,
         address indexed instigator
     );
 
-    event SetMetaData(
+    event DaoMetaDataUpdate(
         uint256 indexed daoId,
         string data,
         address indexed instigator
@@ -82,7 +82,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         internal
     {
         _daoConfig[daoId].metaData = replacementMetaData;
-        emit SetMetaData(daoId, replacementMetaData, _msgSender());
+        emit DaoMetaDataUpdate(daoId, replacementMetaData, _msgSender());
     }
 
     function _daoCollateralWhitelist(uint256 daoId)
@@ -109,6 +109,6 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
 
     function _setTreasury(uint256 daoId, address treasury) private {
         _daoConfig[daoId].treasury = treasury;
-        emit SetDaoTreasury(daoId, treasury, _msgSender());
+        emit DaoTreasuryUpdate(daoId, treasury, _msgSender());
     }
 }
