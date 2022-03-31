@@ -64,10 +64,8 @@ describe('Bond Mediator contract', () => {
             'Name',
             'SYMBOL'
         )
-        creator = await deployContractWithProxy<BondFactory>(
-            'BondFactory',
-            treasury
-        )
+        creator = await deployContract<BondFactory>('BondFactory')
+        await successfulTransaction(creator.initialize(treasury))
         mediator = await deployContractWithProxy<BondMediator>(
             'BondMediator',
             creator.address,

@@ -7,18 +7,11 @@ import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {BitDAO, BondFactory} from '../../../typechain-types'
-import {
-    deployContract,
-    deployContractWithProxy,
-    execute,
-    signer
-} from '../../framework/contracts'
+import {deployContract, execute, signer} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from '../../event/bond/verify-bond-creator-events'
 import {ExtendedERC20} from '../../cast/extended-erc20'
-import {SUPER_USER, SYSTEM_ADMIN} from '../../event/bond/roles'
 import {successfulTransaction} from '../../framework/transaction'
-import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
 import {
     ExpectedBeneficiaryUpdateEvent,
     verifyBeneficiaryUpdateEvents,
@@ -39,16 +32,13 @@ describe('Bond Factory contract', () => {
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        bonds = await deployContractWithProxy<BondFactory>(
-            'BondFactory',
-            treasury
-        )
+        creator = await deployBondFactory()
     })
 
     describe('create bond', () => {
         after(async () => {
-            if (await bonds.paused()) {
-                await bonds.unpause()
+            if (await creator.paused()) {
+                await creator.unpause()
             }
         })
         it('with BIT token collateral', async () => {
@@ -60,7 +50,7 @@ describe('Bond Factory contract', () => {
             const data = 'a random;delimiter;separated string'
 
             const receipt = await execute(
-                bonds.createBond(
+                creator.createBond(
                     {name: bondName, symbol: bondSymbol, data: data},
                     {
                         debtTokenAmount: debtTokenAmount,
@@ -90,11 +80,11 @@ describe('Bond Factory contract', () => {
             )
         })
         it('only when not paused', async () => {
-            await successfulTransaction(bonds.pause())
-            expect(await bonds.paused()).is.true
+            await successfulTransaction(creator.pause())
+            expect(await creator.paused()).is.true
 
             await expect(
-                bonds.createBond(
+                creator.createBond(
                     {name: 'Named bond', symbol: 'AA00AA', data: ''},
                     {
                         debtTokenAmount: 101n,
@@ -129,20 +119,17 @@ describe('Bond Factory contract', () => {
 
         describe('update beneficiary', () => {
             after(async () => {
-                bonds = await deployContractWithProxy<BondFactory>(
-                    'BondFactory',
-                    treasury
-                )
+                creator = await deployBondFactory()
             })
 
             it('side effects', async () => {
-                expect(await bonds.tokenSweepBeneficiary()).equals(treasury)
+                expect(await creator.tokenSweepBeneficiary()).equals(treasury)
 
                 const receipt = await successfulTransaction(
-                    bonds.setTokenSweepBeneficiary(nonAdmin.address)
+                    creator.setTokenSweepBeneficiary(nonAdmin.address)
                 )
 
-                expect(await bonds.tokenSweepBeneficiary()).equals(
+                expect(await creator.tokenSweepBeneficiary()).equals(
                     nonAdmin.address
                 )
                 const expectedEvents: ExpectedBeneficiaryUpdateEvent[] = [
@@ -152,62 +139,54 @@ describe('Bond Factory contract', () => {
                     }
                 ]
                 verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
-                verifyBeneficiaryUpdateLogEvents(bonds, receipt, expectedEvents)
+                verifyBeneficiaryUpdateLogEvents(
+                    creator,
+                    receipt,
+                    expectedEvents
+                )
             })
 
-            it('only Super User', async () => {
+            it('only ownerr', async () => {
                 await expect(
-                    bonds
+                    creator
                         .connect(nonAdmin)
                         .setTokenSweepBeneficiary(nonAdmin.address)
-                ).to.be.revertedWith(
-                    accessControlRevertMessageMissingGlobalRole(
-                        nonAdmin,
-                        SUPER_USER
-                    )
-                )
+                ).to.be.revertedWith('Ownable: caller is not the owner')
             })
             it('only when not paused', async () => {
-                bonds = await deployContractWithProxy<BondFactory>(
-                    'BondFactory',
-                    treasury
-                )
-                await bonds.pause()
+                await creator.pause()
 
                 await expect(
-                    bonds.setTokenSweepBeneficiary(nonAdmin.address)
+                    creator.setTokenSweepBeneficiary(nonAdmin.address)
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
 
         describe('ERC20 token sweep', () => {
             after(async () => {
-                bonds = await deployContractWithProxy<BondFactory>(
-                    'BondFactory',
-                    treasury
-                )
+                creator = await deployBondFactory()
             })
             it('side effects', async () => {
                 const seedFunds = 100n
                 const sweepAmount = 55n
                 await successfulTransaction(
-                    collateralTokens.transfer(bonds.address, seedFunds)
+                    collateralTokens.transfer(creator.address, seedFunds)
                 )
-                expect(await collateralTokens.balanceOf(bonds.address)).equals(
-                    seedFunds
-                )
+                expect(
+                    await collateralTokens.balanceOf(creator.address)
+                ).equals(seedFunds)
                 expect(await collateralTokens.balanceOf(treasury)).equals(0)
 
                 const receipt = await successfulTransaction(
-                    bonds.sweepERC20Tokens(
+                    creator.sweepERC20Tokens(
                         collateralTokens.address,
                         sweepAmount
                     )
                 )
 
-                expect(await collateralTokens.balanceOf(bonds.address)).equals(
-                    seedFunds - sweepAmount
-                )
+                expect(
+                    await collateralTokens.balanceOf(creator.address)
+                ).equals(seedFunds - sweepAmount)
                 expect(await collateralTokens.balanceOf(treasury)).equals(
                     sweepAmount
                 )
@@ -220,31 +199,22 @@ describe('Bond Factory contract', () => {
                     }
                 ]
                 verifyERC20SweepEvents(receipt, expectedEvents)
-                verifyERC20SweepLogEvents(bonds, receipt, expectedEvents)
+                verifyERC20SweepLogEvents(creator, receipt, expectedEvents)
             })
 
-            it('only Super User', async () => {
+            it('only owner', async () => {
                 await expect(
-                    bonds
+                    creator
                         .connect(nonAdmin)
                         .sweepERC20Tokens(collateralTokens.address, 5)
-                ).to.be.revertedWith(
-                    accessControlRevertMessageMissingGlobalRole(
-                        nonAdmin,
-                        SUPER_USER
-                    )
-                )
+                ).to.be.revertedWith('Ownable: caller is not the owner')
             })
 
             it('only when not paused', async () => {
-                bonds = await deployContractWithProxy<BondFactory>(
-                    'BondFactory',
-                    treasury
-                )
-                await bonds.pause()
+                await creator.pause()
 
                 await expect(
-                    bonds.sweepERC20Tokens(collateralTokens.address, 5)
+                    creator.sweepERC20Tokens(collateralTokens.address, 5)
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -252,72 +222,72 @@ describe('Bond Factory contract', () => {
 
     describe('pause', () => {
         after(async () => {
-            if (await bonds.paused()) {
-                await bonds.unpause()
+            if (await creator.paused()) {
+                await creator.unpause()
             }
         })
 
-        it('at least system admin', async () => {
-            await expect(bonds.connect(nonAdmin).pause()).to.be.revertedWith(
-                accessControlRevertMessageMissingGlobalRole(
-                    nonAdmin,
-                    SYSTEM_ADMIN
-                )
+        it('only owner', async () => {
+            await expect(creator.connect(nonAdmin).pause()).to.be.revertedWith(
+                'Ownable: caller is not the owner'
             )
         })
 
         it('changes state', async () => {
-            expect(await bonds.paused()).is.false
+            expect(await creator.paused()).is.false
 
-            await bonds.pause()
+            await creator.pause()
 
-            expect(await bonds.paused()).is.true
+            expect(await creator.paused()).is.true
         })
 
         it('only when not paused', async () => {
-            await expect(bonds.pause()).to.be.revertedWith('Pausable: paused')
+            await expect(creator.pause()).to.be.revertedWith('Pausable: paused')
         })
     })
 
     describe('unpause', () => {
         before(async () => {
-            if (!(await bonds.paused())) {
-                await bonds.pause()
+            if (!(await creator.paused())) {
+                await creator.pause()
             }
         })
         after(async () => {
-            if (await bonds.paused()) {
-                await bonds.unpause()
+            if (await creator.paused()) {
+                await creator.unpause()
             }
         })
 
-        it('at least system admin', async () => {
-            await expect(bonds.connect(nonAdmin).unpause()).to.be.revertedWith(
-                accessControlRevertMessageMissingGlobalRole(
-                    nonAdmin,
-                    SYSTEM_ADMIN
-                )
-            )
+        it('only owner', async () => {
+            await expect(
+                creator.connect(nonAdmin).unpause()
+            ).to.be.revertedWith('Ownable: caller is not the owner')
         })
 
         it('changes state', async () => {
-            expect(await bonds.paused()).is.true
+            expect(await creator.paused()).is.true
 
-            await bonds.unpause()
+            await creator.unpause()
 
-            expect(await bonds.paused()).is.false
+            expect(await creator.paused()).is.false
         })
 
         it('only when paused', async () => {
-            await expect(bonds.unpause()).to.be.revertedWith(
+            await expect(creator.unpause()).to.be.revertedWith(
                 'Pausable: not paused'
             )
         })
     })
 
+    async function deployBondFactory(): Promise<BondFactory> {
+        const factory = await deployContract<BondFactory>('BondFactory')
+        await successfulTransaction(factory.initialize(treasury))
+        return factory
+    }
+
     let admin: string
     let treasury: string
     let nonAdmin: SignerWithAddress
     let collateralTokens: ExtendedERC20
-    let bonds: BondFactory
+    let creator: BondFactory
 })

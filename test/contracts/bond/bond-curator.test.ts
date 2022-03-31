@@ -12,12 +12,7 @@ import {
     BondCuratorBox,
     ERC20SingleCollateralBondBox
 } from '../../../typechain-types'
-import {
-    deployContract,
-    deployContractWithProxy,
-    execute,
-    signer
-} from '../../framework/contracts'
+import {deployContract, execute, signer} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from '../../framework/transaction'
 import {erc20SingleCollateralBondContractAt} from '../../event/bond/single-collateral-bond-contract'
@@ -30,10 +25,6 @@ import {
     verifyAddBondEvents,
     verifyAddBondLogEvents
 } from '../../event/bond/verify-curator-events'
-import {
-    ExpectedERC20SweepEvent,
-    verifyERC20SweepLogEvents
-} from '../../event/sweep/verify-sweep-erc20-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -50,10 +41,8 @@ describe('Bond Curator contract', () => {
         treasury = (await signer(2)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         otherCollateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        creator = await deployContractWithProxy<BondFactory>(
-            'BondFactory',
-            treasury
-        )
+        creator = await deployContract<BondFactory>('BondFactory')
+        await successfulTransaction(creator.initialize(treasury))
         curator = await deployContract<BondCuratorBox>('BondCuratorBox')
         await successfulTransaction(curator.initialize())
     })
@@ -400,7 +389,7 @@ describe('Bond Curator contract', () => {
                     0
                 )
 
-                const receipt = await successfulTransaction(
+                await successfulTransaction(
                     curator.bondSweepERC20Tokens(
                         DAO_ID,
                         bond.address,
