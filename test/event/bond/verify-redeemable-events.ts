@@ -6,7 +6,7 @@ import {
     ActualRedeemableUpdateEvent,
     redeemableUpdateEventLogs,
     redeemableUpdateEvents
-} from './redeemable-update-events'
+} from './redeemable-events'
 
 export type ExpectedRedeemableUpdateEvent = {
     isRedeemable: boolean
@@ -15,9 +15,9 @@ export type ExpectedRedeemableUpdateEvent = {
 }
 
 /**
- * Verifies the content for a Redeemable event.
+ * Verifies the content for a Redeemable Update event.
  */
-export function verifyRedeemableUpdateEvents(
+export function verifyRedeemableEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedRedeemableUpdateEvent[]
 ): void {
@@ -36,7 +36,7 @@ export function verifyRedeemableUpdateEvents(
 }
 
 /**
- * Verifies the event log entries contain the expected Redeemable events.
+ * Verifies the event log entries contain the expected Redeemable Update events.
  */
 export function verifyRedeemableUpdateLogEvents<T extends BaseContract>(
     emitter: T,

@@ -30,9 +30,9 @@ import {
 } from '../../event/bond/verify-meta-data-store-events'
 import {
     ExpectedRedeemableUpdateEvent,
-    verifyRedeemableUpdateEvents,
+    verifyRedeemableEvents,
     verifyRedeemableUpdateLogEvents
-} from '../../event/bond/verify-redeemable-update-events'
+} from '../../event/bond/verify-redeemable-events'
 import {
     verifyBeneficiaryUpdateEvents,
     verifyBeneficiaryUpdateLogEvents
@@ -686,7 +686,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
                     instigator: admin.address
                 }
             ]
-            verifyRedeemableUpdateEvents(receipt, redeemableEvents)
+            verifyRedeemableEvents(receipt, redeemableEvents)
             verifyRedeemableUpdateLogEvents(bond, receipt, redeemableEvents)
         })
 

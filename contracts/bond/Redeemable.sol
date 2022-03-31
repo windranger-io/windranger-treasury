@@ -64,6 +64,6 @@ abstract contract Redeemable is ContextUpgradeable {
     function _setAsRedeemable(string calldata reason) internal {
         _redeemable = true;
         _reason = reason;
-        emit RedeemableUpdate(_redeemable, reason, _msgSender());
+        emit RedeemableUpdate(true, reason, _msgSender());
     }
 }
