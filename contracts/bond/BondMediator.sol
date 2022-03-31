@@ -34,6 +34,12 @@ contract BondMediator is
         address indexed instigator
     );
 
+    event BondCreatorUpdate(
+        address indexed previousCreator,
+        address indexed updateCreator,
+        address indexed instigator
+    );
+
     /**
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
@@ -102,6 +108,27 @@ contract BondMediator is
         _addBond(daoId, bond);
 
         return bond;
+    }
+
+    /**
+     * @notice Updates the Bond creator reference.
+     *
+     * @param factory Contract address for the new BondCreator to use from now onwards when creating managed bonds.
+     */
+    function setBondCreator(address factory)
+        external
+        whenNotPaused
+        atLeastSysAdminRole
+    {
+        require(
+            AddressUpgradeable.isContract(factory),
+            "BM: creator not a contract"
+        );
+        address previousCreator = address(_creator);
+        require(factory != previousCreator, "BM: matches existing");
+
+        emit BondCreatorUpdate(address(_creator), factory, _msgSender());
+        _creator = BondCreator(factory);
     }
 
     /**

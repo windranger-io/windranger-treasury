@@ -32,7 +32,7 @@ import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from '../../event/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from '../../cast/extended-erc20'
-import {createDaoEvents} from '../../event/bond/bond-portal-events'
+import {createDaoEvents} from '../../event/bond/bond-mediator-events'
 import {events} from '../../framework/events'
 import {createBondEventLogs} from '../../event/bond/bond-creator-events'
 import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
@@ -46,6 +46,11 @@ import {
     verifyERC20SweepEvents,
     verifyERC20SweepLogEvents
 } from '../../event/sweep/verify-sweep-erc20-events'
+import {
+    ExpectedBondCreatorUpdateEvent,
+    verifyBondCreatorUpdateEvents,
+    verifyBondCreatorUpdateLogEvents
+} from '../../event/bond/verify-bond-mediator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -630,6 +635,65 @@ describe('Bond Mediator contract', () => {
             await expect(mediator.unpause()).to.be.revertedWith(
                 'Pausable: not paused'
             )
+        })
+
+        describe('creator', () => {
+            it('is a contract', async () => {
+                await expect(
+                    mediator.setBondCreator(treasury)
+                ).to.be.revertedWith('BM: creator not a contract')
+            })
+
+            it('not identity operation', async () => {
+                await expect(
+                    mediator.setBondCreator(creator.address)
+                ).to.be.revertedWith('BM: matches existing')
+            })
+
+            it('at least system admin role', async () => {
+                await expect(
+                    mediator.connect(nonAdmin).setBondCreator(creator.address)
+                ).to.be.revertedWith(
+                    accessControlRevertMessageMissingGlobalRole(
+                        nonAdmin,
+                        SYSTEM_ADMIN
+                    )
+                )
+            })
+
+            it('updates', async () => {
+                expect(await mediator.bondCreator()).equals(creator.address)
+
+                const receipt = await successfulTransaction(
+                    mediator.setBondCreator(collateralTokens.address)
+                )
+
+                expect(await mediator.bondCreator()).equals(
+                    collateralTokens.address
+                )
+
+                const expectedEvents: ExpectedBondCreatorUpdateEvent[] = [
+                    {
+                        previousCreator: creator.address,
+                        updateCreator: collateralTokens.address,
+                        instigator: superUser
+                    }
+                ]
+                verifyBondCreatorUpdateEvents(receipt, expectedEvents)
+                verifyBondCreatorUpdateLogEvents(
+                    mediator,
+                    receipt,
+                    expectedEvents
+                )
+            })
+
+            it('only when not paused', async () => {
+                await mediator.pause()
+
+                await expect(
+                    mediator.setBondCreator(creator.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
         })
     })
 
