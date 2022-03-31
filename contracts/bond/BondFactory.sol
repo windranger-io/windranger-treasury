@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./SingleCollateralMultiRewardBond.sol";
-import "./RoleAccessControl.sol";
 import "./BondCreator.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
@@ -14,11 +13,10 @@ import "../sweep/SweepERC20.sol";
  * @dev An upgradable contract that encapsulates the Bond implementation and associated deployment cost.
  */
 contract BondFactory is
-    RoleAccessControl,
     BondCreator,
+    OwnableUpgradeable,
     PausableUpgradeable,
     SweepERC20,
-    UUPSUpgradeable,
     Version
 {
     event CreateBond(
@@ -30,12 +28,8 @@ contract BondFactory is
         address indexed instigator
     );
 
-    /**
-     * @param treasury Beneficiary of any token sweeping.
-     */
-    function initialize(address treasury) external virtual initializer {
-        __RoleAccessControl_init();
-        __UUPSUpgradeable_init();
+    constructor(address treasury) initializer {
+        __Ownable_init();
         __TokenSweep_init(treasury);
     }
 
@@ -65,14 +59,14 @@ contract BondFactory is
     /**
      * @notice Pauses most side affecting functions.
      */
-    function pause() external whenNotPaused atLeastSysAdminRole {
+    function pause() external whenNotPaused onlyOwner {
         _pause();
     }
 
     function setTokenSweepBeneficiary(address newBeneficiary)
         external
         whenNotPaused
-        onlySuperUserRole
+        onlyOwner
     {
         _setTokenSweepBeneficiary(newBeneficiary);
     }
@@ -80,26 +74,15 @@ contract BondFactory is
     /**
      * @notice Resumes all paused side affecting functions.
      */
-    function unpause() external whenPaused atLeastSysAdminRole {
+    function unpause() external whenPaused onlyOwner {
         _unpause();
     }
 
     function sweepERC20Tokens(address tokens, uint256 amount)
         external
         whenNotPaused
-        onlySuperUserRole
+        onlyOwner
     {
         _sweepERC20Tokens(tokens, amount);
     }
-
-    /**
-     * @notice Permits only the owner to perform proxy upgrades.
-     *
-     * @dev Only applicable when deployed as implementation to a UUPS proxy.
-     */
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        atLeastSysAdminRole
-    {}
 }
