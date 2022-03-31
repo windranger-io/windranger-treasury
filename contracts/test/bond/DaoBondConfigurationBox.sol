@@ -29,6 +29,12 @@ contract DaoBondConfigurationBox is DaoBondConfiguration {
         _setDaoTreasury(daoId, replacementTreasury);
     }
 
+    function setDaoMetaData(uint256 daoId, string calldata replacementMetaData)
+        external
+    {
+        _setDaoMetaData(daoId, replacementMetaData);
+    }
+
     function whitelistDaoCollateral(
         uint256 daoId,
         address erc20CollateralTokens

@@ -132,7 +132,7 @@ contract BondMediator is
     }
 
     /**
-     * @notice Permits the owner to update the treasury address.
+     * @notice Permits updating the default DAO treasury address.
      *
      * @dev Only applies for bonds created after the update, previously created bond treasury addresses remain unchanged.
      */
@@ -142,6 +142,17 @@ contract BondMediator is
         atLeastDaoAdminRole(daoId)
     {
         _setDaoTreasury(daoId, replacement);
+    }
+
+    /**
+     * @notice Permits updating the meta data for the DAO.
+     */
+    function setDaoMetaData(uint256 daoId, string calldata replacement)
+        external
+        whenNotPaused
+        atLeastDaoAdminRole(daoId)
+    {
+        _setDaoMetaData(daoId, replacement);
     }
 
     function updateTokenSweepBeneficiary(address newBeneficiary)

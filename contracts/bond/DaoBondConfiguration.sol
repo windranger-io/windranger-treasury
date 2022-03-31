@@ -7,6 +7,7 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
     struct DaoBondConfig {
         // Address zero is an invalid address, can be used to identify null structs
         address treasury;
+        string metaData;
         CollateralWhitelist whitelist;
     }
 
@@ -19,8 +20,18 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         address indexed instigator
     );
 
+    event SetMetaData(
+        uint256 indexed daoId,
+        string data,
+        address indexed instigator
+    );
+
     function daoTreasury(uint256 daoId) external view returns (address) {
         return _daoConfig[daoId].treasury;
+    }
+
+    function daoMetaData(uint256 daoId) external view returns (string memory) {
+        return _daoConfig[daoId].metaData;
     }
 
     function highestDaoId() external view returns (uint256) {
@@ -65,6 +76,13 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
             "DAO Treasury: identical address"
         );
         _setTreasury(daoId, replacementTreasury);
+    }
+
+    function _setDaoMetaData(uint256 daoId, string calldata replacementMetaData)
+        internal
+    {
+        _daoConfig[daoId].metaData = replacementMetaData;
+        emit SetMetaData(daoId, replacementMetaData, _msgSender());
     }
 
     function _daoCollateralWhitelist(uint256 daoId)
