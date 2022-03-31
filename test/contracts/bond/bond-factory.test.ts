@@ -32,7 +32,7 @@ describe('Bond Factory contract', () => {
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        creator = await deployBondFactory()
+        creator = await deployContract<BondFactory>('BondFactory', treasury)
     })
 
     describe('create bond', () => {
@@ -101,25 +101,20 @@ describe('Bond Factory contract', () => {
 
     describe('ERC20 token sweep', () => {
         it('init', async () => {
-            const bondFactory = await deployContract<BondFactory>('BondFactory')
-
-            const receipt = await successfulTransaction(
-                bondFactory.initialize(treasury)
+            const bondFactory = await deployContract<BondFactory>(
+                'BondFactory',
+                treasury
             )
 
             expect(await bondFactory.tokenSweepBeneficiary()).equals(treasury)
-            const expectedEvents = [{beneficiary: treasury, instigator: admin}]
-            verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
-            verifyBeneficiaryUpdateLogEvents(
-                bondFactory,
-                receipt,
-                expectedEvents
-            )
         })
 
         describe('update beneficiary', () => {
             after(async () => {
-                creator = await deployBondFactory()
+                creator = await deployContract<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
             })
 
             it('side effects', async () => {
@@ -164,7 +159,10 @@ describe('Bond Factory contract', () => {
 
         describe('ERC20 token sweep', () => {
             after(async () => {
-                creator = await deployBondFactory()
+                creator = await deployContract<BondFactory>(
+                    'BondFactory',
+                    treasury
+                )
             })
             it('side effects', async () => {
                 const seedFunds = 100n
@@ -278,12 +276,6 @@ describe('Bond Factory contract', () => {
             )
         })
     })
-
-    async function deployBondFactory(): Promise<BondFactory> {
-        const factory = await deployContract<BondFactory>('BondFactory')
-        await successfulTransaction(factory.initialize(treasury))
-        return factory
-    }
 
     let admin: string
     let treasury: string

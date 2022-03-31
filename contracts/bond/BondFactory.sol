@@ -28,10 +28,7 @@ contract BondFactory is
         address indexed instigator
     );
 
-    /**
-     * @param treasury Beneficiary of any token sweeping.
-     */
-    function initialize(address treasury) external virtual initializer {
+    constructor(address treasury) initializer {
         __Ownable_init();
         __TokenSweep_init(treasury);
     }

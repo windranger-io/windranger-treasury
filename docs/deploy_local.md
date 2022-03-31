@@ -12,7 +12,16 @@ npx hardhat node
 Contracts are best deployed to a local Hardhat JSON-RPC node with scripts.
 
 ### Local Environment 
-A JSON-RPC node running locally, without a Etherscan service available.
+A JSON-RPC node running locally, with no Etherscan service available.
+
+The following environment variables:
+- `${TOKEN_SWEEP_BENEFICIARY}`: Address that will receive ERC20 tokens from any sweep performed.
+
+##### MacOs
+Set the temporary environment variables by substituting `EnterYourAddressHere` with a valid Ethereum address (EoA or Contract).
+```shell
+export TOKEN_SWEEP_BENEFICIARY=${EnterYourAddressHere}
+```
 
 #### Performance Bonds
 ```shell
