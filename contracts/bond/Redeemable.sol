@@ -13,7 +13,11 @@ abstract contract Redeemable is ContextUpgradeable {
 
     string private _reason;
 
-    event Redeemable(address indexed instigator);
+    event RedeemableUpdate(
+        bool isRedeemable,
+        string reason,
+        address indexed instigator
+    );
 
     /**
      * @notice Makes a function callable only when the contract is not redeemable.
@@ -60,6 +64,6 @@ abstract contract Redeemable is ContextUpgradeable {
     function _setAsRedeemable(string calldata reason) internal {
         _redeemable = true;
         _reason = reason;
-        emit Redeemable(_msgSender());
+        emit RedeemableUpdate(true, reason, _msgSender());
     }
 }

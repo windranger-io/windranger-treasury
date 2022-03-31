@@ -3,53 +3,67 @@ import {eventLog} from '../../framework/event-logs'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
 import {
-    ActualRedeemableEvent,
-    redeemableEventLogs,
-    redeemableEvents
+    ActualRedeemableUpdateEvent,
+    redeemableUpdateEventLogs,
+    redeemableUpdateEvents
 } from './redeemable-events'
 
-export type ExpectedRedeemableEvent = {instigator: string}
+export type ExpectedRedeemableUpdateEvent = {
+    isRedeemable: boolean
+    reason: string
+    instigator: string
+}
 
 /**
- * Verifies the content for a Redeemable event.
+ * Verifies the content for a Redeemable Update event.
  */
 export function verifyRedeemableEvents(
     receipt: ContractReceipt,
-    expectedEvents: ExpectedRedeemableEvent[]
+    expectedEvents: ExpectedRedeemableUpdateEvent[]
 ): void {
-    const actualEvents = redeemableEvents(events('Redeemable', receipt))
+    const actualEvents = redeemableUpdateEvents(
+        events('RedeemableUpdate', receipt)
+    )
 
     verifyOrderedEvents(
         actualEvents,
         expectedEvents,
-        (actual: ActualRedeemableEvent, expected: ExpectedRedeemableEvent) =>
-            deepEqualsRedeemableEvent(actual, expected)
+        (
+            actual: ActualRedeemableUpdateEvent,
+            expected: ExpectedRedeemableUpdateEvent
+        ) => deepEqualsRedeemableUpdateEvent(actual, expected)
     )
 }
 
 /**
- * Verifies the event log entries contain the expected Redeemable events.
+ * Verifies the event log entries contain the expected Redeemable Update events.
  */
-export function verifyRedeemableLogEvents<T extends BaseContract>(
+export function verifyRedeemableUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    expectedEvents: ExpectedRedeemableEvent[]
+    expectedEvents: ExpectedRedeemableUpdateEvent[]
 ): void {
-    const actualEvents = redeemableEventLogs(
-        eventLog('Redeemable', emitter, receipt)
+    const actualEvents = redeemableUpdateEventLogs(
+        eventLog('RedeemableUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
         expectedEvents,
-        (actual: ActualRedeemableEvent, expected: ExpectedRedeemableEvent) =>
-            deepEqualsRedeemableEvent(actual, expected)
+        (
+            actual: ActualRedeemableUpdateEvent,
+            expected: ExpectedRedeemableUpdateEvent
+        ) => deepEqualsRedeemableUpdateEvent(actual, expected)
     )
 }
 
-function deepEqualsRedeemableEvent(
-    actual: ActualRedeemableEvent,
-    expected: ExpectedRedeemableEvent
+function deepEqualsRedeemableUpdateEvent(
+    actual: ActualRedeemableUpdateEvent,
+    expected: ExpectedRedeemableUpdateEvent
 ): boolean {
-    return actual.instigator === expected.instigator
+    return (
+        actual.isRedeemable === expected.isRedeemable &&
+        actual.reason === expected.reason &&
+        actual.instigator === expected.instigator
+    )
 }

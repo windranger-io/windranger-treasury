@@ -29,9 +29,9 @@ import {
     verifySetMetaDataLogEvents
 } from '../../event/bond/verify-meta-data-store-events'
 import {
-    ExpectedRedeemableEvent,
+    ExpectedRedeemableUpdateEvent,
     verifyRedeemableEvents,
-    verifyRedeemableLogEvents
+    verifyRedeemableUpdateLogEvents
 } from '../../event/bond/verify-redeemable-events'
 import {
     verifyBeneficiaryUpdateEvents,
@@ -679,11 +679,15 @@ describe('ERC20 Single Collateral Bond contract', () => {
             await expect(redeem(guarantorOne, ZERO)).to.be.revertedWith(
                 'Bond: too small'
             )
-            const redeemableEvents: ExpectedRedeemableEvent[] = [
-                {instigator: admin.address}
+            const redeemableEvents: ExpectedRedeemableUpdateEvent[] = [
+                {
+                    isRedeemable: true,
+                    reason: REDEMPTION_REASON,
+                    instigator: admin.address
+                }
             ]
             verifyRedeemableEvents(receipt, redeemableEvents)
-            verifyRedeemableLogEvents(bond, receipt, redeemableEvents)
+            verifyRedeemableUpdateLogEvents(bond, receipt, redeemableEvents)
         })
 
         it('only when redeemable', async () => {
