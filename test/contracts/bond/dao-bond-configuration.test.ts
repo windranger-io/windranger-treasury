@@ -13,7 +13,10 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {ExtendedERC20} from '../../cast/extended-erc20'
 import {successfulTransaction} from '../../framework/transaction'
 import {
+    ExpectedSetDaoMetaDataEvent,
     ExpectedSetDaoTreasuryEvent,
+    verifySetDaoMetaDataEvents,
+    verifySetDaoMetaDataLogEvents,
     verifySetDaoTreasuryEvents,
     verifySetDaoTreasuryLogEvents
 } from '../../event/bond/verify-dao-bond-configuration-events'
@@ -37,6 +40,40 @@ describe('DAO Bond Configuration contract', () => {
 
         await config.daoBondConfiguration(treasury)
         await config.whitelistDaoCollateral(DAO_ID, collateralTokens.address)
+    })
+
+    describe('meta data', () => {
+        it('update', async () => {
+            const configuration = await deployContract<DaoBondConfigurationBox>(
+                'DaoBondConfigurationBox'
+            )
+            await successfulTransaction(
+                configuration.daoBondConfiguration(treasury)
+            )
+            const metaDataUpdate = 'Something very important this way comes'
+            expect(await configuration.daoMetaData(DAO_ID)).equals('')
+
+            const receipt = await successfulTransaction(
+                configuration.setDaoMetaData(DAO_ID, metaDataUpdate)
+            )
+
+            expect(await configuration.daoMetaData(DAO_ID)).equals(
+                metaDataUpdate
+            )
+            const expectedEvents: ExpectedSetDaoMetaDataEvent[] = [
+                {
+                    daoId: DAO_ID,
+                    data: metaDataUpdate,
+                    instigator: admin
+                }
+            ]
+            verifySetDaoMetaDataEvents(receipt, expectedEvents)
+            verifySetDaoMetaDataLogEvents(
+                configuration,
+                receipt,
+                expectedEvents
+            )
+        })
     })
 
     describe('treasury', () => {

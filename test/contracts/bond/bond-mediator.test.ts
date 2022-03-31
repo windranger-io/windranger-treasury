@@ -225,6 +225,107 @@ describe('Bond Mediator contract', () => {
                 )
             })
         })
+
+        describe('treasury', () => {
+            describe('retrieve', () => {
+                it(' by anyone', async () => {
+                    expect(
+                        await mediator.connect(nonAdmin).daoTreasury(daoId)
+                    ).equals(treasury)
+                })
+            })
+
+            describe('update', () => {
+                after(async () => {
+                    if (await mediator.paused()) {
+                        await mediator.unpause()
+                    }
+                })
+
+                it('side effect', async () => {
+                    expect(await mediator.daoTreasury(daoId)).equals(treasury)
+
+                    await successfulTransaction(
+                        mediator.setDaoTreasury(daoId, collateralTokens.address)
+                    )
+
+                    expect(await mediator.daoTreasury(daoId)).equals(
+                        collateralTokens.address
+                    )
+                })
+
+                it('at least dao admin role', async () => {
+                    await expect(
+                        mediator
+                            .connect(nonAdmin)
+                            .setDaoTreasury(daoId, treasury)
+                    ).to.be.revertedWith(
+                        accessControlRevertMessageMissingGlobalRole(
+                            nonAdmin,
+                            DAO_ADMIN
+                        )
+                    )
+                })
+
+                it('only when not paused', async () => {
+                    await successfulTransaction(mediator.pause())
+                    expect(await mediator.paused()).is.true
+                    await expect(
+                        mediator.setDaoTreasury(daoId, treasury)
+                    ).to.be.revertedWith('Pausable: paused')
+                })
+            })
+        })
+
+        describe('meta data', () => {
+            describe('retrieve', () => {
+                it(' by anyone', async () => {
+                    expect(
+                        await mediator.connect(nonAdmin).daoMetaData(daoId)
+                    ).equals('')
+                })
+            })
+
+            describe('update', () => {
+                after(async () => {
+                    if (await mediator.paused()) {
+                        await mediator.unpause()
+                    }
+                })
+
+                it('side effect', async () => {
+                    const update = 'a new value'
+                    expect(await mediator.daoMetaData(daoId)).equals('')
+
+                    await successfulTransaction(
+                        mediator.setDaoMetaData(daoId, update)
+                    )
+
+                    expect(await mediator.daoMetaData(daoId)).equals(update)
+                })
+
+                it('at least dao admin role', async () => {
+                    await expect(
+                        mediator
+                            .connect(nonAdmin)
+                            .setDaoMetaData(daoId, 'updated value')
+                    ).to.be.revertedWith(
+                        accessControlRevertMessageMissingGlobalRole(
+                            nonAdmin,
+                            DAO_ADMIN
+                        )
+                    )
+                })
+
+                it('only when not paused', async () => {
+                    await successfulTransaction(mediator.pause())
+                    expect(await mediator.paused()).is.true
+                    await expect(
+                        mediator.setDaoMetaData(daoId, 'updated value')
+                    ).to.be.revertedWith('Pausable: paused')
+                })
+            })
+        })
     })
 
     describe('managed bond', () => {
@@ -387,43 +488,6 @@ describe('Bond Mediator contract', () => {
                         },
                         []
                     )
-                ).to.be.revertedWith('Pausable: paused')
-            })
-        })
-    })
-
-    describe('DAO treasury', () => {
-        describe('retrieve', () => {
-            it(' by anyone', async () => {
-                expect(
-                    await mediator.connect(nonAdmin).daoTreasury(daoId)
-                ).equals(treasury)
-            })
-        })
-
-        describe('update', () => {
-            after(async () => {
-                if (await mediator.paused()) {
-                    await mediator.unpause()
-                }
-            })
-
-            it('at least dao admin role', async () => {
-                await expect(
-                    mediator.connect(nonAdmin).setDaoTreasury(daoId, treasury)
-                ).to.be.revertedWith(
-                    accessControlRevertMessageMissingGlobalRole(
-                        nonAdmin,
-                        DAO_ADMIN
-                    )
-                )
-            })
-
-            it('only when not paused', async () => {
-                await successfulTransaction(mediator.pause())
-                expect(await mediator.paused()).is.true
-                await expect(
-                    mediator.setDaoTreasury(daoId, treasury)
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
