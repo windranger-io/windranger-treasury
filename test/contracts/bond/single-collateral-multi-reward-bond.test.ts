@@ -19,13 +19,13 @@ import {
 } from '../../event/bond/verify-single-collateral-bond-events'
 import {
     ExpectedRewardDebtEvent,
-    ExpectedUpdateRewardTimeLockEvent,
+    ExpectedRewardTimeLockUpdateEvent,
     verifyRewardDebtEvents,
     verifyRewardDebtLogEvents,
-    verifySetRedemptionTimestampEvents,
-    verifySetRedemptionTimestampLogEvents,
-    verifySetUpdateRewardTimeLockLogEvents,
-    verifyUpdateRewardTimeLockpEvents
+    verifyRedemptionTimestampUpdateEvents,
+    verifyRedemptionTimestampUpdateLogEvents,
+    verifyRewardTimeLockUpdateLogEvents,
+    verifyRewardTimeLockUpdateEvents
 } from '../../event/bond/verify-time-lock-multi-reward-bond-events'
 import {GuarantorCollateralSetup} from './erc20-single-collateral-bond.test'
 import {divideBigNumberish} from '../../framework/maths'
@@ -116,8 +116,12 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
                     instigator: admin.address
                 }
             ]
-            verifySetRedemptionTimestampEvents(receipt, expectedEvents)
-            verifySetRedemptionTimestampLogEvents(bond, receipt, expectedEvents)
+            verifyRedemptionTimestampUpdateEvents(receipt, expectedEvents)
+            verifyRedemptionTimestampUpdateLogEvents(
+                bond,
+                receipt,
+                expectedEvents
+            )
         })
     })
 
@@ -246,19 +250,15 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             )
             expect(afterPools[2]).to.deep.equal(beforePools[2])
 
-            const expectedEvents: ExpectedUpdateRewardTimeLockEvent[] = [
+            const expectedEvents: ExpectedRewardTimeLockUpdateEvent[] = [
                 {
                     tokens: rewardPools[1].tokens,
                     timeLock: updatedTimeLock,
                     instigator: admin.address
                 }
             ]
-            verifyUpdateRewardTimeLockpEvents(receipt, expectedEvents)
-            verifySetUpdateRewardTimeLockLogEvents(
-                bond,
-                receipt,
-                expectedEvents
-            )
+            verifyRewardTimeLockUpdateEvents(receipt, expectedEvents)
+            verifyRewardTimeLockUpdateLogEvents(bond, receipt, expectedEvents)
         })
     })
 

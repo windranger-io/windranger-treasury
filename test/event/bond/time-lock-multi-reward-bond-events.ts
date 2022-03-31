@@ -3,10 +3,10 @@ import {Result} from '@ethersproject/abi'
 import {BigNumber, Event} from 'ethers'
 import {
     ClaimRewardEvent,
+    RedemptionTimestampUpdateEvent,
     RegisterRewardEvent,
     RewardDebtEvent,
-    SetRedemptionTimestampEvent,
-    UpdateRewardTimeLockEvent
+    RewardTimeLockUpdateEvent
 } from '../../../typechain-types/TimeLockMultiRewardBond'
 
 export type ActualClaimRewardEvent = {
@@ -29,12 +29,12 @@ export type ActualRewardDebtEvent = {
     instigator: string
 }
 
-export type ActualSetRedemptionTimestampEvent = {
+export type ActualRedemptionTimestampUpdateEvent = {
     timestamp: BigNumber
     instigator: string
 }
 
-export type ActualUpdateRewardTimeLockEvent = {
+export type ActualRewardTimeLockUpdateEvent = {
     tokens: string
     timeLock: BigNumber
     instigator: string
@@ -108,16 +108,16 @@ export function rewardDebtEvents(events: Event[]): ActualRewardDebtEvent[] {
 }
 
 /**
- * Shape check and conversion for a SetRedemptionTimestamp events.
+ * Shape check and conversion for a RedemptionTimestampUpdate events.
  */
-export function setRedemptionTimestampEvents(
+export function redemptionTimestampUpdateEvents(
     events: Event[]
-): ActualSetRedemptionTimestampEvent[] {
-    const rewards: ActualSetRedemptionTimestampEvent[] = []
+): ActualRedemptionTimestampUpdateEvent[] {
+    const rewards: ActualRedemptionTimestampUpdateEvent[] = []
 
     for (const event of events) {
         expect(event.args).is.not.undefined
-        const debt = event as SetRedemptionTimestampEvent
+        const debt = event as RedemptionTimestampUpdateEvent
 
         const args = debt.args
         expect(args?.timestamp).is.not.undefined
@@ -130,16 +130,16 @@ export function setRedemptionTimestampEvents(
 }
 
 /**
- * Shape check and conversion for a UpdateRewardTimeLock events.
+ * Shape check and conversion for a ActualRewardTimeLockUpdateEvent events.
  */
-export function updateRewardTimeLockEvents(
+export function rewardTimeLockUpdateEvents(
     events: Event[]
-): ActualUpdateRewardTimeLockEvent[] {
-    const rewards: ActualUpdateRewardTimeLockEvent[] = []
+): ActualRewardTimeLockUpdateEvent[] {
+    const rewards: ActualRewardTimeLockUpdateEvent[] = []
 
     for (const event of events) {
         expect(event.args).is.not.undefined
-        const debt = event as UpdateRewardTimeLockEvent
+        const debt = event as RewardTimeLockUpdateEvent
 
         const args = debt.args
         expect(args?.tokens).is.not.undefined
@@ -231,12 +231,12 @@ export function rewardDebtEventLogs(events: Result[]): ActualRewardDebtEvent[] {
 }
 
 /**
- * Shape check and conversion for an event log entry for SetRedemptionTimestamp event.
+ * Shape check and conversion for an event log entry for RedemptionTimestampUpdate event.
  */
-export function setRedemptionTimestampEventLogs(
+export function redemptionTimestampUpdateEventLogs(
     events: Result[]
-): ActualSetRedemptionTimestampEvent[] {
-    const rewards: ActualSetRedemptionTimestampEvent[] = []
+): ActualRedemptionTimestampUpdateEvent[] {
+    const rewards: ActualRedemptionTimestampUpdateEvent[] = []
 
     for (const event of events) {
         expect(event?.timestamp).is.not.undefined
@@ -255,10 +255,10 @@ export function setRedemptionTimestampEventLogs(
 /**
  * Shape check and conversion for an event log entry for UpdateRewardTimeLock event.
  */
-export function updateRewardTimeLockEventLogs(
+export function rewardTimeLockUpdateEventLogs(
     events: Result[]
-): ActualUpdateRewardTimeLockEvent[] {
-    const rewards: ActualUpdateRewardTimeLockEvent[] = []
+): ActualRewardTimeLockUpdateEvent[] {
+    const rewards: ActualRewardTimeLockUpdateEvent[] = []
 
     for (const event of events) {
         expect(event?.tokens).is.not.undefined
