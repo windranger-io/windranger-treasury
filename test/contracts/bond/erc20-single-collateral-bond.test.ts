@@ -24,9 +24,9 @@ import {
 import {verifyERC20TransferEvents} from '../../event/erc20/verify-erc20-events'
 import {ExtendedERC20} from '../../cast/extended-erc20'
 import {
-    ExpectedSetMetaDataEvent,
-    verifySetMetaDataEvents,
-    verifySetMetaDataLogEvents
+    ExpectedMetaDataUpdateEvent,
+    verifyMetaDataUpdateEvents,
+    verifyMetaDataUpdateLogEvents
 } from '../../event/bond/verify-meta-data-store-events'
 import {
     ExpectedRedeemableUpdateEvent,
@@ -569,11 +569,11 @@ describe('ERC20 Single Collateral Bond contract', () => {
             )
 
             expect(await bond.metaData()).equals(DATA)
-            const setMetaDataEvent: ExpectedSetMetaDataEvent[] = [
+            const setMetaDataEvent: ExpectedMetaDataUpdateEvent[] = [
                 {data: DATA, instigator: admin.address}
             ]
-            verifySetMetaDataEvents(receipt, setMetaDataEvent)
-            verifySetMetaDataLogEvents(bond, receipt, setMetaDataEvent)
+            verifyMetaDataUpdateEvents(receipt, setMetaDataEvent)
+            verifyMetaDataUpdateLogEvents(bond, receipt, setMetaDataEvent)
         })
 
         it('token beneficiary', async () => {
@@ -632,11 +632,11 @@ describe('ERC20 Single Collateral Bond contract', () => {
             )
 
             expect(await bond.metaData()).equals(endMetadata)
-            const setMetaDataEvent: ExpectedSetMetaDataEvent[] = [
+            const setMetaDataEvent: ExpectedMetaDataUpdateEvent[] = [
                 {data: endMetadata, instigator: admin.address}
             ]
-            verifySetMetaDataEvents(receipt, setMetaDataEvent)
-            verifySetMetaDataLogEvents(bond, receipt, setMetaDataEvent)
+            verifyMetaDataUpdateEvents(receipt, setMetaDataEvent)
+            verifyMetaDataUpdateLogEvents(bond, receipt, setMetaDataEvent)
         })
     })
 
