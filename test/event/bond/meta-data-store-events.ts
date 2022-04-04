@@ -1,7 +1,7 @@
 import {Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {MetaDataUpdateEvent} from '../../../typechain-types/MetaDataStore'
+import {MetaDataUpdateEvent} from '../../../typechain-types/contracts/bond/MetaDataStore'
 
 export type ActualMetaDataUpdateEvent = {
     data: string

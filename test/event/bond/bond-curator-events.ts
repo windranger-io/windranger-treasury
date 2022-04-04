@@ -1,7 +1,7 @@
 import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {AddBondEvent} from '../../../typechain-types/BondCurator'
+import {AddBondEvent} from '../../../typechain-types/contracts/bond/BondCurator'
 
 export type ActualAddBondEvent = {
     daoId: BigNumber

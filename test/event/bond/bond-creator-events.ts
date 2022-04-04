@@ -1,8 +1,10 @@
 import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {CreateBondEvent} from '../../../typechain-types/BondFactory'
-import {Bond} from '../../../typechain-types/BondCreator'
+import {
+    Bond,
+    CreateBondEvent
+} from '../../../typechain-types/contracts/bond/BondFactory'
 
 export type ActualBondMetaData = {
     name: string

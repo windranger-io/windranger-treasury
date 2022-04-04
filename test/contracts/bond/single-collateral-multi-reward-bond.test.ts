@@ -4,9 +4,12 @@ import '@nomiclabs/hardhat-ethers'
 // End - Support direct Mocha run & debug
 
 import {before} from 'mocha'
-import {BitDAO, SingleCollateralMultiRewardBond} from '../../../typechain-types'
+import {
+    BitDAO,
+    ERC20,
+    SingleCollateralMultiRewardBond
+} from '../../../typechain-types'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {ExtendedERC20} from '../../cast/extended-erc20'
 import {deployContract, signer} from '../../framework/contracts'
 import {DAY_IN_SECONDS} from '../../framework/time'
 import {BigNumber, ethers} from 'ethers'
@@ -29,8 +32,8 @@ import {
 } from '../../event/bond/verify-time-lock-multi-reward-bond-events'
 import {GuarantorCollateralSetup} from './erc20-single-collateral-bond.test'
 import {divideBigNumberish} from '../../framework/maths'
-import {Bond} from '../../../typechain-types/SingleCollateralMultiRewardBond'
 import {countEvents} from '../../framework/events'
+import {Bond} from '../../../typechain-types/contracts/bond/BondPortal'
 
 const TOTAL_SUPPLY = 5000n
 const BOND_EXPIRY = 750000n
@@ -45,15 +48,15 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
         rewardTokenOne = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
-        )) as ExtendedERC20
+        )) as ERC20
         rewardTokenTwo = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
-        )) as ExtendedERC20
+        )) as ERC20
         rewardTokenThree = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
-        )) as ExtendedERC20
+        )) as ERC20
 
         rewardPools = [
             {
@@ -76,7 +79,7 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
         collateralTokens = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
-        )) as ExtendedERC20
+        )) as ERC20
 
         bond = await createBond()
     })
@@ -612,18 +615,18 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
     let admin: SignerWithAddress
     let bond: SingleCollateralMultiRewardBond
     let rewardPools: Bond.TimeLockRewardPoolStruct[]
-    let collateralTokens: ExtendedERC20
+    let collateralTokens: ERC20
     let guarantor: SignerWithAddress
-    let rewardTokenOne: ExtendedERC20
-    let rewardTokenTwo: ExtendedERC20
-    let rewardTokenThree: ExtendedERC20
+    let rewardTokenOne: ERC20
+    let rewardTokenTwo: ERC20
+    let rewardTokenThree: ERC20
     let treasury: string
 })
 
 async function setupGuarantorWithCollateral(
     guarantor: GuarantorCollateralSetup,
     bond: SingleCollateralMultiRewardBond,
-    collateral: ExtendedERC20
+    collateral: ERC20
 ) {
     await collateral.transfer(guarantor.signer.address, guarantor.pledge)
     await collateral

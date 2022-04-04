@@ -3,7 +3,7 @@ import {expect} from 'chai'
 import {
     AddCollateralWhitelistEvent,
     RemoveCollateralWhitelistEvent
-} from '../../../typechain-types/DaoBondConfiguration'
+} from '../../../typechain-types/contracts/bond/BondMediator'
 
 export type ActualAddCollateralEvent = {
     address: string

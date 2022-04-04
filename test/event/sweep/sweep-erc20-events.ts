@@ -1,7 +1,7 @@
 import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {ERC20SweepEvent} from '../../../typechain-types/SweepERC20'
+import {ERC20SweepEvent} from '../../../typechain-types/contracts/sweep/SweepERC20'
 
 export type ActualERC20SweepEvent = {
     beneficiary: string

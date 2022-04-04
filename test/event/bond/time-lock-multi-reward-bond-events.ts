@@ -7,7 +7,7 @@ import {
     RegisterRewardEvent,
     RewardDebtEvent,
     RewardTimeLockUpdateEvent
-} from '../../../typechain-types/TimeLockMultiRewardBond'
+} from '../../../typechain-types/contracts/bond/TimeLockMultiRewardBond'
 
 export type ActualClaimRewardEvent = {
     tokens: string

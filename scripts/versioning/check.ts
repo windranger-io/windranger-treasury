@@ -1,6 +1,6 @@
 // this script will be triggered from workflow actions when a new tag is push
 import {log} from '../../config/logging'
-import {Version} from '../../test/cast/version'
+import {Version} from '../../typechain-types'
 
 /*
  * takes a contract that inherits Version and returns true if the contract's version is equal to the release tag
