@@ -1,7 +1,7 @@
 import {Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {BeneficiaryUpdateEvent} from '../../../typechain-types/TokenSweep'
+import {BeneficiaryUpdateEvent} from '../../../typechain-types/contracts/sweep/TokenSweep'
 
 export type ActualBeneficiaryUpdateEvent = {
     beneficiary: string

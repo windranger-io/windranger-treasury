@@ -1,12 +1,13 @@
 /**
  * Events for an OpenZeppelin upgradeable contract.
  */
+
+import {Event} from 'ethers'
+import {expect} from 'chai'
 import {
     AdminChangedEvent,
     UpgradedEvent
-} from '../../../typechain-types/UUPSUpgradeable'
-import {Event} from 'ethers'
-import {expect} from 'chai'
+} from '../../../typechain-types/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable'
 
 /**
  * Payload (parameters) for the UpgradedEvent.

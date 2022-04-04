@@ -1,7 +1,7 @@
 import {Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {RedeemableUpdateEvent} from '../../../typechain-types/Redeemable'
+import {RedeemableUpdateEvent} from '../../../typechain-types/contracts/bond/Redeemable'
 
 export type ActualRedeemableUpdateEvent = {
     isRedeemable: boolean

@@ -29,8 +29,8 @@ import {
 } from '../../event/bond/verify-time-lock-multi-reward-bond-events'
 import {GuarantorCollateralSetup} from './erc20-single-collateral-bond.test'
 import {divideBigNumberish} from '../../framework/maths'
-import {Bond} from '../../../typechain-types/SingleCollateralMultiRewardBond'
 import {countEvents} from '../../framework/events'
+import {Bond} from '../../../typechain-types/contracts/bond/BondPortal'
 
 const TOTAL_SUPPLY = 5000n
 const BOND_EXPIRY = 750000n

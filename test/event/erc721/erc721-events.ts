@@ -1,7 +1,7 @@
 import {BigNumber, Event} from 'ethers'
-import {TransferEvent} from '../../../typechain-types/IERC721'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
+import {TransferEvent} from '../../../typechain-types/@openzeppelin/contracts/token/ERC721/ERC721'
 
 export type ExpectedERC721Transfer = {
     to: string

@@ -10,7 +10,7 @@ import {
     RedemptionEvent,
     SlashDepositsEvent,
     WithdrawCollateralEvent
-} from '../../../typechain-types/ERC20SingleCollateralBond'
+} from '../../../typechain-types/contracts/bond/ERC20SingleCollateralBond'
 
 export type ActualAllowRedemptionEvent = {
     authorizer: string

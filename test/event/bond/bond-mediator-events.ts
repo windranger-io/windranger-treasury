@@ -4,7 +4,7 @@ import {Result} from '@ethersproject/abi'
 import {
     BondCreatorUpdateEvent,
     CreateDaoEvent
-} from '../../../typechain-types/BondMediator'
+} from '../../../typechain-types/contracts/bond/BondMediator'
 
 export type ActualCreateDaoEvent = {
     id: BigNumber
