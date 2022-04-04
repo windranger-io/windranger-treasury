@@ -13,12 +13,12 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
         address indexed stakingPool,
         address treasury,
         address indexed creator,
-        StakingPoolLib.RewardToken[] rewardTokens,
+        StakingPoolLib.Reward[] rewardTokens,
         address stakeToken,
         uint128 epochStartTimestamp,
         uint128 epochDuration,
         uint128 minimumContribution,
-        StakingPoolLib.StakingPoolType poolType
+        StakingPoolLib.RewardType rewardType
     );
 
     function pause() external whenNotPaused atLeastSysAdminRole {
@@ -46,7 +46,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
             info.epochStartTimestamp,
             info.epochDuration,
             info.minimumContribution,
-            info.poolType
+            info.rewardType
         );
 
         stakingPool.initialize(info);

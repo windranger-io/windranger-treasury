@@ -25,8 +25,9 @@ const MIN_POOL_STAKE = 500
 
 export type StakingPoolLibData = {
     stakeToken: string
-    poolType: number
+    rewardType: number
     rewardTokens: never[]
+    ratios: never[]
     minimumContribution: BigNumber
     epochDuration: BigNumber
     epochStartTimestamp: BigNumber
@@ -40,7 +41,7 @@ export type StakingPoolLibData = {
     totalStakedAmount: number
 }
 
-describe('Staking Pool FactoryTests', () => {
+describe.only('Staking Pool FactoryTests', () => {
     let stakingPoolInfo: StakingPoolLibData
     before(async () => {
         admin = (await signer(0)).address
@@ -61,7 +62,7 @@ describe('Staking Pool FactoryTests', () => {
             )
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
-                poolType: StakingPoolType.FLOATING,
+                rewardType: StakingPoolType.FLOATING,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
                 epochDuration: BigNumber.from(EPOCH_DURATION),
@@ -71,6 +72,7 @@ describe('Staking Pool FactoryTests', () => {
 
             stakingPoolInfo = {
                 daoId: 0,
+                ratios: [],
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 rewardsAvailableTimestamp: epochStartTimestamp
@@ -103,7 +105,7 @@ describe('Staking Pool FactoryTests', () => {
             )
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
-                poolType: StakingPoolType.FIXED,
+                rewardType: StakingPoolType.FIXED,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
                 epochDuration: BigNumber.from(EPOCH_DURATION),
@@ -113,6 +115,7 @@ describe('Staking Pool FactoryTests', () => {
 
             stakingPoolInfo = {
                 daoId: 0,
+                ratios: [],
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 rewardsAvailableTimestamp: epochStartTimestamp

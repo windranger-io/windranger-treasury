@@ -3,15 +3,14 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 library StakingPoolLib {
-    enum StakingPoolType {
+    enum RewardType {
         FIXED,
         FLOATING
     }
 
-    struct RewardToken {
-        address token;
-        uint256 rewardAmountRatio;
-        uint256 totalTokenRewardsAvailable;
+    struct Reward {
+        address tokens;
+        uint256 maxAmount;
     }
 
     struct Data {
@@ -27,7 +26,8 @@ library StakingPoolLib {
         address treasury;
         uint128 totalStakedAmount;
         IERC20 stakeToken;
-        RewardToken[] rewardTokens;
-        StakingPoolType poolType;
+        Reward[] rewardTokens;
+        uint256[] ratios;
+        RewardType rewardType;
     }
 }

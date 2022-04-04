@@ -31,5 +31,5 @@ export function verifyStakingPoolCreated(
     expect(actualStakingPoolCreatedEvent.minimumContribution).equals(
         expected.minimumContribution
     )
-    expect(actualStakingPoolCreatedEvent.poolType).equals(expected.poolType)
+    expect(actualStakingPoolCreatedEvent.rewardType).equals(expected.rewardType)
 }

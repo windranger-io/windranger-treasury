@@ -24,12 +24,6 @@ import {StakingPoolType} from './contracts/staking/staking-events'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-type RewardToken = {
-    token: string
-    rewardAmountRatio: BigNumber
-    totalTokenRewardsAvailable: BigNumber
-}
-
 const EPOCH_DURATION = 60
 const START_DELAY = 15
 const REWARDS_AVAILABLE_OFFSET = 20
@@ -153,7 +147,7 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(stakingPoolInfo)
         })
 
-        describe('deposit', () => {
+        describe.only('deposit', () => {
             const depositAmount = BigNumber.from(20)
 
             it('does not allow user to deposit when stakingPeriodNotStarted', async () => {

@@ -10,6 +10,8 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../RoleAccessControl.sol";
 import "./StakingPoolLib.sol";
 
+import "hardhat/console.sol";
+
 contract StakingPool is
     Initializable,
     RoleAccessControl,
@@ -18,7 +20,12 @@ contract StakingPool is
 {
     struct User {
         uint128 depositAmount;
-        uint128[5] rewardAmounts; // should we make this a set so we can check for uniqueness?
+        uint128[5] rewardAmounts;
+    }
+
+    struct RewardToken {
+        address token;
+        uint256 amount;
     }
 
     mapping(address => User) private _users;
@@ -114,6 +121,7 @@ contract StakingPool is
         nonReentrant
         stakingPoolNotFull(amount)
     {
+        console.log("gasleft 1: ", gasleft());
         require(
             amount >= _stakingPoolInfo.minimumContribution,
             "StakingPool: min contribution"
@@ -127,19 +135,15 @@ contract StakingPool is
 
         // calculate/update rewards
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
-            if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
+            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
                 // floating: update the global rewards ratio for each reward token
-                _info
-                    .rewardTokens[i]
-                    .rewardAmountRatio = _computeFloatingRewardsPerShare(
-                    _info.rewardTokens[i].totalTokenRewardsAvailable,
+                _info.ratios[i] = _computeFloatingRewardsPerShare(
+                    _info.rewardTokens[i].maxAmount,
                     _info.totalStakedAmount
                 );
             } else {
                 // fixed: set the reward amount per user now
-                user.rewardAmounts[i] += uint128(
-                    (amount * _info.rewardTokens[i].rewardAmountRatio)
-                );
+                user.rewardAmounts[i] += uint128((amount * _info.ratios[i]));
             }
         }
 
@@ -149,6 +153,7 @@ contract StakingPool is
             _info.stakeToken.transferFrom(_msgSender(), address(this), amount),
             "StakingPool: failed to transfer"
         );
+        console.log("gasleft2: ", gasleft());
     }
 
     /**
@@ -175,9 +180,9 @@ contract StakingPool is
             uint256 amount = 0;
 
             // floating
-            if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
+            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
                 amount = _calculateFloatingReward(
-                    _info.rewardTokens[i].rewardAmountRatio,
+                    _info.ratios[i],
                     user.depositAmount
                 );
             } else {
@@ -185,7 +190,7 @@ contract StakingPool is
                 amount = uint256(user.rewardAmounts[i]);
             }
             //slither-disable-next-line calls-loop
-            _transferRewards(amount, IERC20(_info.rewardTokens[i].token));
+            _transferRewards(amount, IERC20(_info.rewardTokens[i].tokens));
         }
     }
 
@@ -204,9 +209,9 @@ contract StakingPool is
         // calculate the amount of rewards the user is due for the floating pool type
         // fixed amounts are calculated and fixed on depositing
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
-            if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
+            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
                 user.rewardAmounts[i] = _calculateFloatingReward(
-                    _info.rewardTokens[i].rewardAmountRatio,
+                    _info.ratios[i],
                     currentDepositBalance
                 );
             }
@@ -220,16 +225,13 @@ contract StakingPool is
      */
     function withdrawRewards() external stakingPeriodComplete rewardsAvailable {
         User memory user = _users[_msgSender()];
-        require(user.rewardAmounts[0] > 0, "StakingPool: No rewards"); // this is safe?
-
         delete _users[_msgSender()];
 
-        StakingPoolLib.RewardToken[] memory rewards = _stakingPoolInfo
-            .rewardTokens;
+        StakingPoolLib.Reward[] memory rewards = _stakingPoolInfo.rewardTokens;
 
         for (uint256 i = 0; i < rewards.length; i++) {
             //slither-disable-next-line calls-loop
-            _transferRewards(user.rewardAmounts[i], IERC20(rewards[i].token));
+            _transferRewards(user.rewardAmounts[i], IERC20(rewards[i].tokens));
         }
     }
 
@@ -285,7 +287,7 @@ contract StakingPool is
 
     function initializeRewardTokens(
         address treasury,
-        StakingPoolLib.RewardToken[] calldata rewards
+        RewardToken[] calldata rewards
     ) external atLeastDaoMeepleRole(_stakingPoolInfo.daoId) {
         _initializeRewardTokens(treasury, rewards);
     }
@@ -312,6 +314,20 @@ contract StakingPool is
         _setRewardsAvailableTimestamp(timestamp);
     }
 
+    //    function currentRewards(address user) external view returns (Reward[] memory){
+    //        User memory _user = _users[_msgSender()];
+    //
+    //
+    //        // iterate over users rewardAmounts and return if non zero?
+    //        for(uint256 i = 0; i <_user.rewardAmounts.length; i++){
+    //            // push reward amount
+    //            // if floating
+    //            // if fixed
+    //        }
+    //
+    //
+    //    }
+
     function stakingPoolData()
         external
         view
@@ -331,14 +347,14 @@ contract StakingPool is
         uint256[] memory rewards = new uint256[](_info.rewardTokens.length);
 
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
-            if (_info.poolType == StakingPoolLib.StakingPoolType.FLOATING) {
+            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
                 if (_user.depositAmount == 0) {
                     // user has already withdrawn stake
                     rewards[i] = _user.rewardAmounts[i];
                 } else {
                     // user has not withdraw stake yet
                     rewards[i] = _calculateFloatingReward(
-                        _info.rewardTokens[i].rewardAmountRatio,
+                        _info.ratios[i],
                         _user.depositAmount
                     );
                 }
@@ -365,19 +381,16 @@ contract StakingPool is
 
     function _initializeRewardTokens(
         address treasury,
-        StakingPoolLib.RewardToken[] calldata _rewardTokens
+        RewardToken[] calldata _rewardTokens
     ) internal {
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
             IERC20 token = IERC20(_rewardTokens[i].token);
 
-            emit InitializeRewards(
-                address(token),
-                _rewardTokens[i].totalTokenRewardsAvailable
-            );
+            emit InitializeRewards(address(token), _rewardTokens[i].amount);
 
             require(
                 token.allowance(treasury, address(this)) >=
-                    _rewardTokens[i].totalTokenRewardsAvailable,
+                    _rewardTokens[i].amount,
                 "StakingPool: invalid allowance"
             );
 
@@ -385,7 +398,7 @@ contract StakingPool is
                 token.transferFrom(
                     treasury,
                     address(this),
-                    _rewardTokens[i].totalTokenRewardsAvailable
+                    _rewardTokens[i].amount
                 ),
                 "StakingPool: fund tx failed"
             );
@@ -428,14 +441,13 @@ contract StakingPool is
     }
 
     function _adminEmergencyRewardSweep() internal {
-        StakingPoolLib.RewardToken[] memory rewards = _stakingPoolInfo
-            .rewardTokens;
+        StakingPoolLib.Reward[] memory rewards = _stakingPoolInfo.rewardTokens;
         address treasury = _stakingPoolInfo.treasury;
 
         for (uint256 i = 0; i < rewards.length; i++) {
-            IERC20 token = IERC20(rewards[i].token);
+            IERC20 token = IERC20(rewards[i].tokens);
             require(
-                token.transfer(treasury, rewards[i].totalTokenRewardsAvailable),
+                token.transfer(treasury, rewards[i].maxAmount),
                 "StakingPool: withdraw tx failed"
             );
         }
