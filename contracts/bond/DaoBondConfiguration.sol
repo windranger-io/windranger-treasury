@@ -7,13 +7,14 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
     struct DaoBondConfig {
         // Address zero is an invalid address, can be used to identify null structs
         address treasury;
+        string metaData;
         CollateralWhitelist whitelist;
     }
 
     mapping(uint256 => DaoBondConfig) private _daoConfig;
     uint256 private _daoConfigLastId;
 
-    event SetDaoTreasury(
+    event DaoTreasuryUpdate(
         uint256 indexed daoId,
         address indexed treasury,
         address indexed instigator
@@ -58,9 +59,6 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
         _daoConfigLastId++;
 
         _setTreasury(_daoConfigLastId, erc20CapableTreasury);
-
-        DaoBondConfig storage config = _daoConfig[_daoConfigLastId];
-        config.treasury = erc20CapableTreasury;
 
         return _daoConfigLastId;
     }
