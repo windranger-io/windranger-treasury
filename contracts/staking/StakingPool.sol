@@ -3,14 +3,10 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "../RoleAccessControl.sol";
 import "./StakingPoolLib.sol";
-
-import "hardhat/console.sol";
 
 contract StakingPool is
     Initializable,
@@ -45,6 +41,8 @@ contract StakingPool is
     event InitializeRewards(address rewardTokens, uint256 amount);
 
     event RewardsAvailableTimestamp(uint32 rewardsAvailableTimestamp);
+
+    event EmergencyMode(address indexed admin);
 
     modifier rewardsAvailable() {
         require(_isRewardsAvailable(), "StakingPool: rewards too early");
@@ -121,7 +119,6 @@ contract StakingPool is
         nonReentrant
         stakingPoolNotFull(amount)
     {
-        console.log("gasleft 1: ", gasleft());
         require(
             amount >= _stakingPoolInfo.minimumContribution,
             "StakingPool: min contribution"
@@ -134,18 +131,24 @@ contract StakingPool is
         _info.totalStakedAmount += uint128(amount);
 
         // calculate/update rewards
-        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
-            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
-                // floating: update the global rewards ratio for each reward token
-                _info.ratios[i] = _computeFloatingRewardsPerShare(
-                    _info.rewardTokens[i].maxAmount,
-                    _info.totalStakedAmount
-                );
-            } else {
-                // fixed: set the reward amount per user now
-                user.rewardAmounts[i] += uint128((amount * _info.ratios[i]));
-            }
+        if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
+            _updateRewardsRatios(_info);
+        } else {
+            _calculateFixedRewards(_info, user, amount);
         }
+
+        //        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
+        //            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
+        //                // floating: update the global rewards ratio for each reward token
+        //                _info.ratios[i] = _computeFloatingRewardsPerShare(
+        //                    _info.rewardTokens[i].maxAmount,
+        //                    _info.totalStakedAmount
+        //                );
+        //            } else {
+        //                // fixed: set the reward amount per user now
+        //                user.rewardAmounts[i] += uint128((amount * _info.ratios[i]));
+        //            }
+        //        }
 
         emit Deposit(_msgSender(), amount);
 
@@ -153,7 +156,6 @@ contract StakingPool is
             _info.stakeToken.transferFrom(_msgSender(), address(this), amount),
             "StakingPool: failed to transfer"
         );
-        console.log("gasleft2: ", gasleft());
     }
 
     /**
@@ -255,7 +257,7 @@ contract StakingPool is
             "StakingPool: start time"
         );
 
-        // todo should we check if stakeToken != any of the reward tokens?
+        _enforceUniqueRewardTokens(info.rewardTokens);
         require(
             address(info.stakeToken) != address(0),
             "StakingPool: stake token defined"
@@ -305,6 +307,7 @@ contract StakingPool is
         atLeastDaoAdminRole(_stakingPoolInfo.daoId)
     {
         _stakingPoolInfo.emergencyMode = true;
+        emit EmergencyMode(_msgSender());
     }
 
     function setRewardsAvailableTimestamp(uint32 timestamp)
@@ -314,19 +317,19 @@ contract StakingPool is
         _setRewardsAvailableTimestamp(timestamp);
     }
 
-    //    function currentRewards(address user) external view returns (Reward[] memory){
-    //        User memory _user = _users[_msgSender()];
+    //        function currentRewards(address user) external view returns (Reward[] memory){
+    //            User memory _user = _users[_msgSender()];
     //
     //
-    //        // iterate over users rewardAmounts and return if non zero?
-    //        for(uint256 i = 0; i <_user.rewardAmounts.length; i++){
-    //            // push reward amount
-    //            // if floating
-    //            // if fixed
+    //            // iterate over users rewardAmounts and return if non zero?
+    //            for(uint256 i = 0; i <_user.rewardAmounts.length; i++){
+    //                // push reward amount
+    //                // if floating
+    //                // if fixed
+    //            }
+    //
+    //
     //        }
-    //
-    //
-    //    }
 
     function stakingPoolData()
         external
@@ -425,19 +428,12 @@ contract StakingPool is
 
     function _transferStake(uint256 amount, IERC20 stakeToken) internal {
         emit WithdrawStake(_msgSender(), amount);
-        require(
-            stakeToken.transfer(msg.sender, amount),
-            "StakingPool: stake tx fail"
-        );
+        _transferToken(amount, stakeToken);
     }
 
     function _transferRewards(uint256 amount, IERC20 rewardsToken) internal {
         emit WithdrawRewards(_msgSender(), address(rewardsToken), amount);
-        //slither-disable-next-line calls-loop
-        require(
-            rewardsToken.transfer(_msgSender(), amount),
-            "StakingPool: rewards tx failed"
-        );
+        _transferToken(amount, rewardsToken);
     }
 
     function _adminEmergencyRewardSweep() internal {
@@ -478,5 +474,47 @@ contract StakingPool is
         uint256 totalStakedAmount
     ) internal pure returns (uint256) {
         return (availableTokenRewards * 1 ether) / totalStakedAmount;
+    }
+
+    function _transferToken(uint256 amount, IERC20 token) private {
+        require(token.transfer(_msgSender(), amount), "StakingPool: tx failed");
+    }
+
+    function _updateRewardsRatios(StakingPoolLib.Data storage _info) private {
+        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
+            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
+                // floating: update the global rewards ratio for each reward token
+                _info.ratios[i] = _computeFloatingRewardsPerShare(
+                    _info.rewardTokens[i].maxAmount,
+                    _info.totalStakedAmount
+                );
+            }
+        }
+    }
+
+    function _calculateFixedRewards(
+        StakingPoolLib.Data memory _info,
+        User storage user,
+        uint256 amount
+    ) private {
+        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
+            user.rewardAmounts[i] += uint128((amount * _info.ratios[i]));
+        }
+    }
+
+    function _enforceUniqueRewardTokens(
+        StakingPoolLib.Reward[] calldata rewardPools
+    ) private pure {
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            // Ensure no later entries contain the same tokens address
+            uint256 next = i + 1;
+            if (next < rewardPools.length) {
+                for (uint256 j = next; j < rewardPools.length; j++) {
+                    if (rewardPools[i].tokens == rewardPools[j].tokens) {
+                        revert("Rewards: tokens must be unique");
+                    }
+                }
+            }
+        }
     }
 }
