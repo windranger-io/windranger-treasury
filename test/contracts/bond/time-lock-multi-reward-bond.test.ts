@@ -9,6 +9,7 @@ import {solidity} from 'ethereum-waffle'
 import {deployContract, signer} from '../../framework/contracts'
 import {
     BitDAO,
+    IERC20,
     TimeLockMultiRewardBond,
     TimeLockMultiRewardBondBox
 } from '../../../typechain-types'
@@ -28,7 +29,6 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {divideBigNumberish} from '../../framework/maths'
 import {ContractReceipt} from '@ethersproject/contracts/src.ts'
 import {BigNumber} from 'ethers'
-import {ExtendedERC20} from '../../cast/extended-erc20'
 import {verifyERC20TransferEventLogs} from '../../event/erc20/verify-erc20-events'
 import {DAY_IN_SECONDS} from '../../framework/time'
 import {Bond} from '../../../typechain-types/contracts/bond/BondPortal'
@@ -42,15 +42,15 @@ describe('TimeLockMultiRewardBond contract', () => {
         rewardTokenOne = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
-        )) as ExtendedERC20
+        )) as IERC20
         rewardTokenTwo = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
-        )) as ExtendedERC20
+        )) as IERC20
         rewardTokenThree = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
-        )) as ExtendedERC20
+        )) as IERC20
         claimant = await signer(3)
 
         rewardPools = [
@@ -331,9 +331,9 @@ describe('TimeLockMultiRewardBond contract', () => {
     let bond: TimeLockMultiRewardBondBox
     let rewardPools: Bond.TimeLockRewardPoolStruct[]
     let claimant: SignerWithAddress
-    let rewardTokenOne: ExtendedERC20
-    let rewardTokenTwo: ExtendedERC20
-    let rewardTokenThree: ExtendedERC20
+    let rewardTokenOne: IERC20
+    let rewardTokenTwo: IERC20
+    let rewardTokenThree: IERC20
 })
 
 function verifyDeepEqualsRewardPools(

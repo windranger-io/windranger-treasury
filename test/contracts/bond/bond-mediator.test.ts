@@ -11,7 +11,8 @@ import {
     BondFactory,
     BondMediator,
     ERC20,
-    ERC20PresetMinterPauser
+    ERC20PresetMinterPauser,
+    IERC20
 } from '../../../typechain-types'
 import {
     deployContract,
@@ -31,7 +32,6 @@ import {erc20SingleCollateralBondContractAt} from '../../event/bond/single-colla
 import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from '../../event/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {ExtendedERC20} from '../../cast/extended-erc20'
 import {createDaoEvents} from '../../event/bond/bond-mediator-events'
 import {events} from '../../framework/events'
 import {createBondEventLogs} from '../../event/bond/bond-creator-events'
@@ -764,8 +764,8 @@ describe('Bond Mediator contract', () => {
     let daoCreator: SignerWithAddress
     let treasury: string
     let nonAdmin: SignerWithAddress
-    let collateralTokens: ExtendedERC20
-    let nonWhitelistCollateralTokens: ExtendedERC20
+    let collateralTokens: IERC20
+    let nonWhitelistCollateralTokens: IERC20
     let mediator: BondMediator
     let creator: BondFactory
     let daoId: bigint

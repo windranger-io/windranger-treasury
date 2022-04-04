@@ -11,11 +11,11 @@ import {
     Box,
     DaoBondConfigurationBox,
     ERC20,
-    ERC20PresetMinterPauser
+    ERC20PresetMinterPauser,
+    IERC20
 } from '../../../typechain-types'
 import {deployContract, signer} from '../../framework/contracts'
 import {constants, Wallet} from 'ethers'
-import {ExtendedERC20} from '../../cast/extended-erc20'
 import {successfulTransaction} from '../../framework/transaction'
 import {
     verifyAddCollateralEvents,
@@ -197,5 +197,5 @@ describe('DAO Bond Collateral Whitelist contract', () => {
     let admin: string
     let treasury: string
     let config: DaoBondConfigurationBox
-    let collateralTokens: ExtendedERC20
+    let collateralTokens: IERC20
 })

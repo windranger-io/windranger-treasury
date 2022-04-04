@@ -6,7 +6,12 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, ERC20SingleCollateralBondBox} from '../../../typechain-types'
+import {
+    BitDAO,
+    ERC20,
+    ERC20SingleCollateralBondBox,
+    IERC20
+} from '../../../typechain-types'
 import {deployContract, signer} from '../../framework/contracts'
 import {BigNumberish, ContractReceipt, constants, ethers} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
@@ -22,7 +27,6 @@ import {
     verifyWithdrawCollateralEvent
 } from '../../event/bond/verify-single-collateral-bond-events'
 import {verifyERC20TransferEvents} from '../../event/erc20/verify-erc20-events'
-import {ExtendedERC20} from '../../cast/extended-erc20'
 import {
     ExpectedMetaDataUpdateEvent,
     verifyMetaDataUpdateEvents,
@@ -71,7 +75,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         collateralTokens = (await deployContract<BitDAO>(
             'BitDAO',
             admin.address
-        )) as ExtendedERC20
+        )) as ERC20
     })
 
     describe('allow redemption', () => {
@@ -1999,7 +2003,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
     let admin: SignerWithAddress
     let bond: ERC20SingleCollateralBondBox
     let treasury: string
-    let collateralTokens: ExtendedERC20
+    let collateralTokens: ERC20
     let guarantorOne: SignerWithAddress
     let guarantorTwo: SignerWithAddress
     let guarantorThree: SignerWithAddress
@@ -2023,7 +2027,7 @@ export type GuarantorCollateralSetup = {
 async function setupGuarantorWithCollateral(
     guarantor: GuarantorCollateralSetup,
     bond: ERC20SingleCollateralBondBox,
-    collateral: ExtendedERC20
+    collateral: ERC20
 ) {
     await collateral.transfer(guarantor.signer.address, guarantor.pledge)
     await collateral
@@ -2033,7 +2037,7 @@ async function setupGuarantorWithCollateral(
 
 async function verifyBondAndCollateralBalances(
     balance: ExpectedBalance,
-    collateral: ExtendedERC20,
+    collateral: IERC20,
     bond: ERC20SingleCollateralBondBox
 ): Promise<void> {
     const address =

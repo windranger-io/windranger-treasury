@@ -6,11 +6,10 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, DaoBondConfigurationBox} from '../../../typechain-types'
+import {BitDAO, DaoBondConfigurationBox, IERC20} from '../../../typechain-types'
 import {deployContract, signer} from '../../framework/contracts'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {ExtendedERC20} from '../../cast/extended-erc20'
 import {successfulTransaction} from '../../framework/transaction'
 import {
     ExpectedDaoMetaDataUpdateEvent,
@@ -163,5 +162,5 @@ describe('DAO Bond Configuration contract', () => {
     let treasury: string
     let nonAdmin: SignerWithAddress
     let config: DaoBondConfigurationBox
-    let collateralTokens: ExtendedERC20
+    let collateralTokens: IERC20
 })

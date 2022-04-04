@@ -10,7 +10,8 @@ import {
     BitDAO,
     BondFactory,
     BondCuratorBox,
-    ERC20SingleCollateralBondBox
+    ERC20SingleCollateralBondBox,
+    IERC20
 } from '../../../typechain-types'
 import {deployContract, execute, signer} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
@@ -18,7 +19,6 @@ import {successfulTransaction} from '../../framework/transaction'
 import {erc20SingleCollateralBondContractAt} from '../../event/bond/single-collateral-bond-contract'
 import {createBondEvent} from '../../event/bond/bond-creator-events'
 import {event} from '../../framework/events'
-import {ExtendedERC20} from '../../cast/extended-erc20'
 import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from '../../event/bond/roles'
 import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
 import {
@@ -618,7 +618,7 @@ describe('Bond Curator contract', () => {
     let treasury: string
     let nonBondAdmin: SignerWithAddress
     let curator: BondCuratorBox
-    let collateralTokens: ExtendedERC20
-    let otherCollateralTokens: ExtendedERC20
+    let collateralTokens: IERC20
+    let otherCollateralTokens: IERC20
     let creator: BondFactory
 })
