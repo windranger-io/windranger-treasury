@@ -1,15 +1,15 @@
 import {depositEvent} from './staking-events'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
-import {BigNumber, ContractReceipt} from 'ethers'
+import {ContractReceipt} from 'ethers'
 import {
     ActualStakingPoolCreatedEvent,
+    ExpectedStakingPoolCreatedEvent,
     stakingPoolCreated
 } from './staking-factory-events'
-import {isAddress} from 'ethers/lib/utils'
 
 export function verifyStakingPoolCreated(
-    expected: ActualStakingPoolCreatedEvent,
+    expected: ExpectedStakingPoolCreatedEvent,
     receipt: ContractReceipt
 ) {
     const actualStakingPoolCreatedEvent: ActualStakingPoolCreatedEvent =

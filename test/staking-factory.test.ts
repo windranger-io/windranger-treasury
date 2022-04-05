@@ -88,7 +88,12 @@ describe.only('Staking Pool FactoryTests', () => {
                 creator: admin,
                 ...stakingPoolEventData
             }
-            await stakingPoolFactory.createStakingPool(stakingPoolInfo)
+            verifyStakingPoolCreated(
+                stakingPoolEvent,
+                await successfulTransaction(
+                    stakingPoolFactory.createStakingPool(stakingPoolInfo)
+                )
+            )
         })
 
         it('paused cannot create pool', async () => {

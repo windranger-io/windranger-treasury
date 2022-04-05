@@ -19,11 +19,6 @@ contract StakingPool is
         uint128[5] rewardAmounts;
     }
 
-    struct RewardToken {
-        address token;
-        uint256 amount;
-    }
-
     mapping(address => User) private _users;
 
     StakingPoolLib.Data private _stakingPoolInfo;
@@ -82,14 +77,14 @@ contract StakingPool is
         _;
     }
 
-    modifier stakingPoolNotFull(uint256 _deposit) {
-        require(
-            _stakingPoolInfo.totalStakedAmount + _deposit <
-                _stakingPoolInfo.maxTotalPoolStake,
-            "StakingPool: pool full"
-        );
-        _;
-    }
+//    modifier stakingPoolNotFull(uint256 _deposit) {
+//        require(
+//            _stakingPoolInfo.totalStakedAmount + _deposit <
+//                _stakingPoolInfo.maxTotalPoolStake,
+//            "StakingPool: pool full"
+//        );
+//        _;
+//    }
 
     function pause()
         external
@@ -117,11 +112,16 @@ contract StakingPool is
         whenNotPaused
         stakingPeriodNotStarted
         nonReentrant
-        stakingPoolNotFull(amount)
+//        stakingPoolNotFull(amount)
     {
         require(
             amount >= _stakingPoolInfo.minimumContribution,
             "StakingPool: min contribution"
+        );
+        require(
+            _stakingPoolInfo.totalStakedAmount + amount <
+            _stakingPoolInfo.maxTotalPoolStake,
+            "StakingPool: pool full"
         );
 
         User storage user = _users[_msgSender()];
@@ -271,10 +271,10 @@ contract StakingPool is
         require(info.treasury != address(0), "StakePool: nonzero treasury"); // TODO: are we checking if the treasury is whitelisted to that daoId
         require(!info.emergencyMode, "StakePool: init emergency mode");
 
-        require(info.maxTotalPoolStake > 0, "StakePool: maxTotalPoolStake > 0"); // is this check pointless?
-        require(info.epochDuration > 0, "StakePool: epochDuration > 0"); // is this check pointless?
-        require(info.minimumContribution > 0, "StakePool: minimumContribution"); // is this check pointless?
-        require(info.totalStakedAmount == 0, "StakePool: totalStakedAmount"); // or should we move this to be a single field?
+        require(info.maxTotalPoolStake > 0, "StakePool: maxTotalPoolStake > 0");
+        require(info.epochDuration > 0, "StakePool: epochDuration > 0");
+        require(info.minimumContribution > 0, "StakePool: minimumContribution");
+        require(info.totalStakedAmount == 0, "StakePool: totalStakedAmount");
 
         if (info.launchPaused) {
             _pause();
@@ -289,7 +289,7 @@ contract StakingPool is
 
     function initializeRewardTokens(
         address treasury,
-        RewardToken[] calldata rewards
+        StakingPoolLib.Reward[] calldata rewards
     ) external atLeastDaoMeepleRole(_stakingPoolInfo.daoId) {
         _initializeRewardTokens(treasury, rewards);
     }
@@ -384,24 +384,24 @@ contract StakingPool is
 
     function _initializeRewardTokens(
         address treasury,
-        RewardToken[] calldata _rewardTokens
+        StakingPoolLib.Reward[] calldata _rewardTokens
     ) internal {
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
-            IERC20 token = IERC20(_rewardTokens[i].token);
+            IERC20 tokens = IERC20(_rewardTokens[i].tokens);
 
-            emit InitializeRewards(address(token), _rewardTokens[i].amount);
+            emit InitializeRewards(address(tokens), _rewardTokens[i].maxAmount);
 
             require(
-                token.allowance(treasury, address(this)) >=
-                    _rewardTokens[i].amount,
+                tokens.allowance(treasury, address(this)) >=
+                    _rewardTokens[i].maxAmount,
                 "StakingPool: invalid allowance"
             );
 
             require(
-                token.transferFrom(
+                tokens.transferFrom(
                     treasury,
                     address(this),
-                    _rewardTokens[i].amount
+                    _rewardTokens[i].maxAmount
                 ),
                 "StakingPool: fund tx failed"
             );
@@ -482,13 +482,10 @@ contract StakingPool is
 
     function _updateRewardsRatios(StakingPoolLib.Data storage _info) private {
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
-            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
-                // floating: update the global rewards ratio for each reward token
-                _info.ratios[i] = _computeFloatingRewardsPerShare(
-                    _info.rewardTokens[i].maxAmount,
-                    _info.totalStakedAmount
-                );
-            }
+            _info.ratios[i] = _computeFloatingRewardsPerShare(
+                _info.rewardTokens[i].maxAmount,
+                _info.totalStakedAmount
+            );
         }
     }
 

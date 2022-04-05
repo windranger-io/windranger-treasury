@@ -9,7 +9,18 @@ type RewardToken = {
 }
 
 export type ActualStakingPoolCreatedEvent = {
-    // stakingPool: string
+    stakingPool: string
+    treasury: string
+    creator: string
+    rewardTokens: RewardToken[]
+    stakeToken: string
+    epochStartTimestamp: BigNumber
+    epochDuration: BigNumber
+    minimumContribution: BigNumber
+    rewardType: StakingPoolType
+}
+
+export type ExpectedStakingPoolCreatedEvent = {
     treasury: string
     creator: string
     rewardTokens: RewardToken[]
