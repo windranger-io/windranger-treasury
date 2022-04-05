@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 library StakingPoolLib {
     enum RewardType {
+        UNINITIALIZED,
         FIXED,
         FLOATING
     }

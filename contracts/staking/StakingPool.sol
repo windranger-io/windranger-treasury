@@ -98,7 +98,6 @@ contract StakingPool is
         whenNotPaused
         stakingPeriodNotStarted
         nonReentrant
-//        stakingPoolNotFull(amount)
     {
         require(
             amount >= _stakingPoolInfo.minimumContribution,
@@ -106,7 +105,7 @@ contract StakingPool is
         );
         require(
             _stakingPoolInfo.totalStakedAmount + amount <
-            _stakingPoolInfo.maxTotalPoolStake,
+                _stakingPoolInfo.maxTotalPoolStake,
             "StakingPool: pool full"
         );
 
@@ -115,28 +114,15 @@ contract StakingPool is
 
         user.depositAmount += uint128(amount);
         _info.totalStakedAmount += uint128(amount);
+        emit Deposit(_msgSender(), amount);
 
         // calculate/update rewards
         if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
             _updateRewardsRatios(_info);
-        } else {
+        }
+        if (_info.rewardType == StakingPoolLib.RewardType.FIXED) {
             _calculateFixedRewards(_info, user, amount);
         }
-
-        //        for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
-        //            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
-        //                // floating: update the global rewards ratio for each reward token
-        //                _info.ratios[i] = _computeFloatingRewardsPerShare(
-        //                    _info.rewardTokens[i].maxAmount,
-        //                    _info.totalStakedAmount
-        //                );
-        //            } else {
-        //                // fixed: set the reward amount per user now
-        //                user.rewardAmounts[i] += uint128((amount * _info.ratios[i]));
-        //            }
-        //        }
-
-        emit Deposit(_msgSender(), amount);
 
         require(
             _info.stakeToken.transferFrom(_msgSender(), address(this), amount),
@@ -173,8 +159,8 @@ contract StakingPool is
                     _info.ratios[i],
                     user.depositAmount
                 );
-            } else {
-                // fixed
+            }
+            if (_info.rewardType == StakingPoolLib.RewardType.FIXED) {
                 amount = uint256(user.rewardAmounts[i]);
             }
             //slither-disable-next-line calls-loop
@@ -347,8 +333,8 @@ contract StakingPool is
                         _user.depositAmount
                     );
                 }
-            } else {
-                // fixed pool type
+            }
+            if (_info.rewardType == StakingPoolLib.RewardType.FIXED) {
                 rewards[i] = _user.rewardAmounts[i];
             }
         }

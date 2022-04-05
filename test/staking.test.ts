@@ -543,7 +543,7 @@ describe('Staking Pool Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                rewardType: 1,
+                rewardType: RewardType.FLOATING,
                 rewardTokens: [
                     {
                         tokens: rewardToken1.address,

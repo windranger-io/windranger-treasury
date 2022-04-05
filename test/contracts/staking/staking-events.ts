@@ -15,6 +15,7 @@ import {
 
 // eslint-disable-next-line no-shadow
 export enum RewardType {
+    UNINITIALIZED,
     FIXED,
     FLOATING
 }
