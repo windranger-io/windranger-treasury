@@ -449,6 +449,7 @@ contract StakingPool is
     }
 
     function _transferToken(uint256 amount, IERC20 token) private {
+        //slither-disable-next-line calls-loop
         require(token.transfer(_msgSender(), amount), "StakingPool: tx failed");
     }
 
