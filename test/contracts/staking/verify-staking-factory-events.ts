@@ -1,4 +1,3 @@
-import {depositEvent} from './staking-events'
 import {event} from '../../framework/events'
 import {expect} from 'chai'
 import {ContractReceipt} from 'ethers'
