@@ -28,15 +28,10 @@ contract StakingPool is
         address rewardToken,
         uint256 rewards
     );
-
     event WithdrawStake(address indexed user, uint256 stake);
-
     event Deposit(address indexed user, uint256 depositAmount);
-
     event InitializeRewards(address rewardTokens, uint256 amount);
-
     event RewardsAvailableTimestamp(uint32 rewardsAvailableTimestamp);
-
     event EmergencyMode(address indexed admin);
 
     modifier rewardsAvailable() {
@@ -76,15 +71,6 @@ contract StakingPool is
         );
         _;
     }
-
-//    modifier stakingPoolNotFull(uint256 _deposit) {
-//        require(
-//            _stakingPoolInfo.totalStakedAmount + _deposit <
-//                _stakingPoolInfo.maxTotalPoolStake,
-//            "StakingPool: pool full"
-//        );
-//        _;
-//    }
 
     function pause()
         external

@@ -38,15 +38,8 @@ export function advanceBlock() {
     return provider.send('evm_mine', [])
 }
 
-export const increaseTime = async (time: number, advance = true) => {
+export async function increaseTime(time: number, advance = true) {
     await provider.send('evm_increaseTime', [time])
-    if (advance) {
-        await advanceBlock()
-    }
-}
-
-export async function setTime(time: number, advance = true) {
-    await provider.send('evm_setNextBlockTimestamp', [time])
     if (advance) {
         await advanceBlock()
     }

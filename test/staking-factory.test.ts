@@ -11,7 +11,7 @@ import {deployContract, signer} from './framework/contracts'
 import {getTimestampNow} from './framework/time'
 import {BigNumber} from 'ethers'
 
-import {StakingPoolType} from './contracts/staking/staking-events'
+import {RewardType} from './contracts/staking/staking-events'
 import {verifyStakingPoolCreated} from './contracts/staking/verify-staking-factory-events'
 import {successfulTransaction} from './framework/transaction'
 
@@ -41,7 +41,7 @@ export type StakingPoolLibData = {
     totalStakedAmount: number
 }
 
-describe.only('Staking Pool FactoryTests', () => {
+describe('Staking Pool FactoryTests', () => {
     let stakingPoolInfo: StakingPoolLibData
     before(async () => {
         admin = (await signer(0)).address
@@ -62,7 +62,7 @@ describe.only('Staking Pool FactoryTests', () => {
             )
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
-                rewardType: StakingPoolType.FLOATING,
+                rewardType: RewardType.FLOATING,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
                 epochDuration: BigNumber.from(EPOCH_DURATION),
@@ -110,7 +110,7 @@ describe.only('Staking Pool FactoryTests', () => {
             )
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
-                rewardType: StakingPoolType.FIXED,
+                rewardType: RewardType.FIXED,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
                 epochDuration: BigNumber.from(EPOCH_DURATION),

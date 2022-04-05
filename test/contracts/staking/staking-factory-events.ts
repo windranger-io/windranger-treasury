@@ -1,7 +1,7 @@
 import {BigNumber, Event} from 'ethers'
-import {StakingPoolCreatedEvent} from '../../../typechain-types/StakingPoolFactory'
+import {StakingPoolCreatedEvent} from '../../../typechain-types/contracts/staking/StakingPoolFactory'
 import {expect} from 'chai'
-import {StakingPoolType} from './staking-events'
+import {RewardType} from './staking-events'
 import {isAddress} from 'ethers/lib/utils'
 
 type RewardToken = {
@@ -17,7 +17,7 @@ export type ActualStakingPoolCreatedEvent = {
     epochStartTimestamp: BigNumber
     epochDuration: BigNumber
     minimumContribution: BigNumber
-    rewardType: StakingPoolType
+    rewardType: RewardType
 }
 
 export type ExpectedStakingPoolCreatedEvent = {
@@ -28,7 +28,7 @@ export type ExpectedStakingPoolCreatedEvent = {
     epochStartTimestamp: BigNumber
     epochDuration: BigNumber
     minimumContribution: BigNumber
-    rewardType: StakingPoolType
+    rewardType: RewardType
 }
 
 /**

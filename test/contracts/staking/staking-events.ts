@@ -4,7 +4,7 @@ import {
     WithdrawStakeEvent,
     WithdrawRewardsEvent,
     InitializeRewardsEvent
-} from '../../../typechain-types/StakingPool'
+} from '../../../typechain-types/contracts/staking/StakingPool'
 import {expect} from 'chai'
 import {
     ActualDepositEvent,
@@ -14,7 +14,7 @@ import {
 } from './verify-staking-events'
 
 // eslint-disable-next-line no-shadow
-export enum StakingPoolType {
+export enum RewardType {
     FIXED,
     FLOATING
 }

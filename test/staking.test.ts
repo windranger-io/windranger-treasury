@@ -19,7 +19,7 @@ import {
     verifyWithdrawEvent,
     verifyWithdrawRewardsEvent
 } from './contracts/staking/verify-staking-events'
-import {StakingPoolType} from './contracts/staking/staking-events'
+import {RewardType} from './contracts/staking/staking-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -69,8 +69,9 @@ describe('Staking Pool Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                poolType: StakingPoolType.FLOATING,
-                rewardTokens: []
+                rewardType: RewardType.FLOATING,
+                rewardTokens: [],
+                ratios: []
             }
 
             stakingPool = await deployContract('StakingPool')
@@ -89,9 +90,8 @@ describe('Staking Pool Tests', () => {
             await expect(
                 stakingPool.initializeRewardTokens(admin, [
                     {
-                        token: rewardToken1.address,
-                        rewardAmountRatio: BigNumber.from(1),
-                        totalTokenRewardsAvailable: amount
+                        tokens: rewardToken1.address,
+                        maxAmount: amount
                     }
                 ])
             ).to.be.revertedWith('StakingPool: invalid allowance')
@@ -100,12 +100,7 @@ describe('Staking Pool Tests', () => {
             await rewardToken1.mint(admin, amount)
             verifyInitializeRewardsEvent(
                 {rewardTokens: rewardToken1.address, amount},
-                await initializeRewards(
-                    rewardToken1,
-                    admin,
-                    amount,
-                    BigNumber.from(1)
-                )
+                await initializeRewards(rewardToken1, admin, amount)
             )
         })
     })
@@ -139,15 +134,16 @@ describe('Staking Pool Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                poolType: StakingPoolType.FLOATING,
-                rewardTokens: []
+                rewardType: RewardType.FLOATING,
+                rewardTokens: [],
+                ratios: []
             }
 
             stakingPool = await deployContract('StakingPool')
             await stakingPool.initialize(stakingPoolInfo)
         })
 
-        describe.only('deposit', () => {
+        describe('deposit', () => {
             const depositAmount = BigNumber.from(20)
 
             it('does not allow user to deposit when stakingPeriodNotStarted', async () => {
@@ -237,8 +233,9 @@ describe('Staking Pool Tests', () => {
                     treasury: admin,
                     totalStakedAmount: 0,
                     stakeToken: stakeTokens.address,
-                    poolType: StakingPoolType.FLOATING,
-                    rewardTokens: []
+                    rewardType: RewardType.FLOATING,
+                    rewardTokens: [],
+                    ratios: []
                 }
 
                 stakingPool = await deployContract('StakingPool')
@@ -298,14 +295,14 @@ describe('Staking Pool Tests', () => {
                     treasury: admin,
                     totalStakedAmount: 0,
                     stakeToken: stakeTokens.address,
-                    poolType: StakingPoolType.FLOATING,
+                    rewardType: RewardType.FLOATING,
                     rewardTokens: [
                         {
-                            token: rewardToken1.address,
-                            totalTokenRewardsAvailable: REWARD_TOKEN_1_AMOUNT,
-                            rewardAmountRatio: 0
+                            tokens: rewardToken1.address,
+                            maxAmount: REWARD_TOKEN_1_AMOUNT
                         }
-                    ]
+                    ],
+                    ratios: [0]
                 }
 
                 stakingPool = await deployContract('StakingPool')
@@ -451,14 +448,14 @@ describe('Staking Pool Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                poolType: StakingPoolType.FIXED,
+                rewardType: RewardType.FIXED,
                 rewardTokens: [
                     {
-                        token: rewardToken1.address,
-                        totalTokenRewardsAvailable: 2000,
-                        rewardAmountRatio
+                        tokens: rewardToken1.address,
+                        maxAmount: 2000
                     }
-                ]
+                ],
+                ratios: [rewardAmountRatio]
             }
 
             stakingPool = await deployContract('StakingPool')
@@ -469,7 +466,6 @@ describe('Staking Pool Tests', () => {
             const amount = BigNumber.from(80)
             it('2 users get the same reward', async () => {
                 await increaseTime(START_DELAY)
-
                 await userDeposit(user, amount)
                 await userDeposit(user2, amount)
 
@@ -547,14 +543,14 @@ describe('Staking Pool Tests', () => {
                 treasury: admin,
                 totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
-                poolType: 1,
+                rewardType: 1,
                 rewardTokens: [
                     {
-                        token: rewardToken1.address,
-                        totalTokenRewardsAvailable: 2000,
-                        rewardAmountRatio: 0
+                        tokens: rewardToken1.address,
+                        maxAmount: 2000
                     }
-                ]
+                ],
+                ratios: []
             }
 
             stakingPool = await deployContract('StakingPool')
@@ -638,17 +634,15 @@ describe('Staking Pool Tests', () => {
     async function initializeRewards(
         rewardToken: ERC20PresetMinterPauser,
         treasury: string,
-        amount: BigNumber,
-        rewardAmountRatio: BigNumber
+        amount: BigNumber
     ): Promise<ContractReceipt> {
         await rewardToken.increaseAllowance(stakingPool.address, amount)
 
         return successfulTransaction(
             stakingPool.initializeRewardTokens(treasury, [
                 {
-                    token: rewardToken.address,
-                    rewardAmountRatio,
-                    totalTokenRewardsAvailable: amount
+                    tokens: rewardToken.address,
+                    maxAmount: amount
                 }
             ])
         )
