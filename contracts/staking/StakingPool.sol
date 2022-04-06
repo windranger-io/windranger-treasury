@@ -213,11 +213,11 @@ contract StakingPool is
         _withdrawWithoutRewards();
     }
 
-    function initialize(StakingPoolLib.Config calldata info, bool paused)
-        external
-        virtual
-        initializer
-    {
+    function initialize(
+        StakingPoolLib.Config calldata info,
+        bool paused,
+        uint32 rewardsAvailableTimestamp
+    ) external virtual initializer {
         __RoleAccessControl_init();
         __Context_init_unchained();
         __Pausable_init();
@@ -241,7 +241,7 @@ contract StakingPool is
         );
         //slither-disable-next-line timestamp
         require(
-            _rewardsAvailableTimestamp >
+            rewardsAvailableTimestamp >
                 info.epochStartTimestamp + info.epochDuration,
             "StakingPool: init rewards"
         );
@@ -254,6 +254,7 @@ contract StakingPool is
             _pause();
         }
 
+        _rewardsAvailableTimestamp = rewardsAvailableTimestamp;
         _stakingPoolInfo = info;
     }
 

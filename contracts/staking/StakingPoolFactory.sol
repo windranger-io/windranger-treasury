@@ -31,7 +31,8 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
 
     function createStakingPool(
         StakingPoolLib.Config calldata info,
-        bool launchPaused
+        bool launchPaused,
+        uint32 rewardsAvailableTimestamp
     ) external whenNotPaused atLeastDaoAdminRole(info.daoId) returns (address) {
         StakingPool stakingPool = new StakingPool();
 
@@ -47,7 +48,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
             info.rewardType
         );
 
-        stakingPool.initialize(info, launchPaused);
+        stakingPool.initialize(info, launchPaused, rewardsAvailableTimestamp);
         return address(stakingPool);
     }
 

@@ -54,6 +54,8 @@ describe('Staking Pool Tests', () => {
             )
 
             const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+            const rewardsAvailableTimestamp =
+                REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
@@ -61,10 +63,6 @@ describe('Staking Pool Tests', () => {
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                rewardsAvailableTimestamp:
-                    REWARDS_AVAILABLE_OFFSET +
-                    epochStartTimestamp +
-                    EPOCH_DURATION,
                 emergencyMode: false,
                 treasury: admin,
                 stakeToken: stakeTokens.address,
@@ -73,7 +71,11 @@ describe('Staking Pool Tests', () => {
             }
 
             stakingPool = await deployContract('StakingPool')
-            await stakingPool.initialize(stakingPoolInfo, true)
+            await stakingPool.initialize(
+                stakingPoolInfo,
+                true,
+                rewardsAvailableTimestamp
+            )
 
             await expect(
                 userDeposit(user, BigNumber.from(20))
@@ -116,7 +118,8 @@ describe('Staking Pool Tests', () => {
                 symbol
             )
             const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
-
+            const rewardsAvailableTimestamp =
+                REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
@@ -124,10 +127,7 @@ describe('Staking Pool Tests', () => {
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                rewardsAvailableTimestamp:
-                    REWARDS_AVAILABLE_OFFSET +
-                    epochStartTimestamp +
-                    EPOCH_DURATION,
+
                 emergencyMode: false,
                 treasury: admin,
                 stakeToken: stakeTokens.address,
@@ -136,7 +136,11 @@ describe('Staking Pool Tests', () => {
             }
 
             stakingPool = await deployContract('StakingPool')
-            await stakingPool.initialize(stakingPoolInfo, false)
+            await stakingPool.initialize(
+                stakingPoolInfo,
+                false,
+                rewardsAvailableTimestamp
+            )
         })
 
         describe('deposit', () => {
@@ -212,7 +216,10 @@ describe('Staking Pool Tests', () => {
             let epochStartTimestamp: number
             beforeEach(async () => {
                 epochStartTimestamp = (await getTimestampNow()) + START_DELAY
-
+                const rewardsAvailableTimestamp =
+                    REWARDS_AVAILABLE_OFFSET +
+                    epochStartTimestamp +
+                    EPOCH_DURATION
                 const stakingPoolInfo = {
                     daoId: 0,
                     minTotalPoolStake: MIN_POOL_STAKE,
@@ -220,10 +227,7 @@ describe('Staking Pool Tests', () => {
                     minimumContribution: 5,
                     epochDuration: EPOCH_DURATION,
                     epochStartTimestamp,
-                    rewardsAvailableTimestamp:
-                        REWARDS_AVAILABLE_OFFSET +
-                        epochStartTimestamp +
-                        EPOCH_DURATION,
+
                     emergencyMode: false,
                     treasury: admin,
                     stakeToken: stakeTokens.address,
@@ -232,7 +236,11 @@ describe('Staking Pool Tests', () => {
                 }
 
                 stakingPool = await deployContract('StakingPool')
-                await stakingPool.initialize(stakingPoolInfo, false)
+                await stakingPool.initialize(
+                    stakingPoolInfo,
+                    false,
+                    rewardsAvailableTimestamp
+                )
             })
 
             const amount = BigNumber.from(20)
@@ -282,7 +290,7 @@ describe('Staking Pool Tests', () => {
                     minimumContribution: 5,
                     epochDuration: EPOCH_DURATION,
                     epochStartTimestamp,
-                    rewardsAvailableTimestamp,
+
                     emergencyMode: false,
                     treasury: admin,
                     stakeToken: stakeTokens.address,
@@ -297,7 +305,11 @@ describe('Staking Pool Tests', () => {
                 }
 
                 stakingPool = await deployContract('StakingPool')
-                await stakingPool.initialize(stakingPoolInfo, false)
+                await stakingPool.initialize(
+                    stakingPoolInfo,
+                    false,
+                    rewardsAvailableTimestamp
+                )
                 await rewardToken1.mint(
                     stakingPool.address,
                     REWARD_TOKEN_1_AMOUNT
@@ -421,7 +433,8 @@ describe('Staking Pool Tests', () => {
                 'SYM'
             )
             const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
-
+            const rewardsAvailableTimestamp =
+                REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
@@ -429,10 +442,7 @@ describe('Staking Pool Tests', () => {
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                rewardsAvailableTimestamp:
-                    REWARDS_AVAILABLE_OFFSET +
-                    epochStartTimestamp +
-                    EPOCH_DURATION,
+
                 emergencyMode: false,
                 treasury: admin,
                 stakeToken: stakeTokens.address,
@@ -447,7 +457,11 @@ describe('Staking Pool Tests', () => {
             }
 
             stakingPool = await deployContract('StakingPool')
-            await stakingPool.initialize(stakingPoolInfo, false)
+            await stakingPool.initialize(
+                stakingPoolInfo,
+                false,
+                rewardsAvailableTimestamp
+            )
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })
         describe('withdraw stake', () => {
@@ -525,7 +539,6 @@ describe('Staking Pool Tests', () => {
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                rewardsAvailableTimestamp,
                 emergencyMode: false,
                 treasury: admin,
                 stakeToken: stakeTokens.address,
@@ -541,7 +554,11 @@ describe('Staking Pool Tests', () => {
 
             stakingPool = await deployContract('StakingPool')
 
-            await stakingPool.initialize(stakingPoolInfo, false)
+            await stakingPool.initialize(
+                stakingPoolInfo,
+                false,
+                rewardsAvailableTimestamp
+            )
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })
         describe('only dao admin', () => {

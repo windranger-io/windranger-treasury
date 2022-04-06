@@ -37,12 +37,12 @@ export type StakingPoolLibData = {
     daoId: number
     minTotalPoolStake: number
     maxTotalPoolStake: number
-    rewardsAvailableTimestamp: BigNumber
-    emergencyMode: boolean
 }
 
 describe('Staking Pool FactoryTests', () => {
     let stakingPoolInfo: StakingPoolLibData
+    let epochStartTimestamp: BigNumber
+    let rewardsAvailableTimestamp: BigNumber
     before(async () => {
         admin = (await signer(0)).address
         const symbol = 'EEK'
@@ -53,13 +53,16 @@ describe('Staking Pool FactoryTests', () => {
         )
         stakingPoolFactory = await deployContract('StakingPoolFactory')
         await stakingPoolFactory.initialize()
+        epochStartTimestamp = BigNumber.from(
+            (await getTimestampNow()) + START_DELAY
+        )
+        rewardsAvailableTimestamp = epochStartTimestamp
+            .add(REWARDS_AVAILABLE_OFFSET)
+            .add(EPOCH_DURATION)
     })
 
     describe('create pools', () => {
         it('create floating pool', async () => {
-            const epochStartTimestamp = BigNumber.from(
-                (await getTimestampNow()) + START_DELAY
-            )
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FLOATING,
@@ -74,10 +77,6 @@ describe('Staking Pool FactoryTests', () => {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
-                rewardsAvailableTimestamp: epochStartTimestamp
-                    .add(REWARDS_AVAILABLE_OFFSET)
-                    .add(EPOCH_DURATION),
-                emergencyMode: false,
                 ...stakingPoolEventData
             }
 
@@ -85,10 +84,15 @@ describe('Staking Pool FactoryTests', () => {
                 creator: admin,
                 ...stakingPoolEventData
             }
+
             verifyStakingPoolCreated(
                 stakingPoolEvent,
                 await successfulTransaction(
-                    stakingPoolFactory.createStakingPool(stakingPoolInfo, false)
+                    stakingPoolFactory.createStakingPool(
+                        stakingPoolInfo,
+                        false,
+                        rewardsAvailableTimestamp
+                    )
                 )
             )
         })
@@ -96,15 +100,21 @@ describe('Staking Pool FactoryTests', () => {
         it('paused cannot create pool', async () => {
             await stakingPoolFactory.pause()
             await expect(
-                stakingPoolFactory.createStakingPool(stakingPoolInfo, false)
+                stakingPoolFactory.createStakingPool(
+                    stakingPoolInfo,
+                    false,
+                    rewardsAvailableTimestamp
+                )
             ).to.be.revertedWith('Pausable: paused')
             await stakingPoolFactory.unpause()
         })
 
         it('create fixed pool', async () => {
-            const epochStartTimestamp = BigNumber.from(
-                (await getTimestampNow()) + START_DELAY
-            )
+            /*
+             * const epochStartTimestamp = BigNumber.from(
+             *     (await getTimestampNow()) + START_DELAY
+             * )
+             */
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FIXED,
@@ -119,10 +129,6 @@ describe('Staking Pool FactoryTests', () => {
                 daoId: 0,
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
-                rewardsAvailableTimestamp: epochStartTimestamp
-                    .add(REWARDS_AVAILABLE_OFFSET)
-                    .add(EPOCH_DURATION),
-                emergencyMode: false,
                 ...stakingPoolEventData
             }
 
@@ -133,7 +139,11 @@ describe('Staking Pool FactoryTests', () => {
             verifyStakingPoolCreated(
                 stakingPoolEvent,
                 await successfulTransaction(
-                    stakingPoolFactory.createStakingPool(stakingPoolInfo, false)
+                    stakingPoolFactory.createStakingPool(
+                        stakingPoolInfo,
+                        false,
+                        rewardsAvailableTimestamp
+                    )
                 )
             )
         })
