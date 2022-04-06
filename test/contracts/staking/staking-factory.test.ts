@@ -6,14 +6,17 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {StakingPoolFactory, ERC20PresetMinterPauser} from '../typechain-types'
-import {deployContract, signer} from './framework/contracts'
-import {getTimestampNow} from './framework/time'
+import {
+    StakingPoolFactory,
+    ERC20PresetMinterPauser
+} from '../../../typechain-types'
+import {deployContract, signer} from '../../framework/contracts'
+import {getTimestampNow} from '../../framework/time'
 import {BigNumber} from 'ethers'
 
-import {RewardType} from './contracts/staking/staking-events'
-import {verifyStakingPoolCreated} from './contracts/staking/verify-staking-factory-events'
-import {successfulTransaction} from './framework/transaction'
+import {RewardType} from './staking-events'
+import {verifyStakingPoolCreated} from './verify-staking-factory-events'
+import {successfulTransaction} from '../../framework/transaction'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -27,7 +30,6 @@ export type StakingPoolLibData = {
     stakeToken: string
     rewardType: number
     rewardTokens: never[]
-    ratios: never[]
     minimumContribution: BigNumber
     epochDuration: BigNumber
     epochStartTimestamp: BigNumber
@@ -37,8 +39,6 @@ export type StakingPoolLibData = {
     maxTotalPoolStake: number
     rewardsAvailableTimestamp: BigNumber
     emergencyMode: boolean
-    launchPaused: boolean
-    totalStakedAmount: number
 }
 
 describe('Staking Pool FactoryTests', () => {
@@ -72,15 +72,12 @@ describe('Staking Pool FactoryTests', () => {
 
             stakingPoolInfo = {
                 daoId: 0,
-                ratios: [],
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 rewardsAvailableTimestamp: epochStartTimestamp
                     .add(REWARDS_AVAILABLE_OFFSET)
                     .add(EPOCH_DURATION),
                 emergencyMode: false,
-                launchPaused: false,
-                totalStakedAmount: 0,
                 ...stakingPoolEventData
             }
 
@@ -91,7 +88,7 @@ describe('Staking Pool FactoryTests', () => {
             verifyStakingPoolCreated(
                 stakingPoolEvent,
                 await successfulTransaction(
-                    stakingPoolFactory.createStakingPool(stakingPoolInfo)
+                    stakingPoolFactory.createStakingPool(stakingPoolInfo, false)
                 )
             )
         })
@@ -99,7 +96,7 @@ describe('Staking Pool FactoryTests', () => {
         it('paused cannot create pool', async () => {
             await stakingPoolFactory.pause()
             await expect(
-                stakingPoolFactory.createStakingPool(stakingPoolInfo)
+                stakingPoolFactory.createStakingPool(stakingPoolInfo, false)
             ).to.be.revertedWith('Pausable: paused')
             await stakingPoolFactory.unpause()
         })
@@ -120,15 +117,12 @@ describe('Staking Pool FactoryTests', () => {
 
             stakingPoolInfo = {
                 daoId: 0,
-                ratios: [],
                 minTotalPoolStake: MIN_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 rewardsAvailableTimestamp: epochStartTimestamp
                     .add(REWARDS_AVAILABLE_OFFSET)
                     .add(EPOCH_DURATION),
                 emergencyMode: false,
-                launchPaused: false,
-                totalStakedAmount: 0,
                 ...stakingPoolEventData
             }
 
@@ -139,7 +133,7 @@ describe('Staking Pool FactoryTests', () => {
             verifyStakingPoolCreated(
                 stakingPoolEvent,
                 await successfulTransaction(
-                    stakingPoolFactory.createStakingPool(stakingPoolInfo)
+                    stakingPoolFactory.createStakingPool(stakingPoolInfo, false)
                 )
             )
         })

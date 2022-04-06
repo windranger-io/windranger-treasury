@@ -21,7 +21,11 @@ contract StakingPool is
 
     mapping(address => User) private _users;
 
-    StakingPoolLib.Data private _stakingPoolInfo;
+    uint32 private _rewardsAvailableTimestamp;
+    bool private _emergencyMode;
+    uint128 private _totalStakedAmount;
+
+    StakingPoolLib.Config private _stakingPoolInfo;
 
     event WithdrawRewards(
         address indexed user,
@@ -47,8 +51,7 @@ contract StakingPool is
     modifier stakingPoolRequirementsUnmet() {
         //slither-disable-next-line timestamp
         require(
-            (_stakingPoolInfo.totalStakedAmount <
-                _stakingPoolInfo.minTotalPoolStake) &&
+            (_totalStakedAmount < _stakingPoolInfo.minTotalPoolStake) &&
                 (block.timestamp > _stakingPoolInfo.epochStartTimestamp),
             "StakingPool: requirements unmet"
         );
@@ -56,10 +59,7 @@ contract StakingPool is
     }
 
     modifier emergencyModeEnabled() {
-        require(
-            _stakingPoolInfo.emergencyMode,
-            "StakingPool: not emergency mode"
-        );
+        require(_emergencyMode, "StakingPool: not emergency mode");
         _;
     }
 
@@ -104,16 +104,15 @@ contract StakingPool is
             "StakingPool: min contribution"
         );
         require(
-            _stakingPoolInfo.totalStakedAmount + amount <
-                _stakingPoolInfo.maxTotalPoolStake,
+            _totalStakedAmount + amount < _stakingPoolInfo.maxTotalPoolStake,
             "StakingPool: pool full"
         );
 
         User storage user = _users[_msgSender()];
-        StakingPoolLib.Data storage _info = _stakingPoolInfo;
+        StakingPoolLib.Config storage _info = _stakingPoolInfo;
 
         user.depositAmount += uint128(amount);
-        _info.totalStakedAmount += uint128(amount);
+        _totalStakedAmount += uint128(amount);
         emit Deposit(_msgSender(), amount);
 
         // calculate/update rewards
@@ -144,7 +143,7 @@ contract StakingPool is
 
         delete _users[_msgSender()];
 
-        StakingPoolLib.Data storage _info = _stakingPoolInfo;
+        StakingPoolLib.Config storage _info = _stakingPoolInfo;
 
         //slither-disable-next-line reentrancy-events
         _transferStake(user.depositAmount, IERC20(_info.stakeToken));
@@ -156,7 +155,7 @@ contract StakingPool is
             // floating
             if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
                 amount = _calculateFloatingReward(
-                    _info.ratios[i],
+                    _info.rewardTokens[i].ratio,
                     user.depositAmount
                 );
             }
@@ -178,14 +177,14 @@ contract StakingPool is
         uint128 currentDepositBalance = user.depositAmount;
         user.depositAmount = 0;
 
-        StakingPoolLib.Data storage _info = _stakingPoolInfo;
+        StakingPoolLib.Config storage _info = _stakingPoolInfo;
 
         // calculate the amount of rewards the user is due for the floating pool type
         // fixed amounts are calculated and fixed on depositing
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
                 user.rewardAmounts[i] = _calculateFloatingReward(
-                    _info.ratios[i],
+                    _info.rewardTokens[i].ratio,
                     currentDepositBalance
                 );
             }
@@ -214,7 +213,7 @@ contract StakingPool is
         _withdrawWithoutRewards();
     }
 
-    function initialize(StakingPoolLib.Data calldata info)
+    function initialize(StakingPoolLib.Config calldata info, bool paused)
         external
         virtual
         initializer
@@ -229,6 +228,12 @@ contract StakingPool is
             "StakingPool: start time"
         );
 
+        require(
+            info.rewardType == StakingPoolLib.RewardType.FLOATING ||
+                info.rewardType == StakingPoolLib.RewardType.FIXED,
+            "StakingPool: reward type"
+        );
+
         _enforceUniqueRewardTokens(info.rewardTokens);
         require(
             address(info.stakeToken) != address(0),
@@ -236,19 +241,16 @@ contract StakingPool is
         );
         //slither-disable-next-line timestamp
         require(
-            info.rewardsAvailableTimestamp >
+            _rewardsAvailableTimestamp >
                 info.epochStartTimestamp + info.epochDuration,
             "StakingPool: init rewards"
         );
         require(info.treasury != address(0), "StakePool: nonzero treasury"); // TODO: are we checking if the treasury is whitelisted to that daoId
-        require(!info.emergencyMode, "StakePool: init emergency mode");
-
         require(info.maxTotalPoolStake > 0, "StakePool: maxTotalPoolStake > 0");
         require(info.epochDuration > 0, "StakePool: epochDuration > 0");
         require(info.minimumContribution > 0, "StakePool: minimumContribution");
-        require(info.totalStakedAmount == 0, "StakePool: totalStakedAmount");
 
-        if (info.launchPaused) {
+        if (paused) {
             _pause();
         }
 
@@ -278,7 +280,7 @@ contract StakingPool is
         external
         atLeastDaoAdminRole(_stakingPoolInfo.daoId)
     {
-        _stakingPoolInfo.emergencyMode = true;
+        _emergencyMode = true;
         emit EmergencyMode(_msgSender());
     }
 
@@ -306,7 +308,7 @@ contract StakingPool is
     function stakingPoolData()
         external
         view
-        returns (StakingPoolLib.Data memory)
+        returns (StakingPoolLib.Config memory)
     {
         return _stakingPoolInfo;
     }
@@ -317,7 +319,7 @@ contract StakingPool is
         returns (uint256[] memory)
     {
         User memory _user = _users[user];
-        StakingPoolLib.Data memory _info = _stakingPoolInfo;
+        StakingPoolLib.Config memory _info = _stakingPoolInfo;
 
         uint256[] memory rewards = new uint256[](_info.rewardTokens.length);
 
@@ -329,7 +331,7 @@ contract StakingPool is
                 } else {
                     // user has not withdraw stake yet
                     rewards[i] = _calculateFloatingReward(
-                        _info.ratios[i],
+                        _info.rewardTokens[i].ratio,
                         _user.depositAmount
                     );
                 }
@@ -385,7 +387,7 @@ contract StakingPool is
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
         delete _users[_msgSender()];
-        StakingPoolLib.Data memory _info = _stakingPoolInfo;
+        StakingPoolLib.Config memory _info = _stakingPoolInfo;
         _transferStake(uint256((user.depositAmount)), IERC20(_info.stakeToken));
     }
 
@@ -394,7 +396,7 @@ contract StakingPool is
         //slither-disable-next-line timestamp
         require(timestamp > block.timestamp, "StakePool: future rewards");
 
-        _stakingPoolInfo.rewardsAvailableTimestamp = timestamp;
+        _rewardsAvailableTimestamp = timestamp;
         emit RewardsAvailableTimestamp(timestamp);
     }
 
@@ -423,7 +425,7 @@ contract StakingPool is
 
     function _isRewardsAvailable() internal view returns (bool) {
         //slither-disable-next-line timestamp
-        return block.timestamp >= _stakingPoolInfo.rewardsAvailableTimestamp;
+        return block.timestamp >= _rewardsAvailableTimestamp;
     }
 
     function _isStakingPeriodComplete() internal view returns (bool) {
@@ -453,22 +455,24 @@ contract StakingPool is
         require(token.transfer(_msgSender(), amount), "StakingPool: tx failed");
     }
 
-    function _updateRewardsRatios(StakingPoolLib.Data storage _info) private {
+    function _updateRewardsRatios(StakingPoolLib.Config storage _info) private {
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
-            _info.ratios[i] = _computeFloatingRewardsPerShare(
+            _info.rewardTokens[i].ratio = _computeFloatingRewardsPerShare(
                 _info.rewardTokens[i].maxAmount,
-                _info.totalStakedAmount
+                _totalStakedAmount
             );
         }
     }
 
     function _calculateFixedRewards(
-        StakingPoolLib.Data memory _info,
+        StakingPoolLib.Config memory _info,
         User storage user,
         uint256 amount
     ) private {
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
-            user.rewardAmounts[i] += uint128((amount * _info.ratios[i]));
+            user.rewardAmounts[i] += uint128(
+                (amount * _info.rewardTokens[i].ratio)
+            );
         }
     }
 

@@ -2,7 +2,6 @@ import {BigNumber, Event} from 'ethers'
 import {StakingPoolCreatedEvent} from '../../../typechain-types/contracts/staking/StakingPoolFactory'
 import {expect} from 'chai'
 import {RewardType} from './staking-events'
-import {isAddress} from 'ethers/lib/utils'
 
 type RewardToken = {
     tokens: string

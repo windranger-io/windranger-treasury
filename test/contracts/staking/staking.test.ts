@@ -6,11 +6,11 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {StakingPool, ERC20PresetMinterPauser} from '../typechain-types'
-import {deployContract, signer} from './framework/contracts'
+import {StakingPool, ERC20PresetMinterPauser} from '../../../typechain-types'
+import {deployContract, signer} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {successfulTransaction} from './framework/transaction'
-import {getTimestampNow, increaseTime} from './framework/time'
+import {successfulTransaction} from '../../framework/transaction'
+import {getTimestampNow, increaseTime} from '../../framework/time'
 import {BigNumber, ContractReceipt} from 'ethers'
 
 import {
@@ -18,8 +18,8 @@ import {
     verifyInitializeRewardsEvent,
     verifyWithdrawEvent,
     verifyWithdrawRewardsEvent
-} from './contracts/staking/verify-staking-events'
-import {RewardType} from './contracts/staking/staking-events'
+} from './verify-staking-events'
+import {RewardType} from './staking-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -32,6 +32,7 @@ const REWARD_TOKEN_1_AMOUNT = 4000
 
 describe('Staking Pool Tests', () => {
     describe('Initialization', () => {
+        const ratio = 0
         const amount = BigNumber.from(9090)
         before(async () => {
             rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
@@ -65,17 +66,14 @@ describe('Staking Pool Tests', () => {
                     epochStartTimestamp +
                     EPOCH_DURATION,
                 emergencyMode: false,
-                launchPaused: true,
                 treasury: admin,
-                totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FLOATING,
-                rewardTokens: [],
-                ratios: []
+                rewardTokens: []
             }
 
             stakingPool = await deployContract('StakingPool')
-            await stakingPool.initialize(stakingPoolInfo)
+            await stakingPool.initialize(stakingPoolInfo, true)
 
             await expect(
                 userDeposit(user, BigNumber.from(20))
@@ -91,7 +89,8 @@ describe('Staking Pool Tests', () => {
                 stakingPool.initializeRewardTokens(admin, [
                     {
                         tokens: rewardToken1.address,
-                        maxAmount: amount
+                        maxAmount: amount,
+                        ratio: 0
                     }
                 ])
             ).to.be.revertedWith('StakingPool: invalid allowance')
@@ -100,7 +99,7 @@ describe('Staking Pool Tests', () => {
             await rewardToken1.mint(admin, amount)
             verifyInitializeRewardsEvent(
                 {rewardTokens: rewardToken1.address, amount},
-                await initializeRewards(rewardToken1, admin, amount)
+                await initializeRewards(rewardToken1, admin, amount, ratio)
             )
         })
     })
@@ -130,17 +129,14 @@ describe('Staking Pool Tests', () => {
                     epochStartTimestamp +
                     EPOCH_DURATION,
                 emergencyMode: false,
-                launchPaused: false,
                 treasury: admin,
-                totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FLOATING,
-                rewardTokens: [],
-                ratios: []
+                rewardTokens: []
             }
 
             stakingPool = await deployContract('StakingPool')
-            await stakingPool.initialize(stakingPoolInfo)
+            await stakingPool.initialize(stakingPoolInfo, false)
         })
 
         describe('deposit', () => {
@@ -229,17 +225,14 @@ describe('Staking Pool Tests', () => {
                         epochStartTimestamp +
                         EPOCH_DURATION,
                     emergencyMode: false,
-                    launchPaused: false,
                     treasury: admin,
-                    totalStakedAmount: 0,
                     stakeToken: stakeTokens.address,
                     rewardType: RewardType.FLOATING,
-                    rewardTokens: [],
-                    ratios: []
+                    rewardTokens: []
                 }
 
                 stakingPool = await deployContract('StakingPool')
-                await stakingPool.initialize(stakingPoolInfo)
+                await stakingPool.initialize(stakingPoolInfo, false)
             })
 
             const amount = BigNumber.from(20)
@@ -291,22 +284,20 @@ describe('Staking Pool Tests', () => {
                     epochStartTimestamp,
                     rewardsAvailableTimestamp,
                     emergencyMode: false,
-                    launchPaused: false,
                     treasury: admin,
-                    totalStakedAmount: 0,
                     stakeToken: stakeTokens.address,
                     rewardType: RewardType.FLOATING,
                     rewardTokens: [
                         {
                             tokens: rewardToken1.address,
-                            maxAmount: REWARD_TOKEN_1_AMOUNT
+                            maxAmount: REWARD_TOKEN_1_AMOUNT,
+                            ratio: 0
                         }
-                    ],
-                    ratios: [0]
+                    ]
                 }
 
                 stakingPool = await deployContract('StakingPool')
-                await stakingPool.initialize(stakingPoolInfo)
+                await stakingPool.initialize(stakingPoolInfo, false)
                 await rewardToken1.mint(
                     stakingPool.address,
                     REWARD_TOKEN_1_AMOUNT
@@ -442,24 +433,21 @@ describe('Staking Pool Tests', () => {
                     REWARDS_AVAILABLE_OFFSET +
                     epochStartTimestamp +
                     EPOCH_DURATION,
-                launchPaused: false,
                 emergencyMode: false,
-
                 treasury: admin,
-                totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FIXED,
                 rewardTokens: [
                     {
                         tokens: rewardToken1.address,
-                        maxAmount: 2000
+                        maxAmount: 2000,
+                        ratio: rewardAmountRatio
                     }
-                ],
-                ratios: [rewardAmountRatio]
+                ]
             }
 
             stakingPool = await deployContract('StakingPool')
-            await stakingPool.initialize(stakingPoolInfo)
+            await stakingPool.initialize(stakingPoolInfo, false)
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })
         describe('withdraw stake', () => {
@@ -539,23 +527,21 @@ describe('Staking Pool Tests', () => {
                 epochStartTimestamp,
                 rewardsAvailableTimestamp,
                 emergencyMode: false,
-                launchPaused: false,
                 treasury: admin,
-                totalStakedAmount: 0,
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FLOATING,
                 rewardTokens: [
                     {
                         tokens: rewardToken1.address,
-                        maxAmount: 2000
+                        maxAmount: 2000,
+                        ratio: 0
                     }
-                ],
-                ratios: []
+                ]
             }
 
             stakingPool = await deployContract('StakingPool')
 
-            await stakingPool.initialize(stakingPoolInfo)
+            await stakingPool.initialize(stakingPoolInfo, false)
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })
         describe('only dao admin', () => {
@@ -634,7 +620,8 @@ describe('Staking Pool Tests', () => {
     async function initializeRewards(
         rewardToken: ERC20PresetMinterPauser,
         treasury: string,
-        amount: BigNumber
+        amount: BigNumber,
+        ratio: number
     ): Promise<ContractReceipt> {
         await rewardToken.increaseAllowance(stakingPool.address, amount)
 
@@ -642,7 +629,8 @@ describe('Staking Pool Tests', () => {
             stakingPool.initializeRewardTokens(treasury, [
                 {
                     tokens: rewardToken.address,
-                    maxAmount: amount
+                    maxAmount: amount,
+                    ratio
                 }
             ])
         )
