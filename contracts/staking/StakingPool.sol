@@ -380,7 +380,7 @@ contract StakingPool is
     }
 
     function _initializeRewardTokens(
-        address treasury,
+        address benefactor,
         StakingPoolLib.Reward[] calldata _rewardTokens
     ) internal {
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
@@ -389,14 +389,14 @@ contract StakingPool is
             emit InitializeRewards(address(tokens), _rewardTokens[i].maxAmount);
 
             require(
-                tokens.allowance(treasury, address(this)) >=
+                tokens.allowance(benefactor, address(this)) >=
                     _rewardTokens[i].maxAmount,
                 "StakingPool: invalid allowance"
             );
 
             require(
                 tokens.transferFrom(
-                    treasury,
+                    benefactor,
                     address(this),
                     _rewardTokens[i].maxAmount
                 ),
