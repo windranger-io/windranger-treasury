@@ -24,9 +24,9 @@ import {RewardType} from './staking-events'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-const EPOCH_DURATION = 60
-const START_DELAY = 15
-const REWARDS_AVAILABLE_OFFSET = 20
+const EPOCH_DURATION = 60 // time the lockup lasts
+const START_DELAY = 15 // offset time in seconds before the lockup period starts
+const REWARDS_AVAILABLE_OFFSET = 20 // time after the end of the lockup the rewards are available
 const MIN_POOL_STAKE = 500
 const REWARD_TOKEN_1_AMOUNT = 4000
 
@@ -71,6 +71,7 @@ describe('Staking Pool Tests', () => {
             }
 
             stakingPool = await deployContract('StakingPool')
+
             await stakingPool.initialize(
                 stakingPoolInfo,
                 true,
@@ -81,7 +82,6 @@ describe('Staking Pool Tests', () => {
                 userDeposit(user, BigNumber.from(20))
             ).to.be.revertedWith('Pausable: paused')
 
-            await increaseTime(START_DELAY)
             await stakingPool.unpause()
 
             expect(await userDeposit(user, BigNumber.from(5)))
@@ -106,7 +106,7 @@ describe('Staking Pool Tests', () => {
         })
     })
 
-    describe('Floating Staking Pool', () => {
+    describe.only('Floating Staking Pool', () => {
         before(async () => {
             admin = (await signer(0)).address
             user = await signer(1)
@@ -144,10 +144,16 @@ describe('Staking Pool Tests', () => {
         describe('deposit', () => {
             const depositAmount = BigNumber.from(20)
 
-            it('does not allow user to deposit when stakingPeriodNotStarted', async () => {
-                await expect(
-                    userDeposit(user, depositAmount)
-                ).to.be.revertedWith('StakingPool: too early')
+            it('allows user to deposit', async () => {
+                const depositReceipt = await userDeposit(user, depositAmount)
+                verifyDepositEvent(
+                    {depositAmount, user: user.address},
+                    depositReceipt
+                )
+            })
+
+            it('allows user to deposit again', async () => {
+                await userDeposit(user, depositAmount)
             })
 
             it('does not allow user to deposit when staking pool full', async () => {
@@ -164,16 +170,11 @@ describe('Staking Pool Tests', () => {
                 ).to.be.revertedWith('StakingPool: min contribution')
             })
 
-            it('allows user to deposit', async () => {
-                const depositReceipt = await userDeposit(user, depositAmount)
-                verifyDepositEvent(
-                    {depositAmount, user: user.address},
-                    depositReceipt
-                )
-            })
-
-            it('allows user to deposit again', async () => {
-                await userDeposit(user, depositAmount)
+            it('does not allow user to deposit when lockup has started', async () => {
+                await increaseTime(START_DELAY)
+                await expect(
+                    userDeposit(user, depositAmount)
+                ).to.be.revertedWith('StakingPool: too late')
             })
         })
         describe('withdraw', () => {
@@ -193,18 +194,17 @@ describe('Staking Pool Tests', () => {
             })
 
             it('allows a user to withdraw', async () => {
-                await userDeposit(user2, amount)
                 await increaseTime(EPOCH_DURATION)
                 expect(await stakingPool.isRedeemable()).to.be.true
                 expect(await stakingPool.isRewardsAvailable()).to.be.true
                 verifyWithdrawEvent(
-                    {user: user2.address, stake: amount},
-                    await userWithdraw(user2)
+                    {user: user.address, stake: amount.mul(2)},
+                    await userWithdraw(user)
                 )
             })
 
             it('doesnt allow a user to withdraw twice', async () => {
-                await expect(userWithdraw(user2)).to.be.revertedWith(
+                await expect(userWithdraw(user)).to.be.revertedWith(
                     'StakingPool: not eligible'
                 )
             })
@@ -212,6 +212,8 @@ describe('Staking Pool Tests', () => {
 
         describe('withdraw without rewards', () => {
             let epochStartTimestamp: number
+            const amount = BigNumber.from(20)
+
             beforeEach(async () => {
                 epochStartTimestamp = (await getTimestampNow()) + START_DELAY
                 const rewardsAvailableTimestamp =
@@ -225,8 +227,6 @@ describe('Staking Pool Tests', () => {
                     minimumContribution: 5,
                     epochDuration: EPOCH_DURATION,
                     epochStartTimestamp,
-
-                    emergencyMode: false,
                     treasury: admin,
                     stakeToken: stakeTokens.address,
                     rewardType: RewardType.FLOATING,
@@ -241,21 +241,16 @@ describe('Staking Pool Tests', () => {
                 )
             })
 
-            const amount = BigNumber.from(20)
-
-            it('cannot withdraw without rewards if staking pool requirements are unmet', async () => {
-                await increaseTime(START_DELAY)
+            it('can withdraw without rewards if staking pool requirements are unmet', async () => {
                 await userDeposit(user, amount)
-
                 await increaseTime(
                     epochStartTimestamp - (await getTimestampNow())
                 )
                 await userWithdrawWithoutRewards(user)
             })
 
-            it('can withdraw without rewards if staking pool requirements are unmet', async () => {
-                await increaseTime(START_DELAY)
-                await userDeposit(user, BigNumber.from(MIN_POOL_STAKE))
+            it('cannot withdraw without rewards if staking pool requirements are unmet', async () => {
+                await userDeposit(user, amount)
                 await expect(
                     userWithdrawWithoutRewards(user)
                 ).to.be.revertedWith('StakingPool: requirements unmet')
@@ -264,6 +259,8 @@ describe('Staking Pool Tests', () => {
         describe('withdraw stake', () => {
             let epochStartTimestamp: BigNumber
             let rewardsAvailableTimestamp: BigNumber
+            const amount = BigNumber.from(20)
+
             beforeEach(async () => {
                 epochStartTimestamp = BigNumber.from(
                     await getTimestampNow()
@@ -288,8 +285,6 @@ describe('Staking Pool Tests', () => {
                     minimumContribution: 5,
                     epochDuration: EPOCH_DURATION,
                     epochStartTimestamp,
-
-                    emergencyMode: false,
                     treasury: admin,
                     stakeToken: stakeTokens.address,
                     rewardType: RewardType.FLOATING,
@@ -314,47 +309,35 @@ describe('Staking Pool Tests', () => {
                 )
             })
 
-            const amount = BigNumber.from(20)
             it('cannot withdraw stake before staking period ends', async () => {
-                await increaseTime(START_DELAY)
-
                 await userDeposit(user, amount)
-
                 await expect(userWithdrawStake(user)).to.be.revertedWith(
                     'StakingPool: still stake period'
                 )
             })
 
             it('can withdraw stake after staking period', async () => {
-                await increaseTime(START_DELAY)
-
                 await userDeposit(user, amount)
-                await increaseTime(EPOCH_DURATION)
+                await increaseTime(EPOCH_DURATION + START_DELAY)
                 await userWithdrawStake(user)
             })
 
             it('cannot withdraw both stake and rewards after withdrawing stake', async () => {
-                await increaseTime(START_DELAY)
-
                 await userDeposit(user, amount)
 
-                await increaseTime(EPOCH_DURATION)
+                await increaseTime(EPOCH_DURATION + START_DELAY)
                 await userWithdrawStake(user)
 
-                // increase time to rewards release
-                await increaseTime(REWARDS_AVAILABLE_OFFSET)
+                await increaseTime(REWARDS_AVAILABLE_OFFSET) // increase time to rewards release
                 await expect(userWithdraw(user)).to.be.revertedWith(
                     'StakingPool: not eligible'
                 )
             })
 
             it('can withdraw rewards after withdrawing stake', async () => {
-                await increaseTime(START_DELAY)
-
                 await userDeposit(user, amount)
 
-                // increase past staking period
-                await increaseTime(EPOCH_DURATION)
+                await increaseTime(EPOCH_DURATION + START_DELAY) // increase past staking period
 
                 await userWithdrawStake(user)
                 await increaseTime(REWARDS_AVAILABLE_OFFSET)
@@ -370,7 +353,6 @@ describe('Staking Pool Tests', () => {
             })
 
             it('2 users split rewards', async () => {
-                await increaseTime(START_DELAY)
                 const splitRewards = BigNumber.from(REWARD_TOKEN_1_AMOUNT).div(
                     2
                 )
@@ -384,7 +366,7 @@ describe('Staking Pool Tests', () => {
                 await userDeposit(user2, amount)
 
                 // increase past staking period
-                await increaseTime(EPOCH_DURATION)
+                await increaseTime(EPOCH_DURATION + START_DELAY)
 
                 await userWithdrawStake(user)
                 await userWithdrawStake(user2)
@@ -440,8 +422,6 @@ describe('Staking Pool Tests', () => {
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-
-                emergencyMode: false,
                 treasury: admin,
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FIXED,
@@ -465,7 +445,6 @@ describe('Staking Pool Tests', () => {
         describe('withdraw stake', () => {
             const amount = BigNumber.from(80)
             it('2 users get the same reward', async () => {
-                await increaseTime(START_DELAY)
                 await userDeposit(user, amount)
                 await userDeposit(user2, amount)
 

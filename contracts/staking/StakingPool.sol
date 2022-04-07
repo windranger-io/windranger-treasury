@@ -66,15 +66,6 @@ contract StakingPool is
         _;
     }
 
-    modifier stakingPeriodNotStarted() {
-        //slither-disable-next-line timestamp
-        require(
-            block.timestamp >= _stakingPoolInfo.epochStartTimestamp,
-            "StakingPool: too early"
-        );
-        _;
-    }
-
     function pause()
         external
         whenNotPaused
@@ -96,23 +87,23 @@ contract StakingPool is
      *
      * @param amount Amount of stake tokens to deposit
      */
-    function deposit(uint256 amount)
-        external
-        whenNotPaused
-        stakingPeriodNotStarted
-        nonReentrant
-    {
+    function deposit(uint256 amount) external whenNotPaused nonReentrant {
+        StakingPoolLib.Config storage _info = _stakingPoolInfo;
+
         require(
-            amount >= _stakingPoolInfo.minimumContribution,
+            amount >= _info.minimumContribution,
             "StakingPool: min contribution"
         );
         require(
-            _totalStakedAmount + amount < _stakingPoolInfo.maxTotalPoolStake,
+            _totalStakedAmount + amount < _info.maxTotalPoolStake,
             "StakingPool: pool full"
+        );
+        require(
+            block.timestamp < _info.epochStartTimestamp,
+            "StakingPool: too late"
         );
 
         User storage user = _users[_msgSender()];
-        StakingPoolLib.Config storage _info = _stakingPoolInfo;
 
         user.depositAmount += uint128(amount);
         _totalStakedAmount += uint128(amount);
@@ -128,7 +119,7 @@ contract StakingPool is
 
         require(
             _info.stakeToken.transferFrom(_msgSender(), address(this), amount),
-            "StakingPool: failed to transfer"
+            "StakingPool: deposit tx fail"
         );
     }
 
@@ -172,7 +163,7 @@ contract StakingPool is
     }
 
     /**
-     * @notice Withdraw only stake tokens. Reward tokens may not be available/unlocked yet.
+     * @notice Withdraw only stake tokens after staking period is complete. Reward tokens may not be available yet.
      */
     function withdrawStake()
         external
@@ -188,8 +179,6 @@ contract StakingPool is
 
         StakingPoolLib.Config storage _info = _stakingPoolInfo;
 
-        // calculate the amount of rewards the user is due for the floating pool type
-        // fixed amounts are calculated and fixed on depositing
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
                 user.rewardAmounts[i] = _calculateFloatingReward(
@@ -222,7 +211,9 @@ contract StakingPool is
         }
     }
 
-    // withdraw when the pool is not going ahead (earlyWithdraw)
+    /**
+     * @notice Withdraw stake tokens when minimum pool conditions to begin are not met
+     */
     function withdrawWithoutRewards()
         external
         stakingPoolRequirementsUnmet
@@ -280,10 +271,10 @@ contract StakingPool is
     }
 
     function initializeRewardTokens(
-        address treasury,
+        address benefactor,
         StakingPoolLib.Reward[] calldata rewards
     ) external atLeastDaoMeepleRole(_stakingPoolInfo.daoId) {
-        _initializeRewardTokens(treasury, rewards);
+        _initializeRewardTokens(benefactor, rewards);
     }
 
     function enableEmergencyMode()
@@ -335,14 +326,6 @@ contract StakingPool is
         }
     }
 
-    function stakingPoolData()
-        external
-        view
-        returns (StakingPoolLib.Config memory)
-    {
-        return _stakingPoolInfo;
-    }
-
     function currentExpectedReward(address user)
         external
         view
@@ -371,6 +354,14 @@ contract StakingPool is
             }
         }
         return rewards;
+    }
+
+    function stakingPoolData()
+        external
+        view
+        returns (StakingPoolLib.Config memory)
+    {
+        return _stakingPoolInfo;
     }
 
     function rewardsAvailableTimestamp() external view returns (uint32) {
@@ -497,6 +488,9 @@ contract StakingPool is
         require(token.transfer(_msgSender(), amount), "StakingPool: tx failed");
     }
 
+    /**
+     * @notice Updates the global reward ratios for each reward token in a floating reward pool
+     */
     function _updateRewardsRatios(StakingPoolLib.Config storage _info) private {
         for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
             _info.rewardTokens[i].ratio = _computeFloatingRewardsPerShare(
@@ -506,6 +500,9 @@ contract StakingPool is
         }
     }
 
+    /**
+     * @notice Calculates and sets the users reward amount for a fixed reward pool
+     */
     function _calculateFixedRewards(
         StakingPoolLib.Config memory _info,
         User storage user,
@@ -518,6 +515,9 @@ contract StakingPool is
         }
     }
 
+    /**
+     * @notice Enforces that each of the reward tokens are unique
+     */
     function _enforceUniqueRewardTokens(
         StakingPoolLib.Reward[] calldata rewardPools
     ) private pure {

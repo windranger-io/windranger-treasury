@@ -12,7 +12,7 @@ library StakingPoolLib {
     struct Reward {
         address tokens;
         uint256 maxAmount;
-        uint256 ratio; // only floating
+        uint256 ratio; // only initialized for fixed
     }
 
     struct Config {

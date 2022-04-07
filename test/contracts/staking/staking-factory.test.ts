@@ -39,10 +39,7 @@ export type StakingPoolLibData = {
     maxTotalPoolStake: number
 }
 
-describe('Staking Pool FactoryTests', () => {
-    let stakingPoolInfo: StakingPoolLibData
-    let epochStartTimestamp: BigNumber
-    let rewardsAvailableTimestamp: BigNumber
+describe('Staking Pool Factory', () => {
     before(async () => {
         admin = (await signer(0)).address
         const symbol = 'EEK'
@@ -110,11 +107,6 @@ describe('Staking Pool FactoryTests', () => {
         })
 
         it('create fixed pool', async () => {
-            /*
-             * const epochStartTimestamp = BigNumber.from(
-             *     (await getTimestampNow()) + START_DELAY
-             * )
-             */
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FIXED,
@@ -148,7 +140,9 @@ describe('Staking Pool FactoryTests', () => {
             )
         })
     })
-
+    let stakingPoolInfo: StakingPoolLibData
+    let epochStartTimestamp: BigNumber
+    let rewardsAvailableTimestamp: BigNumber
     let admin: string
     let stakingPoolFactory: StakingPoolFactory
     let stakeTokens: ERC20PresetMinterPauser
