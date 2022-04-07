@@ -138,6 +138,7 @@ contract StakingPool is
      */
     function withdraw()
         external
+        whenNotPaused
         stakingPeriodComplete
         rewardsAvailable
         nonReentrant
@@ -174,7 +175,12 @@ contract StakingPool is
     /**
      * @notice Withdraw only stake tokens. Reward tokens may not be available/unlocked yet.
      */
-    function withdrawStake() external stakingPeriodComplete nonReentrant {
+    function withdrawStake()
+        external
+        stakingPeriodComplete
+        nonReentrant
+        whenNotPaused
+    {
         User storage user = _users[_msgSender()];
         require(user.depositAmount > 0, "StakingPool: not eligible");
 
@@ -200,7 +206,12 @@ contract StakingPool is
     /**
      * @notice Withdraw only reward tokens. Stake may have already been withdrawn.
      */
-    function withdrawRewards() external stakingPeriodComplete rewardsAvailable {
+    function withdrawRewards()
+        external
+        stakingPeriodComplete
+        rewardsAvailable
+        whenNotPaused
+    {
         User memory user = _users[_msgSender()];
         delete _users[_msgSender()];
 
@@ -213,7 +224,11 @@ contract StakingPool is
     }
 
     // withdraw when the pool is not going ahead (earlyWithdraw)
-    function withdrawWithoutRewards() external stakingPoolRequirementsUnmet {
+    function withdrawWithoutRewards()
+        external
+        stakingPoolRequirementsUnmet
+        whenNotPaused
+    {
         _withdrawWithoutRewards();
     }
 
@@ -273,20 +288,14 @@ contract StakingPool is
         _initializeRewardTokens(treasury, rewards);
     }
 
-    function adminEmergencyRewardSweep()
-        external
-        atLeastDaoAdminRole(_stakingPoolInfo.daoId)
-        emergencyModeEnabled
-    {
-        _adminEmergencyRewardSweep();
-    }
-
     function enableEmergencyMode()
         external
         atLeastDaoAdminRole(_stakingPoolInfo.daoId)
     {
         _emergencyMode = true;
         emit EmergencyMode(_msgSender());
+
+        _adminEmergencyRewardSweep();
     }
 
     function setRewardsAvailableTimestamp(uint32 timestamp)
@@ -364,6 +373,18 @@ contract StakingPool is
             }
         }
         return rewards;
+    }
+
+    function rewardsAvailableTimestamp() external view returns (uint32) {
+        return _rewardsAvailableTimestamp;
+    }
+
+    function emergencyMode() external view returns (bool) {
+        return _emergencyMode;
+    }
+
+    function totalStakedAmount() external view returns (uint128) {
+        return _totalStakedAmount;
     }
 
     function isRedeemable() external view returns (bool) {

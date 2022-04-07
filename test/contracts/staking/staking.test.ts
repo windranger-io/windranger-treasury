@@ -587,14 +587,8 @@ describe('Staking Pool Tests', () => {
                     )
                 ).to.be.revertedWith('StakePool: already finalized')
             })
-            it('cannot emergency reward sweep when not enabled', async () => {
-                await expect(
-                    stakingPool.adminEmergencyRewardSweep()
-                ).to.be.revertedWith('StakingPool: not emergency mode')
-            })
             it('can emergency reward sweep when enabled', async () => {
                 await stakingPool.enableEmergencyMode()
-                await stakingPool.adminEmergencyRewardSweep()
             })
         })
     })
