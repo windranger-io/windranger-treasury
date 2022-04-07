@@ -9,7 +9,6 @@ import "../RoleAccessControl.sol";
 import "./StakingPoolLib.sol";
 
 contract StakingPool is
-    Initializable,
     RoleAccessControl,
     ReentrancyGuard,
     PausableUpgradeable
@@ -235,7 +234,7 @@ contract StakingPool is
     function initialize(
         StakingPoolLib.Config calldata info,
         bool paused,
-        uint32 rewardsAvailableTimestamp
+        uint32 rewardsTimestamp
     ) external virtual initializer {
         __RoleAccessControl_init();
         __Context_init_unchained();
@@ -260,8 +259,7 @@ contract StakingPool is
         );
         //slither-disable-next-line timestamp
         require(
-            rewardsAvailableTimestamp >
-                info.epochStartTimestamp + info.epochDuration,
+            rewardsTimestamp > info.epochStartTimestamp + info.epochDuration,
             "StakingPool: init rewards"
         );
         require(info.treasury != address(0), "StakePool: nonzero treasury"); // TODO: are we checking if the treasury is whitelisted to that daoId
@@ -273,7 +271,7 @@ contract StakingPool is
             _pause();
         }
 
-        _rewardsAvailableTimestamp = rewardsAvailableTimestamp;
+        _rewardsAvailableTimestamp = rewardsTimestamp;
         _stakingPoolInfo = info;
     }
 
@@ -489,9 +487,9 @@ contract StakingPool is
 
     function _computeFloatingRewardsPerShare(
         uint256 availableTokenRewards,
-        uint256 totalStakedAmount
+        uint256 total
     ) internal pure returns (uint256) {
-        return (availableTokenRewards * 1 ether) / totalStakedAmount;
+        return (availableTokenRewards * 1 ether) / total;
     }
 
     function _transferToken(uint256 amount, IERC20 token) private {

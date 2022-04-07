@@ -106,7 +106,7 @@ describe('Staking Pool Tests', () => {
         })
     })
 
-    describe('Floating Staking Tests', () => {
+    describe('Floating Staking Pool', () => {
         before(async () => {
             admin = (await signer(0)).address
             user = await signer(1)
@@ -127,8 +127,6 @@ describe('Staking Pool Tests', () => {
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-
-                emergencyMode: false,
                 treasury: admin,
                 stakeToken: stakeTokens.address,
                 rewardType: RewardType.FLOATING,
