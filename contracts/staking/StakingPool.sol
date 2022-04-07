@@ -18,6 +18,10 @@ contract StakingPool is
         uint128 depositAmount;
         uint128[5] rewardAmounts;
     }
+    struct RewardDue {
+        address token;
+        uint128 amount;
+    }
 
     mapping(address => User) private _users;
 
@@ -292,19 +296,37 @@ contract StakingPool is
         _setRewardsAvailableTimestamp(timestamp);
     }
 
-    //        function currentRewards(address user) external view returns (Reward[] memory){
-    //            User memory _user = _users[_msgSender()];
-    //
-    //
-    //            // iterate over users rewardAmounts and return if non zero?
-    //            for(uint256 i = 0; i <_user.rewardAmounts.length; i++){
-    //                // push reward amount
-    //                // if floating
-    //                // if fixed
-    //            }
-    //
-    //
-    //        }
+    /**
+     * @notice Returns the final amount of reward due for a user
+     *
+     * @param user address to calculate rewards for
+     */
+    function currentRewards(address user)
+        external
+        view
+        returns (RewardDue[] memory rewards)
+    {
+        User memory _user = _users[user];
+        StakingPoolLib.Config memory _info = _stakingPoolInfo;
+
+        for (uint256 i = 0; i < _user.rewardAmounts.length; i++) {
+            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
+                rewards[i] = RewardDue({
+                    amount: _calculateFloatingReward(
+                        _info.rewardTokens[i].ratio,
+                        _user.depositAmount
+                    ),
+                    token: _info.rewardTokens[i].tokens
+                });
+            }
+            if (_info.rewardType == StakingPoolLib.RewardType.FIXED) {
+                rewards[i] = RewardDue({
+                    amount: _user.rewardAmounts[i],
+                    token: _info.rewardTokens[i].tokens
+                });
+            }
+        }
+    }
 
     function stakingPoolData()
         external
