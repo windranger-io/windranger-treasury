@@ -98,6 +98,7 @@ contract StakingPool is
             _totalStakedAmount + amount < _info.maxTotalPoolStake,
             "StakingPool: pool full"
         );
+        //slither-disable-next-line timestamp
         require(
             block.timestamp < _info.epochStartTimestamp,
             "StakingPool: too late"
@@ -107,6 +108,7 @@ contract StakingPool is
 
         user.depositAmount += uint128(amount);
         _totalStakedAmount += uint128(amount);
+
         emit Deposit(_msgSender(), amount);
 
         // calculate/update rewards
@@ -158,7 +160,7 @@ contract StakingPool is
                 amount = uint256(user.rewardAmounts[i]);
             }
             //slither-disable-next-line calls-loop
-            _transferRewards(amount, IERC20(_info.rewardTokens[i].tokens));
+            _transferRewards(amount, IERC20(_info.rewardTokens[i].tokens)); // todo: add check for amount > 0?
         }
     }
 
@@ -200,14 +202,19 @@ contract StakingPool is
         rewardsAvailable
         whenNotPaused
     {
+        StakingPoolLib.Config memory _info = _stakingPoolInfo;
+
         User memory user = _users[_msgSender()];
         delete _users[_msgSender()];
 
-        StakingPoolLib.Reward[] memory rewards = _stakingPoolInfo.rewardTokens;
-
-        for (uint256 i = 0; i < rewards.length; i++) {
-            //slither-disable-next-line calls-loop
-            _transferRewards(user.rewardAmounts[i], IERC20(rewards[i].tokens));
+        for (uint256 i = 0; i < user.rewardAmounts.length; i++) {
+            if (user.rewardAmounts[i] > 0) {
+                //slither-disable-next-line calls-loop
+                _transferRewards(
+                    user.rewardAmounts[i],
+                    IERC20(_info.rewardTokens[i].tokens)
+                );
+            }
         }
     }
 
@@ -235,12 +242,6 @@ contract StakingPool is
         require(
             info.epochStartTimestamp >= block.timestamp,
             "StakingPool: start time"
-        );
-
-        require(
-            info.rewardType == StakingPoolLib.RewardType.FLOATING ||
-                info.rewardType == StakingPoolLib.RewardType.FIXED,
-            "StakingPool: reward type"
         );
 
         _enforceUniqueRewardTokens(info.rewardTokens);
@@ -294,37 +295,40 @@ contract StakingPool is
         _setRewardsAvailableTimestamp(timestamp);
     }
 
-    /**
-     * @notice Returns the final amount of reward due for a user
-     *
-     * @param user address to calculate rewards for
-     */
-    function currentRewards(address user)
-        external
-        view
-        returns (RewardDue[] memory rewards)
-    {
-        User memory _user = _users[user];
-        StakingPoolLib.Config memory _info = _stakingPoolInfo;
+    // /**
+    //  * @notice Returns the final amount of reward due for a user
+    //  *
+    //  * @param user address to calculate rewards for
+    //  */
+    // function currentRewards(address user)
+    //     public
+    //     view
+    //     returns (RewardDue[] memory)
+    // {
+    //     User memory _user = _users[user];
+    //     StakingPoolLib.Config memory _info = _stakingPoolInfo;
 
-        for (uint256 i = 0; i < _user.rewardAmounts.length; i++) {
-            if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
-                rewards[i] = RewardDue({
-                    amount: _calculateFloatingReward(
-                        _info.rewardTokens[i].ratio,
-                        _user.depositAmount
-                    ),
-                    token: _info.rewardTokens[i].tokens
-                });
-            }
-            if (_info.rewardType == StakingPoolLib.RewardType.FIXED) {
-                rewards[i] = RewardDue({
-                    amount: _user.rewardAmounts[i],
-                    token: _info.rewardTokens[i].tokens
-                });
-            }
-        }
-    }
+    //     RewardDue[] memory rewards = new RewardDue[](_info.rewardTokens.length);
+
+    //     for (uint256 i = 0; i < _info.rewardTokens.length; i++) {
+    //         if (_info.rewardType == StakingPoolLib.RewardType.FLOATING) {
+    //             rewards[i] = RewardDue({
+    //                 amount: _calculateFloatingReward(
+    //                     _info.rewardTokens[i].ratio,
+    //                     _user.depositAmount
+    //                 ),
+    //                 token: _info.rewardTokens[i].tokens
+    //             });
+    //         }
+    //         if (_info.rewardType == StakingPoolLib.RewardType.FIXED) {
+    //             rewards[i] = RewardDue({
+    //                 amount: _user.rewardAmounts[i],
+    //                 token: _info.rewardTokens[i].tokens
+    //             });
+    //         }
+    //     }
+    //     return rewards;
+    // }
 
     function currentExpectedReward(address user)
         external

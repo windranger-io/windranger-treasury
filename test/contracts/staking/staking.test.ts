@@ -106,7 +106,7 @@ describe('Staking Pool Tests', () => {
         })
     })
 
-    describe.only('Floating Staking Pool', () => {
+    describe('Floating Staking Pool', () => {
         before(async () => {
             admin = (await signer(0)).address
             user = await signer(1)
@@ -449,7 +449,7 @@ describe('Staking Pool Tests', () => {
                 await userDeposit(user2, amount)
 
                 // increase past staking period
-                await increaseTime(EPOCH_DURATION)
+                await increaseTime(EPOCH_DURATION + START_DELAY)
 
                 await userWithdrawStake(user)
                 await userWithdrawStake(user2)
@@ -481,7 +481,100 @@ describe('Staking Pool Tests', () => {
             })
         })
     })
+    describe('No rewards pool', () => {
+        const amount = BigNumber.from(50)
+        beforeEach(async () => {
+            admin = (await signer(0)).address
+            user = await signer(1)
+            user2 = await signer(2)
+            const symbol = 'EEK'
+            stakeTokens = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                symbol
+            )
+            const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+            const rewardsAvailableTimestamp =
+                REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
+            const stakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                treasury: admin,
+                stakeToken: stakeTokens.address,
+                rewardType: RewardType.NONE,
+                rewardTokens: []
+            }
 
+            stakingPool = await deployContract('StakingPool')
+
+            await stakingPool.initialize(
+                stakingPoolInfo,
+                false,
+                rewardsAvailableTimestamp
+            )
+        })
+        it('user can deposit and withdraw', async () => {
+            verifyDepositEvent(
+                {user: user.address, depositAmount: amount},
+                await userDeposit(user, amount)
+            )
+            // increase past staking period
+            await increaseTime(EPOCH_DURATION + START_DELAY)
+            await increaseTime(REWARDS_AVAILABLE_OFFSET)
+
+            verifyWithdrawEvent(
+                {
+                    user: user.address,
+                    stake: amount
+                },
+                await userWithdraw(user)
+            )
+        })
+
+        it('user can deposit and withdraw stake', async () => {
+            verifyDepositEvent(
+                {user: user.address, depositAmount: amount},
+                await userDeposit(user, amount)
+            )
+            // increase past staking period
+            await increaseTime(EPOCH_DURATION + START_DELAY)
+            await increaseTime(REWARDS_AVAILABLE_OFFSET)
+
+            verifyWithdrawEvent(
+                {
+                    user: user.address,
+                    stake: amount
+                },
+                await userWithdrawStake(user)
+            )
+        })
+
+        it('user cannot withdraw rewards', async () => {
+            verifyDepositEvent(
+                {user: user.address, depositAmount: amount},
+                await userDeposit(user, amount)
+            )
+            // increase past staking period
+            await increaseTime(EPOCH_DURATION + START_DELAY)
+            await increaseTime(REWARDS_AVAILABLE_OFFSET)
+
+            /*
+             * expect(
+             *     (await stakingPool.currentRewards(user.address)).length
+             * ).to.equal(0)
+             */
+
+            /*
+             * await expect(stakingPool.withdrawRewards()).to.be.revertedWith(
+             *     'StakingPool: tx failed'
+             * )
+             */
+        })
+    })
     describe('Common admin functions', () => {
         let epochStartTimestamp: BigNumber
         let rewardsAvailableTimestamp: BigNumber
