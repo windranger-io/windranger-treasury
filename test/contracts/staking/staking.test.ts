@@ -562,17 +562,7 @@ describe('Staking Pool Tests', () => {
             await increaseTime(EPOCH_DURATION + START_DELAY)
             await increaseTime(REWARDS_AVAILABLE_OFFSET)
 
-            /*
-             * expect(
-             *     (await stakingPool.currentRewards(user.address)).length
-             * ).to.equal(0)
-             */
-
-            /*
-             * await expect(stakingPool.withdrawRewards()).to.be.revertedWith(
-             *     'StakingPool: tx failed'
-             * )
-             */
+            await userWithdrawRewards(user) // how to assert no events emitted
         })
     })
     describe('Common admin functions', () => {
