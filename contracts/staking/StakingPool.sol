@@ -367,7 +367,7 @@ contract StakingPool is
      * @param user address to calculate rewards for
      */
     function currentRewards(address user)
-        public
+        external
         view
         returns (RewardDue[] memory)
     {
