@@ -1,11 +1,14 @@
 import {event} from '../../framework/events'
 import {expect} from 'chai'
-import {ContractReceipt} from 'ethers'
+import {BaseContract, ContractReceipt} from 'ethers'
 import {
     ActualStakingPoolCreatedEvent,
     ExpectedStakingPoolCreatedEvent,
-    stakingPoolCreated
+    stakingPoolCreated,
+    stakingPoolCreatedEventLogs
 } from './staking-factory-events'
+import {eventLog} from '../../framework/event-logs'
+import {verifyOrderedEvents} from '../../framework/verify'
 
 export function verifyStakingPoolCreated(
     expected: ExpectedStakingPoolCreatedEvent,
@@ -31,4 +34,36 @@ export function verifyStakingPoolCreated(
         expected.minimumContribution
     )
     expect(actualStakingPoolCreatedEvent.rewardType).equals(expected.rewardType)
+}
+
+/**
+ * Verifies the event log entries contain the expected Staking Pool created events.
+ */
+export function verifyStakingPoolCreatedLogEvents<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    stakingPool: ExpectedStakingPoolCreatedEvent[]
+): void {
+    const actualEvents = stakingPoolCreatedEventLogs(
+        eventLog('StakingPoolCreated', emitter, receipt)
+    )
+
+    verifyOrderedEvents(
+        actualEvents,
+        stakingPool,
+        (
+            actual: ActualStakingPoolCreatedEvent,
+            expected: ExpectedStakingPoolCreatedEvent
+        ) => deepEqualsStakingPoolCreatedEvent(actual, expected)
+    )
+}
+
+function deepEqualsStakingPoolCreatedEvent(
+    actual: ActualStakingPoolCreatedEvent,
+    expected: ExpectedStakingPoolCreatedEvent
+): boolean {
+    return (
+        actual.rewardType === expected.rewardType &&
+        actual.creator === expected.creator
+    )
 }

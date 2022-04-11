@@ -14,8 +14,11 @@ import {deployContract, signer} from '../../framework/contracts'
 import {getTimestampNow} from '../../framework/time'
 import {BigNumber} from 'ethers'
 
-import {RewardType} from './staking-events'
-import {verifyStakingPoolCreated} from './verify-staking-factory-events'
+import {RewardType} from '../../event/staking/staking-events'
+import {
+    verifyStakingPoolCreated,
+    verifyStakingPoolCreatedLogEvents
+} from '../../event/staking/verify-staking-factory-events'
 import {successfulTransaction} from '../../framework/transaction'
 
 // Wires up Waffle with Chai
@@ -91,6 +94,17 @@ describe('Staking Pool Factory', () => {
                         rewardsAvailableTimestamp
                     )
                 )
+            )
+            verifyStakingPoolCreatedLogEvents(
+                stakingPoolFactory,
+                await successfulTransaction(
+                    stakingPoolFactory.createStakingPool(
+                        stakingPoolInfo,
+                        false,
+                        rewardsAvailableTimestamp
+                    )
+                ),
+                [stakingPoolEvent]
             )
         })
 

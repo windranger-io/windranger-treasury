@@ -18,8 +18,8 @@ import {
     verifyInitializeRewardsEvent,
     verifyWithdrawEvent,
     verifyWithdrawRewardsEvent
-} from './verify-staking-events'
-import {RewardType} from './staking-events'
+} from '../../event/staking/verify-staking-events'
+import {RewardType} from '../../event/staking/staking-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -160,7 +160,7 @@ describe('Staking Pool Tests', () => {
                 await increaseTime(START_DELAY)
                 await expect(
                     userDeposit(user, BigNumber.from(1000))
-                ).to.be.revertedWith('StakingPool: pool full')
+                ).to.be.revertedWith('StakingPool: oversubscribed')
             })
 
             it('does not allow user to deposit when amount less than min contribution', async () => {

@@ -298,41 +298,6 @@ contract StakingPool is
         _setRewardsAvailableTimestamp(timestamp);
     }
 
-    // /**
-    //  * @notice Returns the final amount of reward due for a user
-    //  *
-    //  * @param user address to calculate rewards for
-    //  */
-    // function currentRewards(address user)
-    //     public
-    //     view
-    //     returns (RewardDue[] memory)
-    // {
-    //     User memory _user = _users[user];
-    //     StakingPoolLib.Config memory _config = _stakingPoolConfig;
-
-    //     RewardDue[] memory rewards = new RewardDue[](_config.rewardTokens.length);
-
-    //     for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
-    //         if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
-    //             rewards[i] = RewardDue({
-    //                 amount: _calculateFloatingReward(
-    //                     _config.rewardTokens[i].ratio,
-    //                     _user.depositAmount
-    //                 ),
-    //                 token: _config.rewardTokens[i].tokens
-    //             });
-    //         }
-    //         if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
-    //             rewards[i] = RewardDue({
-    //                 amount: _user.rewardAmounts[i],
-    //                 token: _config.rewardTokens[i].tokens
-    //             });
-    //         }
-    //     }
-    //     return rewards;
-    // }
-
     function currentExpectedReward(address user)
         external
         view
@@ -394,6 +359,43 @@ contract StakingPool is
 
     function isStakingPeriodComplete() external view returns (bool) {
         return _isStakingPeriodComplete();
+    }
+
+    /**
+     * @notice Returns the final amount of reward due for a user
+     *
+     * @param user address to calculate rewards for
+     */
+    function currentRewards(address user)
+        public
+        view
+        returns (RewardDue[] memory)
+    {
+        User memory _user = _users[user];
+        StakingPoolLib.Config memory _config = _stakingPoolConfig;
+
+        RewardDue[] memory rewards = new RewardDue[](
+            _config.rewardTokens.length
+        );
+
+        for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
+            if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
+                rewards[i] = RewardDue({
+                    amount: _calculateFloatingReward(
+                        _config.rewardTokens[i].ratio,
+                        _user.depositAmount
+                    ),
+                    token: _config.rewardTokens[i].tokens
+                });
+            }
+            if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
+                rewards[i] = RewardDue({
+                    amount: _user.rewardAmounts[i],
+                    token: _config.rewardTokens[i].tokens
+                });
+            }
+        }
+        return rewards;
     }
 
     function _initializeRewardTokens(
