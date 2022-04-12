@@ -1,6 +1,8 @@
 import {
+    ActualNoRewardsEvent,
     depositEvent,
     initializeRewardsEvent,
+    noRewardsEvent,
     withdrawEvent,
     withdrawRewardsEvent
 } from './staking-events'
@@ -46,6 +48,16 @@ export function verifyWithdrawEvent(
     )
     expect(actualWithdrawEvent.user).equals(expected.user)
     expect(actualWithdrawEvent.stake).equals(expected.stake)
+}
+
+export function verifyNoRewardsEvent(
+    expected: ActualNoRewardsEvent,
+    receipt: ContractReceipt
+) {
+    const noRewards: ActualNoRewardsEvent = noRewardsEvent(
+        event('NoRewards', receipt)
+    )
+    expect(noRewards.user).equals(expected.user)
 }
 
 export function verifyWithdrawRewardsEvent(

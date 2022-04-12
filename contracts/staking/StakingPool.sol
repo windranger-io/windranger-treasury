@@ -8,6 +8,15 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../RoleAccessControl.sol";
 import "./StakingPoolLib.sol";
 
+/**
+ * @title StakingPool with optional fixed or floating token rewards
+ *
+ * @notice Users can deposit a stake token into the pool up to the specified pool maximum contribution.
+ * If the minimum criteria for the pool to go ahead are met, stake tokens are locked for an epochDuration.
+ * After this period expires the user can withdraw their stake token and reward tokens (if available) separately.
+ * The amount of rewards is determined by the pools rewardType - a floating reward ratio is updated on each deposit
+ * while fixed tokens rewards are calculated once per user.
+ */
 contract StakingPool is
     RoleAccessControl,
     ReentrancyGuard,
@@ -18,7 +27,7 @@ contract StakingPool is
         uint128[5] rewardAmounts;
     }
     struct RewardDue {
-        address token;
+        address tokens;
         uint128 amount;
     }
 
@@ -40,6 +49,7 @@ contract StakingPool is
     event InitializeRewards(address rewardTokens, uint256 amount);
     event RewardsAvailableTimestamp(uint32 rewardsAvailableTimestamp);
     event EmergencyMode(address indexed admin);
+    event NoRewards(address indexed user);
 
     modifier rewardsAvailable() {
         require(_isRewardsAvailable(), "StakingPool: rewards too early");
@@ -162,8 +172,13 @@ contract StakingPool is
             if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
                 amount = uint256(user.rewardAmounts[i]);
             }
-            //slither-disable-next-line calls-loop
-            _transferRewards(amount, IERC20(_config.rewardTokens[i].tokens)); // todo: add check for amount > 0?
+            if (amount > 0) {
+                //slither-disable-next-line calls-loop
+                _transferRewards(
+                    amount,
+                    IERC20(_config.rewardTokens[i].tokens)
+                );
+            }
         }
     }
 
@@ -210,8 +225,11 @@ contract StakingPool is
         User memory user = _users[_msgSender()];
         delete _users[_msgSender()];
 
+        bool noRewards = true;
+
         for (uint256 i = 0; i < user.rewardAmounts.length; i++) {
             if (user.rewardAmounts[i] > 0) {
+                noRewards = false;
                 //slither-disable-next-line calls-loop
                 _transferRewards(
                     user.rewardAmounts[i],
@@ -219,16 +237,26 @@ contract StakingPool is
                 );
             }
         }
+        if (noRewards) {
+            emit NoRewards(_msgSender());
+        }
     }
 
     /**
      * @notice Withdraw stake tokens when minimum pool conditions to begin are not met
      */
-    function withdrawWithoutRewards()
+    function earlyWithdraw()
         external
         stakingPoolRequirementsUnmet
         whenNotPaused
     {
+        _withdrawWithoutRewards();
+    }
+
+    /**
+     * @notice Withdraw stake tokens when admin has enabled emergency mode
+     */
+    function emergencyWithdraw() external emergencyModeEnabled {
         _withdrawWithoutRewards();
     }
 
@@ -267,11 +295,9 @@ contract StakingPool is
         }
 
         _rewardsAvailableTimestamp = rewardsTimestamp;
-        _stakingPoolConfig = info;
-    }
+        emit RewardsAvailableTimestamp(rewardsTimestamp);
 
-    function emergencyWithdraw() external emergencyModeEnabled {
-        _withdrawWithoutRewards();
+        _stakingPoolConfig = info;
     }
 
     function initializeRewardTokens(
@@ -298,7 +324,7 @@ contract StakingPool is
         _setRewardsAvailableTimestamp(timestamp);
     }
 
-    function currentExpectedReward(address user)
+    function currentExpectedRewards(address user)
         external
         view
         returns (uint256[] memory)
@@ -385,13 +411,13 @@ contract StakingPool is
                         _config.rewardTokens[i].ratio,
                         _user.depositAmount
                     ),
-                    token: _config.rewardTokens[i].tokens
+                    tokens: _config.rewardTokens[i].tokens
                 });
             }
             if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
                 rewards[i] = RewardDue({
                     amount: _user.rewardAmounts[i],
-                    token: _config.rewardTokens[i].tokens
+                    tokens: _config.rewardTokens[i].tokens
                 });
             }
         }

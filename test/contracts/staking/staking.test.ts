@@ -16,6 +16,7 @@ import {BigNumber, ContractReceipt} from 'ethers'
 import {
     verifyDepositEvent,
     verifyInitializeRewardsEvent,
+    verifyNoRewardsEvent,
     verifyWithdrawEvent,
     verifyWithdrawRewardsEvent
 } from '../../event/staking/verify-staking-events'
@@ -360,7 +361,7 @@ describe('Staking Pool Tests', () => {
 
                 // 1 user would get 100pc of the rewards
                 expect(
-                    (await stakingPool.currentExpectedReward(user.address))[0]
+                    (await stakingPool.currentExpectedRewards(user.address))[0]
                 ).to.equal(REWARD_TOKEN_1_AMOUNT)
 
                 await userDeposit(user2, amount)
@@ -373,7 +374,7 @@ describe('Staking Pool Tests', () => {
                 await increaseTime(REWARDS_AVAILABLE_OFFSET)
 
                 expect(
-                    (await stakingPool.currentExpectedReward(user.address))[0]
+                    (await stakingPool.currentExpectedRewards(user.address))[0]
                 ).to.equal(splitRewards)
 
                 verifyWithdrawRewardsEvent(
@@ -456,10 +457,10 @@ describe('Staking Pool Tests', () => {
                 await increaseTime(REWARDS_AVAILABLE_OFFSET)
 
                 expect(
-                    (await stakingPool.currentExpectedReward(user.address))[0]
+                    (await stakingPool.currentExpectedRewards(user.address))[0]
                 ).to.equal(amount.mul(rewardAmountRatio))
                 expect(
-                    (await stakingPool.currentExpectedReward(user2.address))[0]
+                    (await stakingPool.currentExpectedRewards(user2.address))[0]
                 ).to.equal(amount.mul(rewardAmountRatio))
 
                 verifyWithdrawRewardsEvent(
@@ -562,7 +563,13 @@ describe('Staking Pool Tests', () => {
             await increaseTime(EPOCH_DURATION + START_DELAY)
             await increaseTime(REWARDS_AVAILABLE_OFFSET)
 
-            await userWithdrawRewards(user) // how to assert no events emitted
+            const currentExpectedRewards =
+                await stakingPool.currentExpectedRewards(user.address)
+            expect(currentExpectedRewards).to.be.length(0)
+            verifyNoRewardsEvent(
+                {user: user.address},
+                await userWithdrawRewards(user)
+            )
         })
     })
     describe('Common admin functions', () => {
@@ -684,9 +691,7 @@ describe('Staking Pool Tests', () => {
     async function userWithdrawWithoutRewards(
         user: SignerWithAddress
     ): Promise<ContractReceipt> {
-        return successfulTransaction(
-            stakingPool.connect(user).withdrawWithoutRewards()
-        )
+        return successfulTransaction(stakingPool.connect(user).earlyWithdraw())
     }
     async function initializeRewards(
         rewardToken: ERC20PresetMinterPauser,

@@ -3,7 +3,8 @@ import {
     DepositEvent,
     WithdrawStakeEvent,
     WithdrawRewardsEvent,
-    InitializeRewardsEvent
+    InitializeRewardsEvent,
+    NoRewardsEvent
 } from '../../../typechain-types/contracts/staking/StakingPool'
 import {expect} from 'chai'
 import {
@@ -58,6 +59,21 @@ export function withdrawRewardsEvent(event: Event): ActualWithdrawRewardsEvent {
     expect(args?.rewards).is.not.undefined
     expect(args?.user).is.not.undefined
     return rewardsEvent.args
+}
+
+export type ActualNoRewardsEvent = {
+    user: string
+}
+/**
+ * Shape check and conversion for a NoRewards event
+ */
+export function noRewardsEvent(event: Event): ActualNoRewardsEvent {
+    const noRewards = event as NoRewardsEvent
+    expect(event.args).is.not.undefined
+
+    const args = event.args
+    expect(args?.user).is.not.undefined
+    return noRewards.args
 }
 
 /**
