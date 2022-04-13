@@ -566,6 +566,11 @@ describe('Staking Pool Tests', () => {
             const currentExpectedRewards =
                 await stakingPool.currentExpectedRewards(user.address)
             expect(currentExpectedRewards).to.be.length(0)
+            await expect(
+                stakingPool.connect(user).withdrawRewards()
+            ).to.be.revertedWith('StakingPool: stake first')
+
+            await userWithdrawStake(user)
             verifyNoRewardsEvent(
                 {user: user.address},
                 await userWithdrawRewards(user)

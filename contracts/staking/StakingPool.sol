@@ -18,9 +18,9 @@ import "./StakingPoolLib.sol";
  * while fixed tokens rewards are calculated once per user.
  */
 contract StakingPool is
-    RoleAccessControl,
+    PausableUpgradeable,
     ReentrancyGuard,
-    PausableUpgradeable
+    RoleAccessControl
 {
     struct User {
         uint128 depositAmount;
@@ -159,27 +159,7 @@ contract StakingPool is
         //slither-disable-next-line reentrancy-events
         _transferStake(user.depositAmount, IERC20(_config.stakeToken));
 
-        // calculate the rewardAmounts due to the user
-        for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
-            uint256 amount = 0;
-
-            if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
-                amount = _calculateFloatingReward(
-                    _config.rewardTokens[i].ratio,
-                    user.depositAmount
-                );
-            }
-            if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
-                amount = uint256(user.rewardAmounts[i]);
-            }
-            if (amount > 0) {
-                //slither-disable-next-line calls-loop
-                _transferRewards(
-                    amount,
-                    IERC20(_config.rewardTokens[i].tokens)
-                );
-            }
-        }
+        _withdrawRewards(_config, user);
     }
 
     /**
@@ -199,6 +179,7 @@ contract StakingPool is
 
         StakingPoolLib.Config storage _config = _stakingPoolConfig;
 
+        // set users floating reward
         for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
             if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
                 user.rewardAmounts[i] = _calculateFloatingReward(
@@ -223,6 +204,7 @@ contract StakingPool is
         StakingPoolLib.Config memory _config = _stakingPoolConfig;
 
         User memory user = _users[_msgSender()];
+        require(user.depositAmount == 0, "StakingPool: stake first");
         delete _users[_msgSender()];
 
         bool noRewards = true;
@@ -553,6 +535,39 @@ contract StakingPool is
             user.rewardAmounts[i] += uint128(
                 (amount * _config.rewardTokens[i].ratio)
             );
+        }
+    }
+
+    function _withdrawRewards(
+        StakingPoolLib.Config memory _config,
+        User memory user
+    ) private {
+        bool noRewards = true;
+
+        // calculate the rewardAmounts due to the user
+        for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
+            uint256 amount = 0;
+
+            if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
+                amount = _calculateFloatingReward(
+                    _config.rewardTokens[i].ratio,
+                    user.depositAmount
+                );
+            }
+            if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
+                amount = uint256(user.rewardAmounts[i]);
+            }
+            if (amount > 0) {
+                noRewards = false;
+                //slither-disable-next-line calls-loop
+                _transferRewards(
+                    amount,
+                    IERC20(_config.rewardTokens[i].tokens)
+                );
+            }
+        }
+        if (noRewards) {
+            emit NoRewards(_msgSender());
         }
     }
 
