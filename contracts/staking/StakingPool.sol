@@ -22,11 +22,14 @@ contract StakingPool is
     ReentrancyGuard,
     RoleAccessControl
 {
+    uint256 private constant _REWARDS_LENGTH = 5;
+    // solhint-disable-next-line
     struct User {
         uint128 depositAmount;
-        uint128[5] rewardAmounts;
+        uint128[_REWARDS_LENGTH] rewardAmounts;
     }
-    struct RewardDue {
+    // solhint-disable-next-line
+    struct RewardOwed {
         address tokens;
         uint128 amount;
     }
@@ -119,8 +122,6 @@ contract StakingPool is
         user.depositAmount += uint128(amount);
         _totalStakedAmount += uint128(amount);
 
-        emit Deposit(_msgSender(), amount);
-
         // calculate/update rewards
         if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
             _updateRewardsRatios(_config);
@@ -137,6 +138,8 @@ contract StakingPool is
             ),
             "StakingPool: deposit tx fail"
         );
+
+        emit Deposit(_msgSender(), amount);
     }
 
     /**
@@ -377,18 +380,18 @@ contract StakingPool is
     function currentRewards(address user)
         external
         view
-        returns (RewardDue[] memory)
+        returns (RewardOwed[] memory)
     {
         User memory _user = _users[user];
         StakingPoolLib.Config memory _config = _stakingPoolConfig;
 
-        RewardDue[] memory rewards = new RewardDue[](
+        RewardOwed[] memory rewards = new RewardOwed[](
             _config.rewardTokens.length
         );
 
         for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
             if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
-                rewards[i] = RewardDue({
+                rewards[i] = RewardOwed({
                     amount: _calculateFloatingReward(
                         _config.rewardTokens[i].ratio,
                         _user.depositAmount
@@ -397,7 +400,7 @@ contract StakingPool is
                 });
             }
             if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
-                rewards[i] = RewardDue({
+                rewards[i] = RewardOwed({
                     amount: _user.rewardAmounts[i],
                     tokens: _config.rewardTokens[i].tokens
                 });
