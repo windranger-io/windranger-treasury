@@ -22,13 +22,12 @@ contract StakingPool is
     ReentrancyGuard,
     RoleAccessControl
 {
-    uint256 private constant _REWARDS_LENGTH = 5;
-    // solhint-disable-next-line
+    // Magic Number fixed length rewardsAmounts to fit 3 words. Only used here.
     struct User {
         uint128 depositAmount;
-        uint128[_REWARDS_LENGTH] rewardAmounts;
+        uint128[5] rewardAmounts;
     }
-    // solhint-disable-next-line
+
     struct RewardOwed {
         address tokens;
         uint128 amount;
@@ -122,6 +121,8 @@ contract StakingPool is
         user.depositAmount += uint128(amount);
         _totalStakedAmount += uint128(amount);
 
+        emit Deposit(_msgSender(), amount);
+
         // calculate/update rewards
         if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
             _updateRewardsRatios(_config);
@@ -138,8 +139,6 @@ contract StakingPool is
             ),
             "StakingPool: deposit tx fail"
         );
-
-        emit Deposit(_msgSender(), amount);
     }
 
     /**
