@@ -256,7 +256,7 @@ contract StakingPool is
         //slither-disable-next-line timestamp
         require(
             info.epochStartTimestamp >= block.timestamp,
-            "StakingPool: start time"
+            "StakingPool: start >= now"
         );
 
         _enforceUniqueRewardTokens(info.rewardTokens);
