@@ -568,7 +568,7 @@ describe('Staking Pool Tests', () => {
             expect(currentExpectedRewards).to.be.length(0)
             await expect(
                 stakingPool.connect(user).withdrawRewards()
-            ).to.be.revertedWith('StakingPool: stake first')
+            ).to.be.revertedWith('StakingPool: withdraw stake')
 
             await userWithdrawStake(user)
             verifyNoRewardsEvent(
