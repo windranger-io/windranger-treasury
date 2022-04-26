@@ -195,7 +195,7 @@ contract StakingPool is
     }
 
     /**
-     * @notice Withdraw only reward tokens. Stake may have already been withdrawn.
+     * @notice Withdraw only reward tokens. Stake must have already been withdrawn.
      */
     function withdrawRewards()
         external
