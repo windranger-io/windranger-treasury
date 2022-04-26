@@ -206,7 +206,7 @@ contract StakingPool is
         StakingPoolLib.Config memory _config = _stakingPoolConfig;
 
         User memory user = _users[_msgSender()];
-        require(user.depositAmount == 0, "StakingPool: stake first");
+        require(user.depositAmount == 0, "StakingPool: withdraw stake");
         delete _users[_msgSender()];
 
         bool noRewards = true;
