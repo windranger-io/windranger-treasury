@@ -99,7 +99,7 @@ contract StakingPool is
      *
      * @param amount Amount of stake tokens to deposit
      */
-    function deposit(uint256 amount) external whenNotPaused nonReentrant {
+    function deposit(uint128 amount) external whenNotPaused nonReentrant {
         StakingPoolLib.Config storage _config = _stakingPoolConfig;
 
         require(
@@ -118,8 +118,8 @@ contract StakingPool is
 
         User storage user = _users[_msgSender()];
 
-        user.depositAmount += uint128(amount);
-        _totalStakedAmount += uint128(amount);
+        user.depositAmount += amount;
+        _totalStakedAmount += amount;
 
         emit Deposit(_msgSender(), amount);
 
