@@ -107,7 +107,7 @@ contract StakingPool is
             "StakingPool: min contribution"
         );
         require(
-            _totalStakedAmount + amount < _config.maxTotalPoolStake,
+            _totalStakedAmount + amount <= _config.maxTotalPoolStake,
             "StakingPool: oversubscribed"
         );
         //slither-disable-next-line timestamp
