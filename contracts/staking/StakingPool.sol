@@ -473,7 +473,7 @@ contract StakingPool is
         for (uint256 i = 0; i < rewards.length; i++) {
             IERC20 token = IERC20(rewards[i].tokens);
             require(
-                token.transfer(treasury, rewards[i].maxAmount),
+                token.transfer(treasury, token.balanceOf(address(this))),
                 "StakingPool: withdraw tx failed"
             );
         }
