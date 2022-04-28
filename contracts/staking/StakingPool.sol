@@ -350,6 +350,10 @@ contract StakingPool is
         return _rewardsAvailableTimestamp;
     }
 
+    function user(address activeUser) external view returns (User memory) {
+        return _users[activeUser];
+    }
+
     function emergencyMode() external view returns (bool) {
         return _emergencyMode;
     }
