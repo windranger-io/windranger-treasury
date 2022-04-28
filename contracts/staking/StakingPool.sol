@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "../RoleAccessControl.sol";
@@ -22,6 +23,8 @@ contract StakingPool is
     ReentrancyGuard,
     RoleAccessControl
 {
+    using SafeERC20 for IERC20;
+
     // Magic Number fixed length rewardsAmounts to fit 3 words. Only used here.
     struct User {
         uint128 depositAmount;
@@ -131,13 +134,10 @@ contract StakingPool is
             _calculateFixedRewards(_config, user, amount);
         }
 
-        require(
-            _config.stakeToken.transferFrom(
-                _msgSender(),
-                address(this),
-                amount
-            ),
-            "StakingPool: deposit tx fail"
+        _config.stakeToken.safeTransferFrom(
+            _msgSender(),
+            address(this),
+            amount
         );
     }
 
@@ -423,13 +423,10 @@ contract StakingPool is
                 "StakingPool: invalid allowance"
             );
 
-            require(
-                tokens.transferFrom(
-                    benefactor,
-                    address(this),
-                    _rewardTokens[i].maxAmount
-                ),
-                "StakingPool: fund tx failed"
+            tokens.safeTransferFrom(
+                benefactor,
+                address(this),
+                _rewardTokens[i].maxAmount
             );
         }
     }
@@ -472,10 +469,7 @@ contract StakingPool is
 
         for (uint256 i = 0; i < rewards.length; i++) {
             IERC20 token = IERC20(rewards[i].tokens);
-            require(
-                token.transfer(treasury, token.balanceOf(address(this))),
-                "StakingPool: withdraw tx failed"
-            );
+            token.safeTransfer(treasury, token.balanceOf(address(this)));
         }
     }
 
@@ -508,7 +502,7 @@ contract StakingPool is
 
     function _transferToken(uint256 amount, IERC20 token) private {
         //slither-disable-next-line calls-loop
-        require(token.transfer(_msgSender(), amount), "StakingPool: tx failed");
+        token.safeTransfer(_msgSender(), amount);
     }
 
     /**
