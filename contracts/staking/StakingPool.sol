@@ -297,7 +297,13 @@ contract StakingPool is
     {
         _emergencyMode = true;
         emit EmergencyMode(_msgSender());
+    }
 
+    function adminEmergencyRewardSweep()
+        external
+        emergencyModeEnabled
+        atLeastDaoAdminRole(_stakingPoolConfig.daoId)
+    {
         _adminEmergencyRewardSweep();
     }
 
@@ -350,7 +356,7 @@ contract StakingPool is
         return _rewardsAvailableTimestamp;
     }
 
-    function user(address activeUser) external view returns (User memory) {
+    function getUser(address activeUser) external view returns (User memory) {
         return _users[activeUser];
     }
 
