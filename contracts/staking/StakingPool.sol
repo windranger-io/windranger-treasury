@@ -32,7 +32,7 @@ contract StakingPool is
     }
 
     struct RewardOwed {
-        address tokens;
+        IERC20 tokens;
         uint128 amount;
     }
 
@@ -159,7 +159,7 @@ contract StakingPool is
         StakingPoolLib.Config storage _config = _stakingPoolConfig;
 
         //slither-disable-next-line reentrancy-events
-        _transferStake(user.depositAmount, IERC20(_config.stakeToken));
+        _transferStake(user.depositAmount, _config.stakeToken);
 
         _withdrawRewards(_config, user);
     }
@@ -191,7 +191,7 @@ contract StakingPool is
             }
         }
 
-        _transferStake(currentDepositBalance, IERC20(_config.stakeToken));
+        _transferStake(currentDepositBalance, _config.stakeToken);
     }
 
     /**
@@ -217,7 +217,7 @@ contract StakingPool is
                 //slither-disable-next-line calls-loop
                 _transferRewards(
                     user.rewardAmounts[i],
-                    IERC20(_config.rewardTokens[i].tokens)
+                    _config.rewardTokens[i].tokens
                 );
             }
         }
@@ -413,17 +413,18 @@ contract StakingPool is
         StakingPoolLib.Reward[] calldata _rewardTokens
     ) internal {
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
-            IERC20 tokens = IERC20(_rewardTokens[i].tokens);
-
-            emit InitializeRewards(address(tokens), _rewardTokens[i].maxAmount);
+            emit InitializeRewards(
+                address(_rewardTokens[i].tokens),
+                _rewardTokens[i].maxAmount
+            );
 
             require(
-                tokens.allowance(benefactor, address(this)) >=
+                _rewardTokens[i].tokens.allowance(benefactor, address(this)) >=
                     _rewardTokens[i].maxAmount,
                 "StakingPool: invalid allowance"
             );
 
-            tokens.safeTransferFrom(
+            _rewardTokens[i].tokens.safeTransferFrom(
                 benefactor,
                 address(this),
                 _rewardTokens[i].maxAmount
@@ -437,10 +438,7 @@ contract StakingPool is
 
         delete _users[_msgSender()];
         StakingPoolLib.Config memory _config = _stakingPoolConfig;
-        _transferStake(
-            uint256((user.depositAmount)),
-            IERC20(_config.stakeToken)
-        );
+        _transferStake(uint256((user.depositAmount)), _config.stakeToken);
     }
 
     function _setRewardsAvailableTimestamp(uint32 timestamp) internal {
@@ -468,8 +466,10 @@ contract StakingPool is
         address treasury = _stakingPoolConfig.treasury;
 
         for (uint256 i = 0; i < rewards.length; i++) {
-            IERC20 token = IERC20(rewards[i].tokens);
-            token.safeTransfer(treasury, token.balanceOf(address(this)));
+            rewards[i].tokens.safeTransfer(
+                treasury,
+                rewards[i].tokens.balanceOf(address(this))
+            );
         }
     }
 
@@ -556,10 +556,7 @@ contract StakingPool is
             if (amount > 0) {
                 noRewards = false;
                 //slither-disable-next-line calls-loop
-                _transferRewards(
-                    amount,
-                    IERC20(_config.rewardTokens[i].tokens)
-                );
+                _transferRewards(amount, _config.rewardTokens[i].tokens);
             }
         }
         if (noRewards) {

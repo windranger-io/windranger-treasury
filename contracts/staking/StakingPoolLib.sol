@@ -10,7 +10,7 @@ library StakingPoolLib {
     }
 
     struct Reward {
-        address tokens;
+        IERC20 tokens;
         uint256 maxAmount;
         uint256 ratio; // only initialized for fixed
     }
