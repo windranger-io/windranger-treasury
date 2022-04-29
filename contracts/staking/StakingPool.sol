@@ -181,16 +181,15 @@ contract StakingPool is
 
         StakingPoolLib.Config storage _config = _stakingPoolConfig;
 
-        // set users floating reward
-        for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
-            if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
+        // set users floating reward if applicable
+        if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
+            for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
                 user.rewardAmounts[i] = _calculateFloatingReward(
                     _config.rewardTokens[i].ratio,
                     currentDepositBalance
                 );
             }
         }
-
         _transferStake(currentDepositBalance, _config.stakeToken);
     }
 
@@ -325,21 +324,7 @@ contract StakingPool is
         uint256[] memory rewards = new uint256[](_config.rewardTokens.length);
 
         for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
-            if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
-                if (_user.depositAmount == 0) {
-                    // user has already withdrawn stake
-                    rewards[i] = _user.rewardAmounts[i];
-                } else {
-                    // user has not withdraw stake yet
-                    rewards[i] = _calculateFloatingReward(
-                        _config.rewardTokens[i].ratio,
-                        _user.depositAmount
-                    );
-                }
-            }
-            if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
-                rewards[i] = _user.rewardAmounts[i];
-            }
+            rewards[i] = _calculateRewardAmount(_config, _user, i);
         }
         return rewards;
     }
@@ -483,6 +468,31 @@ contract StakingPool is
         }
     }
 
+    function _calculateRewardAmount(
+        StakingPoolLib.Config memory _config,
+        User memory _user,
+        uint256 rewardIndex
+    ) internal view returns (uint256) {
+        if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
+            return _user.rewardAmounts[rewardIndex];
+        }
+
+        if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
+            if (_user.depositAmount == 0) {
+                // user has already withdrawn stake
+                return _user.rewardAmounts[rewardIndex];
+            }
+
+            // user has not withdrawn stake yet
+            return
+                _calculateFloatingReward(
+                    _config.rewardTokens[rewardIndex].ratio,
+                    _user.depositAmount
+                );
+        }
+        return 0;
+    }
+
     function _isRewardsAvailable() internal view returns (bool) {
         //slither-disable-next-line timestamp
         return block.timestamp >= _rewardsAvailableTimestamp;
@@ -552,17 +562,8 @@ contract StakingPool is
 
         // calculate the rewardAmounts due to the user
         for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
-            uint256 amount = 0;
+            uint256 amount = _calculateRewardAmount(_config, user, i);
 
-            if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
-                amount = _calculateFloatingReward(
-                    _config.rewardTokens[i].ratio,
-                    user.depositAmount
-                );
-            }
-            if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
-                amount = uint256(user.rewardAmounts[i]);
-            }
             if (amount > 0) {
                 noRewards = false;
                 //slither-disable-next-line calls-loop
