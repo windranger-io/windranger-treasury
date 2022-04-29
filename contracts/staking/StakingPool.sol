@@ -173,24 +173,7 @@ contract StakingPool is
         nonReentrant
         whenNotPaused
     {
-        User storage user = _users[_msgSender()];
-        require(user.depositAmount > 0, "StakingPool: not eligible");
-
-        uint128 currentDepositBalance = user.depositAmount;
-        user.depositAmount = 0;
-
-        StakingPoolLib.Config storage _config = _stakingPoolConfig;
-
-        // set users floating reward if applicable
-        if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
-            for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
-                user.rewardAmounts[i] = _calculateFloatingReward(
-                    _config.rewardTokens[i].ratio,
-                    currentDepositBalance
-                );
-            }
-        }
-        _transferStake(currentDepositBalance, _config.stakeToken);
+        _withdrawStake();
     }
 
     /**
@@ -240,7 +223,7 @@ contract StakingPool is
      * @notice Withdraw stake tokens when admin has enabled emergency mode
      */
     function emergencyWithdraw() external emergencyModeEnabled {
-        _withdrawWithoutRewards();
+        _withdrawStake();
     }
 
     function initialize(
@@ -466,6 +449,26 @@ contract StakingPool is
                 rewards[i].tokens.balanceOf(address(this))
             );
         }
+    }
+
+    function _withdrawStake() internal {
+        User storage user = _users[_msgSender()];
+        require(user.depositAmount > 0, "StakingPool: not eligible");
+
+        uint128 currentDepositBalance = user.depositAmount;
+        user.depositAmount = 0;
+
+        StakingPoolLib.Config storage _config = _stakingPoolConfig;
+        // set users floating reward if applicable
+        if (_config.rewardType == StakingPoolLib.RewardType.FLOATING) {
+            for (uint256 i = 0; i < _config.rewardTokens.length; i++) {
+                user.rewardAmounts[i] = _calculateFloatingReward(
+                    _config.rewardTokens[i].ratio,
+                    currentDepositBalance
+                );
+            }
+        }
+        _transferStake(currentDepositBalance, _config.stakeToken);
     }
 
     function _calculateRewardAmount(
