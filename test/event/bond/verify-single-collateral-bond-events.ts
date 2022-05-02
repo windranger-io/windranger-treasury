@@ -1,8 +1,10 @@
-import {ContractReceipt} from 'ethers'
-import {event} from '../../framework/events'
+import {BaseContract, ContractReceipt} from 'ethers'
+import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
-    allowRedemptionEvent,
+    ActualAllowRedemptionEvent,
+    allowRedemptionEventLogs,
+    allowRedemptionEvents,
     debtIssueEvent,
     depositEvent,
     expireEvent,
@@ -12,6 +14,8 @@ import {
     slashDepositsEvent,
     withdrawCollateralEvent
 } from './single-collateral-bond-events'
+import {verifyOrderedEvents} from '../../framework/verify'
+import {eventLog} from '../../framework/event-logs'
 
 /**
  * Expected balance combination of a symbol and amount (value).
@@ -41,19 +45,46 @@ export type ExpectAllowRedemptionEvent = {
     reason: string
 }
 /**
- * Verifies the content for a Allow Redemption event.
+ * Verifies the content for AllowRedemption events.
  */
 export function verifyAllowRedemptionEvent(
     receipt: ContractReceipt,
-    expected: ExpectAllowRedemptionEvent
+    expectedEvents: ExpectAllowRedemptionEvent[]
 ): void {
-    const allowRedemption = allowRedemptionEvent(
-        event('AllowRedemption', receipt)
+    const actualEvents = allowRedemptionEvents(
+        events('AllowRedemption', receipt)
     )
-    expect(allowRedemption.authorizer, 'AllowRedemption authorizer').equals(
-        expected.authorizer
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (
+            actual: ActualAllowRedemptionEvent,
+            expected: ExpectAllowRedemptionEvent
+        ) => deepEqualsAllowRedemptionEvent(actual, expected)
     )
-    expect(allowRedemption.reason).to.equal(expected.reason)
+}
+
+/**
+ * Verifies the event log entries contain the expected AllowRedemption events.
+ */
+export function verifyAllowRedemptionLogEvents<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectAllowRedemptionEvent[]
+): void {
+    const actualEvents = allowRedemptionEventLogs(
+        eventLog('AllowRedemption', emitter, receipt)
+    )
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (
+            actual: ActualAllowRedemptionEvent,
+            expected: ExpectAllowRedemptionEvent
+        ) => deepEqualsAllowRedemptionEvent(actual, expected)
+    )
 }
 
 /**
@@ -226,5 +257,15 @@ export function verifyWithdrawCollateralEvent(
     )
     expect(withdrawCollateral.instigator, 'Instigator address').equals(
         transfer.instigator
+    )
+}
+
+function deepEqualsAllowRedemptionEvent(
+    actual: ActualAllowRedemptionEvent,
+    expected: ExpectAllowRedemptionEvent
+): boolean {
+    return (
+        actual.authorizer === expected.authorizer &&
+        actual.reason === expected.reason
     )
 }

@@ -11,6 +11,7 @@ import {
     SlashDepositsEvent,
     WithdrawCollateralEvent
 } from '../../../typechain-types/contracts/bond/ERC20SingleCollateralBond'
+import {Result} from '@ethersproject/abi'
 
 export type ActualAllowRedemptionEvent = {
     authorizer: string
@@ -75,17 +76,51 @@ export type ActualWithdrawCollateralEvent = {
 }
 
 /**
- * Shape check and conversion for a AllowRedemptionEvent.
+ * Shape check and conversion for AllowRedemptionEvent.
  */
-export function allowRedemptionEvent(event: Event): ActualAllowRedemptionEvent {
-    const redemption = event as AllowRedemptionEvent
-    expect(redemption.args).is.not.undefined
+export function allowRedemptionEvents(
+    events: Event[]
+): ActualAllowRedemptionEvent[] {
+    const redemptions: ActualAllowRedemptionEvent[] = []
 
-    const args = redemption.args
-    expect(args?.authorizer).is.not.undefined
-    expect(args?.reason).is.not.undefined
+    for (const event of events) {
+        const redemption = event as AllowRedemptionEvent
+        expect(redemption.args).is.not.undefined
 
-    return redemption.args
+        const args = redemption.args
+        expect(args?.authorizer).is.not.undefined
+        expect(args?.reason).is.not.undefined
+
+        redemptions.push({
+            authorizer: args.authorizer,
+            reason: args.reason
+        })
+    }
+
+    return redemptions
+}
+
+/**
+ * Shape check and conversion for an event log entry for AllowRedemption event.
+ */
+export function allowRedemptionEventLogs(
+    events: Result[]
+): ActualAllowRedemptionEvent[] {
+    const redemptions: ActualAllowRedemptionEvent[] = []
+
+    for (const event of events) {
+        expect(event?.authorizer).is.not.undefined
+        expect(event?.authorizer).to.be.a('string')
+        expect(event?.reason).is.not.undefined
+        expect(event?.reason).to.be.a('string')
+
+        redemptions.push({
+            authorizer: String(event.authorizer),
+            reason: String(event.reason)
+        })
+    }
+
+    return redemptions
 }
 
 /**

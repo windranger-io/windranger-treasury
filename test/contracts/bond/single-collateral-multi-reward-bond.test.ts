@@ -17,6 +17,7 @@ import {expect} from 'chai'
 import {successfulTransaction} from '../../framework/transaction'
 import {
     verifyAllowRedemptionEvent,
+    verifyAllowRedemptionLogEvents,
     verifyDepositEvent,
     verifyRedemptionEvent
 } from '../../event/bond/verify-single-collateral-bond-events'
@@ -97,10 +98,15 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             )
 
             expect(await bond.redeemable()).is.true
-            verifyAllowRedemptionEvent(receipt, {
-                authorizer: admin.address,
-                reason: reason
-            })
+            const expectedAllowRedemptionEvent = [
+                {authorizer: admin.address, reason: reason}
+            ]
+            verifyAllowRedemptionEvent(receipt, expectedAllowRedemptionEvent)
+            verifyAllowRedemptionLogEvents(
+                bond,
+                receipt,
+                expectedAllowRedemptionEvent
+            )
         })
 
         it('sets redemption timestamp', async () => {
