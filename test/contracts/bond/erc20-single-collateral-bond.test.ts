@@ -17,11 +17,12 @@ import {BigNumberish, ContractReceipt, constants, ethers} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from '../../framework/transaction'
 import {
-    verifyAllowRedemptionEvent,
+    verifyAllowRedemptionEvents,
     verifyAllowRedemptionLogEvents,
     verifyDebtIssueEvent,
     verifyExpireEvent,
-    verifyFullCollateralEvent,
+    verifyFullCollateralEventLogs,
+    verifyFullCollateralEvents,
     verifyPartialCollateralEvent,
     verifyRedemptionEvent,
     verifySlashDepositsEvent,
@@ -979,11 +980,21 @@ describe('ERC20 Single Collateral Bond contract', () => {
             amount: pledge,
             instigator: guarantorOne.address
         })
-        verifyFullCollateralEvent(depositOne, {
-            tokens: collateralTokens.address,
-            amount: collateralAmount,
-            instigator: guarantorOne.address
-        })
+
+        const expectedFullCollateralEvent = [
+            {
+                collateralTokens: collateralTokens.address,
+                collateralAmount: collateralAmount,
+                instigator: guarantorOne.address
+            }
+        ]
+        verifyFullCollateralEvents(depositOne, expectedFullCollateralEvent)
+        verifyFullCollateralEventLogs(
+            bond,
+            depositOne,
+            expectedFullCollateralEvent
+        )
+
         verifyERC20TransferEvents(depositOne, [
             {
                 from: guarantorOne.address,
@@ -1035,7 +1046,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const expectedAllowRedemptionEvent = [
             {authorizer: admin.address, reason: REDEMPTION_REASON}
         ]
-        verifyAllowRedemptionEvent(
+        verifyAllowRedemptionEvents(
             allowRedemptionReceipt,
             expectedAllowRedemptionEvent
         )
@@ -1156,7 +1167,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const expectedAllowRedemptionEvent = [
             {authorizer: admin.address, reason: REDEMPTION_REASON}
         ]
-        verifyAllowRedemptionEvent(
+        verifyAllowRedemptionEvents(
             allowRedemptionReceipt,
             expectedAllowRedemptionEvent
         )
@@ -1267,11 +1278,21 @@ describe('ERC20 Single Collateral Bond contract', () => {
             amount: pledgeTwo,
             instigator: guarantorTwo.address
         })
-        verifyFullCollateralEvent(depositTwo, {
-            tokens: collateralTokens.address,
-            amount: collateralAmount,
-            instigator: guarantorTwo.address
-        })
+
+        const expectedFullCollateralEvent = [
+            {
+                collateralTokens: collateralTokens.address,
+                collateralAmount: collateralAmount,
+                instigator: guarantorTwo.address
+            }
+        ]
+        verifyFullCollateralEvents(depositTwo, expectedFullCollateralEvent)
+        verifyFullCollateralEventLogs(
+            bond,
+            depositTwo,
+            expectedFullCollateralEvent
+        )
+
         verifyERC20TransferEvents(depositTwo, [
             {
                 from: guarantorTwo.address,
@@ -1298,7 +1319,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const expectedAllowRedemptionEvent = [
             {authorizer: admin.address, reason: REDEMPTION_REASON}
         ]
-        verifyAllowRedemptionEvent(
+        verifyAllowRedemptionEvents(
             allowRedemptionReceipt,
             expectedAllowRedemptionEvent
         )
@@ -1506,7 +1527,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const expectedAllowRedemptionEvent = [
             {authorizer: admin.address, reason: REDEMPTION_REASON}
         ]
-        verifyAllowRedemptionEvent(
+        verifyAllowRedemptionEvents(
             allowRedemptionReceipt,
             expectedAllowRedemptionEvent
         )
@@ -1853,7 +1874,7 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const expectedAllowRedemptionEvent = [
             {authorizer: admin.address, reason: REDEMPTION_REASON}
         ]
-        verifyAllowRedemptionEvent(
+        verifyAllowRedemptionEvents(
             allowRedemptionReceipt,
             expectedAllowRedemptionEvent
         )

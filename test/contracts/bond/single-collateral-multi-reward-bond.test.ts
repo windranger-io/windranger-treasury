@@ -16,7 +16,7 @@ import {BigNumber, ethers} from 'ethers'
 import {expect} from 'chai'
 import {successfulTransaction} from '../../framework/transaction'
 import {
-    verifyAllowRedemptionEvent,
+    verifyAllowRedemptionEvents,
     verifyAllowRedemptionLogEvents,
     verifyDepositEvent,
     verifyRedemptionEvent
@@ -101,7 +101,7 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             const expectedAllowRedemptionEvent = [
                 {authorizer: admin.address, reason: reason}
             ]
-            verifyAllowRedemptionEvent(receipt, expectedAllowRedemptionEvent)
+            verifyAllowRedemptionEvents(receipt, expectedAllowRedemptionEvent)
             verifyAllowRedemptionLogEvents(
                 bond,
                 receipt,

@@ -3,12 +3,14 @@ import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
     ActualAllowRedemptionEvent,
+    ActualFullCollateralEvent,
     allowRedemptionEventLogs,
     allowRedemptionEvents,
     debtIssueEvent,
     depositEvent,
     expireEvent,
-    fullCollateralEvent,
+    fullCollateralEventLogs,
+    fullCollateralEvents,
     partialCollateralEvent,
     redemptionEvent,
     slashDepositsEvent,
@@ -40,6 +42,12 @@ export type ExpectFlushTransferEvent = {
     instigator: string
 }
 
+export type ExpectFullCollateralEvent = {
+    collateralTokens: string
+    collateralAmount: bigint
+    instigator: string
+}
+
 export type ExpectAllowRedemptionEvent = {
     authorizer: string
     reason: string
@@ -47,7 +55,7 @@ export type ExpectAllowRedemptionEvent = {
 /**
  * Verifies the content for AllowRedemption events.
  */
-export function verifyAllowRedemptionEvent(
+export function verifyAllowRedemptionEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectAllowRedemptionEvent[]
 ): void {
@@ -90,19 +98,41 @@ export function verifyAllowRedemptionLogEvents<T extends BaseContract>(
 /**
  * Verifies the content for a Full Collateral event.
  */
-export function verifyFullCollateralEvent(
+export function verifyFullCollateralEvents(
     receipt: ContractReceipt,
-    collateral: ExpectTokenBalance
+    expectedEvents: ExpectFullCollateralEvent[]
 ): void {
-    const fullCollateral = fullCollateralEvent(event('FullCollateral', receipt))
-    expect(fullCollateral.collateralTokens, 'Debt token address').equals(
-        collateral.tokens
+    const actualEvents = fullCollateralEvents(events('FullCollateral', receipt))
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (
+            actual: ActualFullCollateralEvent,
+            expected: ExpectFullCollateralEvent
+        ) => deepEqualsFullCollateralEvent(actual, expected)
     )
-    expect(fullCollateral.collateralAmount, 'Debt token amount').equals(
-        collateral.amount
+}
+
+/**
+ * Verifies the event log entries contain the expected FullCollateral events.
+ */
+export function verifyFullCollateralEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectFullCollateralEvent[]
+): void {
+    const actualEvents = fullCollateralEventLogs(
+        eventLog('FullCollateral', emitter, receipt)
     )
-    expect(fullCollateral.instigator, 'Instigator address').equals(
-        collateral.instigator
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (
+            actual: ActualFullCollateralEvent,
+            expected: ExpectFullCollateralEvent
+        ) => deepEqualsFullCollateralEvent(actual, expected)
     )
 }
 
@@ -267,5 +297,16 @@ function deepEqualsAllowRedemptionEvent(
     return (
         actual.authorizer === expected.authorizer &&
         actual.reason === expected.reason
+    )
+}
+
+function deepEqualsFullCollateralEvent(
+    actual: ActualFullCollateralEvent,
+    expected: ExpectFullCollateralEvent
+): boolean {
+    return (
+        actual.collateralTokens === expected.collateralTokens &&
+        actual.collateralAmount.toBigInt() === expected.collateralAmount &&
+        actual.instigator === expected.instigator
     )
 }

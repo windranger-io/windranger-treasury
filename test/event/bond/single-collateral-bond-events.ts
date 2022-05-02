@@ -101,7 +101,7 @@ export function allowRedemptionEvents(
 }
 
 /**
- * Shape check and conversion for an event log entry for AllowRedemption event.
+ * Shape check and conversion for an event log entry for AllowRedemption events.
  */
 export function allowRedemptionEventLogs(
     events: Result[]
@@ -172,18 +172,55 @@ export function expireEvent(event: Event): ActualExpireEvent {
 }
 
 /**
- * Shape check and conversion for a FullCollateralEvent.
+ * Shape check and conversion for FullCollateralEvents.
  */
-export function fullCollateralEvent(event: Event): ActualFullCollateralEvent {
-    const collateral = event as FullCollateralEvent
-    expect(collateral.args).is.not.undefined
+export function fullCollateralEvents(
+    events: Event[]
+): ActualFullCollateralEvent[] {
+    const collateralEvents: ActualFullCollateralEvent[] = []
 
-    const args = collateral.args
-    expect(args?.collateralTokens).is.not.undefined
-    expect(args?.collateralAmount).is.not.undefined
-    expect(args?.instigator).is.not.undefined
+    for (const event of events) {
+        const collateral = event as FullCollateralEvent
+        expect(collateral.args).is.not.undefined
 
-    return collateral.args
+        const args = collateral.args
+        expect(args?.collateralTokens).is.not.undefined
+        expect(args?.collateralAmount).is.not.undefined
+        expect(args?.instigator).is.not.undefined
+
+        collateralEvents.push({
+            collateralTokens: args.collateralTokens,
+            collateralAmount: args.collateralAmount,
+            instigator: args.instigator
+        })
+    }
+
+    return collateralEvents
+}
+
+/**
+ * Shape check and conversion for an event log entry for FullCollateral events.
+ */
+export function fullCollateralEventLogs(
+    events: Result[]
+): ActualFullCollateralEvent[] {
+    const collateralEvents: ActualFullCollateralEvent[] = []
+
+    for (const event of events) {
+        expect(event?.collateralTokens).is.not.undefined
+        expect(event?.collateralTokens).to.be.a('string')
+        expect(event?.collateralAmount).is.not.undefined
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
+
+        collateralEvents.push({
+            collateralTokens: String(event.collateralTokens),
+            collateralAmount: BigNumber.from(event.collateralAmount),
+            instigator: String(event.instigator)
+        })
+    }
+
+    return collateralEvents
 }
 
 /**
