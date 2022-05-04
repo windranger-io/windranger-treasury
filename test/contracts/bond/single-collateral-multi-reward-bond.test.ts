@@ -18,7 +18,8 @@ import {successfulTransaction} from '../../framework/transaction'
 import {
     verifyAllowRedemptionEvents,
     verifyAllowRedemptionLogEvents,
-    verifyDepositEvent,
+    verifyDepositEventLogs,
+    verifyDepositEvents,
     verifyRedemptionEvent
 } from '../../event/bond/verify-single-collateral-bond-events'
 import {
@@ -167,11 +168,15 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
                 beforeCollateralBalance.sub(pledge)
             )
 
-            verifyDepositEvent(receipt, guarantor.address, {
-                tokens: collateralTokens.address,
-                amount: pledge,
-                instigator: guarantor.address
-            })
+            const expectedDepositEvents = [
+                {
+                    tokens: collateralTokens.address,
+                    amount: pledge,
+                    depositor: guarantor.address
+                }
+            ]
+            verifyDepositEvents(receipt, expectedDepositEvents)
+            verifyDepositEventLogs(bond, receipt, expectedDepositEvents)
         })
 
         it('updates claimant reward debt', async () => {

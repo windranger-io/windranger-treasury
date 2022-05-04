@@ -28,7 +28,6 @@ export type ActualDepositEvent = {
     depositor: string
     collateralTokens: string
     collateralAmount: BigNumber
-    instigator: string
 }
 
 export type ActualExpireEvent = {
@@ -171,19 +170,51 @@ export function debtIssueEventLogs(events: Result[]): ActualDebtIssueEvent[] {
 }
 
 /**
- * Shape check and conversion for a DepositEvent.
+ * Shape check and conversion for DepositEvents.
  */
-export function depositEvent(event: Event): ActualDepositEvent {
-    const debt = event as DepositEvent
-    expect(debt.args).is.not.undefined
+export function depositEvents(events: Event[]): ActualDepositEvent[] {
+    const deposits: ActualDepositEvent[] = []
 
-    const args = debt.args
-    expect(args?.depositor).is.not.undefined
-    expect(args?.collateralTokens).is.not.undefined
-    expect(args?.collateralAmount).is.not.undefined
-    expect(args?.instigator).is.not.undefined
+    for (const event of events) {
+        const debt = event as DepositEvent
+        expect(debt.args).is.not.undefined
 
-    return debt.args
+        const args = debt.args
+        expect(args?.depositor).is.not.undefined
+        expect(args?.collateralTokens).is.not.undefined
+        expect(args?.collateralAmount).is.not.undefined
+
+        deposits.push({
+            depositor: args?.depositor,
+            collateralTokens: args?.collateralTokens,
+            collateralAmount: args?.collateralAmount
+        })
+    }
+
+    return deposits
+}
+
+/**
+ * Shape check and conversion for an event log entry for Deposit events.
+ */
+export function depositEventLogs(events: Result[]): ActualDepositEvent[] {
+    const deposits: ActualDepositEvent[] = []
+
+    for (const event of events) {
+        expect(event?.depositor).is.not.undefined
+        expect(event?.depositor).to.be.a('string')
+        expect(event?.collateralTokens).is.not.undefined
+        expect(event?.collateralTokens).to.be.a('string')
+        expect(event?.collateralAmount).is.not.undefined
+
+        deposits.push({
+            depositor: String(event.depositor),
+            collateralTokens: String(event.collateralTokens),
+            collateralAmount: BigNumber.from(event.collateralAmount)
+        })
+    }
+
+    return deposits
 }
 
 /**

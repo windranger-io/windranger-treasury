@@ -21,6 +21,8 @@ import {
     verifyAllowRedemptionLogEvents,
     verifyDebtIssueEventLogs,
     verifyDebtIssueEvents,
+    verifyDepositEventLogs,
+    verifyDepositEvents,
     verifyExpireEvent,
     verifyFullCollateralEventLogs,
     verifyFullCollateralEvents,
@@ -976,6 +978,13 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOne = await depositBond(guarantorOne, pledge)
+        const expectedDepositEvent = [
+            {
+                tokens: collateralTokens.address,
+                amount: pledge
+            }
+        ]
+
         const expectedDebtIssueEvent = [
             {
                 tokens: bond.address,
@@ -1295,8 +1304,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 receiver: guarantorTwo.address
             }
         ]
-        verifyDebtIssueEvents(depositOne, expectedDebtIssueEventTwo)
-        verifyDebtIssueEventLogs(bond, depositOne, expectedDebtIssueEventTwo)
+        verifyDebtIssueEvents(depositTwo, expectedDebtIssueEventTwo)
+        verifyDebtIssueEventLogs(bond, depositTwo, expectedDebtIssueEventTwo)
 
         const expectedFullCollateralEvent = [
             {
@@ -1809,6 +1818,15 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Guarantor One deposits their full pledge amount
         const depositOne = await depositBond(guarantorOne, pledgeOne)
+        const expectedDepositEventOne = [
+            {
+                tokens: collateralTokens.address,
+                amount: pledgeOne,
+                depositor: guarantorOne.address
+            }
+        ]
+        verifyDepositEvents(depositOne, expectedDepositEventOne)
+        verifyDepositEventLogs(bond, depositOne, expectedDepositEventOne)
         const expectedDebtIssueEventOne = [
             {
                 tokens: bond.address,
@@ -1834,6 +1852,16 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Guarantor Two deposits their full pledge amount
         const depositTwo = await depositBond(guarantorTwo, pledgeTwo)
+        const expectedDepositEventTwo = [
+            {
+                tokens: collateralTokens.address,
+                amount: pledgeTwo,
+                depositor: guarantorTwo.address
+            }
+        ]
+        verifyDepositEvents(depositTwo, expectedDepositEventTwo)
+        verifyDepositEventLogs(bond, depositTwo, expectedDepositEventTwo)
+
         const expectedDebtIssueEventTwo = [
             {
                 tokens: bond.address,
@@ -1841,8 +1869,8 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 receiver: guarantorTwo.address
             }
         ]
-        verifyDebtIssueEvents(depositOne, expectedDebtIssueEventTwo)
-        verifyDebtIssueEventLogs(bond, depositOne, expectedDebtIssueEventTwo)
+        verifyDebtIssueEvents(depositTwo, expectedDebtIssueEventTwo)
+        verifyDebtIssueEventLogs(bond, depositTwo, expectedDebtIssueEventTwo)
 
         verifyERC20TransferEvents(depositTwo, [
             {
@@ -1859,6 +1887,16 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Guarantor Three deposits their full pledge amount
         const depositThree = await depositBond(guarantorThree, pledgeThree)
+        const expectedDepositEventThree = [
+            {
+                tokens: collateralTokens.address,
+                amount: pledgeThree,
+                depositor: guarantorThree.address
+            }
+        ]
+        verifyDepositEvents(depositThree, expectedDepositEventThree)
+        verifyDepositEventLogs(bond, depositThree, expectedDepositEventThree)
+
         const expectedDebtIssueEventThree = [
             {
                 tokens: bond.address,
@@ -1866,8 +1904,12 @@ describe('ERC20 Single Collateral Bond contract', () => {
                 receiver: guarantorThree.address
             }
         ]
-        verifyDebtIssueEvents(depositOne, expectedDebtIssueEventThree)
-        verifyDebtIssueEventLogs(bond, depositOne, expectedDebtIssueEventThree)
+        verifyDebtIssueEvents(depositThree, expectedDebtIssueEventThree)
+        verifyDebtIssueEventLogs(
+            bond,
+            depositThree,
+            expectedDebtIssueEventThree
+        )
 
         verifyERC20TransferEvents(depositThree, [
             {

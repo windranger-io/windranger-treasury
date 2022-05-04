@@ -84,8 +84,7 @@ abstract contract ERC20SingleCollateralBond is
     event Deposit(
         address indexed depositor,
         address indexed collateralTokens,
-        uint256 collateralAmount,
-        address indexed instigator
+        uint256 collateralAmount
     );
     event Expire(
         address indexed treasury,
@@ -444,7 +443,7 @@ abstract contract ERC20SingleCollateralBond is
         _collateral += amount;
         _debtTokensOutstanding += amount;
 
-        emit Deposit(_msgSender(), _collateralTokens, amount, _msgSender());
+        emit Deposit(_msgSender(), _collateralTokens, amount);
 
         bool transferred = IERC20Upgradeable(_collateralTokens).transferFrom(
             _msgSender(),
