@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "../RoleAccessControl.sol";
 import "./StakingPoolLib.sol";
+import "../Version.sol";
 
 /**
  * @title StakingPool with optional fixed or floating token rewards
@@ -21,7 +22,8 @@ import "./StakingPoolLib.sol";
 contract StakingPool is
     PausableUpgradeable,
     ReentrancyGuard,
-    RoleAccessControl
+    RoleAccessControl,
+    Version
 {
     using SafeERC20 for IERC20;
 

@@ -7,8 +7,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./StakingPool.sol";
 import "./StakingPoolLib.sol";
 import "../RoleAccessControl.sol";
+import "../Version.sol";
 
-contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable {
+contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
     event StakingPoolCreated(
         address indexed stakingPool,
         address treasury,

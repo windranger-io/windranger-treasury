@@ -3,7 +3,9 @@ import {
     BondFactory,
     BondMediator,
     ERC20SingleCollateralBond,
-    Version
+    Version,
+    StakingPoolFactory,
+    StakingPool
 } from '../../typechain-types'
 import {log} from '../../config/logging'
 import {checkContractVersionAgainstReleaseTag} from './check'
@@ -24,3 +26,5 @@ deployAndCheckVersion<Box>('Box')
 deployAndCheckVersion<BondFactory>('BondFactory')
 deployAndCheckVersion<BondMediator>('BondMediator')
 deployAndCheckVersion<ERC20SingleCollateralBond>('ERC20SingleCollateralBond')
+deployAndCheckVersion<StakingPoolFactory>('StakingPoolFactory')
+deployAndCheckVersion<StakingPool>('StakingPool')
