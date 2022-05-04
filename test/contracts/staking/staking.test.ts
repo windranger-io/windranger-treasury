@@ -76,7 +76,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 true,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
 
             await expect(
@@ -138,7 +139,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 false,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
         })
 
@@ -238,7 +240,8 @@ describe('Staking Pool Tests', () => {
                 await stakingPool.initialize(
                     stakingPoolInfo,
                     false,
-                    rewardsAvailableTimestamp
+                    rewardsAvailableTimestamp,
+                    admin
                 )
             })
 
@@ -302,7 +305,8 @@ describe('Staking Pool Tests', () => {
                 await stakingPool.initialize(
                     stakingPoolInfo,
                     false,
-                    rewardsAvailableTimestamp
+                    rewardsAvailableTimestamp,
+                    admin
                 )
                 await rewardToken1.mint(
                     stakingPool.address,
@@ -439,7 +443,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 false,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })
@@ -515,7 +520,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 false,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
         })
         it('user can deposit and withdraw', async () => {
@@ -629,7 +635,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 false,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })

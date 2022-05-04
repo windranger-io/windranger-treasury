@@ -62,7 +62,7 @@ export type StakingPoolLibData = {
     maxTotalPoolStake: number
 }
 
-describe.only('Staking Pool Factory', () => {
+describe('Staking Pool Factory', () => {
     before(async () => {
         admin = (await signer(0)).address
         nonAdmin = await signer(3)
