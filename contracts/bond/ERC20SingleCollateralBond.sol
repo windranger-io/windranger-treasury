@@ -79,14 +79,12 @@ abstract contract ERC20SingleCollateralBond is
     event DebtIssue(
         address indexed receiver,
         address indexed debTokens,
-        uint256 debtAmount,
-        address indexed instigator
+        uint256 debtAmount
     );
     event Deposit(
         address indexed depositor,
         address indexed collateralTokens,
-        uint256 collateralAmount,
-        address indexed instigator
+        uint256 collateralAmount
     );
     event Expire(
         address indexed treasury,
@@ -445,7 +443,7 @@ abstract contract ERC20SingleCollateralBond is
         _collateral += amount;
         _debtTokensOutstanding += amount;
 
-        emit Deposit(_msgSender(), _collateralTokens, amount, _msgSender());
+        emit Deposit(_msgSender(), _collateralTokens, amount);
 
         bool transferred = IERC20Upgradeable(_collateralTokens).transferFrom(
             _msgSender(),
@@ -454,7 +452,7 @@ abstract contract ERC20SingleCollateralBond is
         );
         require(transferred, "Bond: collateral transfer failed");
 
-        emit DebtIssue(_msgSender(), address(this), amount, _msgSender());
+        emit DebtIssue(_msgSender(), address(this), amount);
 
         _transfer(address(this), _msgSender(), amount);
 

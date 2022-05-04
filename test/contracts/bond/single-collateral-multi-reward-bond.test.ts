@@ -16,9 +16,12 @@ import {BigNumber, ethers} from 'ethers'
 import {expect} from 'chai'
 import {successfulTransaction} from '../../framework/transaction'
 import {
-    verifyAllowRedemptionEvent,
-    verifyDepositEvent,
-    verifyRedemptionEvent
+    verifyAllowRedemptionEvents,
+    verifyAllowRedemptionLogEvents,
+    verifyDepositEventLogs,
+    verifyDepositEvents,
+    verifyRedemptionEventLogs,
+    verifyRedemptionEvents
 } from '../../event/bond/verify-single-collateral-bond-events'
 import {
     ExpectedRewardDebtEvent,
@@ -97,10 +100,15 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
             )
 
             expect(await bond.redeemable()).is.true
-            verifyAllowRedemptionEvent(receipt, {
-                authorizer: admin.address,
-                reason: reason
-            })
+            const expectedAllowRedemptionEvent = [
+                {authorizer: admin.address, reason: reason}
+            ]
+            verifyAllowRedemptionEvents(receipt, expectedAllowRedemptionEvent)
+            verifyAllowRedemptionLogEvents(
+                bond,
+                receipt,
+                expectedAllowRedemptionEvent
+            )
         })
 
         it('sets redemption timestamp', async () => {
@@ -161,11 +169,15 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
                 beforeCollateralBalance.sub(pledge)
             )
 
-            verifyDepositEvent(receipt, guarantor.address, {
-                tokens: collateralTokens.address,
-                amount: pledge,
-                instigator: guarantor.address
-            })
+            const expectedDepositEvents = [
+                {
+                    tokens: collateralTokens.address,
+                    amount: pledge,
+                    depositor: guarantor.address
+                }
+            ]
+            verifyDepositEvents(receipt, expectedDepositEvents)
+            verifyDepositEventLogs(bond, receipt, expectedDepositEvents)
         })
 
         it('updates claimant reward debt', async () => {
@@ -567,20 +579,17 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
                 await bond.rewardDebt(guarantor.address, rewardPools[2].tokens)
             ).equals(beforeRewardsThree)
 
-            verifyRedemptionEvent(
-                receipt,
-                guarantor.address,
+            const expectedRedemptionEvent = [
                 {
-                    tokens: bond.address,
-                    amount: pledge,
-                    instigator: admin.address
-                },
-                {
-                    tokens: collateralTokens.address,
-                    amount: pledge,
-                    instigator: admin.address
+                    redeemer: guarantor.address,
+                    debtTokens: bond.address,
+                    debtAmount: pledge,
+                    collateralTokens: collateralTokens.address,
+                    collateralAmount: pledge
                 }
-            )
+            ]
+            verifyRedemptionEvents(receipt, expectedRedemptionEvent)
+            verifyRedemptionEventLogs(bond, receipt, expectedRedemptionEvent)
         })
 
         let pledge: bigint
