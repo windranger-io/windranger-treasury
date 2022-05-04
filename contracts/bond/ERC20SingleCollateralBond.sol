@@ -79,8 +79,7 @@ abstract contract ERC20SingleCollateralBond is
     event DebtIssue(
         address indexed receiver,
         address indexed debTokens,
-        uint256 debtAmount,
-        address indexed instigator
+        uint256 debtAmount
     );
     event Deposit(
         address indexed depositor,
@@ -454,7 +453,7 @@ abstract contract ERC20SingleCollateralBond is
         );
         require(transferred, "Bond: collateral transfer failed");
 
-        emit DebtIssue(_msgSender(), address(this), amount, _msgSender());
+        emit DebtIssue(_msgSender(), address(this), amount);
 
         _transfer(address(this), _msgSender(), amount);
 

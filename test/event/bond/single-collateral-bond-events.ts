@@ -22,7 +22,6 @@ export type ActualDebtIssueEvent = {
     receiver: string
     debTokens: string
     debtAmount: BigNumber
-    instigator: string
 }
 
 export type ActualDepositEvent = {
@@ -124,19 +123,51 @@ export function allowRedemptionEventLogs(
 }
 
 /**
- * Shape check and conversion for a DebtIssueEvent.
+ * Shape check and conversion for DebtIssueEvents.
  */
-export function debtIssueEvent(event: Event): ActualDebtIssueEvent {
-    const debt = event as DebtIssueEvent
-    expect(debt.args).is.not.undefined
+export function debtIssueEvents(events: Event[]): ActualDebtIssueEvent[] {
+    const debtIssues: ActualDebtIssueEvent[] = []
 
-    const args = debt.args
-    expect(args?.receiver).is.not.undefined
-    expect(args?.debTokens).is.not.undefined
-    expect(args?.debtAmount).is.not.undefined
-    expect(args?.instigator).is.not.undefined
+    for (const event of events) {
+        const debt = event as DebtIssueEvent
+        expect(debt.args).is.not.undefined
 
-    return debt.args
+        const args = debt.args
+        expect(args?.receiver).is.not.undefined
+        expect(args?.debTokens).is.not.undefined
+        expect(args?.debtAmount).is.not.undefined
+
+        debtIssues.push({
+            receiver: args?.receiver,
+            debTokens: args?.debTokens,
+            debtAmount: args?.debtAmount
+        })
+    }
+
+    return debtIssues
+}
+
+/**
+ * Shape check and conversion for an event log entry for DebtIssue events.
+ */
+export function debtIssueEventLogs(events: Result[]): ActualDebtIssueEvent[] {
+    const debtIssues: ActualDebtIssueEvent[] = []
+
+    for (const event of events) {
+        expect(event?.receiver).is.not.undefined
+        expect(event?.receiver).to.be.a('string')
+        expect(event?.debTokens).is.not.undefined
+        expect(event?.debTokens).to.be.a('string')
+        expect(event?.debtAmount).is.not.undefined
+
+        debtIssues.push({
+            receiver: String(event.receiver),
+            debTokens: String(event.debTokens),
+            debtAmount: BigNumber.from(event.debtAmount)
+        })
+    }
+
+    return debtIssues
 }
 
 /**

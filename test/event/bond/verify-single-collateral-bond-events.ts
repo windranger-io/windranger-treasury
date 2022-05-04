@@ -3,10 +3,12 @@ import {event, events} from '../../framework/events'
 import {expect} from 'chai'
 import {
     ActualAllowRedemptionEvent,
+    ActualDebtIssueEvent,
     ActualFullCollateralEvent,
     allowRedemptionEventLogs,
     allowRedemptionEvents,
-    debtIssueEvent,
+    debtIssueEventLogs,
+    debtIssueEvents,
     depositEvent,
     expireEvent,
     fullCollateralEventLogs,
@@ -19,9 +21,12 @@ import {
 import {verifyOrderedEvents} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
 
-/**
- * Expected balance combination of a symbol and amount (value).
- */
+export type ExpectDebtIssueEvent = {
+    amount: bigint
+    tokens: string
+    receiver: string
+}
+
 export type ExpectTokenBalance = {
     tokens: string
     amount: bigint
@@ -137,18 +142,40 @@ export function verifyFullCollateralEventLogs<T extends BaseContract>(
 }
 
 /**
- * Verifies the content for a Debt Issue event.
+ * Verifies the content for a DebtIssue events.
  */
-export function verifyDebtIssueEvent(
+export function verifyDebtIssueEvents(
     receipt: ContractReceipt,
-    guarantor: string,
-    debt: ExpectTokenBalance
+    expectedEvents: ExpectDebtIssueEvent[]
 ): void {
-    const debtIssue = debtIssueEvent(event('DebtIssue', receipt))
-    expect(debtIssue.receiver, 'Debt token receiver').equals(guarantor)
-    expect(debtIssue.debTokens, 'Debt token address').equals(debt.tokens)
-    expect(debtIssue.debtAmount, 'Debt token amount').equals(debt.amount)
-    expect(debtIssue.instigator, 'Instigator address').equals(debt.instigator)
+    const actualEvents = debtIssueEvents(events('DebtIssue', receipt))
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualDebtIssueEvent, expected: ExpectDebtIssueEvent) =>
+            deepEqualsDebtIssueEvent(actual, expected)
+    )
+}
+
+/**
+ * Verifies the event log entries contain the expected DebtIssue events.
+ */
+export function verifyDebtIssueEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectDebtIssueEvent[]
+): void {
+    const actualEvents = debtIssueEventLogs(
+        eventLog('DebtIssue', emitter, receipt)
+    )
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualDebtIssueEvent, expected: ExpectDebtIssueEvent) =>
+            deepEqualsDebtIssueEvent(actual, expected)
+    )
 }
 
 /**
@@ -308,5 +335,16 @@ function deepEqualsFullCollateralEvent(
         actual.collateralTokens === expected.collateralTokens &&
         actual.collateralAmount.toBigInt() === expected.collateralAmount &&
         actual.instigator === expected.instigator
+    )
+}
+
+function deepEqualsDebtIssueEvent(
+    actual: ActualDebtIssueEvent,
+    expected: ExpectDebtIssueEvent
+): boolean {
+    return (
+        actual.receiver === expected.receiver &&
+        actual.debTokens === expected.tokens &&
+        actual.debtAmount.toBigInt() === expected.amount
     )
 }
