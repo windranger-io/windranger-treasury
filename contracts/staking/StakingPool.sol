@@ -296,6 +296,14 @@ contract StakingPool is
         _setRewardsAvailableTimestamp(timestamp);
     }
 
+    function updateTokenSweepBeneficiary(address newBeneficiary)
+        external
+        whenNotPaused
+        onlySuperUserRole
+    {
+        _setTokenSweepBeneficiary(newBeneficiary);
+    }
+
     function currentExpectedRewards(address user)
         external
         view

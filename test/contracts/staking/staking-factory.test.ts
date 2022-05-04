@@ -45,7 +45,7 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 chai.use(solidity)
 
 const EPOCH_DURATION = 60
-const START_DELAY = 15
+const START_DELAY = 30
 const REWARDS_AVAILABLE_OFFSET = 20
 const MIN_POOL_STAKE = 500
 
@@ -237,12 +237,6 @@ describe('Staking Pool Factory', () => {
     })
 
     describe('create pools', () => {
-        before(async () => {
-            epochStartTimestamp = BigNumber.from(
-                (await getTimestampNow()) + START_DELAY
-            )
-        })
-
         it('create floating pool', async () => {
             const stakingPoolEventData = {
                 stakeToken: stakeTokens.address,
