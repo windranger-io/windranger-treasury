@@ -238,6 +238,7 @@ contract StakingPool is
         __Context_init_unchained();
         __Pausable_init();
         __Ownable_init();
+        __TokenSweep_init();
 
         //slither-disable-next-line timestamp
         require(

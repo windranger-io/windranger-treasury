@@ -65,6 +65,7 @@ contract StakingPoolFactory is
     function initialize() external initializer {
         __Pausable_init();
         __RoleAccessControl_init();
+        __TokenSweep_init();
     }
 
     function sweepERC20Tokens(address tokens, uint256 amount)
