@@ -218,19 +218,56 @@ export function depositEventLogs(events: Result[]): ActualDepositEvent[] {
 }
 
 /**
- * Shape check and conversion for a ExpireEvent.
+ * Shape check and conversion for ExpireEvents.
  */
-export function expireEvent(event: Event): ActualExpireEvent {
-    const expire = event as ExpireEvent
-    expect(expire.args).is.not.undefined
+export function expireEvents(events: Event[]): ActualExpireEvent[] {
+    const expiry: ActualExpireEvent[] = []
 
-    const args = expire.args
-    expect(args?.treasury).is.not.undefined
-    expect(args?.collateralTokens).is.not.undefined
-    expect(args?.collateralAmount).is.not.undefined
-    expect(args?.instigator).is.not.undefined
+    for (const event of events) {
+        const expire = event as ExpireEvent
+        expect(expire.args).is.not.undefined
 
-    return expire.args
+        const args = expire.args
+        expect(args?.treasury).is.not.undefined
+        expect(args?.collateralTokens).is.not.undefined
+        expect(args?.collateralAmount).is.not.undefined
+        expect(args?.instigator).is.not.undefined
+
+        expiry.push({
+            treasury: args?.treasury,
+            collateralTokens: args?.collateralTokens,
+            collateralAmount: args?.collateralAmount,
+            instigator: args?.instigator
+        })
+    }
+
+    return expiry
+}
+
+/**
+ * Shape check and conversion for an event log entry for Expire events.
+ */
+export function expireEventLogs(events: Result[]): ActualExpireEvent[] {
+    const expire: ActualExpireEvent[] = []
+
+    for (const event of events) {
+        expect(event?.treasury).is.not.undefined
+        expect(event?.treasury).to.be.a('string')
+        expect(event?.collateralAmount).is.not.undefined
+        expect(event?.collateralTokens).to.be.a('string')
+        expect(event?.collateralAmount).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
+        expect(event?.instigator).is.not.undefined
+
+        expire.push({
+            treasury: String(event.treasury),
+            collateralTokens: String(event.collateralTokens),
+            collateralAmount: BigNumber.from(event.collateralAmount),
+            instigator: String(event.instigator)
+        })
+    }
+
+    return expire
 }
 
 /**

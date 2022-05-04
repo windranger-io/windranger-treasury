@@ -23,7 +23,8 @@ import {
     verifyDebtIssueEvents,
     verifyDepositEventLogs,
     verifyDepositEvents,
-    verifyExpireEvent,
+    verifyExpireEventLogs,
+    verifyExpireEvents,
     verifyFullCollateralEventLogs,
     verifyFullCollateralEvents,
     verifyPartialCollateralEvent,
@@ -981,9 +982,12 @@ describe('ERC20 Single Collateral Bond contract', () => {
         const expectedDepositEvent = [
             {
                 tokens: collateralTokens.address,
-                amount: pledge
+                amount: pledge,
+                depositor: guarantorOne.address
             }
         ]
+        verifyDepositEvents(depositOne, expectedDepositEvent)
+        verifyDepositEventLogs(bond, depositOne, expectedDepositEvent)
 
         const expectedDebtIssueEvent = [
             {
@@ -1760,11 +1764,18 @@ describe('ERC20 Single Collateral Bond contract', () => {
         // Owner expires the un-paused bond
         expect(await bond.paused()).is.false
         const expireReceipt = await expire()
-        verifyExpireEvent(expireReceipt, admin.address, treasury, {
-            tokens: collateralTokens.address,
-            amount: collateral - slashedCollateral,
-            instigator: admin.address
-        })
+        const expectedExpireEvent = [
+            {
+                treasury: treasury,
+                tokens: collateralTokens.address,
+                amount: collateral - slashedCollateral,
+                instigator: admin.address
+            }
+        ]
+
+        verifyExpireEvents(expireReceipt, expectedExpireEvent)
+        verifyExpireEventLogs(bond, expireReceipt, expectedExpireEvent)
+
         verifyERC20TransferEvents(expireReceipt, [
             {
                 from: bond.address,

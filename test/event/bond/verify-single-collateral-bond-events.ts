@@ -5,6 +5,7 @@ import {
     ActualAllowRedemptionEvent,
     ActualDebtIssueEvent,
     ActualDepositEvent,
+    ActualExpireEvent,
     ActualFullCollateralEvent,
     allowRedemptionEventLogs,
     allowRedemptionEvents,
@@ -12,7 +13,8 @@ import {
     debtIssueEvents,
     depositEventLogs,
     depositEvents,
-    expireEvent,
+    expireEvents,
+    expireEventLogs,
     fullCollateralEventLogs,
     fullCollateralEvents,
     partialCollateralEvent,
@@ -33,6 +35,13 @@ export type ExpectDepositEvent = {
     tokens: string
     amount: bigint
     depositor: string
+}
+
+export type ExpectExpireEvent = {
+    tokens: string
+    amount: bigint
+    treasury: string
+    instigator: string
 }
 
 export type ExpectTokenBalance = {
@@ -222,24 +231,37 @@ export function verifyDepositEventLogs<T extends BaseContract>(
 }
 
 /**
- * Verifies the content for Expire event.
+ * Verifies the content for Expire events.
  */
-export function verifyExpireEvent(
+export function verifyExpireEvents(
     receipt: ContractReceipt,
-    sender: string,
-    treasury: string,
-    collateral: ExpectTokenBalance
+    expectedEvents: ExpectExpireEvent[]
 ): void {
-    const expire = expireEvent(event('Expire', receipt))
-    expect(expire.treasury, 'Debt token receiver').equals(treasury)
-    expect(expire.collateralTokens, 'Debt token address').equals(
-        collateral.tokens
+    const actualEvents = expireEvents(events('Expire', receipt))
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualExpireEvent, expected: ExpectExpireEvent) =>
+            deepEqualsExpireEvent(actual, expected)
     )
-    expect(expire.collateralAmount, 'Debt token amount').equals(
-        collateral.amount
-    )
-    expect(expire.instigator, 'Instigator address').equals(
-        collateral.instigator
+}
+
+/**
+ * Verifies the event log entries contain the expected Expire events.
+ */
+export function verifyExpireEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectExpireEvent[]
+): void {
+    const actualEvents = expireEventLogs(eventLog('Expire', emitter, receipt))
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualExpireEvent, expected: ExpectExpireEvent) =>
+            deepEqualsExpireEvent(actual, expected)
     )
 }
 
@@ -379,5 +401,17 @@ function deepEqualsDepositEvent(
         actual.depositor === expected.depositor &&
         actual.collateralTokens === expected.tokens &&
         actual.collateralAmount.toBigInt() === expected.amount
+    )
+}
+
+function deepEqualsExpireEvent(
+    actual: ActualExpireEvent,
+    expected: ExpectExpireEvent
+): boolean {
+    return (
+        actual.treasury === expected.treasury &&
+        actual.collateralTokens === expected.tokens &&
+        actual.collateralAmount.toBigInt() === expected.amount &&
+        actual.instigator === expected.instigator
     )
 }
