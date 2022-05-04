@@ -31,7 +31,7 @@ const REWARDS_AVAILABLE_OFFSET = 20 // time after the end of the lockup the rewa
 const MIN_POOL_STAKE = 500
 const REWARD_TOKEN_1_AMOUNT = 4000
 
-describe.only('Staking Pool Tests', () => {
+describe('Staking Pool Tests', () => {
     describe('Initialization', () => {
         const ratio = 0
         const amount = BigNumber.from(9090)
