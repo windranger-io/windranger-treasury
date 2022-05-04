@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./StakingPoolLib.sol";
 import "../Version.sol";
+import "../sweep/SweepERC20.sol";
 
 /**
  * @title StakingPool with optional fixed or floating token rewards
@@ -23,6 +24,7 @@ contract StakingPool is
     PausableUpgradeable,
     ReentrancyGuard,
     OwnableUpgradeable,
+    SweepERC20,
     Version
 {
     using SafeERC20 for IERC20;
@@ -218,6 +220,14 @@ contract StakingPool is
      */
     function emergencyWithdraw() external emergencyModeEnabled {
         _withdrawStake();
+    }
+
+    function sweepERC20Tokens(address tokens, uint256 amount)
+        external
+        whenNotPaused
+        onlySuperUserRole
+    {
+        _sweepERC20Tokens(tokens, amount);
     }
 
     function initialize(

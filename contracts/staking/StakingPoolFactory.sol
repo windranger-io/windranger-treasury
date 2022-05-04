@@ -9,11 +9,13 @@ import "./StakingPoolLib.sol";
 import "./StakingPoolCreator.sol";
 import "../RoleAccessControl.sol";
 import "../Version.sol";
+import "../sweep/SweepERC20.sol";
 
 contract StakingPoolFactory is
     RoleAccessControl,
     PausableUpgradeable,
     StakingPoolCreator,
+    SweepERC20,
     Version
 {
     event StakingPoolCreated(
@@ -63,5 +65,13 @@ contract StakingPoolFactory is
     function initialize() external initializer {
         __Pausable_init();
         __RoleAccessControl_init();
+    }
+
+    function sweepERC20Tokens(address tokens, uint256 amount)
+        external
+        whenNotPaused
+        onlySuperUserRole
+    {
+        _sweepERC20Tokens(tokens, amount);
     }
 }
