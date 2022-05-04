@@ -17,12 +17,14 @@ import {
     expireEventLogs,
     fullCollateralEventLogs,
     fullCollateralEvents,
-    redemptionEvent,
     slashDepositsEvent,
     withdrawCollateralEvent,
     ActualPartialCollateralEvent,
     partialCollateralEvents,
-    partialCollateralEventLogs
+    partialCollateralEventLogs,
+    ActualRedemptionEvent,
+    redemptionEvents,
+    redemptionEventLogs
 } from './single-collateral-bond-events'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
@@ -46,10 +48,12 @@ export type ExpectExpireEvent = {
     instigator: string
 }
 
-export type ExpectTokenBalance = {
-    tokens: string
-    amount: bigint
-    instigator: string
+export type ExpectRedemptionEvent = {
+    redeemer: string
+    debtTokens: string
+    debtAmount: bigint
+    collateralTokens: string
+    collateralAmount: bigint
 }
 
 export type ExpectSlashEvent = {
@@ -319,23 +323,39 @@ export function verifyPartialCollateralEventLogs<T extends BaseContract>(
 }
 
 /**
- * Verifies the content for a Redemption event.
+ * Verifies the content for Redemption events.
  */
-export function verifyRedemptionEvent(
+export function verifyRedemptionEvents(
     receipt: ContractReceipt,
-    redeemer: string,
-    debt: ExpectTokenBalance,
-    collateral: ExpectTokenBalance
+    expectedEvents: ExpectRedemptionEvent[]
 ): void {
-    const redemption = redemptionEvent(event('Redemption', receipt))
-    expect(redemption.redeemer, 'Redemption redeemer').equals(redeemer)
-    expect(redemption.debtTokens, 'Redemption debt address').equals(debt.tokens)
-    expect(redemption.debtAmount, 'Redemption debt amount').equals(debt.amount)
-    expect(redemption.collateralTokens, 'Redemption collateral address').equals(
-        collateral.tokens
+    const actualEvents = redemptionEvents(events('Redemption', receipt))
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualRedemptionEvent, expected: ExpectRedemptionEvent) =>
+            deepEqualsRedemptionEvent(actual, expected)
     )
-    expect(redemption.collateralAmount, 'Redemption collateral amount').equals(
-        collateral.amount
+}
+
+/**
+ * Verifies the event log entries contain the expected Redemption events.
+ */
+export function verifyRedemptionEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectRedemptionEvent[]
+): void {
+    const actualEvents = redemptionEventLogs(
+        eventLog('Redemption', emitter, receipt)
+    )
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualRedemptionEvent, expected: ExpectRedemptionEvent) =>
+            deepEqualsRedemptionEvent(actual, expected)
     )
 }
 
@@ -449,5 +469,18 @@ function deepEqualsPartialCollateralEvent(
         actual.debtTokens === expected.debtTokens &&
         actual.debtRemaining.toBigInt() === expected.debtRemaining &&
         actual.instigator === expected.instigator
+    )
+}
+
+function deepEqualsRedemptionEvent(
+    actual: ActualRedemptionEvent,
+    expected: ExpectRedemptionEvent
+): boolean {
+    return (
+        actual.collateralTokens === expected.collateralTokens &&
+        actual.collateralAmount.toBigInt() === expected.collateralAmount &&
+        actual.debtTokens === expected.debtTokens &&
+        actual.debtAmount.toBigInt() === expected.debtAmount &&
+        actual.redeemer === expected.redeemer
     )
 }

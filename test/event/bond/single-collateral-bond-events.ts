@@ -383,24 +383,64 @@ export function partialCollateralEventLogs(
     return collateralEvents
 }
 
-// TODO marker
 /**
- * Shape check and conversion for a RedemptionEvent.
+ * Shape check and conversion for RedemptionEvents.
  */
-export function redemptionEvent(event: Event): ActualRedemptionEvent {
-    const debt = event as RedemptionEvent
-    expect(debt.args).is.not.undefined
+export function redemptionEvents(events: Event[]): ActualRedemptionEvent[] {
+    const redemptions: ActualRedemptionEvent[] = []
 
-    const args = debt.args
-    expect(args?.redeemer).is.not.undefined
-    expect(args?.debtTokens).is.not.undefined
-    expect(args?.debtAmount).is.not.undefined
-    expect(args?.collateralTokens).is.not.undefined
-    expect(args?.collateralAmount).is.not.undefined
+    for (const event of events) {
+        const redemption = event as RedemptionEvent
+        expect(redemption.args).is.not.undefined
 
-    return debt.args
+        const args = redemption.args
+        expect(args?.redeemer).is.not.undefined
+        expect(args?.debtTokens).is.not.undefined
+        expect(args?.debtAmount).is.not.undefined
+        expect(args?.collateralTokens).is.not.undefined
+        expect(args?.collateralAmount).is.not.undefined
+
+        redemptions.push({
+            collateralTokens: args.collateralTokens,
+            collateralAmount: args.collateralAmount,
+            debtTokens: args.debtTokens,
+            debtAmount: args.debtAmount,
+            redeemer: args.redeemer
+        })
+    }
+
+    return redemptions
 }
 
+/**
+ * Shape check and conversion for an event log entry for Redemption events.
+ */
+export function redemptionEventLogs(events: Result[]): ActualRedemptionEvent[] {
+    const redemptions: ActualRedemptionEvent[] = []
+
+    for (const event of events) {
+        expect(event?.collateralTokens).is.not.undefined
+        expect(event?.collateralTokens).to.be.a('string')
+        expect(event?.collateralAmount).is.not.undefined
+        expect(event?.debtTokens).is.not.undefined
+        expect(event?.debtTokens).to.be.a('string')
+        expect(event?.debtAmount).is.not.undefined
+        expect(event?.redeemer).is.not.undefined
+        expect(event?.redeemer).to.be.a('string')
+
+        redemptions.push({
+            collateralTokens: String(event.collateralTokens),
+            collateralAmount: BigNumber.from(event.collateralAmount),
+            debtTokens: String(event.debtTokens),
+            debtAmount: BigNumber.from(event.debtAmount),
+            redeemer: String(event.redeemer)
+        })
+    }
+
+    return redemptions
+}
+
+// TODO marker
 /**
  * Shape check and conversion for a SlashEvent.
  */
