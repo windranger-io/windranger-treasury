@@ -440,23 +440,60 @@ export function redemptionEventLogs(events: Result[]): ActualRedemptionEvent[] {
     return redemptions
 }
 
-// TODO marker
 /**
- * Shape check and conversion for a SlashEvent.
+ * Shape check and conversion for SlashEvents.
  */
-export function slashDepositsEvent(event: Event): ActualSlashEvent {
-    const slash = event as SlashDepositsEvent
-    expect(slash.args).is.not.undefined
+export function slashDepositsEvents(events: Event[]): ActualSlashEvent[] {
+    const slashing: ActualSlashEvent[] = []
 
-    const args = slash.args
-    expect(args?.collateralTokens).is.not.undefined
-    expect(args?.collateralAmount).is.not.undefined
-    expect(args?.reason).is.not.undefined
-    expect(args?.instigator).is.not.undefined
+    for (const event of events) {
+        const slash = event as SlashDepositsEvent
+        expect(slash.args).is.not.undefined
 
-    return slash.args
+        const args = slash.args
+        expect(args?.collateralTokens).is.not.undefined
+        expect(args?.collateralAmount).is.not.undefined
+        expect(args?.reason).is.not.undefined
+        expect(args?.instigator).is.not.undefined
+
+        slashing.push({
+            collateralTokens: args.collateralTokens,
+            collateralAmount: args.collateralAmount,
+            reason: args.reason,
+            instigator: args.instigator
+        })
+    }
+
+    return slashing
 }
 
+/**
+ * Shape check and conversion for an event log entry for Slash events.
+ */
+export function slashDepositsEventLogs(events: Result[]): ActualSlashEvent[] {
+    const slashes: ActualSlashEvent[] = []
+
+    for (const event of events) {
+        expect(event?.collateralTokens).is.not.undefined
+        expect(event?.collateralTokens).to.be.a('string')
+        expect(event?.collateralAmount).is.not.undefined
+        expect(event?.reason).is.not.undefined
+        expect(event?.reason).to.be.a('string')
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
+
+        slashes.push({
+            collateralTokens: String(event.collateralTokens),
+            collateralAmount: BigNumber.from(event.collateralAmount),
+            reason: String(event.reason),
+            instigator: String(event.instigator)
+        })
+    }
+
+    return slashes
+}
+
+// TODO marker
 /**
  * Shape check and conversion for a WithdrawCollateralEvent.
  */

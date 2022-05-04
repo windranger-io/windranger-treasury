@@ -17,14 +17,16 @@ import {
     expireEventLogs,
     fullCollateralEventLogs,
     fullCollateralEvents,
-    slashDepositsEvent,
     withdrawCollateralEvent,
     ActualPartialCollateralEvent,
     partialCollateralEvents,
     partialCollateralEventLogs,
     ActualRedemptionEvent,
     redemptionEvents,
-    redemptionEventLogs
+    redemptionEventLogs,
+    slashDepositsEvents,
+    ActualSlashEvent,
+    slashDepositsEventLogs
 } from './single-collateral-bond-events'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
@@ -58,8 +60,8 @@ export type ExpectRedemptionEvent = {
 
 export type ExpectSlashEvent = {
     reason: string
-    tokens: string
-    amount: bigint
+    collateralTokens: string
+    collateralAmount: bigint
     instigator: string
 }
 
@@ -362,22 +364,37 @@ export function verifyRedemptionEventLogs<T extends BaseContract>(
 /**
  * Verifies the content for a Slash event.
  */
-export function verifySlashDepositsEvent(
+export function verifySlashDepositEvents(
     receipt: ContractReceipt,
-    expectedSlashEvent: ExpectSlashEvent
+    expectedEvents: ExpectSlashEvent[]
 ): void {
-    const slashDeposit = slashDepositsEvent(event('SlashDeposits', receipt))
-    expect(slashDeposit.collateralTokens, 'Collateral tokens address').equals(
-        expectedSlashEvent.tokens
+    const actualEvents = slashDepositsEvents(events('SlashDeposits', receipt))
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualSlashEvent, expected: ExpectSlashEvent) =>
+            deepEqualsSlashDepositEvent(actual, expected)
     )
-    expect(slashDeposit.collateralAmount, 'Slash amount').equals(
-        expectedSlashEvent.amount
+}
+
+/**
+ * Verifies the event log entries contain the expected Slash events.
+ */
+export function verifySlashDepositEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectSlashEvent[]
+): void {
+    const actualEvents = slashDepositsEventLogs(
+        eventLog('SlashDeposits', emitter, receipt)
     )
-    expect(slashDeposit.reason, 'Slash reason').equals(
-        expectedSlashEvent.reason
-    )
-    expect(slashDeposit.instigator, 'Instigator address').equals(
-        expectedSlashEvent.instigator
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualSlashEvent, expected: ExpectSlashEvent) =>
+            deepEqualsSlashDepositEvent(actual, expected)
     )
 }
 
@@ -482,5 +499,17 @@ function deepEqualsRedemptionEvent(
         actual.debtTokens === expected.debtTokens &&
         actual.debtAmount.toBigInt() === expected.debtAmount &&
         actual.redeemer === expected.redeemer
+    )
+}
+
+function deepEqualsSlashDepositEvent(
+    actual: ActualSlashEvent,
+    expected: ExpectSlashEvent
+): boolean {
+    return (
+        actual.collateralTokens === expected.collateralTokens &&
+        actual.collateralAmount.toBigInt() === expected.collateralAmount &&
+        actual.reason === expected.reason &&
+        actual.instigator === expected.instigator
     )
 }

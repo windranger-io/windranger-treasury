@@ -31,7 +31,8 @@ import {
     verifyPartialCollateralEvents,
     verifyRedemptionEventLogs,
     verifyRedemptionEvents,
-    verifySlashDepositsEvent,
+    verifySlashDepositEventLogs,
+    verifySlashDepositEvents,
     verifyWithdrawCollateralEvent
 } from '../../event/bond/verify-single-collateral-bond-events'
 import {verifyERC20TransferEvents} from '../../event/erc20/verify-erc20-events'
@@ -1040,12 +1041,17 @@ describe('ERC20 Single Collateral Bond contract', () => {
             slashedCollateral,
             BOND_SLASH_REASON
         )
-        verifySlashDepositsEvent(slashReceipt, {
-            tokens: collateralTokens.address,
-            amount: slashedCollateral,
-            reason: BOND_SLASH_REASON,
-            instigator: admin.address
-        })
+        const expectedSlashEvent = [
+            {
+                collateralTokens: collateralTokens.address,
+                collateralAmount: slashedCollateral,
+                reason: BOND_SLASH_REASON,
+                instigator: admin.address
+            }
+        ]
+        verifySlashDepositEvents(slashReceipt, expectedSlashEvent)
+        verifySlashDepositEventLogs(bond, slashReceipt, expectedSlashEvent)
+
         verifyERC20TransferEvents(slashReceipt, [
             {
                 from: bond.address,
@@ -1168,12 +1174,17 @@ describe('ERC20 Single Collateral Bond contract', () => {
             slashedCollateral,
             BOND_SLASH_REASON
         )
-        verifySlashDepositsEvent(slashReceipt, {
-            tokens: collateralTokens.address,
-            amount: slashedCollateral,
-            reason: BOND_SLASH_REASON,
-            instigator: admin.address
-        })
+        const expectedSlashEvent = [
+            {
+                collateralTokens: collateralTokens.address,
+                collateralAmount: slashedCollateral,
+                reason: BOND_SLASH_REASON,
+                instigator: admin.address
+            }
+        ]
+        verifySlashDepositEvents(slashReceipt, expectedSlashEvent)
+        verifySlashDepositEventLogs(bond, slashReceipt, expectedSlashEvent)
+
         verifyERC20TransferEvents(slashReceipt, [
             {
                 from: bond.address,
@@ -1779,12 +1790,17 @@ describe('ERC20 Single Collateral Bond contract', () => {
             slashedCollateral,
             BOND_SLASH_REASON
         )
-        verifySlashDepositsEvent(slashReceipt, {
-            tokens: collateralTokens.address,
-            amount: slashedCollateral,
-            reason: BOND_SLASH_REASON,
-            instigator: admin.address
-        })
+        const expectedSlashEvent = [
+            {
+                collateralTokens: collateralTokens.address,
+                collateralAmount: slashedCollateral,
+                reason: BOND_SLASH_REASON,
+                instigator: admin.address
+            }
+        ]
+        verifySlashDepositEvents(slashReceipt, expectedSlashEvent)
+        verifySlashDepositEventLogs(bond, slashReceipt, expectedSlashEvent)
+
         verifyERC20TransferEvents(slashReceipt, [
             {
                 from: bond.address,
@@ -1981,12 +1997,17 @@ describe('ERC20 Single Collateral Bond contract', () => {
             slashedCollateral,
             BOND_SLASH_REASON
         )
-        verifySlashDepositsEvent(slashReceipt, {
-            tokens: collateralTokens.address,
-            amount: slashedCollateral,
-            reason: BOND_SLASH_REASON,
-            instigator: admin.address
-        })
+        const expectedSlashEvent = [
+            {
+                collateralTokens: collateralTokens.address,
+                collateralAmount: slashedCollateral,
+                reason: BOND_SLASH_REASON,
+                instigator: admin.address
+            }
+        ]
+        verifySlashDepositEvents(slashReceipt, expectedSlashEvent)
+        verifySlashDepositEventLogs(bond, slashReceipt, expectedSlashEvent)
+
         verifyERC20TransferEvents(slashReceipt, [
             {
                 from: bond.address,
