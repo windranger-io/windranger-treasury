@@ -323,24 +323,67 @@ export function fullCollateralEventLogs(
 }
 
 /**
- * Shape check and conversion for a PartialCollateralEvent.
+ * Shape check and conversion for PartialCollateralEvents.
  */
-export function partialCollateralEvent(
-    event: Event
-): ActualPartialCollateralEvent {
-    const collateral = event as PartialCollateralEvent
-    expect(collateral.args).is.not.undefined
+export function partialCollateralEvents(
+    events: Event[]
+): ActualPartialCollateralEvent[] {
+    const collateralEvents: ActualPartialCollateralEvent[] = []
 
-    const args = collateral.args
-    expect(args?.collateralTokens).is.not.undefined
-    expect(args?.collateralAmount).is.not.undefined
-    expect(args?.debtTokens).is.not.undefined
-    expect(args?.debtRemaining).is.not.undefined
-    expect(args?.instigator).is.not.undefined
+    for (const event of events) {
+        const collateral = event as PartialCollateralEvent
+        expect(collateral.args).is.not.undefined
 
-    return collateral.args
+        const args = collateral.args
+        expect(args?.collateralTokens).is.not.undefined
+        expect(args?.collateralAmount).is.not.undefined
+        expect(args?.debtTokens).is.not.undefined
+        expect(args?.debtRemaining).is.not.undefined
+        expect(args?.instigator).is.not.undefined
+
+        collateralEvents.push({
+            collateralTokens: args.collateralTokens,
+            collateralAmount: args.collateralAmount,
+            debtTokens: args.debtTokens,
+            debtRemaining: args.debtRemaining,
+            instigator: args.instigator
+        })
+    }
+
+    return collateralEvents
 }
 
+/**
+ * Shape check and conversion for an event log entry for PartialCollateral events.
+ */
+export function partialCollateralEventLogs(
+    events: Result[]
+): ActualPartialCollateralEvent[] {
+    const collateralEvents: ActualPartialCollateralEvent[] = []
+
+    for (const event of events) {
+        expect(event?.collateralTokens).is.not.undefined
+        expect(event?.collateralTokens).to.be.a('string')
+        expect(event?.collateralAmount).is.not.undefined
+        expect(event?.debtTokens).is.not.undefined
+        expect(event?.debtTokens).to.be.a('string')
+        expect(event?.debtRemaining).is.not.undefined
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
+
+        collateralEvents.push({
+            collateralTokens: String(event.collateralTokens),
+            collateralAmount: BigNumber.from(event.collateralAmount),
+            debtTokens: String(event.debtTokens),
+            debtRemaining: BigNumber.from(event.debtRemaining),
+            instigator: String(event.instigator)
+        })
+    }
+
+    return collateralEvents
+}
+
+// TODO marker
 /**
  * Shape check and conversion for a RedemptionEvent.
  */

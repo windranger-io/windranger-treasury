@@ -17,10 +17,12 @@ import {
     expireEventLogs,
     fullCollateralEventLogs,
     fullCollateralEvents,
-    partialCollateralEvent,
     redemptionEvent,
     slashDepositsEvent,
-    withdrawCollateralEvent
+    withdrawCollateralEvent,
+    ActualPartialCollateralEvent,
+    partialCollateralEvents,
+    partialCollateralEventLogs
 } from './single-collateral-bond-events'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
@@ -67,6 +69,14 @@ export type ExpectFlushTransferEvent = {
 export type ExpectFullCollateralEvent = {
     collateralTokens: string
     collateralAmount: bigint
+    instigator: string
+}
+
+export type ExpectPartialCollateralEvent = {
+    collateralTokens: string
+    collateralAmount: bigint
+    debtTokens: string
+    debtRemaining: bigint
     instigator: string
 }
 
@@ -266,32 +276,45 @@ export function verifyExpireEventLogs<T extends BaseContract>(
 }
 
 /**
- * Verifies the content for a Full Collateral event.
+ * Verifies the content for PartialCollateral events.
  */
-export function verifyPartialCollateralEvent(
+export function verifyPartialCollateralEvents(
     receipt: ContractReceipt,
-    collateral: ExpectTokenBalance,
-    debt: ExpectTokenBalance
+    expectedEvents: ExpectPartialCollateralEvent[]
 ): void {
-    const partialCollateral = partialCollateralEvent(
-        event('PartialCollateral', receipt)
+    const actualEvents = partialCollateralEvents(
+        events('PartialCollateral', receipt)
     )
-    expect(
-        partialCollateral.collateralTokens,
-        'Collateral token address'
-    ).equals(collateral.tokens)
-    expect(
-        partialCollateral.collateralAmount,
-        'Collateral token amount'
-    ).equals(collateral.amount)
-    expect(partialCollateral.debtTokens, 'Debt token address').equals(
-        debt.tokens
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (
+            actual: ActualPartialCollateralEvent,
+            expected: ExpectPartialCollateralEvent
+        ) => deepEqualsPartialCollateralEvent(actual, expected)
     )
-    expect(partialCollateral.debtRemaining, 'Debt tokens remaining').equals(
-        debt.amount
+}
+
+/**
+ * Verifies the event log entries contain the expected PartialCollateral events.
+ */
+export function verifyPartialCollateralEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectPartialCollateralEvent[]
+): void {
+    const actualEvents = partialCollateralEventLogs(
+        eventLog('PartialCollateral', emitter, receipt)
     )
-    expect(partialCollateral.instigator, 'Instigator address').equals(
-        debt.instigator
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (
+            actual: ActualPartialCollateralEvent,
+            expected: ExpectPartialCollateralEvent
+        ) => deepEqualsPartialCollateralEvent(actual, expected)
     )
 }
 
@@ -412,6 +435,19 @@ function deepEqualsExpireEvent(
         actual.treasury === expected.treasury &&
         actual.collateralTokens === expected.tokens &&
         actual.collateralAmount.toBigInt() === expected.amount &&
+        actual.instigator === expected.instigator
+    )
+}
+
+function deepEqualsPartialCollateralEvent(
+    actual: ActualPartialCollateralEvent,
+    expected: ExpectPartialCollateralEvent
+): boolean {
+    return (
+        actual.collateralTokens === expected.collateralTokens &&
+        actual.collateralAmount.toBigInt() === expected.collateralAmount &&
+        actual.debtTokens === expected.debtTokens &&
+        actual.debtRemaining.toBigInt() === expected.debtRemaining &&
         actual.instigator === expected.instigator
     )
 }

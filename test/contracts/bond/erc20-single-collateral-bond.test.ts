@@ -27,7 +27,8 @@ import {
     verifyExpireEvents,
     verifyFullCollateralEventLogs,
     verifyFullCollateralEvents,
-    verifyPartialCollateralEvent,
+    verifyPartialCollateralEventLogs,
+    verifyPartialCollateralEvents,
     verifyRedemptionEvent,
     verifySlashDepositsEvent,
     verifyWithdrawCollateralEvent
@@ -1200,18 +1201,23 @@ describe('ERC20 Single Collateral Bond contract', () => {
             expectedAllowRedemptionEvent
         )
 
-        verifyPartialCollateralEvent(
-            allowRedemptionReceipt,
+        const expectedPartialCollateralEvent = [
             {
-                tokens: collateralTokens.address,
-                amount: pledge - slashedCollateral,
-                instigator: admin.address
-            },
-            {
-                tokens: bond.address,
-                amount: unmatchedDebtTokens,
+                collateralTokens: collateralTokens.address,
+                collateralAmount: pledge - slashedCollateral,
+                debtTokens: bond.address,
+                debtRemaining: unmatchedDebtTokens,
                 instigator: admin.address
             }
+        ]
+        verifyPartialCollateralEvents(
+            allowRedemptionReceipt,
+            expectedPartialCollateralEvent
+        )
+        verifyPartialCollateralEventLogs(
+            bond,
+            allowRedemptionReceipt,
+            expectedPartialCollateralEvent
         )
 
         // Guarantor One redeem their bond, partial conversion (slashed)
@@ -1579,18 +1585,23 @@ describe('ERC20 Single Collateral Bond contract', () => {
             expectedAllowRedemptionEvent
         )
 
-        verifyPartialCollateralEvent(
-            allowRedemptionReceipt,
+        const expectedPartialCollateralEvent = [
             {
-                tokens: collateralTokens.address,
-                amount: pledgeOne + pledgeTwo,
-                instigator: admin.address
-            },
-            {
-                tokens: bond.address,
-                amount: unmatchedPledge,
+                collateralTokens: collateralTokens.address,
+                collateralAmount: pledgeOne + pledgeTwo,
+                debtTokens: bond.address,
+                debtRemaining: unmatchedPledge,
                 instigator: admin.address
             }
+        ]
+        verifyPartialCollateralEvents(
+            allowRedemptionReceipt,
+            expectedPartialCollateralEvent
+        )
+        verifyPartialCollateralEventLogs(
+            bond,
+            allowRedemptionReceipt,
+            expectedPartialCollateralEvent
         )
 
         // Guarantor One redeem their bond, full conversion
