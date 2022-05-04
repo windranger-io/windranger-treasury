@@ -33,7 +33,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
     function createStakingPool(
         StakingPoolLib.Config calldata config,
         bool launchPaused,
-        uint32 rewardsAvailableTimestamp
+        uint128 rewardsAvailableTimestamp
     )
         external
         whenNotPaused

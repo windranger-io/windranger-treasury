@@ -20,8 +20,8 @@ library StakingPoolLib {
         uint128 minTotalPoolStake;
         uint128 maxTotalPoolStake;
         uint128 minimumContribution;
-        uint32 epochDuration;
-        uint32 epochStartTimestamp;
+        uint128 epochDuration;
+        uint128 epochStartTimestamp;
         address treasury;
         IERC20 stakeToken;
         Reward[] rewardTokens;

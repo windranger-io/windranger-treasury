@@ -40,7 +40,7 @@ contract StakingPool is
 
     mapping(address => User) private _users;
 
-    uint32 private _rewardsAvailableTimestamp;
+    uint128 private _rewardsAvailableTimestamp;
     bool private _emergencyMode;
     uint128 private _totalStakedAmount;
 
@@ -54,7 +54,7 @@ contract StakingPool is
     event WithdrawStake(address indexed user, uint256 stake);
     event Deposit(address indexed user, uint256 depositAmount);
     event InitializeRewards(address rewardTokens, uint256 amount);
-    event RewardsAvailableTimestamp(uint32 rewardsAvailableTimestamp);
+    event RewardsAvailableTimestamp(uint128 rewardsAvailableTimestamp);
     event EmergencyMode(address indexed admin);
     event NoRewards(address indexed user);
 
@@ -231,7 +231,7 @@ contract StakingPool is
     function initialize(
         StakingPoolLib.Config calldata info,
         bool paused,
-        uint32 rewardsTimestamp
+        uint128 rewardsTimestamp
     ) external virtual initializer {
         __RoleAccessControl_init();
         __Context_init_unchained();
@@ -291,7 +291,7 @@ contract StakingPool is
         _adminEmergencyRewardSweep();
     }
 
-    function setRewardsAvailableTimestamp(uint32 timestamp)
+    function setRewardsAvailableTimestamp(uint128 timestamp)
         external
         atLeastDaoAdminRole(_stakingPoolConfig.daoId)
     {
@@ -322,7 +322,7 @@ contract StakingPool is
         return _stakingPoolConfig;
     }
 
-    function rewardsAvailableTimestamp() external view returns (uint32) {
+    function rewardsAvailableTimestamp() external view returns (uint128) {
         return _rewardsAvailableTimestamp;
     }
 
@@ -421,7 +421,7 @@ contract StakingPool is
         _transferStake(uint256((user.depositAmount)), _config.stakeToken);
     }
 
-    function _setRewardsAvailableTimestamp(uint32 timestamp) internal {
+    function _setRewardsAvailableTimestamp(uint128 timestamp) internal {
         require(!_isStakingPeriodComplete(), "StakePool: already finalized");
         //slither-disable-next-line timestamp
         require(timestamp > block.timestamp, "StakePool: future rewards");
