@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import "../RoleAccessControl.sol";
 import "./StakingPoolLib.sol";
 import "../Version.sol";
 
@@ -22,7 +22,7 @@ import "../Version.sol";
 contract StakingPool is
     PausableUpgradeable,
     ReentrancyGuard,
-    RoleAccessControl,
+    OwnableUpgradeable,
     Version
 {
     using SafeERC20 for IERC20;
@@ -83,19 +83,11 @@ contract StakingPool is
         _;
     }
 
-    function pause()
-        external
-        whenNotPaused
-        atLeastDaoMeepleRole(_stakingPoolConfig.daoId)
-    {
+    function pause() external whenNotPaused onlyOwner {
         _pause();
     }
 
-    function unpause()
-        external
-        whenPaused
-        atLeastDaoMeepleRole(_stakingPoolConfig.daoId)
-    {
+    function unpause() external whenPaused onlyOwner {
         _unpause();
     }
 
@@ -233,7 +225,6 @@ contract StakingPool is
         bool paused,
         uint32 rewardsTimestamp
     ) external virtual initializer {
-        __RoleAccessControl_init();
         __Context_init_unchained();
         __Pausable_init();
 
@@ -271,14 +262,11 @@ contract StakingPool is
     function initializeRewardTokens(
         address benefactor,
         StakingPoolLib.Reward[] calldata rewards
-    ) external atLeastDaoMeepleRole(_stakingPoolConfig.daoId) {
+    ) external onlyOwner {
         _initializeRewardTokens(benefactor, rewards);
     }
 
-    function enableEmergencyMode()
-        external
-        atLeastDaoAdminRole(_stakingPoolConfig.daoId)
-    {
+    function enableEmergencyMode() external onlyOwner {
         _emergencyMode = true;
         emit EmergencyMode(_msgSender());
     }
@@ -286,15 +274,12 @@ contract StakingPool is
     function adminEmergencyRewardSweep()
         external
         emergencyModeEnabled
-        atLeastDaoAdminRole(_stakingPoolConfig.daoId)
+        onlyOwner
     {
         _adminEmergencyRewardSweep();
     }
 
-    function setRewardsAvailableTimestamp(uint32 timestamp)
-        external
-        atLeastDaoAdminRole(_stakingPoolConfig.daoId)
-    {
+    function setRewardsAvailableTimestamp(uint32 timestamp) external onlyOwner {
         _setRewardsAvailableTimestamp(timestamp);
     }
 
