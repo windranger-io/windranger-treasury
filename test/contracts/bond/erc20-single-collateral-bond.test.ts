@@ -33,7 +33,8 @@ import {
     verifyRedemptionEvents,
     verifySlashDepositEventLogs,
     verifySlashDepositEvents,
-    verifyWithdrawCollateralEvent
+    verifyWithdrawCollateralEventLogs,
+    verifyWithdrawCollateralEvents
 } from '../../event/bond/verify-single-collateral-bond-events'
 import {verifyERC20TransferEvents} from '../../event/erc20/verify-erc20-events'
 import {
@@ -1491,12 +1492,24 @@ describe('ERC20 Single Collateral Bond contract', () => {
 
         // Move the rounding error from the Bond contract to the Treasury
         const withdrawReceipt = await withdrawCollateral()
-        verifyWithdrawCollateralEvent(withdrawReceipt, {
-            to: treasury,
-            tokens: collateralTokens.address,
-            amount: ONE,
-            instigator: admin.address
-        })
+        const expectedWithdrawCollateralEvent = [
+            {
+                treasury: treasury,
+                collateralTokens: collateralTokens.address,
+                collateralAmount: ONE,
+                instigator: admin.address
+            }
+        ]
+        verifyWithdrawCollateralEvents(
+            withdrawReceipt,
+            expectedWithdrawCollateralEvent
+        )
+        verifyWithdrawCollateralEventLogs(
+            bond,
+            withdrawReceipt,
+            expectedWithdrawCollateralEvent
+        )
+
         verifyERC20TransferEvents(withdrawReceipt, [
             {
                 from: bond.address,

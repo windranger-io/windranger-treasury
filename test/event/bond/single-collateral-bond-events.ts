@@ -493,21 +493,59 @@ export function slashDepositsEventLogs(events: Result[]): ActualSlashEvent[] {
     return slashes
 }
 
-// TODO marker
 /**
- * Shape check and conversion for a WithdrawCollateralEvent.
+ * Shape check and conversion for WithdrawCollateralEvents.
  */
-export function withdrawCollateralEvent(
-    event: Event
-): ActualWithdrawCollateralEvent {
-    const withdraw = event as WithdrawCollateralEvent
-    expect(withdraw.args).is.not.undefined
+export function withdrawCollateralEvents(
+    events: Event[]
+): ActualWithdrawCollateralEvent[] {
+    const withdrawals: ActualWithdrawCollateralEvent[] = []
 
-    const args = withdraw.args
-    expect(args?.treasury).is.not.undefined
-    expect(args?.collateralTokens).is.not.undefined
-    expect(args?.collateralAmount).is.not.undefined
-    expect(args?.instigator).is.not.undefined
+    for (const event of events) {
+        const withdraw = event as WithdrawCollateralEvent
+        expect(withdraw.args).is.not.undefined
 
-    return withdraw.args
+        const args = withdraw.args
+        expect(args?.treasury).is.not.undefined
+        expect(args?.collateralTokens).is.not.undefined
+        expect(args?.collateralAmount).is.not.undefined
+        expect(args?.instigator).is.not.undefined
+
+        withdrawals.push({
+            treasury: args.treasury,
+            collateralTokens: args.collateralTokens,
+            collateralAmount: args.collateralAmount,
+            instigator: args.instigator
+        })
+    }
+
+    return withdrawals
+}
+
+/**
+ * Shape check and conversion for an event log entry for WithdraeCollateral events.
+ */
+export function withdrawCollateralEventLogs(
+    events: Result[]
+): ActualWithdrawCollateralEvent[] {
+    const withdrawals: ActualWithdrawCollateralEvent[] = []
+
+    for (const event of events) {
+        expect(event?.treasury).is.not.undefined
+        expect(event?.treasury).to.be.a('string')
+        expect(event?.collateralTokens).is.not.undefined
+        expect(event?.collateralTokens).to.be.a('string')
+        expect(event?.collateralAmount).is.not.undefined
+        expect(event?.instigator).is.not.undefined
+        expect(event?.instigator).to.be.a('string')
+
+        withdrawals.push({
+            treasury: String(event.treasury),
+            collateralTokens: String(event.collateralTokens),
+            collateralAmount: BigNumber.from(event.collateralAmount),
+            instigator: String(event.instigator)
+        })
+    }
+
+    return withdrawals
 }

@@ -1,6 +1,5 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {event, events} from '../../framework/events'
-import {expect} from 'chai'
+import {events} from '../../framework/events'
 import {
     ActualAllowRedemptionEvent,
     ActualDebtIssueEvent,
@@ -17,7 +16,6 @@ import {
     expireEventLogs,
     fullCollateralEventLogs,
     fullCollateralEvents,
-    withdrawCollateralEvent,
     ActualPartialCollateralEvent,
     partialCollateralEvents,
     partialCollateralEventLogs,
@@ -26,7 +24,10 @@ import {
     redemptionEventLogs,
     slashDepositsEvents,
     ActualSlashEvent,
-    slashDepositsEventLogs
+    slashDepositsEventLogs,
+    withdrawCollateralEvents,
+    ActualWithdrawCollateralEvent,
+    withdrawCollateralEventLogs
 } from './single-collateral-bond-events'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
@@ -65,10 +66,10 @@ export type ExpectSlashEvent = {
     instigator: string
 }
 
-export type ExpectFlushTransferEvent = {
-    to: string
-    tokens: string
-    amount: bigint
+export type ExpectWithdrawCollateralEvent = {
+    treasury: string
+    collateralTokens: string
+    collateralAmount: bigint
     instigator: string
 }
 
@@ -399,25 +400,45 @@ export function verifySlashDepositEventLogs<T extends BaseContract>(
 }
 
 /**
- * Verifies the content for withdrawing the left over collateral (flush of remaining collateral assets) event.
+ * Verifies the content for withdrawing any leftover collateral (flush of remaining collateral assets) event.
  */
-export function verifyWithdrawCollateralEvent(
+export function verifyWithdrawCollateralEvents(
     receipt: ContractReceipt,
-    transfer: ExpectFlushTransferEvent
+    expectedEvents: ExpectWithdrawCollateralEvent[]
 ): void {
-    const withdrawCollateral = withdrawCollateralEvent(
-        event('WithdrawCollateral', receipt)
+    const actualEvents = withdrawCollateralEvents(
+        events('WithdrawCollateral', receipt)
     )
-    expect(withdrawCollateral.treasury, 'Transfer from').equals(transfer.to)
-    expect(
-        withdrawCollateral.collateralTokens,
-        'Collateral tokens address'
-    ).equals(transfer.tokens)
-    expect(withdrawCollateral.collateralAmount, 'Transfer amount').equals(
-        transfer.amount
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (
+            actual: ActualWithdrawCollateralEvent,
+            expected: ExpectWithdrawCollateralEvent
+        ) => deepEqualsWithdrawCollateralEvent(actual, expected)
     )
-    expect(withdrawCollateral.instigator, 'Instigator address').equals(
-        transfer.instigator
+}
+
+/**
+ * Verifies the event log entries contain the expected WithdrawCollateral events.
+ */
+export function verifyWithdrawCollateralEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectWithdrawCollateralEvent[]
+): void {
+    const actualEvents = withdrawCollateralEventLogs(
+        eventLog('WithdrawCollateral', emitter, receipt)
+    )
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (
+            actual: ActualWithdrawCollateralEvent,
+            expected: ExpectWithdrawCollateralEvent
+        ) => deepEqualsWithdrawCollateralEvent(actual, expected)
     )
 }
 
@@ -510,6 +531,18 @@ function deepEqualsSlashDepositEvent(
         actual.collateralTokens === expected.collateralTokens &&
         actual.collateralAmount.toBigInt() === expected.collateralAmount &&
         actual.reason === expected.reason &&
+        actual.instigator === expected.instigator
+    )
+}
+
+function deepEqualsWithdrawCollateralEvent(
+    actual: ActualWithdrawCollateralEvent,
+    expected: ExpectWithdrawCollateralEvent
+): boolean {
+    return (
+        actual.treasury === expected.treasury &&
+        actual.collateralTokens === expected.collateralTokens &&
+        actual.collateralAmount.toBigInt() === expected.collateralAmount &&
         actual.instigator === expected.instigator
     )
 }
