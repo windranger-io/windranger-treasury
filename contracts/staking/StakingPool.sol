@@ -233,12 +233,13 @@ contract StakingPool is
     function initialize(
         StakingPoolLib.Config calldata info,
         bool paused,
-        uint32 rewardsTimestamp
+        uint32 rewardsTimestamp,
+        address beneficiary
     ) external virtual initializer {
         __Context_init_unchained();
         __Pausable_init();
         __Ownable_init();
-        __TokenSweep_init();
+        __TokenSweep_init(beneficiary);
 
         //slither-disable-next-line timestamp
         require(
