@@ -1,31 +1,65 @@
-import {ContractReceipt} from 'ethers'
+import {BaseContract, ContractReceipt} from 'ethers'
 import {
     ActualAddCollateralEvent,
     ActualRemoveCollateralEvent,
-    addCollateralEvent,
-    removeCollateralEvent
+    addCollateralEventLogs,
+    addCollateralEvents,
+    removeCollateralEventLogs,
+    removeCollateralEvents
 } from './whitelist-events'
 
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
+import {eventLog} from '../../framework/event-logs'
 
-type ExpectedAddCollateralEvent = {address: string; instigator: string}
-type ExpectedRemoveCollateralEvent = {address: string; instigator: string}
+export type ExpectedAddCollateralEvent = {
+    daoId: bigint
+    address: string
+    instigator: string
+}
+
+export type ExpectedRemoveCollateralEvent = {
+    daoId: bigint
+    address: string
+    instigator: string
+}
 
 /**
- * Verifies the content for an Add Collateral event.
+ * Verifies the content for an AddCollateral event.
  */
 export function verifyAddCollateralEvents(
     receipt: ContractReceipt,
-    collateralAddedEvents: ExpectedAddCollateralEvent[]
+    expectedEvents: ExpectedAddCollateralEvent[]
 ): void {
-    const actualEvents = addCollateralEvent(
+    const actualEvents = addCollateralEvents(
         events('AddCollateralWhitelist', receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
-        collateralAddedEvents,
+        expectedEvents,
+        (
+            actual: ActualAddCollateralEvent,
+            expected: ExpectedAddCollateralEvent
+        ) => deepEqualsCollateralEvent(actual, expected)
+    )
+}
+
+/**
+ * Verifies the event log entries contain the expected AddCollateral events.
+ */
+export function verifyAddCollateralEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectedAddCollateralEvent[]
+): void {
+    const actualEvents = addCollateralEventLogs(
+        eventLog('AddCollateralWhitelist', emitter, receipt)
+    )
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
         (
             actual: ActualAddCollateralEvent,
             expected: ExpectedAddCollateralEvent
@@ -38,15 +72,37 @@ export function verifyAddCollateralEvents(
  */
 export function verifyRemoveCollateralEvents(
     receipt: ContractReceipt,
-    removeCollateralEvents: ExpectedRemoveCollateralEvent[]
+    expectedEvents: ExpectedRemoveCollateralEvent[]
 ): void {
-    const actualEvents = removeCollateralEvent(
+    const actualEvents = removeCollateralEvents(
         events('RemoveCollateralWhitelist', receipt)
     )
 
     verifyOrderedEvents(
         actualEvents,
-        removeCollateralEvents,
+        expectedEvents,
+        (
+            actual: ActualAddCollateralEvent,
+            expected: ExpectedAddCollateralEvent
+        ) => deepEqualsCollateralEvent(actual, expected)
+    )
+}
+
+/**
+ * Verifies the event log entries contain the expected RemoveCollateral events.
+ */
+export function verifyRemoveCollateralEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectedAddCollateralEvent[]
+): void {
+    const actualEvents = removeCollateralEventLogs(
+        eventLog('RemoveCollateralWhitelist', emitter, receipt)
+    )
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
         (
             actual: ActualAddCollateralEvent,
             expected: ExpectedAddCollateralEvent
@@ -59,6 +115,7 @@ function deepEqualsCollateralEvent(
     expected: ExpectedAddCollateralEvent | ExpectedRemoveCollateralEvent
 ): boolean {
     return (
+        actual.daoId.toBigInt() === expected.daoId &&
         actual.address === expected.address &&
         actual.instigator === expected.instigator
     )
