@@ -9,8 +9,16 @@ import {
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
 
-type ExpectedAddCollateralEvent = {address: string; instigator: string}
-type ExpectedRemoveCollateralEvent = {address: string; instigator: string}
+type ExpectedAddCollateralEvent = {
+    daoId: bigint
+    address: string
+    instigator: string
+}
+type ExpectedRemoveCollateralEvent = {
+    daoId: bigint
+    address: string
+    instigator: string
+}
 
 /**
  * Verifies the content for an Add Collateral event.
@@ -33,6 +41,7 @@ export function verifyAddCollateralEvents(
     )
 }
 
+// TODO event logs
 /**
  * Verifies the content for a Remove Collateral event.
  */
@@ -59,6 +68,7 @@ function deepEqualsCollateralEvent(
     expected: ExpectedAddCollateralEvent | ExpectedRemoveCollateralEvent
 ): boolean {
     return (
+        actual.daoId.toBigInt() === expected.daoId &&
         actual.address === expected.address &&
         actual.instigator === expected.instigator
     )

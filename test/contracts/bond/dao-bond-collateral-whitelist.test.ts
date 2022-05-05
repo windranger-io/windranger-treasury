@@ -58,6 +58,7 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 )
                 verifyAddCollateralEvents(receipt, [
                     {
+                        daoId: DAO_ID,
                         address: tokens.address,
                         instigator: admin
                     }
@@ -159,6 +160,7 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 )
                 verifyRemoveCollateralEvents(receipt, [
                     {
+                        daoId: DAO_ID,
                         address: collateralTokens.address,
                         instigator: admin
                     }
