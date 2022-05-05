@@ -17,10 +17,12 @@ abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
     }
 
     event AddCollateralWhitelist(
+        uint256 indexed daoId,
         address indexed collateralTokens,
         address indexed instigator
     );
     event RemoveCollateralWhitelist(
+        uint256 indexed daoId,
         address indexed collateralTokens,
         address indexed instigator
     );
@@ -91,7 +93,7 @@ abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
             erc20CollateralTokens
         ] = IERC20MetadataUpgradeable(erc20CollateralTokens).symbol();
 
-        emit AddCollateralWhitelist(erc20CollateralTokens, _msgSender());
+        emit AddCollateralWhitelist(daoId, erc20CollateralTokens, _msgSender());
     }
 
     /**
@@ -118,7 +120,11 @@ abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
 
         delete _daoCollateralWhitelist(daoId).symbols[erc20CollateralTokens];
 
-        emit RemoveCollateralWhitelist(erc20CollateralTokens, _msgSender());
+        emit RemoveCollateralWhitelist(
+            daoId,
+            erc20CollateralTokens,
+            _msgSender()
+        );
     }
 
     /**
