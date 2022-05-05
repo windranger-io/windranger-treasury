@@ -18,7 +18,9 @@ import {deployContract, signer} from '../../framework/contracts'
 import {constants, Wallet} from 'ethers'
 import {successfulTransaction} from '../../framework/transaction'
 import {
+    verifyAddCollateralEventLogs,
     verifyAddCollateralEvents,
+    verifyRemoveCollateralEventLogs,
     verifyRemoveCollateralEvents
 } from '../../event/bond/verify-whitelist-events'
 
@@ -56,13 +58,15 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                 const receipt = await successfulTransaction(
                     config.whitelistDaoCollateral(DAO_ID, tokens.address)
                 )
-                verifyAddCollateralEvents(receipt, [
-                    {
-                        daoId: DAO_ID,
-                        address: tokens.address,
-                        instigator: admin
-                    }
-                ])
+                const expectedCollateralEvent = [
+                    {daoId: DAO_ID, address: tokens.address, instigator: admin}
+                ]
+                verifyAddCollateralEvents(receipt, expectedCollateralEvent)
+                verifyAddCollateralEventLogs(
+                    config,
+                    receipt,
+                    expectedCollateralEvent
+                )
 
                 expect(
                     await config.isAllowedDaoCollateral(DAO_ID, tokens.address)
@@ -158,13 +162,19 @@ describe('DAO Bond Collateral Whitelist contract', () => {
                         collateralTokens.address
                     )
                 )
-                verifyRemoveCollateralEvents(receipt, [
+                const expectedCollateralEvent = [
                     {
                         daoId: DAO_ID,
                         address: collateralTokens.address,
                         instigator: admin
                     }
-                ])
+                ]
+                verifyRemoveCollateralEvents(receipt, expectedCollateralEvent)
+                verifyRemoveCollateralEventLogs(
+                    config,
+                    receipt,
+                    expectedCollateralEvent
+                )
 
                 expect(
                     await config.isAllowedDaoCollateral(
