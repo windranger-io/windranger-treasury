@@ -6,8 +6,18 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, BondFactory, IERC20} from '../../../typechain-types'
-import {deployContract, execute, signer} from '../../framework/contracts'
+import {
+    BitDAO,
+    BondFactory,
+    IERC20,
+    SingleCollateralMultiRewardBond
+} from '../../../typechain-types'
+import {
+    contractAt,
+    deployContract,
+    execute,
+    signer
+} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {verifyCreateBondEvent} from '../../event/bond/verify-bond-creator-events'
 import {successfulTransaction} from '../../framework/transaction'
@@ -21,6 +31,9 @@ import {
     verifyERC20SweepEvents,
     verifyERC20SweepLogEvents
 } from '../../event/sweep/verify-sweep-erc20-events'
+import {createBondEvent} from '../../event/bond/bond-creator-events'
+import {event} from '../../framework/events'
+import {Bond} from '../../../typechain-types/contracts/bond/BondFactory'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -40,6 +53,7 @@ describe('Bond Factory contract', () => {
                 await creator.unpause()
             }
         })
+
         it('with BIT token collateral', async () => {
             const bondName = 'Special Debt Certificate'
             const bondSymbol = 'SDC001'
@@ -78,6 +92,68 @@ describe('Bond Factory contract', () => {
                 receipt
             )
         })
+
+        it('passed through multi rewards', async () => {
+            const bondName = 'Special Debt Certificate'
+            const bondSymbol = 'SDC001'
+            const debtTokenAmount = 555666777n
+            const expiryTimestamp = 560000n
+            const minimumDeposit = 100n
+            const data = 'a random;delimiter;separated string'
+            const rewards = [
+                {
+                    tokens: collateralTokens.address,
+                    amount: 4000n,
+                    timeLock: 4n
+                },
+                {
+                    tokens: nonAdmin.address,
+                    amount: 27500n,
+                    timeLock: 75n
+                }
+            ]
+
+            const receipt = await execute(
+                creator.createBond(
+                    {name: bondName, symbol: bondSymbol, data: data},
+                    {
+                        debtTokenAmount: debtTokenAmount,
+                        collateralTokens: collateralTokens.address,
+                        expiryTimestamp: expiryTimestamp,
+                        minimumDeposit: minimumDeposit
+                    },
+                    rewards,
+                    treasury
+                )
+            )
+
+            await verifyCreateBondEvent(
+                {
+                    metadata: {name: bondName, symbol: bondSymbol, data: data},
+                    configuration: {
+                        debtTokenAmount: debtTokenAmount,
+                        collateralTokens: collateralTokens.address,
+                        expiryTimestamp: expiryTimestamp,
+                        minimumDeposit: minimumDeposit
+                    },
+                    rewards,
+                    treasury: treasury,
+                    instigator: admin
+                },
+                receipt
+            )
+
+            // Does the Bond have the correct rewards?
+            const bond: SingleCollateralMultiRewardBond = await contractAt(
+                'SingleCollateralMultiRewardBond',
+                createBondEvent(event('CreateBond', receipt)).bond
+            )
+            expectTimeLockRewardsEquals(
+                rewards,
+                await bond.timeLockRewardPools()
+            )
+        })
+
         it('only when not paused', async () => {
             await successfulTransaction(creator.pause())
             expect(await creator.paused()).is.true
@@ -282,3 +358,23 @@ describe('Bond Factory contract', () => {
     let collateralTokens: IERC20
     let creator: BondFactory
 })
+
+function expectTimeLockRewardsEquals(
+    expected: Bond.TimeLockRewardPoolStruct[],
+    actual: Bond.TimeLockRewardPoolStructOutput[]
+): void {
+    expect(expected.length).equals(actual.length)
+
+    for (let i = 0; i < expected.length; i++) {
+        verifyTimeLockRewardPool(expected[i], actual[i])
+    }
+}
+
+function verifyTimeLockRewardPool(
+    expected: Bond.TimeLockRewardPoolStruct,
+    actual: Bond.TimeLockRewardPoolStructOutput
+): void {
+    expect(expected.tokens).equals(actual.tokens)
+    expect(expected.amount).equals(actual.amount)
+    expect(expected.timeLock).equals(actual.timeLock)
+}

@@ -10,9 +10,25 @@ interface DeployableContract<T> {
 }
 
 /**
+ * Attaches to an already deployed contract.
+ *
+ * @param name the case-sensitive name of the contract in the Solidity file.
+ * @param address deployed contract address to connect with.
+ */
+export async function contractAt<T extends DeployableContract<T>>(
+    name: string,
+    address: string
+) {
+    const factory = await ethers.getContractFactory(name)
+    const contract = <T>(<unknown>factory.attach(address))
+
+    return contract.deployed()
+}
+
+/**
  * Deploys a contract, that may or may not have constructor parameters.
  *
- * @param name the case sensitive name of the contract in the Solidity file.
+ * @param name the case-sensitive name of the contract in the Solidity file.
  */
 export async function deployContract<T extends DeployableContract<T>>(
     name: string,

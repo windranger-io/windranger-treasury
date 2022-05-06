@@ -172,6 +172,22 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
     }
 
     /**
+     * @notice Initial time locked reward pools available for participating in the Bond.
+     *
+     * @dev The initial configuration for the pools is retrieve .i.e. not decremented as rewards are claimed.
+     *
+     * NOTE: Values are copied to a memory array be wary of gas cost if call within a transaction!
+     *       Expected usage is by view accessors that are queried without any gas fees.
+     */
+    function timeLockRewardPools()
+        external
+        view
+        returns (Bond.TimeLockRewardPool[] memory)
+    {
+        return _rewardPools;
+    }
+
+    /**
      * @notice Calculate the rewards the claimant will be entitled to after redemption and corresponding lock up period.
      *
      * @dev Must be called when the guarantor deposits collateral or on transfer of debt tokens, but not when they
