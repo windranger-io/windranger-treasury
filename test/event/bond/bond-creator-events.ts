@@ -95,7 +95,7 @@ export function createBondEventLogs(events: Result[]): ActualCreateBondEvent[] {
                 event?.rewards as Bond.TimeLockRewardPoolStruct[]
             ),
             treasury: String(event.treasury),
-            instigator: String(event.creator)
+            instigator: String(event.instigator)
         })
     }
 
