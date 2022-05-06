@@ -32,7 +32,6 @@ import {erc20SingleCollateralBondContractAt} from '../../event/bond/single-colla
 import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from '../../event/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {createDaoEvents} from '../../event/bond/bond-mediator-events'
 import {events} from '../../framework/events'
 import {createBondEventLogs} from '../../event/bond/bond-creator-events'
 import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
@@ -47,10 +46,14 @@ import {
     verifyERC20SweepLogEvents
 } from '../../event/sweep/verify-sweep-erc20-events'
 import {
-    ExpectedBondCreatorUpdateEvent,
+    ExpectBondCreatorUpdateEvent,
+    ExpectCreateDaoEvent,
     verifyBondCreatorUpdateEvents,
-    verifyBondCreatorUpdateLogEvents
+    verifyBondCreatorUpdateLogEvents,
+    verifyCreateDaoEvents,
+    verifyCreateDaoLogEvents
 } from '../../event/bond/verify-bond-mediator-events'
+import {createDaoEvents} from '../../event/bond/bond-mediator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -170,44 +173,59 @@ describe('Bond Mediator contract', () => {
         describe('create', () => {
             it('by Super User role', async () => {
                 const previousHighestDaoId = await mediator.highestDaoId()
+                const expectedDaoId = previousHighestDaoId.add(1).toBigInt()
 
                 const receipt = await successfulTransaction(
                     mediator.createDao(treasury)
                 )
+                const expectedCreateDaoEvent: ExpectCreateDaoEvent[] = [
+                    {
+                        id: expectedDaoId,
+                        treasury: treasury,
+                        instigator: superUser
+                    }
+                ]
 
-                const creationEvents = createDaoEvents(
-                    events('CreateDao', receipt)
+                verifyCreateDaoEvents(receipt, expectedCreateDaoEvent)
+                verifyCreateDaoLogEvents(
+                    mediator,
+                    receipt,
+                    expectedCreateDaoEvent
                 )
-                expect(creationEvents).is.not.undefined
-                expect(creationEvents).has.length(1)
-                const daoId = creationEvents[0].id
 
-                expect(daoId).to.equal(await mediator.highestDaoId())
-                expect(daoId).to.equal(previousHighestDaoId.add(1))
-                expect(
-                    await mediator.hasDaoRole(daoId, DAO_ADMIN.hex, superUser)
-                ).to.be.false
+                const id = await mediator.highestDaoId()
+                expect(id).to.equal(expectedDaoId)
+                expect(await mediator.hasDaoRole(id, DAO_ADMIN.hex, superUser))
+                    .to.be.false
             })
 
             it('by Dao Creator role', async () => {
                 const previousHighestDaoId = await mediator.highestDaoId()
+                const expectedDaoId = previousHighestDaoId.add(1).toBigInt()
 
                 const receipt = await successfulTransaction(
                     mediator.connect(daoCreator).createDao(treasury)
                 )
+                const expectedCreateDaoEvent: ExpectCreateDaoEvent[] = [
+                    {
+                        id: expectedDaoId,
+                        treasury: treasury,
+                        instigator: daoCreator.address
+                    }
+                ]
 
-                const creationEvents = createDaoEvents(
-                    events('CreateDao', receipt)
+                verifyCreateDaoEvents(receipt, expectedCreateDaoEvent)
+                verifyCreateDaoLogEvents(
+                    mediator,
+                    receipt,
+                    expectedCreateDaoEvent
                 )
-                expect(creationEvents).is.not.undefined
-                expect(creationEvents).has.length(1)
-                const daoId = creationEvents[0].id
 
-                expect(daoId).to.equal(await mediator.highestDaoId())
-                expect(daoId).to.equal(previousHighestDaoId.add(1))
+                const id = await mediator.highestDaoId()
+                expect(id).to.equal(expectedDaoId)
                 expect(
                     await mediator.hasDaoRole(
-                        daoId,
+                        id,
                         DAO_ADMIN.hex,
                         daoCreator.address
                     )
@@ -735,7 +753,7 @@ describe('Bond Mediator contract', () => {
                     collateralTokens.address
                 )
 
-                const expectedEvents: ExpectedBondCreatorUpdateEvent[] = [
+                const expectedEvents: ExpectBondCreatorUpdateEvent[] = [
                     {
                         previousCreator: creator.address,
                         updateCreator: collateralTokens.address,

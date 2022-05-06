@@ -54,7 +54,7 @@ export function createDaoEventLogs(events: Result[]): ActualCreateDaoEvent[] {
 
         results.push({
             id: BigNumber.from(event.id),
-            treasury: String(event.bond),
+            treasury: String(event.treasury),
             instigator: String(event.instigator)
         })
     }
