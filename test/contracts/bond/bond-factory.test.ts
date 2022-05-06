@@ -19,7 +19,6 @@ import {
     signer
 } from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
-import {verifyCreateBondEvent} from '../../event/bond/verify-bond-creator-events'
 import {successfulTransaction} from '../../framework/transaction'
 import {
     ExpectedBeneficiaryUpdateEvent,
@@ -31,9 +30,14 @@ import {
     verifyERC20SweepEvents,
     verifyERC20SweepLogEvents
 } from '../../event/sweep/verify-sweep-erc20-events'
-import {createBondEvent} from '../../event/bond/bond-creator-events'
-import {event} from '../../framework/events'
+import {events} from '../../framework/events'
 import {Bond} from '../../../typechain-types/contracts/bond/BondFactory'
+import {
+    ExpectCreateBondEvent,
+    verifyCreateBondEventLogs,
+    verifyCreateBondEvents
+} from '../../event/bond/verify-bond-creator-events'
+import {createBondEvents} from '../../event/bond/bond-creator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -75,8 +79,7 @@ describe('Bond Factory contract', () => {
                     treasury
                 )
             )
-
-            await verifyCreateBondEvent(
+            const expectedCreateBondEvent: ExpectCreateBondEvent[] = [
                 {
                     metadata: {name: bondName, symbol: bondSymbol, data: data},
                     configuration: {
@@ -88,9 +91,10 @@ describe('Bond Factory contract', () => {
                     rewards: [],
                     treasury: treasury,
                     instigator: admin
-                },
-                receipt
-            )
+                }
+            ]
+            verifyCreateBondEvents(receipt, expectedCreateBondEvent)
+            verifyCreateBondEventLogs(creator, receipt, expectedCreateBondEvent)
         })
 
         it('passed through multi rewards', async () => {
@@ -126,8 +130,7 @@ describe('Bond Factory contract', () => {
                     treasury
                 )
             )
-
-            await verifyCreateBondEvent(
+            const expectedCreateBondEvent: ExpectCreateBondEvent[] = [
                 {
                     metadata: {name: bondName, symbol: bondSymbol, data: data},
                     configuration: {
@@ -139,14 +142,15 @@ describe('Bond Factory contract', () => {
                     rewards,
                     treasury: treasury,
                     instigator: admin
-                },
-                receipt
-            )
+                }
+            ]
+            verifyCreateBondEvents(receipt, expectedCreateBondEvent)
+            verifyCreateBondEventLogs(creator, receipt, expectedCreateBondEvent)
 
             // Does the Bond have the correct rewards?
             const bond: SingleCollateralMultiRewardBond = await contractAt(
                 'SingleCollateralMultiRewardBond',
-                createBondEvent(event('CreateBond', receipt)).bond
+                createBondEvents(events('CreateBond', receipt))[0].bond
             )
             expectTimeLockRewardsEquals(
                 rewards,

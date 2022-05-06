@@ -35,21 +35,38 @@ export type ActualCreateBondEvent = {
 }
 
 /**
- * Shape check and conversion for a CreateBondEvent.
+ * Shape check and conversion for CreateBondEvents.
  */
-export function createBondEvent(event: Event): ActualCreateBondEvent {
-    const create = event as CreateBondEvent
-    expect(event.args).is.not.undefined
+export function createBondEvents(events: Event[]): ActualCreateBondEvent[] {
+    const creations: ActualCreateBondEvent[] = []
 
-    const args = event.args
-    expect(args?.bond).is.not.undefined
-    expect(args?.metadata).is.not.undefined
-    expect(args?.configuration).is.not.undefined
-    expect(args?.rewards).is.not.undefined
-    expect(args?.treasury).is.not.undefined
-    expect(args?.instigator).is.not.undefined
+    for (const event of events) {
+        const create = event as CreateBondEvent
+        expect(event.args).is.not.undefined
 
-    return create.args
+        const args = create.args
+        expect(args?.bond).is.not.undefined
+        expect(args?.metadata).is.not.undefined
+        expect(args?.configuration).is.not.undefined
+        expect(args?.rewards).is.not.undefined
+        expect(args?.treasury).is.not.undefined
+        expect(args?.instigator).is.not.undefined
+
+        creations.push({
+            bond: args.bond,
+            metadata: createBondMetaData(args.metadata as Bond.MetaDataStruct),
+            configuration: createBondConfiguration(
+                args.configuration as Bond.SettingsStruct
+            ),
+            rewards: createRewardPools(
+                args.rewards as Bond.TimeLockRewardPoolStruct[]
+            ),
+            treasury: args.treasury,
+            instigator: args.instigator
+        })
+    }
+
+    return creations
 }
 
 /**
@@ -78,7 +95,7 @@ export function createBondEventLogs(events: Result[]): ActualCreateBondEvent[] {
                 event?.rewards as Bond.TimeLockRewardPoolStruct[]
             ),
             treasury: String(event.treasury),
-            instigator: String(event.creator)
+            instigator: String(event.instigator)
         })
     }
 

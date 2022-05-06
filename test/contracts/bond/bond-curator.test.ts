@@ -17,14 +17,14 @@ import {deployContract, execute, signer} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from '../../framework/transaction'
 import {erc20SingleCollateralBondContractAt} from '../../event/bond/single-collateral-bond-contract'
-import {createBondEvent} from '../../event/bond/bond-creator-events'
-import {event} from '../../framework/events'
+import {events} from '../../framework/events'
 import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from '../../event/bond/roles'
 import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
 import {
     verifyAddBondEvents,
     verifyAddBondLogEvents
 } from '../../event/bond/verify-curator-events'
+import {createBondEvents} from '../../event/bond/bond-creator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -605,7 +605,7 @@ describe('Bond Curator contract', () => {
             )
         )
 
-        const creationEvent = createBondEvent(event('CreateBond', receipt))
+        const creationEvent = createBondEvents(events('CreateBond', receipt))[0]
         const bond = await erc20SingleCollateralBondContractAt(
             creationEvent.bond
         )
