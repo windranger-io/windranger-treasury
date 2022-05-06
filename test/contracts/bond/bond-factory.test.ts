@@ -148,7 +148,10 @@ describe('Bond Factory contract', () => {
                 'SingleCollateralMultiRewardBond',
                 createBondEvent(event('CreateBond', receipt)).bond
             )
-            expectTimeLockRewardsEquals(rewards, await bond.rewardPools())
+            expectTimeLockRewardsEquals(
+                rewards,
+                await bond.timeLockRewardPools()
+            )
         })
 
         it('only when not paused', async () => {

@@ -179,7 +179,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      * NOTE: Values are copied to a memory array be wary of gas cost if call within a transaction!
      *       Expected usage is by view accessors that are queried without any gas fees.
      */
-    function rewardPools()
+    function timeLockRewardPools()
         external
         view
         returns (Bond.TimeLockRewardPool[] memory)
