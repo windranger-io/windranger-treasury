@@ -180,7 +180,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
      *       Expected usage is by view accessors that are queried without any gas fees.
      */
     function rewardPools()
-        public
+        external
         view
         returns (Bond.TimeLockRewardPool[] memory)
     {
