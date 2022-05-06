@@ -1,99 +1,141 @@
 import {
     ActualBondMetaData,
     ActualBondSettings,
+    ActualCreateBondEvent,
     ActualTimeLockRewardPool,
-    createBondEvent
+    createBondEventLogs,
+    createBondEvents
 } from './bond-creator-events'
-import {event} from '../../framework/events'
-import {expect} from 'chai'
+import {events} from '../../framework/events'
 import {ethers} from 'hardhat'
-import {ContractReceipt} from 'ethers'
+import {BaseContract, ContractReceipt} from 'ethers'
+import {verifyOrderedEvents} from '../../framework/verify'
+import {eventLog} from '../../framework/event-logs'
 
-export type ExpectedBondMetaData = {
+export type ExpectBondMetaData = {
     name: string
     symbol: string
     data: string
 }
 
-export type ExpectedBondSettings = {
+export type ExpectBondSettings = {
     debtTokenAmount: bigint
     collateralTokens: string
     expiryTimestamp: bigint
     minimumDeposit: bigint
 }
 
-export type ExpectedTimeLockRewardPool = {
+export type ExpectTimeLockRewardPool = {
     tokens: string
     amount: bigint
     timeLock: bigint
 }
 
-export type ExpectedCreateBondEvent = {
-    metadata: ExpectedBondMetaData
-    configuration: ExpectedBondSettings
-    rewards: ExpectedTimeLockRewardPool[]
+export type ExpectCreateBondEvent = {
+    metadata: ExpectBondMetaData
+    configuration: ExpectBondSettings
+    rewards: ExpectTimeLockRewardPool[]
     treasury: string
     instigator: string
 }
 
 /**
- * Verifies the content for a Create Bond event.
+ * Verifies the content for CreateBond events.
  */
-export async function verifyCreateBondEvent(
-    expected: ExpectedCreateBondEvent,
-    receipt: ContractReceipt
-): Promise<void> {
-    const creationEvent = createBondEvent(event('CreateBond', receipt))
-    expect(ethers.utils.isAddress(creationEvent.bond)).is.true
-    expect(await ethers.provider.getCode(creationEvent.bond)).is.not.undefined
-    expect(creationEvent.bond).is.not.equal(expected.instigator)
-    expect(creationEvent.bond).is.not.equal(expected.treasury)
-    expect(creationEvent.instigator).equals(expected.instigator)
-    expect(creationEvent.treasury).equals(expected.treasury)
-    expect(creationEvent.instigator, 'Instigator address').equals(
-        expected.instigator
+export function verifyCreateBondEvents(
+    receipt: ContractReceipt,
+    expectedEvents: ExpectCreateBondEvent[]
+): void {
+    const actualEvents = createBondEvents(events('CreateBond', receipt))
+
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualCreateBondEvent, expected: ExpectCreateBondEvent) =>
+            deepEqualsCreateBondEvent(actual, expected)
+    )
+}
+
+/**
+ * Verifies the event log entries contain the expected CreateBond events.
+ */
+export function verifyCreateBondEventLogs<T extends BaseContract>(
+    emitter: T,
+    receipt: ContractReceipt,
+    expectedEvents: ExpectCreateBondEvent[]
+): void {
+    const actualEvents = createBondEventLogs(
+        eventLog('CreateBond', emitter, receipt)
     )
 
-    verifyBondMetaData(expected.metadata, creationEvent.metadata)
-    verifyBondSettings(expected.configuration, creationEvent.configuration)
-    verifyTimeLockRewards(expected.rewards, creationEvent.rewards)
+    verifyOrderedEvents(
+        actualEvents,
+        expectedEvents,
+        (actual: ActualCreateBondEvent, expected: ExpectCreateBondEvent) =>
+            deepEqualsCreateBondEvent(actual, expected)
+    )
 }
 
-function verifyBondMetaData(
-    expected: ExpectedBondMetaData,
-    actual: ActualBondMetaData
-): void {
-    expect(expected.name).equals(actual.name)
-    expect(expected.symbol).equals(actual.symbol)
-    expect(expected.data).equals(actual.data)
+function deepEqualsCreateBondEvent(
+    actual: ActualCreateBondEvent,
+    expected: ExpectCreateBondEvent
+): boolean {
+    return (
+        ethers.utils.isAddress(actual.bond) &&
+        actual.bond !== expected.instigator &&
+        actual.bond !== expected.treasury &&
+        actual.instigator === expected.instigator &&
+        deepEqualsBondMetaData(actual.metadata, expected.metadata) &&
+        deepEqualsBondSettings(actual.configuration, expected.configuration) &&
+        deepEqualsTimeLockRewardPools(actual.rewards, expected.rewards)
+    )
 }
 
-function verifyBondSettings(
-    expected: ExpectedBondSettings,
-    actual: ActualBondSettings
-): void {
-    expect(expected.debtTokenAmount).equals(actual.debtTokenAmount)
-    expect(expected.collateralTokens).equals(actual.collateralTokens)
-    expect(expected.expiryTimestamp).equals(actual.expiryTimestamp)
-    expect(expected.minimumDeposit).equals(actual.minimumDeposit)
+function deepEqualsBondMetaData(
+    actual: ActualBondMetaData,
+    expected: ExpectBondMetaData
+): boolean {
+    return (
+        actual.name === expected.name &&
+        actual.symbol === expected.symbol &&
+        actual.data === expected.data
+    )
 }
 
-function verifyTimeLockRewards(
-    expected: ExpectedTimeLockRewardPool[],
-    actual: ActualTimeLockRewardPool[]
-): void {
-    expect(expected.length).equals(actual.length)
+function deepEqualsBondSettings(
+    actual: ActualBondSettings,
+    expected: ExpectBondSettings
+): boolean {
+    return (
+        actual.debtTokenAmount.toBigInt() === expected.debtTokenAmount &&
+        actual.collateralTokens === expected.collateralTokens &&
+        actual.expiryTimestamp.toBigInt() === expected.expiryTimestamp &&
+        actual.minimumDeposit.toBigInt() === expected.minimumDeposit
+    )
+}
 
-    for (let i = 0; i < expected.length; i++) {
-        verifyTimeLockRewardPool(expected[i], actual[i])
+function deepEqualsTimeLockRewardPools(
+    actual: ActualTimeLockRewardPool[],
+    expected: ExpectTimeLockRewardPool[]
+): boolean {
+    let i = 0
+    let equality = expected.length === actual.length
+
+    while (equality && i < expected.length) {
+        equality = deepEqualsTimeLockRewardPool(actual[i], expected[i])
+        i++
     }
+
+    return equality
 }
 
-function verifyTimeLockRewardPool(
-    expected: ExpectedTimeLockRewardPool,
-    actual: ActualTimeLockRewardPool
-): void {
-    expect(expected.tokens).equals(actual.tokens)
-    expect(expected.amount).equals(actual.amount)
-    expect(expected.timeLock).equals(actual.timeLock)
+function deepEqualsTimeLockRewardPool(
+    actual: ActualTimeLockRewardPool,
+    expected: ExpectTimeLockRewardPool
+): boolean {
+    return (
+        actual.amount.toBigInt() === expected.amount &&
+        actual.tokens === expected.tokens &&
+        actual.timeLock.toBigInt() === expected.timeLock
+    )
 }
