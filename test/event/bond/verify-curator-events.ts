@@ -15,15 +15,15 @@ type ExpectedAddBondEvent = {bond: string; instigator: string}
  */
 export function verifyAddBondEvents(
     receipt: ContractReceipt,
-    bonds: ExpectedAddBondEvent[]
+    expectedEvents: ExpectedAddBondEvent[]
 ): void {
     const actualEvents = addBondEvents(events('AddBond', receipt))
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        bonds,
-        (actual: ActualAddBondEvent, expected: ExpectedAddBondEvent) =>
-            deepEqualsAddBondEvent(actual, expected)
+        (expected: ExpectedAddBondEvent, actual: ActualAddBondEvent) =>
+            deepEqualsAddBondEvent(expected, actual)
     )
 }
 
@@ -33,21 +33,21 @@ export function verifyAddBondEvents(
 export function verifyAddBondLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    bonds: ExpectedAddBondEvent[]
+    expectedEvents: ExpectedAddBondEvent[]
 ): void {
     const actualEvents = addBondEventLogs(eventLog('AddBond', emitter, receipt))
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        bonds,
-        (actual: ActualAddBondEvent, expected: ExpectedAddBondEvent) =>
-            deepEqualsAddBondEvent(actual, expected)
+        (expected: ExpectedAddBondEvent, actual: ActualAddBondEvent) =>
+            deepEqualsAddBondEvent(expected, actual)
     )
 }
 
 function deepEqualsAddBondEvent(
-    actual: ActualAddBondEvent,
-    expected: ExpectedAddBondEvent
+    expected: ExpectedAddBondEvent,
+    actual: ActualAddBondEvent
 ): boolean {
     return (
         actual.bond === expected.bond &&

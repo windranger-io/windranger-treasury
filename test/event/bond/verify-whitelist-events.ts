@@ -36,12 +36,12 @@ export function verifyAddCollateralEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualAddCollateralEvent,
-            expected: ExpectedAddCollateralEvent
-        ) => deepEqualsCollateralEvent(actual, expected)
+            expected: ExpectedAddCollateralEvent,
+            actual: ActualAddCollateralEvent
+        ) => deepEqualsCollateralEvent(expected, actual)
     )
 }
 
@@ -58,12 +58,12 @@ export function verifyAddCollateralEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualAddCollateralEvent,
-            expected: ExpectedAddCollateralEvent
-        ) => deepEqualsCollateralEvent(actual, expected)
+            expected: ExpectedAddCollateralEvent,
+            actual: ActualAddCollateralEvent
+        ) => deepEqualsCollateralEvent(expected, actual)
     )
 }
 
@@ -79,12 +79,12 @@ export function verifyRemoveCollateralEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualAddCollateralEvent,
-            expected: ExpectedAddCollateralEvent
-        ) => deepEqualsCollateralEvent(actual, expected)
+            expected: ExpectedAddCollateralEvent,
+            actual: ActualAddCollateralEvent
+        ) => deepEqualsCollateralEvent(expected, actual)
     )
 }
 
@@ -101,18 +101,18 @@ export function verifyRemoveCollateralEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualAddCollateralEvent,
-            expected: ExpectedAddCollateralEvent
-        ) => deepEqualsCollateralEvent(actual, expected)
+            expected: ExpectedAddCollateralEvent,
+            actual: ActualAddCollateralEvent
+        ) => deepEqualsCollateralEvent(expected, actual)
     )
 }
 
 function deepEqualsCollateralEvent(
-    actual: ActualAddCollateralEvent | ActualRemoveCollateralEvent,
-    expected: ExpectedAddCollateralEvent | ExpectedRemoveCollateralEvent
+    expected: ExpectedAddCollateralEvent | ExpectedRemoveCollateralEvent,
+    actual: ActualAddCollateralEvent | ActualRemoveCollateralEvent
 ): boolean {
     return (
         actual.daoId.toBigInt() === expected.daoId &&

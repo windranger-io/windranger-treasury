@@ -49,10 +49,10 @@ export function verifyCreateBondEvents(
     const actualEvents = createBondEvents(events('CreateBond', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualCreateBondEvent, expected: ExpectCreateBondEvent) =>
-            deepEqualsCreateBondEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectCreateBondEvent, actual: ActualCreateBondEvent) =>
+            deepEqualsCreateBondEvent(expected, actual)
     )
 }
 
@@ -69,31 +69,31 @@ export function verifyCreateBondEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualCreateBondEvent, expected: ExpectCreateBondEvent) =>
-            deepEqualsCreateBondEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectCreateBondEvent, actual: ActualCreateBondEvent) =>
+            deepEqualsCreateBondEvent(expected, actual)
     )
 }
 
 function deepEqualsCreateBondEvent(
-    actual: ActualCreateBondEvent,
-    expected: ExpectCreateBondEvent
+    expected: ExpectCreateBondEvent,
+    actual: ActualCreateBondEvent
 ): boolean {
     return (
         ethers.utils.isAddress(actual.bond) &&
         actual.bond !== expected.instigator &&
         actual.bond !== expected.treasury &&
         actual.instigator === expected.instigator &&
-        deepEqualsBondMetaData(actual.metadata, expected.metadata) &&
-        deepEqualsBondSettings(actual.configuration, expected.configuration) &&
-        deepEqualsTimeLockRewardPools(actual.rewards, expected.rewards)
+        deepEqualsBondMetaData(expected.metadata, actual.metadata) &&
+        deepEqualsBondSettings(expected.configuration, actual.configuration) &&
+        deepEqualsTimeLockRewardPools(expected.rewards, actual.rewards)
     )
 }
 
 function deepEqualsBondMetaData(
-    actual: ActualBondMetaData,
-    expected: ExpectBondMetaData
+    expected: ExpectBondMetaData,
+    actual: ActualBondMetaData
 ): boolean {
     return (
         actual.name === expected.name &&
@@ -103,8 +103,8 @@ function deepEqualsBondMetaData(
 }
 
 function deepEqualsBondSettings(
-    actual: ActualBondSettings,
-    expected: ExpectBondSettings
+    expected: ExpectBondSettings,
+    actual: ActualBondSettings
 ): boolean {
     return (
         actual.debtTokenAmount.toBigInt() === expected.debtTokenAmount &&
@@ -115,14 +115,14 @@ function deepEqualsBondSettings(
 }
 
 function deepEqualsTimeLockRewardPools(
-    actual: ActualTimeLockRewardPool[],
-    expected: ExpectTimeLockRewardPool[]
+    expected: ExpectTimeLockRewardPool[],
+    actual: ActualTimeLockRewardPool[]
 ): boolean {
     let i = 0
     let equality = expected.length === actual.length
 
     while (equality && i < expected.length) {
-        equality = deepEqualsTimeLockRewardPool(actual[i], expected[i])
+        equality = deepEqualsTimeLockRewardPool(expected[i], actual[i])
         i++
     }
 
@@ -130,8 +130,8 @@ function deepEqualsTimeLockRewardPools(
 }
 
 function deepEqualsTimeLockRewardPool(
-    actual: ActualTimeLockRewardPool,
-    expected: ExpectTimeLockRewardPool
+    expected: ExpectTimeLockRewardPool,
+    actual: ActualTimeLockRewardPool
 ): boolean {
     return (
         actual.amount.toBigInt() === expected.amount &&

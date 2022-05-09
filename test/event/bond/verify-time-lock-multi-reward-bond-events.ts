@@ -61,10 +61,10 @@ export function verifyClaimRewardEvents(
     const actualEvents = claimRewardEvents(events('ClaimReward', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualClaimRewardEvent, expected: ExpectedClaimRewardEvent) =>
-            deepEqualsClaimRewardEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectedClaimRewardEvent, actual: ActualClaimRewardEvent) =>
+            deepEqualsClaimRewardEvent(expected, actual)
     )
 }
 
@@ -81,10 +81,10 @@ export function verifyClaimRewardLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvent,
-        (actual: ActualClaimRewardEvent, expected: ExpectedClaimRewardEvent) =>
-            deepEqualsClaimRewardEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectedClaimRewardEvent, actual: ActualClaimRewardEvent) =>
+            deepEqualsClaimRewardEvent(expected, actual)
     )
 }
 
@@ -98,12 +98,12 @@ export function verifyRegisterRewardEvents(
     const actualEvents = registerRewardEvents(events('RegisterReward', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualRegisterRewardEvent,
-            expected: ExpectedRegisterRewardEvent
-        ) => deepEqualsRegisterRewardEvent(actual, expected)
+            expected: ExpectedRegisterRewardEvent,
+            actual: ActualRegisterRewardEvent
+        ) => deepEqualsRegisterRewardEvent(expected, actual)
     )
 }
 
@@ -113,19 +113,19 @@ export function verifyRegisterRewardEvents(
 export function verifyRegisterRewardLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    expectedEvent: ExpectedRegisterRewardEvent[]
+    expectedEvents: ExpectedRegisterRewardEvent[]
 ): void {
     const actualEvents = registerRewardEventLogs(
         eventLog('RegisterReward', emitter, receipt)
     )
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        expectedEvent,
         (
-            actual: ActualRegisterRewardEvent,
-            expected: ExpectedRegisterRewardEvent
-        ) => deepEqualsRegisterRewardEvent(actual, expected)
+            expected: ExpectedRegisterRewardEvent,
+            actual: ActualRegisterRewardEvent
+        ) => deepEqualsRegisterRewardEvent(expected, actual)
     )
 }
 
@@ -139,10 +139,10 @@ export function verifyRewardDebtEvents(
     const actualEvents = rewardDebtEvents(events('RewardDebt', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualRewardDebtEvent, expected: ExpectedRewardDebtEvent) =>
-            deepEqualsRewardDebtEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectedRewardDebtEvent, actual: ActualRewardDebtEvent) =>
+            deepEqualsRewardDebtEvent(expected, actual)
     )
 }
 
@@ -159,10 +159,10 @@ export function verifyRewardDebtLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvent,
-        (actual: ActualRewardDebtEvent, expected: ExpectedRewardDebtEvent) =>
-            deepEqualsRewardDebtEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectedRewardDebtEvent, actual: ActualRewardDebtEvent) =>
+            deepEqualsRewardDebtEvent(expected, actual)
     )
 }
 
@@ -178,12 +178,12 @@ export function verifyRedemptionTimestampUpdateEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualRedemptionTimestampUpdateEvent,
-            expected: ExpectedRedemptionTimestampUpdateEvent
-        ) => deepEqualsRedemptionTimestampUpdateEvent(actual, expected)
+            expected: ExpectedRedemptionTimestampUpdateEvent,
+            actual: ActualRedemptionTimestampUpdateEvent
+        ) => deepEqualsRedemptionTimestampUpdateEvent(expected, actual)
     )
 }
 
@@ -202,12 +202,12 @@ export function verifyRedemptionTimestampUpdateLogEvents<
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvent,
+        actualEvents,
         (
-            actual: ActualRedemptionTimestampUpdateEvent,
-            expected: ExpectedRedemptionTimestampUpdateEvent
-        ) => deepEqualsRedemptionTimestampUpdateEvent(actual, expected)
+            expected: ExpectedRedemptionTimestampUpdateEvent,
+            actual: ActualRedemptionTimestampUpdateEvent
+        ) => deepEqualsRedemptionTimestampUpdateEvent(expected, actual)
     )
 }
 
@@ -223,12 +223,12 @@ export function verifyRewardTimeLockUpdateEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualRewardTimeLockUpdateEvent,
-            expected: ExpectedRewardTimeLockUpdateEvent
-        ) => deepEqualsRewardTimeLockUpdateEvent(actual, expected)
+            expected: ExpectedRewardTimeLockUpdateEvent,
+            actual: ActualRewardTimeLockUpdateEvent
+        ) => deepEqualsRewardTimeLockUpdateEvent(expected, actual)
     )
 }
 
@@ -245,18 +245,18 @@ export function verifyRewardTimeLockUpdateLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvent,
+        actualEvents,
         (
-            actual: ActualRewardTimeLockUpdateEvent,
-            expected: ExpectedRewardTimeLockUpdateEvent
-        ) => deepEqualsRewardTimeLockUpdateEvent(actual, expected)
+            expected: ExpectedRewardTimeLockUpdateEvent,
+            actual: ActualRewardTimeLockUpdateEvent
+        ) => deepEqualsRewardTimeLockUpdateEvent(expected, actual)
     )
 }
 
 function deepEqualsClaimRewardEvent(
-    actual: ActualClaimRewardEvent,
-    expected: ExpectedClaimRewardEvent
+    expected: ExpectedClaimRewardEvent,
+    actual: ActualClaimRewardEvent
 ): boolean {
     return (
         actual.tokens === expected.tokens &&
@@ -266,8 +266,8 @@ function deepEqualsClaimRewardEvent(
 }
 
 function deepEqualsRegisterRewardEvent(
-    actual: ActualRegisterRewardEvent,
-    expected: ExpectedRegisterRewardEvent
+    expected: ExpectedRegisterRewardEvent,
+    actual: ActualRegisterRewardEvent
 ): boolean {
     return (
         actual.tokens === expected.tokens &&
@@ -278,8 +278,8 @@ function deepEqualsRegisterRewardEvent(
 }
 
 function deepEqualsRewardDebtEvent(
-    actual: ActualRewardDebtEvent,
-    expected: ExpectedRewardDebtEvent
+    expected: ExpectedRewardDebtEvent,
+    actual: ActualRewardDebtEvent
 ): boolean {
     return (
         actual.tokens === expected.tokens &&
@@ -290,8 +290,8 @@ function deepEqualsRewardDebtEvent(
 }
 
 function deepEqualsRedemptionTimestampUpdateEvent(
-    actual: ActualRedemptionTimestampUpdateEvent,
-    expected: ExpectedRedemptionTimestampUpdateEvent
+    expected: ExpectedRedemptionTimestampUpdateEvent,
+    actual: ActualRedemptionTimestampUpdateEvent
 ): boolean {
     return (
         actual.timestamp.toBigInt() === expected.timestamp &&
@@ -300,8 +300,8 @@ function deepEqualsRedemptionTimestampUpdateEvent(
 }
 
 function deepEqualsRewardTimeLockUpdateEvent(
-    actual: ActualRewardTimeLockUpdateEvent,
-    expected: ExpectedRewardTimeLockUpdateEvent
+    expected: ExpectedRewardTimeLockUpdateEvent,
+    actual: ActualRewardTimeLockUpdateEvent
 ): boolean {
     return (
         actual.tokens === expected.tokens &&

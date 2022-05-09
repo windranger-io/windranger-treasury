@@ -28,19 +28,19 @@ export type ExpectedDaoMetaDataUpdateEvent = {
  */
 export function verifyDaoMetaDataUpdateEvents(
     receipt: ContractReceipt,
-    metaData: ExpectedDaoMetaDataUpdateEvent[]
+    expectedEvents: ExpectedDaoMetaDataUpdateEvent[]
 ): void {
     const actualEvents = daoMetaDataUpdateEvents(
         events('DaoMetaDataUpdate', receipt)
     )
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        metaData,
         (
-            actual: ActualDaoMetaDataUpdateEvent,
-            expected: ExpectedDaoMetaDataUpdateEvent
-        ) => deepEqualsDaoMetaDataUpdateEvent(actual, expected)
+            expected: ExpectedDaoMetaDataUpdateEvent,
+            actual: ActualDaoMetaDataUpdateEvent
+        ) => deepEqualsDaoMetaDataUpdateEvent(expected, actual)
     )
 }
 
@@ -50,19 +50,19 @@ export function verifyDaoMetaDataUpdateEvents(
 export function verifyDaoMetaDataUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    metaData: ExpectedDaoMetaDataUpdateEvent[]
+    expectedEvents: ExpectedDaoMetaDataUpdateEvent[]
 ): void {
     const actualEvents = daoMetaDataUpdateEventLogs(
         eventLog('DaoMetaDataUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        metaData,
         (
-            actual: ActualDaoMetaDataUpdateEvent,
-            expected: ExpectedDaoMetaDataUpdateEvent
-        ) => deepEqualsDaoMetaDataUpdateEvent(actual, expected)
+            expected: ExpectedDaoMetaDataUpdateEvent,
+            actual: ActualDaoMetaDataUpdateEvent
+        ) => deepEqualsDaoMetaDataUpdateEvent(expected, actual)
     )
 }
 
@@ -71,19 +71,19 @@ export function verifyDaoMetaDataUpdateLogEvents<T extends BaseContract>(
  */
 export function verifyDaoTreasuryUpdateEvents(
     receipt: ContractReceipt,
-    metaData: ExpectedDaoTreasuryUpdateEvent[]
+    expectedEvents: ExpectedDaoTreasuryUpdateEvent[]
 ): void {
     const actualEvents = daoTreasuryUpdateEvents(
         events('DaoTreasuryUpdate', receipt)
     )
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        metaData,
         (
-            actual: ActualDaoTreasuryUpdateEvent,
-            expected: ExpectedDaoTreasuryUpdateEvent
-        ) => deepEqualsDaoTreasuryUpdateEvent(actual, expected)
+            expected: ExpectedDaoTreasuryUpdateEvent,
+            actual: ActualDaoTreasuryUpdateEvent
+        ) => deepEqualsDaoTreasuryUpdateEvent(expected, actual)
     )
 }
 
@@ -93,25 +93,25 @@ export function verifyDaoTreasuryUpdateEvents(
 export function verifyDaoTreasuryUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    metaData: ExpectedDaoTreasuryUpdateEvent[]
+    expectedEvents: ExpectedDaoTreasuryUpdateEvent[]
 ): void {
     const actualEvents = daoTreasuryUpdateEventLogs(
         eventLog('DaoTreasuryUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        metaData,
         (
-            actual: ActualDaoTreasuryUpdateEvent,
-            expected: ExpectedDaoTreasuryUpdateEvent
-        ) => deepEqualsDaoTreasuryUpdateEvent(actual, expected)
+            expected: ExpectedDaoTreasuryUpdateEvent,
+            actual: ActualDaoTreasuryUpdateEvent
+        ) => deepEqualsDaoTreasuryUpdateEvent(expected, actual)
     )
 }
 
 function deepEqualsDaoMetaDataUpdateEvent(
-    actual: ActualDaoMetaDataUpdateEvent,
-    expected: ExpectedDaoMetaDataUpdateEvent
+    expected: ExpectedDaoMetaDataUpdateEvent,
+    actual: ActualDaoMetaDataUpdateEvent
 ): boolean {
     return (
         actual.daoId.toBigInt() === expected.daoId &&
@@ -121,8 +121,8 @@ function deepEqualsDaoMetaDataUpdateEvent(
 }
 
 function deepEqualsDaoTreasuryUpdateEvent(
-    actual: ActualDaoTreasuryUpdateEvent,
-    expected: ExpectedDaoTreasuryUpdateEvent
+    expected: ExpectedDaoTreasuryUpdateEvent,
+    actual: ActualDaoTreasuryUpdateEvent
 ): boolean {
     return (
         actual.daoId.toBigInt() === expected.daoId &&

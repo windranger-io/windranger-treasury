@@ -26,12 +26,12 @@ export function verifyRedeemableEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualRedeemableUpdateEvent,
-            expected: ExpectedRedeemableUpdateEvent
-        ) => deepEqualsRedeemableUpdateEvent(actual, expected)
+            expected: ExpectedRedeemableUpdateEvent,
+            actual: ActualRedeemableUpdateEvent
+        ) => deepEqualsRedeemableUpdateEvent(expected, actual)
     )
 }
 
@@ -48,18 +48,18 @@ export function verifyRedeemableUpdateLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualRedeemableUpdateEvent,
-            expected: ExpectedRedeemableUpdateEvent
-        ) => deepEqualsRedeemableUpdateEvent(actual, expected)
+            expected: ExpectedRedeemableUpdateEvent,
+            actual: ActualRedeemableUpdateEvent
+        ) => deepEqualsRedeemableUpdateEvent(expected, actual)
     )
 }
 
 function deepEqualsRedeemableUpdateEvent(
-    actual: ActualRedeemableUpdateEvent,
-    expected: ExpectedRedeemableUpdateEvent
+    expected: ExpectedRedeemableUpdateEvent,
+    actual: ActualRedeemableUpdateEvent
 ): boolean {
     return (
         actual.isRedeemable === expected.isRedeemable &&

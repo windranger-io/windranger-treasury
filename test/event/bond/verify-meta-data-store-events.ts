@@ -15,17 +15,17 @@ export type ExpectedMetaDataUpdateEvent = {data: string; instigator: string}
  */
 export function verifyMetaDataUpdateEvents(
     receipt: ContractReceipt,
-    metaData: ExpectedMetaDataUpdateEvent[]
+    expectedEvents: ExpectedMetaDataUpdateEvent[]
 ): void {
     const actualEvents = metaDataUpdateEvents(events('MetaDataUpdate', receipt))
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        metaData,
         (
-            actual: ActualMetaDataUpdateEvent,
-            expected: ExpectedMetaDataUpdateEvent
-        ) => deepEqualsMetaDataUpdateEvent(actual, expected)
+            expected: ExpectedMetaDataUpdateEvent,
+            actual: ActualMetaDataUpdateEvent
+        ) => deepEqualsMetaDataUpdateEvent(expected, actual)
     )
 }
 
@@ -35,25 +35,25 @@ export function verifyMetaDataUpdateEvents(
 export function verifyMetaDataUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    metaData: ExpectedMetaDataUpdateEvent[]
+    expectedEvents: ExpectedMetaDataUpdateEvent[]
 ): void {
     const actualEvents = metaDataUpdateEventLogs(
         eventLog('MetaDataUpdate', emitter, receipt)
     )
 
     verifyOrderedEvents(
+        expectedEvents,
         actualEvents,
-        metaData,
         (
-            actual: ActualMetaDataUpdateEvent,
-            expected: ExpectedMetaDataUpdateEvent
-        ) => deepEqualsMetaDataUpdateEvent(actual, expected)
+            expected: ExpectedMetaDataUpdateEvent,
+            actual: ActualMetaDataUpdateEvent
+        ) => deepEqualsMetaDataUpdateEvent(expected, actual)
     )
 }
 
 function deepEqualsMetaDataUpdateEvent(
-    actual: ActualMetaDataUpdateEvent,
-    expected: ExpectedMetaDataUpdateEvent
+    expected: ExpectedMetaDataUpdateEvent,
+    actual: ActualMetaDataUpdateEvent
 ): boolean {
     return (
         actual.data === expected.data &&
