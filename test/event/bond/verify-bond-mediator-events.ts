@@ -35,12 +35,12 @@ export function verifyBondCreatorUpdateEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualBondCreatorUpdateEvent,
-            expected: ExpectBondCreatorUpdateEvent
-        ) => deepEqualsBondCreatorUpdateEvent(actual, expected)
+            expected: ExpectBondCreatorUpdateEvent,
+            actual: ActualBondCreatorUpdateEvent
+        ) => deepEqualsBondCreatorUpdateEvent(expected, actual)
     )
 }
 
@@ -57,12 +57,12 @@ export function verifyBondCreatorUpdateLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualBondCreatorUpdateEvent,
-            expected: ExpectBondCreatorUpdateEvent
-        ) => deepEqualsBondCreatorUpdateEvent(actual, expected)
+            expected: ExpectBondCreatorUpdateEvent,
+            actual: ActualBondCreatorUpdateEvent
+        ) => deepEqualsBondCreatorUpdateEvent(expected, actual)
     )
 }
 
@@ -76,10 +76,10 @@ export function verifyCreateDaoEvents(
     const actualEvents = createDaoEvents(events('CreateDao', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualCreateDaoEvent, expected: ExpectCreateDaoEvent) =>
-            deepEqualsCreateDaEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectCreateDaoEvent, actual: ActualCreateDaoEvent) =>
+            deepEqualsCreateDaEvent(expected, actual)
     )
 }
 
@@ -96,16 +96,16 @@ export function verifyCreateDaoLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualCreateDaoEvent, expected: ExpectCreateDaoEvent) =>
-            deepEqualsCreateDaEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectCreateDaoEvent, actual: ActualCreateDaoEvent) =>
+            deepEqualsCreateDaEvent(expected, actual)
     )
 }
 
 function deepEqualsBondCreatorUpdateEvent(
-    actual: ActualBondCreatorUpdateEvent,
-    expected: ExpectBondCreatorUpdateEvent
+    expected: ExpectBondCreatorUpdateEvent,
+    actual: ActualBondCreatorUpdateEvent
 ): boolean {
     return (
         actual.previousCreator === expected.previousCreator &&
@@ -114,8 +114,8 @@ function deepEqualsBondCreatorUpdateEvent(
     )
 }
 function deepEqualsCreateDaEvent(
-    actual: ActualCreateDaoEvent,
-    expected: ExpectCreateDaoEvent
+    expected: ExpectCreateDaoEvent,
+    actual: ActualCreateDaoEvent
 ): boolean {
     return (
         actual.id.toBigInt() === expected.id &&

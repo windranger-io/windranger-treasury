@@ -25,10 +25,10 @@ export function verifyERC20SweepEvents(
     const actualEvents = erc20SweepEvents(events('ERC20Sweep', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualERC20SweepEvent, expected: ExpectedERC20SweepEvent) =>
-            deepEqualsErc20SweepEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectedERC20SweepEvent, actual: ActualERC20SweepEvent) =>
+            deepEqualsErc20SweepEvent(expected, actual)
     )
 }
 
@@ -45,16 +45,16 @@ export function verifyERC20SweepLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualERC20SweepEvent, expected: ExpectedERC20SweepEvent) =>
-            deepEqualsErc20SweepEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectedERC20SweepEvent, actual: ActualERC20SweepEvent) =>
+            deepEqualsErc20SweepEvent(expected, actual)
     )
 }
 
 function deepEqualsErc20SweepEvent(
-    actual: ActualERC20SweepEvent,
-    expected: ExpectedERC20SweepEvent
+    expected: ExpectedERC20SweepEvent,
+    actual: ActualERC20SweepEvent
 ): boolean {
     return (
         actual.beneficiary === expected.beneficiary &&

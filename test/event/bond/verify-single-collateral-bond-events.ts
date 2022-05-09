@@ -103,12 +103,12 @@ export function verifyAllowRedemptionEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualAllowRedemptionEvent,
-            expected: ExpectAllowRedemptionEvent
-        ) => deepEqualsAllowRedemptionEvent(actual, expected)
+            expected: ExpectAllowRedemptionEvent,
+            actual: ActualAllowRedemptionEvent
+        ) => deepEqualsAllowRedemptionEvent(expected, actual)
     )
 }
 
@@ -125,12 +125,12 @@ export function verifyAllowRedemptionLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualAllowRedemptionEvent,
-            expected: ExpectAllowRedemptionEvent
-        ) => deepEqualsAllowRedemptionEvent(actual, expected)
+            expected: ExpectAllowRedemptionEvent,
+            actual: ActualAllowRedemptionEvent
+        ) => deepEqualsAllowRedemptionEvent(expected, actual)
     )
 }
 
@@ -144,12 +144,12 @@ export function verifyFullCollateralEvents(
     const actualEvents = fullCollateralEvents(events('FullCollateral', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualFullCollateralEvent,
-            expected: ExpectFullCollateralEvent
-        ) => deepEqualsFullCollateralEvent(actual, expected)
+            expected: ExpectFullCollateralEvent,
+            actual: ActualFullCollateralEvent
+        ) => deepEqualsFullCollateralEvent(expected, actual)
     )
 }
 
@@ -166,12 +166,12 @@ export function verifyFullCollateralEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualFullCollateralEvent,
-            expected: ExpectFullCollateralEvent
-        ) => deepEqualsFullCollateralEvent(actual, expected)
+            expected: ExpectFullCollateralEvent,
+            actual: ActualFullCollateralEvent
+        ) => deepEqualsFullCollateralEvent(expected, actual)
     )
 }
 
@@ -185,10 +185,10 @@ export function verifyDebtIssueEvents(
     const actualEvents = debtIssueEvents(events('DebtIssue', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualDebtIssueEvent, expected: ExpectDebtIssueEvent) =>
-            deepEqualsDebtIssueEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectDebtIssueEvent, actual: ActualDebtIssueEvent) =>
+            deepEqualsDebtIssueEvent(expected, actual)
     )
 }
 
@@ -205,10 +205,10 @@ export function verifyDebtIssueEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualDebtIssueEvent, expected: ExpectDebtIssueEvent) =>
-            deepEqualsDebtIssueEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectDebtIssueEvent, actual: ActualDebtIssueEvent) =>
+            deepEqualsDebtIssueEvent(expected, actual)
     )
 }
 
@@ -222,10 +222,10 @@ export function verifyDepositEvents(
     const actualEvents = depositEvents(events('Deposit', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualDepositEvent, expected: ExpectDepositEvent) =>
-            deepEqualsDepositEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectDepositEvent, actual: ActualDepositEvent) =>
+            deepEqualsDepositEvent(expected, actual)
     )
 }
 
@@ -240,10 +240,10 @@ export function verifyDepositEventLogs<T extends BaseContract>(
     const actualEvents = depositEventLogs(eventLog('Deposit', emitter, receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualDepositEvent, expected: ExpectDepositEvent) =>
-            deepEqualsDepositEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectDepositEvent, actual: ActualDepositEvent) =>
+            deepEqualsDepositEvent(expected, actual)
     )
 }
 
@@ -257,10 +257,10 @@ export function verifyExpireEvents(
     const actualEvents = expireEvents(events('Expire', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualExpireEvent, expected: ExpectExpireEvent) =>
-            deepEqualsExpireEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectExpireEvent, actual: ActualExpireEvent) =>
+            deepEqualsExpireEvent(expected, actual)
     )
 }
 
@@ -275,10 +275,10 @@ export function verifyExpireEventLogs<T extends BaseContract>(
     const actualEvents = expireEventLogs(eventLog('Expire', emitter, receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualExpireEvent, expected: ExpectExpireEvent) =>
-            deepEqualsExpireEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectExpireEvent, actual: ActualExpireEvent) =>
+            deepEqualsExpireEvent(expected, actual)
     )
 }
 
@@ -294,12 +294,12 @@ export function verifyPartialCollateralEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualPartialCollateralEvent,
-            expected: ExpectPartialCollateralEvent
-        ) => deepEqualsPartialCollateralEvent(actual, expected)
+            expected: ExpectPartialCollateralEvent,
+            actual: ActualPartialCollateralEvent
+        ) => deepEqualsPartialCollateralEvent(expected, actual)
     )
 }
 
@@ -316,12 +316,12 @@ export function verifyPartialCollateralEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualPartialCollateralEvent,
-            expected: ExpectPartialCollateralEvent
-        ) => deepEqualsPartialCollateralEvent(actual, expected)
+            expected: ExpectPartialCollateralEvent,
+            actual: ActualPartialCollateralEvent
+        ) => deepEqualsPartialCollateralEvent(expected, actual)
     )
 }
 
@@ -335,10 +335,10 @@ export function verifyRedemptionEvents(
     const actualEvents = redemptionEvents(events('Redemption', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualRedemptionEvent, expected: ExpectRedemptionEvent) =>
-            deepEqualsRedemptionEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectRedemptionEvent, actual: ActualRedemptionEvent) =>
+            deepEqualsRedemptionEvent(expected, actual)
     )
 }
 
@@ -355,10 +355,10 @@ export function verifyRedemptionEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualRedemptionEvent, expected: ExpectRedemptionEvent) =>
-            deepEqualsRedemptionEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectRedemptionEvent, actual: ActualRedemptionEvent) =>
+            deepEqualsRedemptionEvent(expected, actual)
     )
 }
 
@@ -372,10 +372,10 @@ export function verifySlashDepositEvents(
     const actualEvents = slashDepositsEvents(events('SlashDeposits', receipt))
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualSlashEvent, expected: ExpectSlashEvent) =>
-            deepEqualsSlashDepositEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectSlashEvent, actual: ActualSlashEvent) =>
+            deepEqualsSlashDepositEvent(expected, actual)
     )
 }
 
@@ -392,10 +392,10 @@ export function verifySlashDepositEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
-        (actual: ActualSlashEvent, expected: ExpectSlashEvent) =>
-            deepEqualsSlashDepositEvent(actual, expected)
+        actualEvents,
+        (expected: ExpectSlashEvent, actual: ActualSlashEvent) =>
+            deepEqualsSlashDepositEvent(expected, actual)
     )
 }
 
@@ -411,12 +411,12 @@ export function verifyWithdrawCollateralEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualWithdrawCollateralEvent,
-            expected: ExpectWithdrawCollateralEvent
-        ) => deepEqualsWithdrawCollateralEvent(actual, expected)
+            expected: ExpectWithdrawCollateralEvent,
+            actual: ActualWithdrawCollateralEvent
+        ) => deepEqualsWithdrawCollateralEvent(expected, actual)
     )
 }
 
@@ -433,18 +433,18 @@ export function verifyWithdrawCollateralEventLogs<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualWithdrawCollateralEvent,
-            expected: ExpectWithdrawCollateralEvent
-        ) => deepEqualsWithdrawCollateralEvent(actual, expected)
+            expected: ExpectWithdrawCollateralEvent,
+            actual: ActualWithdrawCollateralEvent
+        ) => deepEqualsWithdrawCollateralEvent(expected, actual)
     )
 }
 
 function deepEqualsAllowRedemptionEvent(
-    actual: ActualAllowRedemptionEvent,
-    expected: ExpectAllowRedemptionEvent
+    expected: ExpectAllowRedemptionEvent,
+    actual: ActualAllowRedemptionEvent
 ): boolean {
     return (
         actual.authorizer === expected.authorizer &&
@@ -453,8 +453,8 @@ function deepEqualsAllowRedemptionEvent(
 }
 
 function deepEqualsFullCollateralEvent(
-    actual: ActualFullCollateralEvent,
-    expected: ExpectFullCollateralEvent
+    expected: ExpectFullCollateralEvent,
+    actual: ActualFullCollateralEvent
 ): boolean {
     return (
         actual.collateralTokens === expected.collateralTokens &&
@@ -464,8 +464,8 @@ function deepEqualsFullCollateralEvent(
 }
 
 function deepEqualsDebtIssueEvent(
-    actual: ActualDebtIssueEvent,
-    expected: ExpectDebtIssueEvent
+    expected: ExpectDebtIssueEvent,
+    actual: ActualDebtIssueEvent
 ): boolean {
     return (
         actual.receiver === expected.receiver &&
@@ -475,8 +475,8 @@ function deepEqualsDebtIssueEvent(
 }
 
 function deepEqualsDepositEvent(
-    actual: ActualDepositEvent,
-    expected: ExpectDepositEvent
+    expected: ExpectDepositEvent,
+    actual: ActualDepositEvent
 ): boolean {
     return (
         actual.depositor === expected.depositor &&
@@ -486,8 +486,8 @@ function deepEqualsDepositEvent(
 }
 
 function deepEqualsExpireEvent(
-    actual: ActualExpireEvent,
-    expected: ExpectExpireEvent
+    expected: ExpectExpireEvent,
+    actual: ActualExpireEvent
 ): boolean {
     return (
         actual.treasury === expected.treasury &&
@@ -498,8 +498,8 @@ function deepEqualsExpireEvent(
 }
 
 function deepEqualsPartialCollateralEvent(
-    actual: ActualPartialCollateralEvent,
-    expected: ExpectPartialCollateralEvent
+    expected: ExpectPartialCollateralEvent,
+    actual: ActualPartialCollateralEvent
 ): boolean {
     return (
         actual.collateralTokens === expected.collateralTokens &&
@@ -511,8 +511,8 @@ function deepEqualsPartialCollateralEvent(
 }
 
 function deepEqualsRedemptionEvent(
-    actual: ActualRedemptionEvent,
-    expected: ExpectRedemptionEvent
+    expected: ExpectRedemptionEvent,
+    actual: ActualRedemptionEvent
 ): boolean {
     return (
         actual.collateralTokens === expected.collateralTokens &&
@@ -524,8 +524,8 @@ function deepEqualsRedemptionEvent(
 }
 
 function deepEqualsSlashDepositEvent(
-    actual: ActualSlashEvent,
-    expected: ExpectSlashEvent
+    expected: ExpectSlashEvent,
+    actual: ActualSlashEvent
 ): boolean {
     return (
         actual.collateralTokens === expected.collateralTokens &&
@@ -536,8 +536,8 @@ function deepEqualsSlashDepositEvent(
 }
 
 function deepEqualsWithdrawCollateralEvent(
-    actual: ActualWithdrawCollateralEvent,
-    expected: ExpectWithdrawCollateralEvent
+    expected: ExpectWithdrawCollateralEvent,
+    actual: ActualWithdrawCollateralEvent
 ): boolean {
     return (
         actual.treasury === expected.treasury &&

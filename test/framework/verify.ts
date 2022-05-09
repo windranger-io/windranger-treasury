@@ -1,15 +1,15 @@
 import {expect} from 'chai'
 
 export interface EventsDeepEqual<T, U> {
-    (actual: T, expected: U): boolean
+    (expected: T, actual: U): boolean
 }
 
 /**
  * Verifies the content matches at least one of the Transfer events.
  */
 export function verifyOrderedEvents<T, U>(
-    actualEvents: T[],
-    expectedEvents: U[],
+    expectedEvents: T[],
+    actualEvents: U[],
     equality: EventsDeepEqual<T, U>
 ): void {
     let matches = 0
@@ -22,7 +22,7 @@ export function verifyOrderedEvents<T, U>(
     for (const expectedEvent of expectedEvents) {
         let matchIndex = -1
         for (let i = 0; i < actualEvents.length; i++) {
-            if (equality(actualEvents[i], expectedEvent)) {
+            if (equality(expectedEvent, actualEvents[i])) {
                 matchIndex = i
             }
         }
