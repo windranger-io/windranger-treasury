@@ -8,7 +8,7 @@ import {eventLog} from '../../framework/event-logs'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {events} from '../../framework/events'
 
-type ExpectedAddBondEvent = {bond: string; instigator: string}
+export type ExpectedAddBondEvent = {bond: string; instigator: string}
 
 /**
  * Verifies the content for an Add Bond event.

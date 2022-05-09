@@ -21,6 +21,7 @@ import {events} from '../../framework/events'
 import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from '../../event/bond/roles'
 import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
 import {
+    ExpectedAddBondEvent,
     verifyAddBondEvents,
     verifyAddBondLogEvents
 } from '../../event/bond/verify-curator-events'
@@ -96,11 +97,11 @@ describe('Bond Curator contract', () => {
                 await curator.bondAt(DAO_ID, createdBondIndex.sub(1n))
             ).equals(bond.address)
 
-            const expectedAddBondEvents = [
+            const expectedAddBondEvents: ExpectedAddBondEvent[] = [
                 {bond: bond.address, instigator: admin}
             ]
-            verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
             verifyAddBondEvents(receipt, expectedAddBondEvents)
+            verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
         })
 
         it('only when not paused', async () => {
