@@ -103,12 +103,12 @@ export function verifyAllowRedemptionEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualAllowRedemptionEvent,
-            expected: ExpectAllowRedemptionEvent
-        ) => deepEqualsAllowRedemptionEvent(actual, expected)
+            expected: ExpectAllowRedemptionEvent,
+            actual: ActualAllowRedemptionEvent
+        ) => deepEqualsAllowRedemptionEvent(expected, actual)
     )
 }
 
@@ -125,12 +125,12 @@ export function verifyAllowRedemptionLogEvents<T extends BaseContract>(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualAllowRedemptionEvent,
-            expected: ExpectAllowRedemptionEvent
-        ) => deepEqualsAllowRedemptionEvent(actual, expected)
+            expected: ExpectAllowRedemptionEvent,
+            actual: ActualAllowRedemptionEvent
+        ) => deepEqualsAllowRedemptionEvent(expected, actual)
     )
 }
 

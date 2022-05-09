@@ -25,12 +25,12 @@ export function verifyBeneficiaryUpdateEvents(
     )
 
     verifyOrderedEvents(
-        actualEvents,
         expectedEvents,
+        actualEvents,
         (
-            actual: ActualBeneficiaryUpdateEvent,
-            expected: ExpectedBeneficiaryUpdateEvent
-        ) => deepEqualsBeneficiaryUpdateEvent(actual, expected)
+            expected: ExpectedBeneficiaryUpdateEvent,
+            actual: ActualBeneficiaryUpdateEvent
+        ) => deepEqualsBeneficiaryUpdateEvent(expected, actual)
     )
 }
 
@@ -50,15 +50,15 @@ export function verifyBeneficiaryUpdateLogEvents<T extends BaseContract>(
         actualEvents,
         expectedEvents,
         (
-            actual: ActualBeneficiaryUpdateEvent,
-            expected: ExpectedBeneficiaryUpdateEvent
-        ) => deepEqualsBeneficiaryUpdateEvent(actual, expected)
+            expected: ExpectedBeneficiaryUpdateEvent,
+            actual: ActualBeneficiaryUpdateEvent
+        ) => deepEqualsBeneficiaryUpdateEvent(expected, actual)
     )
 }
 
 function deepEqualsBeneficiaryUpdateEvent(
-    actual: ActualBeneficiaryUpdateEvent,
-    expected: ExpectedBeneficiaryUpdateEvent
+    expected: ExpectedBeneficiaryUpdateEvent,
+    actual: ActualBeneficiaryUpdateEvent
 ): boolean {
     return (
         actual.beneficiary === expected.beneficiary &&
