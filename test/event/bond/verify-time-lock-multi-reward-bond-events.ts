@@ -1,6 +1,10 @@
 import {BaseContract, ContractReceipt} from 'ethers'
 import {events} from '../../framework/events'
-import {verifyOrderedEvents} from '../../framework/verify'
+import {
+    parseEventLog,
+    parseEvents,
+    verifyOrderedEvents
+} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
 import {
     ActualClaimRewardEvent,
@@ -58,13 +62,12 @@ export function verifyClaimRewardEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedClaimRewardEvent[]
 ): void {
-    const actualEvents = claimRewardEvents(events('ClaimReward', receipt))
+    const actualEvents = parseEvents(receipt, 'ClaimReward', claimRewardEvents)
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (expected: ExpectedClaimRewardEvent, actual: ActualClaimRewardEvent) =>
-            deepEqualsClaimRewardEvent(expected, actual)
+        deepEqualsClaimRewardEvent
     )
 }
 
@@ -74,17 +77,19 @@ export function verifyClaimRewardEvents(
 export function verifyClaimRewardLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    expectedEvent: ExpectedClaimRewardEvent[]
+    expectedEvents: ExpectedClaimRewardEvent[]
 ): void {
-    const actualEvents = claimRewardEventLogs(
-        eventLog('ClaimReward', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'ClaimReward',
+        claimRewardEventLogs
     )
 
     verifyOrderedEvents(
-        expectedEvent,
+        expectedEvents,
         actualEvents,
-        (expected: ExpectedClaimRewardEvent, actual: ActualClaimRewardEvent) =>
-            deepEqualsClaimRewardEvent(expected, actual)
+        deepEqualsClaimRewardEvent
     )
 }
 
@@ -95,15 +100,16 @@ export function verifyRegisterRewardEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedRegisterRewardEvent[]
 ): void {
-    const actualEvents = registerRewardEvents(events('RegisterReward', receipt))
+    const actualEvents = parseEvents(
+        receipt,
+        'RegisterReward',
+        registerRewardEvents
+    )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedRegisterRewardEvent,
-            actual: ActualRegisterRewardEvent
-        ) => deepEqualsRegisterRewardEvent(expected, actual)
+        deepEqualsRegisterRewardEvent
     )
 }
 
@@ -115,17 +121,17 @@ export function verifyRegisterRewardLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectedRegisterRewardEvent[]
 ): void {
-    const actualEvents = registerRewardEventLogs(
-        eventLog('RegisterReward', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'RegisterReward',
+        registerRewardEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedRegisterRewardEvent,
-            actual: ActualRegisterRewardEvent
-        ) => deepEqualsRegisterRewardEvent(expected, actual)
+        deepEqualsRegisterRewardEvent
     )
 }
 
@@ -136,14 +142,9 @@ export function verifyRewardDebtEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedRewardDebtEvent[]
 ): void {
-    const actualEvents = rewardDebtEvents(events('RewardDebt', receipt))
+    const actualEvents = parseEvents(receipt, 'RewardDebt', rewardDebtEvents)
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectedRewardDebtEvent, actual: ActualRewardDebtEvent) =>
-            deepEqualsRewardDebtEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsRewardDebtEvent)
 }
 
 /**
@@ -152,18 +153,16 @@ export function verifyRewardDebtEvents(
 export function verifyRewardDebtLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    expectedEvent: ExpectedRewardDebtEvent[]
+    expectedEvents: ExpectedRewardDebtEvent[]
 ): void {
-    const actualEvents = rewardDebtEventLogs(
-        eventLog('RewardDebt', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'RewardDebt',
+        rewardDebtEventLogs
     )
 
-    verifyOrderedEvents(
-        expectedEvent,
-        actualEvents,
-        (expected: ExpectedRewardDebtEvent, actual: ActualRewardDebtEvent) =>
-            deepEqualsRewardDebtEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsRewardDebtEvent)
 }
 
 /**

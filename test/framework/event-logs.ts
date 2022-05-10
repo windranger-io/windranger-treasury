@@ -5,8 +5,8 @@ import {Result} from '@ethersproject/abi'
 /**
  * Retrieves the event logs that matches the given name, failing if not present.
  *
- * @param name  name of the event expected within the given contracts.
- * @param decoder emitter contract that emits the event and provide decoding of the event log.
+ * @param name name of the event expected within the given contracts.
+ * @param emitter contract that emits the event and provide decoding of the event log.
  * @param receipt events matching the given event name.
  */
 export function eventLog<T extends BaseContract>(

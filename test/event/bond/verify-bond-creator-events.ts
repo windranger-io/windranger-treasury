@@ -6,11 +6,13 @@ import {
     createBondEventLogs,
     createBondEvents
 } from './bond-creator-events'
-import {events} from '../../framework/events'
 import {ethers} from 'hardhat'
 import {BaseContract, ContractReceipt} from 'ethers'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {eventLog} from '../../framework/event-logs'
+import {
+    parseEventLog,
+    parseEvents,
+    verifyOrderedEvents
+} from '../../framework/verify'
 
 export type ExpectBondMetaData = {
     name: string
@@ -46,14 +48,9 @@ export function verifyCreateBondEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectCreateBondEvent[]
 ): void {
-    const actualEvents = createBondEvents(events('CreateBond', receipt))
+    const actualEvents = parseEvents(receipt, 'CreateBond', createBondEvents)
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectCreateBondEvent, actual: ActualCreateBondEvent) =>
-            deepEqualsCreateBondEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsCreateBondEvent)
 }
 
 /**
@@ -64,16 +61,14 @@ export function verifyCreateBondEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectCreateBondEvent[]
 ): void {
-    const actualEvents = createBondEventLogs(
-        eventLog('CreateBond', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'CreateBond',
+        createBondEventLogs
     )
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectCreateBondEvent, actual: ActualCreateBondEvent) =>
-            deepEqualsCreateBondEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsCreateBondEvent)
 }
 
 function deepEqualsCreateBondEvent(

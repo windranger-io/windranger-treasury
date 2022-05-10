@@ -4,9 +4,11 @@ import {
     addBondEventLogs,
     addBondEvents
 } from './bond-curator-events'
-import {eventLog} from '../../framework/event-logs'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {events} from '../../framework/events'
+import {
+    parseEventLog,
+    parseEvents,
+    verifyOrderedEvents
+} from '../../framework/verify'
 
 export type ExpectedAddBondEvent = {bond: string; instigator: string}
 
@@ -17,14 +19,9 @@ export function verifyAddBondEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedAddBondEvent[]
 ): void {
-    const actualEvents = addBondEvents(events('AddBond', receipt))
+    const actualEvents = parseEvents(receipt, 'AddBond', addBondEvents)
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectedAddBondEvent, actual: ActualAddBondEvent) =>
-            deepEqualsAddBondEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsAddBondEvent)
 }
 
 /**
@@ -35,14 +32,14 @@ export function verifyAddBondLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectedAddBondEvent[]
 ): void {
-    const actualEvents = addBondEventLogs(eventLog('AddBond', emitter, receipt))
-
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectedAddBondEvent, actual: ActualAddBondEvent) =>
-            deepEqualsAddBondEvent(expected, actual)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'AddBond',
+        addBondEventLogs
     )
+
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsAddBondEvent)
 }
 
 function deepEqualsAddBondEvent(

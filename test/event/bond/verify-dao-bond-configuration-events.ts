@@ -1,7 +1,9 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {eventLog} from '../../framework/event-logs'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {events} from '../../framework/events'
+import {
+    parseEventLog,
+    parseEvents,
+    verifyOrderedEvents
+} from '../../framework/verify'
 import {
     ActualDaoMetaDataUpdateEvent,
     ActualDaoTreasuryUpdateEvent,
@@ -30,17 +32,16 @@ export function verifyDaoMetaDataUpdateEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedDaoMetaDataUpdateEvent[]
 ): void {
-    const actualEvents = daoMetaDataUpdateEvents(
-        events('DaoMetaDataUpdate', receipt)
+    const actualEvents = parseEvents(
+        receipt,
+        'DaoMetaDataUpdate',
+        daoMetaDataUpdateEvents
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedDaoMetaDataUpdateEvent,
-            actual: ActualDaoMetaDataUpdateEvent
-        ) => deepEqualsDaoMetaDataUpdateEvent(expected, actual)
+        deepEqualsDaoMetaDataUpdateEvent
     )
 }
 
@@ -52,17 +53,17 @@ export function verifyDaoMetaDataUpdateLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectedDaoMetaDataUpdateEvent[]
 ): void {
-    const actualEvents = daoMetaDataUpdateEventLogs(
-        eventLog('DaoMetaDataUpdate', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'DaoMetaDataUpdate',
+        daoMetaDataUpdateEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedDaoMetaDataUpdateEvent,
-            actual: ActualDaoMetaDataUpdateEvent
-        ) => deepEqualsDaoMetaDataUpdateEvent(expected, actual)
+        deepEqualsDaoMetaDataUpdateEvent
     )
 }
 
@@ -73,17 +74,16 @@ export function verifyDaoTreasuryUpdateEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedDaoTreasuryUpdateEvent[]
 ): void {
-    const actualEvents = daoTreasuryUpdateEvents(
-        events('DaoTreasuryUpdate', receipt)
+    const actualEvents = parseEvents(
+        receipt,
+        'DaoTreasuryUpdate',
+        daoTreasuryUpdateEvents
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedDaoTreasuryUpdateEvent,
-            actual: ActualDaoTreasuryUpdateEvent
-        ) => deepEqualsDaoTreasuryUpdateEvent(expected, actual)
+        deepEqualsDaoTreasuryUpdateEvent
     )
 }
 
@@ -95,17 +95,17 @@ export function verifyDaoTreasuryUpdateLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectedDaoTreasuryUpdateEvent[]
 ): void {
-    const actualEvents = daoTreasuryUpdateEventLogs(
-        eventLog('DaoTreasuryUpdate', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'DaoTreasuryUpdate',
+        daoTreasuryUpdateEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedDaoTreasuryUpdateEvent,
-            actual: ActualDaoTreasuryUpdateEvent
-        ) => deepEqualsDaoTreasuryUpdateEvent(expected, actual)
+        deepEqualsDaoTreasuryUpdateEvent
     )
 }
 

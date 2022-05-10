@@ -1,7 +1,9 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {eventLog} from '../../framework/event-logs'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {events} from '../../framework/events'
+import {
+    parseEventLog,
+    parseEvents,
+    verifyOrderedEvents
+} from '../../framework/verify'
 import {
     ActualMetaDataUpdateEvent,
     metaDataUpdateEventLogs,
@@ -17,15 +19,16 @@ export function verifyMetaDataUpdateEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedMetaDataUpdateEvent[]
 ): void {
-    const actualEvents = metaDataUpdateEvents(events('MetaDataUpdate', receipt))
+    const actualEvents = parseEvents(
+        receipt,
+        'MetaDataUpdate',
+        metaDataUpdateEvents
+    )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedMetaDataUpdateEvent,
-            actual: ActualMetaDataUpdateEvent
-        ) => deepEqualsMetaDataUpdateEvent(expected, actual)
+        deepEqualsMetaDataUpdateEvent
     )
 }
 
@@ -37,17 +40,17 @@ export function verifyMetaDataUpdateLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectedMetaDataUpdateEvent[]
 ): void {
-    const actualEvents = metaDataUpdateEventLogs(
-        eventLog('MetaDataUpdate', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'MetaDataUpdate',
+        metaDataUpdateEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedMetaDataUpdateEvent,
-            actual: ActualMetaDataUpdateEvent
-        ) => deepEqualsMetaDataUpdateEvent(expected, actual)
+        deepEqualsMetaDataUpdateEvent
     )
 }
 

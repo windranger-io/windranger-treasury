@@ -1,7 +1,9 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {eventLog} from '../../framework/event-logs'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {events} from '../../framework/events'
+import {
+    parseEventLog,
+    parseEvents,
+    verifyOrderedEvents
+} from '../../framework/verify'
 import {
     ActualBondCreatorUpdateEvent,
     ActualCreateDaoEvent,
@@ -30,17 +32,16 @@ export function verifyBondCreatorUpdateEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectBondCreatorUpdateEvent[]
 ): void {
-    const actualEvents = bondCreatorUpdateEvents(
-        events('BondCreatorUpdate', receipt)
+    const actualEvents = parseEvents(
+        receipt,
+        'BondCreatorUpdate',
+        bondCreatorUpdateEvents
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectBondCreatorUpdateEvent,
-            actual: ActualBondCreatorUpdateEvent
-        ) => deepEqualsBondCreatorUpdateEvent(expected, actual)
+        deepEqualsBondCreatorUpdateEvent
     )
 }
 
@@ -52,17 +53,17 @@ export function verifyBondCreatorUpdateLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectBondCreatorUpdateEvent[]
 ): void {
-    const actualEvents = bondCreatorUpdateEventLogs(
-        eventLog('BondCreatorUpdate', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'BondCreatorUpdate',
+        bondCreatorUpdateEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectBondCreatorUpdateEvent,
-            actual: ActualBondCreatorUpdateEvent
-        ) => deepEqualsBondCreatorUpdateEvent(expected, actual)
+        deepEqualsBondCreatorUpdateEvent
     )
 }
 
@@ -73,14 +74,9 @@ export function verifyCreateDaoEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectCreateDaoEvent[]
 ): void {
-    const actualEvents = createDaoEvents(events('CreateDao', receipt))
+    const actualEvents = parseEvents(receipt, 'CreateDao', createDaoEvents)
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectCreateDaoEvent, actual: ActualCreateDaoEvent) =>
-            deepEqualsCreateDaEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsCreateDaEvent)
 }
 
 /**
@@ -91,16 +87,14 @@ export function verifyCreateDaoLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectCreateDaoEvent[]
 ): void {
-    const actualEvents = createDaoEventLogs(
-        eventLog('CreateDao', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'CreateDao',
+        createDaoEventLogs
     )
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectCreateDaoEvent, actual: ActualCreateDaoEvent) =>
-            deepEqualsCreateDaEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsCreateDaEvent)
 }
 
 function deepEqualsBondCreatorUpdateEvent(

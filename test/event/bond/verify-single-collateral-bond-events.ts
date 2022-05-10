@@ -1,5 +1,4 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {events} from '../../framework/events'
 import {
     ActualAllowRedemptionEvent,
     ActualDebtIssueEvent,
@@ -29,8 +28,11 @@ import {
     ActualWithdrawCollateralEvent,
     withdrawCollateralEventLogs
 } from './single-collateral-bond-events'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {eventLog} from '../../framework/event-logs'
+import {
+    parseEventLog,
+    parseEvents,
+    verifyOrderedEvents
+} from '../../framework/verify'
 
 export type ExpectDebtIssueEvent = {
     amount: bigint
@@ -98,17 +100,16 @@ export function verifyAllowRedemptionEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectAllowRedemptionEvent[]
 ): void {
-    const actualEvents = allowRedemptionEvents(
-        events('AllowRedemption', receipt)
+    const actualEvents = parseEvents(
+        receipt,
+        'AllowRedemption',
+        allowRedemptionEvents
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectAllowRedemptionEvent,
-            actual: ActualAllowRedemptionEvent
-        ) => deepEqualsAllowRedemptionEvent(expected, actual)
+        deepEqualsAllowRedemptionEvent
     )
 }
 
@@ -120,17 +121,17 @@ export function verifyAllowRedemptionLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectAllowRedemptionEvent[]
 ): void {
-    const actualEvents = allowRedemptionEventLogs(
-        eventLog('AllowRedemption', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'AllowRedemption',
+        allowRedemptionEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectAllowRedemptionEvent,
-            actual: ActualAllowRedemptionEvent
-        ) => deepEqualsAllowRedemptionEvent(expected, actual)
+        deepEqualsAllowRedemptionEvent
     )
 }
 
@@ -141,15 +142,16 @@ export function verifyFullCollateralEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectFullCollateralEvent[]
 ): void {
-    const actualEvents = fullCollateralEvents(events('FullCollateral', receipt))
+    const actualEvents = parseEvents(
+        receipt,
+        'FullCollateral',
+        fullCollateralEvents
+    )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectFullCollateralEvent,
-            actual: ActualFullCollateralEvent
-        ) => deepEqualsFullCollateralEvent(expected, actual)
+        deepEqualsFullCollateralEvent
     )
 }
 
@@ -161,17 +163,17 @@ export function verifyFullCollateralEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectFullCollateralEvent[]
 ): void {
-    const actualEvents = fullCollateralEventLogs(
-        eventLog('FullCollateral', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'FullCollateral',
+        fullCollateralEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectFullCollateralEvent,
-            actual: ActualFullCollateralEvent
-        ) => deepEqualsFullCollateralEvent(expected, actual)
+        deepEqualsFullCollateralEvent
     )
 }
 
@@ -182,14 +184,9 @@ export function verifyDebtIssueEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectDebtIssueEvent[]
 ): void {
-    const actualEvents = debtIssueEvents(events('DebtIssue', receipt))
+    const actualEvents = parseEvents(receipt, 'DebtIssue', debtIssueEvents)
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectDebtIssueEvent, actual: ActualDebtIssueEvent) =>
-            deepEqualsDebtIssueEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsDebtIssueEvent)
 }
 
 /**
@@ -200,16 +197,14 @@ export function verifyDebtIssueEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectDebtIssueEvent[]
 ): void {
-    const actualEvents = debtIssueEventLogs(
-        eventLog('DebtIssue', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'DebtIssue',
+        debtIssueEventLogs
     )
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectDebtIssueEvent, actual: ActualDebtIssueEvent) =>
-            deepEqualsDebtIssueEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsDebtIssueEvent)
 }
 
 /**
@@ -219,14 +214,9 @@ export function verifyDepositEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectDepositEvent[]
 ): void {
-    const actualEvents = depositEvents(events('Deposit', receipt))
+    const actualEvents = parseEvents(receipt, 'Deposit', depositEvents)
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectDepositEvent, actual: ActualDepositEvent) =>
-            deepEqualsDepositEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsDepositEvent)
 }
 
 /**
@@ -237,14 +227,14 @@ export function verifyDepositEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectDepositEvent[]
 ): void {
-    const actualEvents = depositEventLogs(eventLog('Deposit', emitter, receipt))
-
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectDepositEvent, actual: ActualDepositEvent) =>
-            deepEqualsDepositEvent(expected, actual)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'Deposit',
+        depositEventLogs
     )
+
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsDepositEvent)
 }
 
 /**
@@ -254,14 +244,9 @@ export function verifyExpireEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectExpireEvent[]
 ): void {
-    const actualEvents = expireEvents(events('Expire', receipt))
+    const actualEvents = parseEvents(receipt, 'Expire', expireEvents)
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectExpireEvent, actual: ActualExpireEvent) =>
-            deepEqualsExpireEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsExpireEvent)
 }
 
 /**
@@ -272,14 +257,14 @@ export function verifyExpireEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectExpireEvent[]
 ): void {
-    const actualEvents = expireEventLogs(eventLog('Expire', emitter, receipt))
-
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectExpireEvent, actual: ActualExpireEvent) =>
-            deepEqualsExpireEvent(expected, actual)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'Expire',
+        expireEventLogs
     )
+
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsExpireEvent)
 }
 
 /**
@@ -289,17 +274,16 @@ export function verifyPartialCollateralEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectPartialCollateralEvent[]
 ): void {
-    const actualEvents = partialCollateralEvents(
-        events('PartialCollateral', receipt)
+    const actualEvents = parseEvents(
+        receipt,
+        'PartialCollateral',
+        partialCollateralEvents
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectPartialCollateralEvent,
-            actual: ActualPartialCollateralEvent
-        ) => deepEqualsPartialCollateralEvent(expected, actual)
+        deepEqualsPartialCollateralEvent
     )
 }
 
@@ -311,17 +295,17 @@ export function verifyPartialCollateralEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectPartialCollateralEvent[]
 ): void {
-    const actualEvents = partialCollateralEventLogs(
-        eventLog('PartialCollateral', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'PartialCollateral',
+        partialCollateralEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectPartialCollateralEvent,
-            actual: ActualPartialCollateralEvent
-        ) => deepEqualsPartialCollateralEvent(expected, actual)
+        deepEqualsPartialCollateralEvent
     )
 }
 
@@ -332,14 +316,9 @@ export function verifyRedemptionEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectRedemptionEvent[]
 ): void {
-    const actualEvents = redemptionEvents(events('Redemption', receipt))
+    const actualEvents = parseEvents(receipt, 'Redemption', redemptionEvents)
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectRedemptionEvent, actual: ActualRedemptionEvent) =>
-            deepEqualsRedemptionEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsRedemptionEvent)
 }
 
 /**
@@ -350,16 +329,14 @@ export function verifyRedemptionEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectRedemptionEvent[]
 ): void {
-    const actualEvents = redemptionEventLogs(
-        eventLog('Redemption', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'Redemption',
+        redemptionEventLogs
     )
 
-    verifyOrderedEvents(
-        expectedEvents,
-        actualEvents,
-        (expected: ExpectRedemptionEvent, actual: ActualRedemptionEvent) =>
-            deepEqualsRedemptionEvent(expected, actual)
-    )
+    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsRedemptionEvent)
 }
 
 /**
@@ -369,13 +346,16 @@ export function verifySlashDepositEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectSlashEvent[]
 ): void {
-    const actualEvents = slashDepositsEvents(events('SlashDeposits', receipt))
+    const actualEvents = parseEvents(
+        receipt,
+        'SlashDeposits',
+        slashDepositsEvents
+    )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (expected: ExpectSlashEvent, actual: ActualSlashEvent) =>
-            deepEqualsSlashDepositEvent(expected, actual)
+        deepEqualsSlashDepositEvent
     )
 }
 
@@ -387,15 +367,17 @@ export function verifySlashDepositEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectSlashEvent[]
 ): void {
-    const actualEvents = slashDepositsEventLogs(
-        eventLog('SlashDeposits', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'SlashDeposits',
+        slashDepositsEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (expected: ExpectSlashEvent, actual: ActualSlashEvent) =>
-            deepEqualsSlashDepositEvent(expected, actual)
+        deepEqualsSlashDepositEvent
     )
 }
 
@@ -406,17 +388,16 @@ export function verifyWithdrawCollateralEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectWithdrawCollateralEvent[]
 ): void {
-    const actualEvents = withdrawCollateralEvents(
-        events('WithdrawCollateral', receipt)
+    const actualEvents = parseEvents(
+        receipt,
+        'WithdrawCollateral',
+        withdrawCollateralEvents
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectWithdrawCollateralEvent,
-            actual: ActualWithdrawCollateralEvent
-        ) => deepEqualsWithdrawCollateralEvent(expected, actual)
+        deepEqualsWithdrawCollateralEvent
     )
 }
 
@@ -428,17 +409,17 @@ export function verifyWithdrawCollateralEventLogs<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectWithdrawCollateralEvent[]
 ): void {
-    const actualEvents = withdrawCollateralEventLogs(
-        eventLog('WithdrawCollateral', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'WithdrawCollateral',
+        withdrawCollateralEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectWithdrawCollateralEvent,
-            actual: ActualWithdrawCollateralEvent
-        ) => deepEqualsWithdrawCollateralEvent(expected, actual)
+        deepEqualsWithdrawCollateralEvent
     )
 }
 
