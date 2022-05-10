@@ -1,7 +1,9 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {eventLog} from '../../framework/event-logs'
-import {verifyOrderedEvents} from '../../framework/verify'
-import {events} from '../../framework/events'
+import {
+    parseEventLog,
+    parseEvents,
+    verifyOrderedEvents
+} from '../../framework/verify'
 import {
     ActualRedeemableUpdateEvent,
     redeemableUpdateEventLogs,
@@ -21,17 +23,16 @@ export function verifyRedeemableEvents(
     receipt: ContractReceipt,
     expectedEvents: ExpectedRedeemableUpdateEvent[]
 ): void {
-    const actualEvents = redeemableUpdateEvents(
-        events('RedeemableUpdate', receipt)
+    const actualEvents = parseEvents(
+        receipt,
+        'RedeemableUpdate',
+        redeemableUpdateEvents
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedRedeemableUpdateEvent,
-            actual: ActualRedeemableUpdateEvent
-        ) => deepEqualsRedeemableUpdateEvent(expected, actual)
+        deepEqualsRedeemableUpdateEvent
     )
 }
 
@@ -43,17 +44,17 @@ export function verifyRedeemableUpdateLogEvents<T extends BaseContract>(
     receipt: ContractReceipt,
     expectedEvents: ExpectedRedeemableUpdateEvent[]
 ): void {
-    const actualEvents = redeemableUpdateEventLogs(
-        eventLog('RedeemableUpdate', emitter, receipt)
+    const actualEvents = parseEventLog(
+        emitter,
+        receipt,
+        'RedeemableUpdate',
+        redeemableUpdateEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        (
-            expected: ExpectedRedeemableUpdateEvent,
-            actual: ActualRedeemableUpdateEvent
-        ) => deepEqualsRedeemableUpdateEvent(expected, actual)
+        deepEqualsRedeemableUpdateEvent
     )
 }
 

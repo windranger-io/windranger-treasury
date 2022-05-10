@@ -1,7 +1,50 @@
 import {expect} from 'chai'
+import {BaseContract, ContractReceipt, Event} from 'ethers'
+import {eventLog} from './event-logs'
+import {Result} from '@ethersproject/abi'
+import {events} from './events'
 
 export interface EventsDeepEqual<T, U> {
     (expected: T, actual: U): boolean
+}
+
+export interface EventsParser<T> {
+    (loggedEvents: Event[]): T[]
+}
+export interface EventLogParser<T> {
+    (loggedEvents: Result[]): T[]
+}
+
+/**
+ * Inflates any found events who name match.
+ *
+ * @param receipt events matching the given event name.
+ * @param eventName name of the event expected within the given contracts.
+ * @param parse parser to inflate any found matching events,
+ */
+export function parseEvents<T>(
+    receipt: ContractReceipt,
+    eventName: string,
+    parse: EventsParser<T>
+): T[] {
+    return parse(events(eventName, receipt))
+}
+
+/**
+ * Inflates any found events in the event log when their name matches.
+ *
+ * @param emitter contract that emits the event and provide decoding of the event log.
+ * @param receipt events matching the given event name.
+ * @param eventName name of the event expected within the given contracts.
+ * @param parse parser to inflate any found matching events,
+ */
+export function parseEventLog<T extends BaseContract, U>(
+    emitter: T,
+    receipt: ContractReceipt,
+    eventName: string,
+    parse: EventLogParser<U>
+): U[] {
+    return parse(eventLog(eventName, emitter, receipt))
 }
 
 /**
