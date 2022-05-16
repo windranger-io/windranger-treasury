@@ -1,14 +1,11 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {
-    parseEventLog,
-    parseEvents,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {verifyOrderedEvents} from '../../framework/verify'
 import {
     ActualRedeemableUpdateEvent,
     redeemableUpdateEventLogs,
     redeemableUpdateEvents
 } from './redeemable-events'
+import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectedRedeemableUpdateEvent = {
     isRedeemable: boolean

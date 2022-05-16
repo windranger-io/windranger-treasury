@@ -1,9 +1,5 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {
-    parseEventLog,
-    parseEvents,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {verifyOrderedEvents} from '../../framework/verify'
 import {
     ActualDaoMetaDataUpdateEvent,
     ActualDaoTreasuryUpdateEvent,
@@ -12,6 +8,7 @@ import {
     daoTreasuryUpdateEventLogs,
     daoTreasuryUpdateEvents
 } from './dao-bond-configuration-events'
+import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectedDaoTreasuryUpdateEvent = {
     daoId: bigint

@@ -4,11 +4,8 @@ import {
     addBondEventLogs,
     addBondEvents
 } from './bond-curator-events'
-import {
-    parseEventLog,
-    parseEvents,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {verifyOrderedEvents} from '../../framework/verify'
+import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectedAddBondEvent = {bond: string; instigator: string}
 

@@ -1,50 +1,7 @@
-import {expect} from 'chai'
-import {BaseContract, ContractReceipt, Event} from 'ethers'
-import {eventLog} from './event-logs'
-import {Result} from '@ethersproject/abi'
-import {events} from './events'
+import {fail} from 'assert'
 
 export interface EventsDeepEqual<T, U> {
     (expected: T, actual: U): boolean
-}
-
-export interface EventsParser<T> {
-    (loggedEvents: Event[]): T[]
-}
-export interface EventLogParser<T> {
-    (loggedEvents: Result[]): T[]
-}
-
-/**
- * Inflates any found events who name match.
- *
- * @param receipt events matching the given event name.
- * @param eventName name of the event expected within the given contracts.
- * @param parse parser to inflate any found matching events,
- */
-export function parseEvents<T>(
-    receipt: ContractReceipt,
-    eventName: string,
-    parse: EventsParser<T>
-): T[] {
-    return parse(events(eventName, receipt))
-}
-
-/**
- * Inflates any found events in the event log when their name matches.
- *
- * @param emitter contract that emits the event and provide decoding of the event log.
- * @param receipt events matching the given event name.
- * @param eventName name of the event expected within the given contracts.
- * @param parse parser to inflate any found matching events,
- */
-export function parseEventLog<T extends BaseContract, U>(
-    emitter: T,
-    receipt: ContractReceipt,
-    eventName: string,
-    parse: EventLogParser<U>
-): U[] {
-    return parse(eventLog(eventName, emitter, receipt))
 }
 
 /**
@@ -71,10 +28,14 @@ export function verifyOrderedEvents<T, U>(
         }
         if (matchIndex >= 0) {
             // Size of array reduces on match, hence >= and not >
-            expect(
-                matchIndex,
-                'Actual events are in the wrong order'
-            ).is.greaterThanOrEqual(lastMatchIndex)
+
+            if (matchIndex < lastMatchIndex) {
+                failWithMessage(
+                    'Actual events are in the wrong order',
+                    expectedEvents,
+                    actualEvents
+                )
+            }
 
             matches++
             actualEvents.splice(matchIndex, 1)
@@ -82,7 +43,34 @@ export function verifyOrderedEvents<T, U>(
         }
     }
 
-    expect(matches, 'Not all expected events were found').equals(
-        expectedEvents.length
+    if (matches !== expectedEvents.length) {
+        failWithMessage(
+            'Not all expected events were found',
+            expectedEvents,
+            actualEvents
+        )
+    }
+}
+
+/**
+ * Test framework fail with complex object output as pretty json
+ */
+function failWithMessage<T, U>(summary: string, expected: T, actual: U): void {
+    fail(
+        `${summary}\n\nExpected: ${prettyJson(
+            expected
+        )}\n\nActual: ${prettyJson(actual)}`
     )
+}
+
+/**
+ * Converts an object (that may contain bigints) into a pretty JSON string,
+ * with an indentation of two spaces.
+ */
+function prettyJson<T>(data: T): string {
+    return JSON.stringify(data, stringifyBigInt, 2)
+}
+
+function stringifyBigInt<T, U, V>(key: T, value: U): string | U {
+    return typeof value === 'bigint' ? value.toString() : value
 }

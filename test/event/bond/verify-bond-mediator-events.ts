@@ -1,9 +1,5 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {
-    parseEventLog,
-    parseEvents,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {verifyOrderedEvents} from '../../framework/verify'
 import {
     ActualBondCreatorUpdateEvent,
     ActualCreateDaoEvent,
@@ -12,6 +8,7 @@ import {
     createDaoEventLogs,
     createDaoEvents
 } from './bond-mediator-events'
+import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectBondCreatorUpdateEvent = {
     previousCreator: string

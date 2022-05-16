@@ -1,14 +1,11 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {
-    parseEventLog,
-    parseEvents,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {verifyOrderedEvents} from '../../framework/verify'
 import {
     ActualMetaDataUpdateEvent,
     metaDataUpdateEventLogs,
     metaDataUpdateEvents
 } from './meta-data-store-events'
+import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectedMetaDataUpdateEvent = {data: string; instigator: string}
 
