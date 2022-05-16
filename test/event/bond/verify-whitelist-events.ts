@@ -7,11 +7,8 @@ import {
     removeCollateralEventLogs,
     removeCollateralEvents
 } from './whitelist-events'
-import {
-    parseEvents,
-    parseEventLog,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {verifyOrderedEvents} from '../../framework/verify'
+import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectedAddCollateralEvent = {
     daoId: bigint

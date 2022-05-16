@@ -1,10 +1,6 @@
 import {BaseContract, ContractReceipt} from 'ethers'
-import {events} from '../../framework/events'
-import {
-    parseEventLog,
-    parseEvents,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {events, parseEventLog, parseEvents} from '../../framework/events'
+import {verifyOrderedEvents} from '../../framework/verify'
 import {eventLog} from '../../framework/event-logs'
 import {
     ActualClaimRewardEvent,

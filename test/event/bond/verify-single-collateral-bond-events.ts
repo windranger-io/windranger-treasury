@@ -28,11 +28,8 @@ import {
     ActualWithdrawCollateralEvent,
     withdrawCollateralEventLogs
 } from './single-collateral-bond-events'
-import {
-    parseEventLog,
-    parseEvents,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {verifyOrderedEvents} from '../../framework/verify'
+import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectDebtIssueEvent = {
     amount: bigint

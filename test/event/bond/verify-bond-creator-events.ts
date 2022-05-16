@@ -8,11 +8,8 @@ import {
 } from './bond-creator-events'
 import {ethers} from 'hardhat'
 import {BaseContract, ContractReceipt} from 'ethers'
-import {
-    parseEventLog,
-    parseEvents,
-    verifyOrderedEvents
-} from '../../framework/verify'
+import {verifyOrderedEvents} from '../../framework/verify'
+import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectBondMetaData = {
     name: string
