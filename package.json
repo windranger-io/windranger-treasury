@@ -23,6 +23,7 @@
     "lint-ts": "eslint --ext .ts .",
     "lint-sol": "solhint 'contracts/**/*.sol'",
     "plant": "npx node-plantuml ./docs/specs",
+    "dodoc": "npx hardhat dodoc",
     "prepare": "husky install",
     "test": "mocha --timeout 10000 --exit --recursive --require ts-node/register \"test/**/*.test.ts\""
   },
@@ -63,6 +64,7 @@
     "typescript": "4.6.4"
   },
   "dependencies": {
+    "@primitivefi/hardhat-dodoc": "^0.2.3",
     "bunyan": "^1.8.15",
     "hardhat-contract-sizer": "^2.5.1"
   }
