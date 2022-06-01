@@ -175,3 +175,13 @@ The size of all contract can be display in a table using a custom task that runs
 ```shell
 yarn run hardhat size-contracts
 ```
+
+### Solidity Documentation Generation
+
+Markdown files can be generated from the Solidity files
+
+```shell
+npx hardhat docgen
+```
+
+The output mirrors the Solidity file structure and will be found at `./solidity-docs`.
