@@ -15,7 +15,7 @@ import "./StakingPoolLib.sol";
  *
  * @dev Owns of all StakingPools it manages, guarding function accordingly allows finer access control to be provided.
  */
-abstract contract StakingCurator is RoleAccessControl, PausableUpgradeable {
+abstract contract StakingPoolCurator is RoleAccessControl, PausableUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     mapping(uint256 => EnumerableSetUpgradeable.AddressSet)

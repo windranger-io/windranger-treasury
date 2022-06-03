@@ -4,29 +4,30 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "./BondCreator.sol";
-import "./BondCurator.sol";
-import "./BondPortal.sol";
-import "./Bond.sol";
+
+import "./StakingPoolCurator.sol";
+import "./StakingPoolFactory.sol";
 import "../DaoConfiguration.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
 
+//import "./BondPortal.sol";
+//import "./Bond.sol";
+
 /**
- * @title Mediates between a Bond creator and Bond curator.
+ * @title Mediates between a StakingPool creator and StakingPool curator.
  *
- * @dev Orchestrates a BondCreator and BondCurator to provide a single function to aggregate the various calls
- *      providing a single function to create and setup a bond for management with the curator.
+ * @dev Orchestrates a StakingPoolCreator and StakingPoolCurator to provide a single function to aggregate the various calls
+ *      providing a single function to create and setup a staking pool for management with the curator.
  */
-contract BondMediator is
-    BondCurator,
-    BondPortal,
+contract StakingPoolMediator is
     DaoConfiguration,
+    StakingPoolCurator,
     SweepERC20,
     UUPSUpgradeable,
     Version
 {
-    BondCreator private _creator;
+    StakingPoolFactory private _creator;
 
     event CreateDao(
         uint256 indexed id,
@@ -34,7 +35,7 @@ contract BondMediator is
         address indexed instigator
     );
 
-    event BondCreatorUpdate(
+    event StakingPoolFactoryUpdate(
         address indexed previousCreator,
         address indexed updateCreator,
         address indexed instigator
@@ -47,26 +48,25 @@ contract BondMediator is
      * @param factory A deployed BondCreator contract to use when creating bonds.
      * @param treasury Beneficiary of any token sweeping.
      */
-    function initialize(address factory, address treasury)
+    function initialize(StakingPoolFactory factory, address treasury)
         external
         initializer
     {
         require(
-            AddressUpgradeable.isContract(factory),
-            "BM: creator not a contract"
+            AddressUpgradeable.isContract(address(factory)),
+            "SPM: creator not a contract"
         );
 
-        __BondCurator_init();
+        __StakingPoolCurator_init();
         __DaoConfiguration_init();
         __UUPSUpgradeable_init();
         __TokenSweep_init(treasury);
 
-        _creator = BondCreator(factory);
+        _creator = factory;
     }
 
     function createDao(address erc20CapableTreasury)
         external
-        override
         atLeastDaoCreatorRole
         returns (uint256)
     {
@@ -78,36 +78,33 @@ contract BondMediator is
         return id;
     }
 
-    function createManagedBond(
-        uint256 daoId,
-        Bond.MetaData calldata metadata,
-        Bond.Settings calldata configuration,
-        Bond.TimeLockRewardPool[] calldata rewards
+    function createStakingPool(
+        StakingPoolLib.Config calldata config,
+        bool launchPaused,
+        uint32 rewardsAvailableTimestamp
     )
         external
-        override
         whenNotPaused
-        atLeastDaoMeepleRole(daoId)
+        atLeastDaoMeepleRole(config.daoId)
         returns (address)
     {
-        require(_isValidDaoId(daoId), "BM: invalid DAO Id");
+        require(_isValidDaoId(config.daoId), "SPM: invalid DAO Id");
         require(
-            isAllowedDaoCollateral(daoId, configuration.collateralTokens),
-            "BM: collateral not whitelisted"
-        );
-
-        address bond = _creator.createBond(
-            metadata,
-            configuration,
-            rewards,
-            _daoTreasury(daoId)
+            isAllowedDaoCollateral(config.daoId, address(config.stakeToken)),
+            "SPM: collateral not whitelisted"
         );
 
         // Reentrancy warning from an emitted event, which needs the Bond, created by an external call above.
         //slither-disable-next-line reentrancy-events
-        _addBond(daoId, bond);
+        address stakingPool = _creator.createStakingPool(
+            config,
+            launchPaused,
+            rewardsAvailableTimestamp
+        );
 
-        return bond;
+        _addStakingPool(config.daoId, stakingPool);
+
+        return stakingPool;
     }
 
     /**
@@ -115,20 +112,24 @@ contract BondMediator is
      *
      * @param factory Contract address for the new BondCreator to use from now onwards when creating managed bonds.
      */
-    function setBondCreator(address factory)
+    function setStakingPoolFactory(address factory)
         external
         whenNotPaused
         atLeastSysAdminRole
     {
         require(
             AddressUpgradeable.isContract(factory),
-            "BM: creator not a contract"
+            "SPM: creator not a contract"
         );
         address previousCreator = address(_creator);
         require(factory != previousCreator, "BM: matches existing");
 
-        emit BondCreatorUpdate(address(_creator), factory, _msgSender());
-        _creator = BondCreator(factory);
+        emit StakingPoolFactoryUpdate(
+            address(_creator),
+            address(factory),
+            _msgSender()
+        );
+        _creator = StakingPoolFactory(factory);
     }
 
     /**
@@ -144,38 +145,12 @@ contract BondMediator is
         _setDaoTreasury(daoId, replacement);
     }
 
-    /**
-     * @notice Permits updating the meta data for the DAO.
-     */
-    function setDaoMetaData(uint256 daoId, string calldata replacement)
-        external
-        whenNotPaused
-        atLeastDaoAdminRole(daoId)
-    {
-        _setDaoMetaData(daoId, replacement);
-    }
-
     function updateTokenSweepBeneficiary(address newBeneficiary)
         external
         whenNotPaused
         onlySuperUserRole
     {
         _setTokenSweepBeneficiary(newBeneficiary);
-    }
-
-    /**
-     * @notice Permits the owner to remove a collateral token from being accepted in future bonds.
-     *
-     * @dev Only applies for bonds created after the removal, previously created bonds remain unchanged.
-     *
-     * @param erc20CollateralTokens token to remove from whitelist
-     * @param daoId The DAO who is having the collateral token removed from their whitelist.
-     */
-    function removeWhitelistedCollateral(
-        uint256 daoId,
-        address erc20CollateralTokens
-    ) external whenNotPaused atLeastDaoAdminRole(daoId) {
-        _removeWhitelistedDaoCollateral(daoId, erc20CollateralTokens);
     }
 
     function sweepERC20Tokens(address tokens, uint256 amount)
