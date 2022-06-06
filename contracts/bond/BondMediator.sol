@@ -28,12 +28,6 @@ contract BondMediator is
 {
     BondCreator private _creator;
 
-    event CreateDao(
-        uint256 indexed id,
-        address indexed treasury,
-        address indexed instigator
-    );
-
     event BondCreatorUpdate(
         address indexed previousCreator,
         address indexed updateCreator,

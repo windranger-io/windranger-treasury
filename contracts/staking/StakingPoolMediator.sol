@@ -26,12 +26,6 @@ contract StakingPoolMediator is
 {
     StakingPoolFactory private _creator;
 
-    event CreateDao(
-        uint256 indexed id,
-        address indexed treasury,
-        address indexed instigator
-    );
-
     event StakingPoolFactoryUpdate(
         address indexed previousCreator,
         address indexed updateCreator,

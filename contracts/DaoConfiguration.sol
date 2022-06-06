@@ -20,6 +20,12 @@ abstract contract DaoConfiguration is DaoCollateralWhitelist {
         address indexed instigator
     );
 
+    event CreateDao(
+        uint256 indexed id,
+        address indexed treasury,
+        address indexed instigator
+    );
+
     event DaoMetaDataUpdate(
         uint256 indexed daoId,
         string data,

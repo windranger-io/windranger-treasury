@@ -6,10 +6,17 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "./StakingPool.sol";
 import "./StakingPoolLib.sol";
+import "./StakingPoolCreator.sol";
 import "../RoleAccessControl.sol";
 import "../Version.sol";
+import "./StakingPoolCreator.sol";
 
-contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
+contract StakingPoolFactory is
+    RoleAccessControl,
+    PausableUpgradeable,
+    Version,
+    StakingPoolCreator
+{
     event StakingPoolCreated(
         address indexed stakingPool,
         address treasury,
@@ -34,7 +41,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
         StakingPoolLib.Config calldata config,
         bool launchPaused,
         uint32 rewardsAvailableTimestamp
-    ) external whenNotPaused returns (address) {
+    ) external override whenNotPaused returns (address) {
         StakingPool stakingPool = new StakingPool();
 
         emit StakingPoolCreated(
