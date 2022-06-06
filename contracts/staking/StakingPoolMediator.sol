@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
 import "./StakingPoolCurator.sol";
-import "./StakingPoolFactory.sol";
+import "./StakingPoolCreator.sol";
 import "../DaoConfiguration.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
@@ -24,9 +24,9 @@ contract StakingPoolMediator is
     UUPSUpgradeable,
     Version
 {
-    StakingPoolFactory private _creator;
+    StakingPoolCreator private _creator;
 
-    event StakingPoolFactoryUpdate(
+    event StakingPoolCreatorUpdate(
         address indexed previousCreator,
         address indexed updateCreator,
         address indexed instigator
@@ -39,7 +39,7 @@ contract StakingPoolMediator is
      * @param factory A deployed BondCreator contract to use when creating bonds.
      * @param treasury Beneficiary of any token sweeping.
      */
-    function initialize(StakingPoolFactory factory, address treasury)
+    function initialize(StakingPoolCreator factory, address treasury)
         external
         initializer
     {
@@ -103,7 +103,7 @@ contract StakingPoolMediator is
      *
      * @param factory Contract address for the new BondCreator to use from now onwards when creating managed bonds.
      */
-    function setStakingPoolFactory(address factory)
+    function setStakingPoolCreator(address factory)
         external
         whenNotPaused
         atLeastSysAdminRole
@@ -115,12 +115,12 @@ contract StakingPoolMediator is
         address previousCreator = address(_creator);
         require(factory != previousCreator, "BM: matches existing");
 
-        emit StakingPoolFactoryUpdate(
+        emit StakingPoolCreatorUpdate(
             address(_creator),
             address(factory),
             _msgSender()
         );
-        _creator = StakingPoolFactory(factory);
+        _creator = StakingPoolCreator(factory);
     }
 
     /**

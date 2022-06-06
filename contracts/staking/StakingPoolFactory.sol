@@ -9,13 +9,12 @@ import "./StakingPoolLib.sol";
 import "./StakingPoolCreator.sol";
 import "../RoleAccessControl.sol";
 import "../Version.sol";
-import "./StakingPoolCreator.sol";
 
 contract StakingPoolFactory is
     RoleAccessControl,
     PausableUpgradeable,
-    Version,
-    StakingPoolCreator
+    StakingPoolCreator,
+    Version
 {
     event StakingPoolCreated(
         address indexed stakingPool,
