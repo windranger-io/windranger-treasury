@@ -4,7 +4,7 @@ import {Result} from '@ethersproject/abi'
 import {
     DaoMetaDataUpdateEvent,
     DaoTreasuryUpdateEvent
-} from '../../../typechain-types/contracts/bond/DaoBondConfiguration'
+} from '../../../typechain-types/contracts/DaoConfiguration'
 
 export type ActualDaoTreasuryUpdateEvent = {
     daoId: BigNumber

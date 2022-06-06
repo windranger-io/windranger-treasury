@@ -7,7 +7,7 @@ import {
     daoMetaDataUpdateEvents,
     daoTreasuryUpdateEventLogs,
     daoTreasuryUpdateEvents
-} from './dao-bond-configuration-events'
+} from './dao-configuration-events'
 import {parseEventLog, parseEvents} from '../../framework/events'
 
 export type ExpectedDaoTreasuryUpdateEvent = {
