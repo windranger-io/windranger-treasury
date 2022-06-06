@@ -178,7 +178,7 @@ contract StakingPoolMediator is
         _whitelistDaoCollateral(daoId, erc20CollateralTokens);
     }
 
-    function bondCreator() external view returns (address) {
+    function stakingPoolCreator() external view returns (address) {
         return address(_creator);
     }
 
