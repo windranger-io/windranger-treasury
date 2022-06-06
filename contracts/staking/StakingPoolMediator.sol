@@ -69,7 +69,7 @@ contract StakingPoolMediator is
         return id;
     }
 
-    function createStakingPool(
+    function createManagedStakingPool(
         StakingPoolLib.Config calldata config,
         bool launchPaused,
         uint32 rewardsAvailableTimestamp
