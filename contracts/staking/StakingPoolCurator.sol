@@ -127,7 +127,7 @@ abstract contract StakingPoolCurator is RoleAccessControl, PausableUpgradeable {
         );
         require(
             OwnableUpgradeable(stakingPool).owner() == address(this),
-            "StakingPool: not bond owner"
+            "StakingPool: not owner"
         );
 
         emit AddStakingPool(daoId, stakingPool, _msgSender());

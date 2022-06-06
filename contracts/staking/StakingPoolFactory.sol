@@ -9,6 +9,8 @@ import "./StakingPoolLib.sol";
 import "../RoleAccessControl.sol";
 import "../Version.sol";
 
+import "hardhat/console.sol";
+
 contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
     event StakingPoolCreated(
         address indexed stakingPool,
@@ -37,10 +39,11 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
     )
         external
         whenNotPaused
-        atLeastDaoAdminRole(config.daoId)
+        atLeastDaoAdminRole(config.daoId) // do we need this?
         returns (address)
     {
         StakingPool stakingPool = new StakingPool();
+        console.log("factory new staking pool");
 
         emit StakingPoolCreated(
             address(stakingPool),
@@ -53,8 +56,11 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
             config.minimumContribution,
             config.rewardType
         );
-
+        console.log("factory initializing");
         stakingPool.initialize(config, launchPaused, rewardsAvailableTimestamp);
+        console.log("factory transfer ownership");
+        stakingPool.transferOwnership(_msgSender());
+        console.log("factory ownership transferred");
         return address(stakingPool);
     }
 

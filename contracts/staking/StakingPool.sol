@@ -227,6 +227,7 @@ contract StakingPool is
     ) external virtual initializer {
         __Context_init_unchained();
         __Pausable_init();
+        __Ownable_init();
 
         //slither-disable-next-line timestamp
         require(
@@ -244,7 +245,7 @@ contract StakingPool is
             rewardsTimestamp > info.epochStartTimestamp + info.epochDuration,
             "StakingPool: init rewards"
         );
-        require(info.treasury != address(0), "StakePool: nonzero treasury"); // TODO: are we checking if the treasury is whitelisted to that daoId
+        require(info.treasury != address(0), "StakePool: nonzero treasury");
         require(info.maxTotalPoolStake > 0, "StakePool: maxTotalPoolStake > 0");
         require(info.epochDuration > 0, "StakePool: epochDuration > 0");
         require(info.minimumContribution > 0, "StakePool: minimumContribution");
