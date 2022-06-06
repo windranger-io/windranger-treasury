@@ -11,9 +11,6 @@ import "../DaoConfiguration.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
 
-//import "./BondPortal.sol";
-//import "./Bond.sol";
-
 /**
  * @title Mediates between a StakingPool creator and StakingPool curator.
  *
