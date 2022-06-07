@@ -4,6 +4,7 @@ import '@nomiclabs/hardhat-etherscan'
 import '@nomiclabs/hardhat-waffle'
 import '@openzeppelin/hardhat-upgrades'
 import 'hardhat-contract-sizer'
+import 'solidity-docgen'
 import {task} from 'hardhat/config'
 import {log} from './config/logging'
 
@@ -75,5 +76,6 @@ export default {
         alphaSort: true,
         runOnCompile: false,
         disambiguatePaths: false
-    }
+    },
+    docgen: {outputDir: 'solidity-docs', pages: 'files'}
 }
