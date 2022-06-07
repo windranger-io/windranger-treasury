@@ -36,7 +36,7 @@ contract StakingPoolMediator is
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
      *
-     * @param factory A deployed BondCreator contract to use when creating bonds.
+     * @param factory A deployed StakingPoolFactory contract to use when creating bonds.
      * @param treasury Beneficiary of any token sweeping.
      */
     function initialize(StakingPoolCreator factory, address treasury)
@@ -99,9 +99,9 @@ contract StakingPoolMediator is
     }
 
     /**
-     * @notice Updates the Bond creator reference.
+     * @notice Updates the StakingPool creator reference.
      *
-     * @param factory Contract address for the new BondCreator to use from now onwards when creating managed bonds.
+     * @param factory Contract address for the new StakingPoolCreator to use from now onwards when creating managed bonds.
      */
     function setStakingPoolCreator(address factory)
         external
@@ -155,11 +155,11 @@ contract StakingPoolMediator is
     /**
      * @notice Adds an ERC20 token to the collateral whitelist.
      *
-     * @dev When a bond is created, the tokens used as collateral must have been whitelisted.
+     * @dev When a staking pool is created, the tokens used as collateral must have been whitelisted.
      *
      * @param daoId The DAO who is having the collateral token whitelisted.
      * @param erc20CollateralTokens Whitelists the token from now onwards.
-     *      On bond creation the tokens address used is retrieved by symbol from the whitelist.
+     *      On staking pool creation the tokens address used is retrieved by symbol from the whitelist.
      */
     function whitelistCollateral(uint256 daoId, address erc20CollateralTokens)
         external
