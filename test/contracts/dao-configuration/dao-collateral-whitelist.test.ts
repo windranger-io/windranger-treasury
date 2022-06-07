@@ -9,7 +9,7 @@ import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
     Box,
-    DaoBondConfigurationBox,
+    DaoConfigurationBox,
     ERC20,
     ERC20PresetMinterPauser,
     IERC20
@@ -22,7 +22,7 @@ import {
     verifyAddCollateralEvents,
     verifyRemoveCollateralEventLogs,
     verifyRemoveCollateralEvents
-} from '../../event/bond/verify-whitelist-events'
+} from '../../event/dao-configuration/verify-whitelist-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -31,16 +31,16 @@ const ADDRESS_ZERO = constants.AddressZero
 const INVALID_DAO_ID = 0n
 const DAO_ID = 1n
 
-describe('DAO Bond Collateral Whitelist contract', () => {
+describe('DAO Collateral Whitelist contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        config = await deployContract<DaoBondConfigurationBox>(
-            'DaoBondConfigurationBox'
+        config = await deployContract<DaoConfigurationBox>(
+            'DaoConfigurationBox'
         )
 
-        await config.daoBondConfiguration(treasury)
+        await config.daoConfiguration(treasury)
         await config.whitelistDaoCollateral(DAO_ID, collateralTokens.address)
     })
 
@@ -208,6 +208,6 @@ describe('DAO Bond Collateral Whitelist contract', () => {
 
     let admin: string
     let treasury: string
-    let config: DaoBondConfigurationBox
+    let config: DaoConfigurationBox
     let collateralTokens: IERC20
 })

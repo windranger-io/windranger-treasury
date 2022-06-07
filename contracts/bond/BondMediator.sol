@@ -8,7 +8,7 @@ import "./BondCreator.sol";
 import "./BondCurator.sol";
 import "./BondPortal.sol";
 import "./Bond.sol";
-import "../DaoConfiguration.sol";
+import "../dao-configuration/DaoConfiguration.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
 

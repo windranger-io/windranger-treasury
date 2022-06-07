@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
 import "./StakingPoolCurator.sol";
 import "./StakingPoolCreator.sol";
-import "../DaoConfiguration.sol";
+import "../dao-configuration/DaoConfiguration.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
 

@@ -6,7 +6,7 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {BitDAO, DaoBondConfigurationBox, IERC20} from '../../../typechain-types'
+import {BitDAO, DaoConfigurationBox, IERC20} from '../../../typechain-types'
 import {deployContract, signer} from '../../framework/contracts'
 import {constants} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
@@ -18,7 +18,7 @@ import {
     verifyDaoMetaDataUpdateLogEvents,
     verifyDaoTreasuryUpdateEvents,
     verifyDaoTreasuryUpdateLogEvents
-} from '../../event/bond/verify-dao-bond-configuration-events'
+} from '../../event/dao-configuration/verify-dao-configuration-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -27,27 +27,27 @@ const ADDRESS_ZERO = constants.AddressZero
 const INVALID_DAO_ID = 0n
 const DAO_ID = 1n
 
-describe('DAO Bond Configuration contract', () => {
+describe('DAO Configuration contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        config = await deployContract<DaoBondConfigurationBox>(
-            'DaoBondConfigurationBox'
+        config = await deployContract<DaoConfigurationBox>(
+            'DaoConfigurationBox'
         )
 
-        await config.daoBondConfiguration(treasury)
+        await config.daoConfiguration(treasury)
         await config.whitelistDaoCollateral(DAO_ID, collateralTokens.address)
     })
 
     describe('meta data', () => {
         it('update', async () => {
-            const configuration = await deployContract<DaoBondConfigurationBox>(
-                'DaoBondConfigurationBox'
+            const configuration = await deployContract<DaoConfigurationBox>(
+                'DaoConfigurationBox'
             )
             await successfulTransaction(
-                configuration.daoBondConfiguration(treasury)
+                configuration.daoConfiguration(treasury)
             )
             const metaDataUpdate = 'Something very important this way comes'
             expect(await configuration.daoMetaData(DAO_ID)).equals('')
@@ -77,11 +77,11 @@ describe('DAO Bond Configuration contract', () => {
 
     describe('treasury', () => {
         it('init', async () => {
-            const configuration = await deployContract<DaoBondConfigurationBox>(
-                'DaoBondConfigurationBox'
+            const configuration = await deployContract<DaoConfigurationBox>(
+                'DaoConfigurationBox'
             )
             const receipt = await successfulTransaction(
-                configuration.daoBondConfiguration(treasury)
+                configuration.daoConfiguration(treasury)
             )
 
             expect(await config.daoTreasury(DAO_ID)).equals(treasury)
@@ -161,6 +161,6 @@ describe('DAO Bond Configuration contract', () => {
     let admin: string
     let treasury: string
     let nonAdmin: SignerWithAddress
-    let config: DaoBondConfigurationBox
+    let config: DaoConfigurationBox
     let collateralTokens: IERC20
 })
