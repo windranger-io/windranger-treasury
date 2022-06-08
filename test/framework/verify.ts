@@ -71,6 +71,6 @@ function prettyJson<T>(data: T): string {
     return JSON.stringify(data, stringifyBigInt, 2)
 }
 
-function stringifyBigInt<T, U, V>(key: T, value: U): string | U {
+function stringifyBigInt<T, U>(key: T, value: U): string | U {
     return typeof value === 'bigint' ? value.toString() : value
 }
