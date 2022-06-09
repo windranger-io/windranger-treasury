@@ -9,7 +9,6 @@ import {solidity} from 'ethereum-waffle'
 import {
     StakingPool,
     ERC20PresetMinterPauser,
-    StakingPoolFactory,
     BitDAO,
     IERC20
 } from '../../../typechain-types'

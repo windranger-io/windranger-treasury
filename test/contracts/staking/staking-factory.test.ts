@@ -9,15 +9,10 @@ import {solidity} from 'ethereum-waffle'
 import {
     StakingPoolFactory,
     ERC20PresetMinterPauser,
-    BondMediator,
     IERC20,
     BitDAO
 } from '../../../typechain-types'
-import {
-    deployContract,
-    deployContractWithProxy,
-    signer
-} from '../../framework/contracts'
+import {deployContract, signer} from '../../framework/contracts'
 import {getTimestampNow} from '../../framework/time'
 import {BigNumber} from 'ethers'
 
