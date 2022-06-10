@@ -245,7 +245,7 @@ contract StakingPool is
             rewardsTimestamp > info.epochStartTimestamp + info.epochDuration,
             "StakingPool: init rewards"
         );
-        require(info.treasury != address(0), "StakePool: nonzero treasury");
+        require(info.treasury != address(0), "StakePool: treasury address 0");
         require(info.maxTotalPoolStake > 0, "StakePool: maxTotalPoolStake > 0");
         require(info.epochDuration > 0, "StakePool: epochDuration > 0");
         require(info.minimumContribution > 0, "StakePool: minimumContribution");

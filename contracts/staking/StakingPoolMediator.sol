@@ -113,7 +113,7 @@ contract StakingPoolMediator is
             "SPM: creator not a contract"
         );
         address previousCreator = address(_creator);
-        require(factory != previousCreator, "BM: matches existing");
+        require(factory != previousCreator, "SPM: matches existing");
 
         emit StakingPoolCreatorUpdate(
             address(_creator),
