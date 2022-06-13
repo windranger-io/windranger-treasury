@@ -225,7 +225,7 @@ contract StakingPool is
     function sweepERC20Tokens(address tokens, uint256 amount)
         external
         whenNotPaused
-        onlySuperUserRole
+        onlyOwner
     {
         _sweepERC20Tokens(tokens, amount);
     }
@@ -299,7 +299,7 @@ contract StakingPool is
     function updateTokenSweepBeneficiary(address newBeneficiary)
         external
         whenNotPaused
-        onlySuperUserRole
+        onlyOwner
     {
         _setTokenSweepBeneficiary(newBeneficiary);
     }
