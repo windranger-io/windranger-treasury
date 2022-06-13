@@ -2,17 +2,16 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./StakingPool.sol";
 import "./StakingPoolLib.sol";
 import "./StakingPoolCreator.sol";
-import "../RoleAccessControl.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
 
 contract StakingPoolFactory is
-    RoleAccessControl,
+    OwnableUpgradeable,
     PausableUpgradeable,
     StakingPoolCreator,
     SweepERC20,
@@ -30,11 +29,11 @@ contract StakingPoolFactory is
         StakingPoolLib.RewardType rewardType
     );
 
-    function pause() external whenNotPaused atLeastSysAdminRole {
+    function pause() external whenNotPaused onlyOwner {
         _pause();
     }
 
-    function unpause() external whenPaused atLeastSysAdminRole {
+    function unpause() external whenPaused onlyOwner {
         _unpause();
     }
 
@@ -70,14 +69,14 @@ contract StakingPoolFactory is
 
     function initialize(address beneficiary) external initializer {
         __Pausable_init();
-        __RoleAccessControl_init();
+        __Ownable_init();
         __TokenSweep_init(beneficiary);
     }
 
     function updateTokenSweepBeneficiary(address newBeneficiary)
         external
         whenNotPaused
-        onlySuperUserRole
+        onlyOwner
     {
         _setTokenSweepBeneficiary(newBeneficiary);
     }
@@ -85,7 +84,7 @@ contract StakingPoolFactory is
     function sweepERC20Tokens(address tokens, uint256 amount)
         external
         whenNotPaused
-        onlySuperUserRole
+        onlyOwner
     {
         _sweepERC20Tokens(tokens, amount);
     }

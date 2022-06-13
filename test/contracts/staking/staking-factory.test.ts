@@ -130,17 +130,12 @@ describe('Staking Pool Factory', () => {
                 )
             })
 
-            it('only Super User', async () => {
+            it('onlyOwner', async () => {
                 await expect(
                     stakingPoolFactory
                         .connect(nonAdmin)
                         .updateTokenSweepBeneficiary(nonAdmin.address)
-                ).to.be.revertedWith(
-                    accessControlRevertMessageMissingGlobalRole(
-                        nonAdmin,
-                        SUPER_USER
-                    )
-                )
+                ).to.be.revertedWith('Ownable: caller is not the owner')
             })
 
             it('only when not paused', async () => {
@@ -202,17 +197,12 @@ describe('Staking Pool Factory', () => {
                 )
             })
 
-            it('only Super User', async () => {
+            it('onlyOwner', async () => {
                 await expect(
                     stakingPoolFactory
                         .connect(nonAdmin)
                         .sweepERC20Tokens(collateralTokens.address, 5)
-                ).to.be.revertedWith(
-                    accessControlRevertMessageMissingGlobalRole(
-                        nonAdmin,
-                        SUPER_USER
-                    )
-                )
+                ).to.be.revertedWith('Ownable: caller is not the owner')
             })
 
             it('only when not paused', async () => {
