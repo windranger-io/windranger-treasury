@@ -1,21 +1,27 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./DaoBondCollateralWhitelist.sol";
+import "./DaoCollateralWhitelist.sol";
 
-abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
-    struct DaoBondConfig {
+abstract contract DaoConfiguration is DaoCollateralWhitelist {
+    struct DaoConfig {
         // Address zero is an invalid address, can be used to identify null structs
         address treasury;
         string metaData;
         CollateralWhitelist whitelist;
     }
 
-    mapping(uint256 => DaoBondConfig) private _daoConfig;
+    mapping(uint256 => DaoConfig) private _daoConfig;
     uint256 private _daoConfigLastId;
 
     event DaoTreasuryUpdate(
         uint256 indexed daoId,
+        address indexed treasury,
+        address indexed instigator
+    );
+
+    event CreateDao(
+        uint256 indexed id,
         address indexed treasury,
         address indexed instigator
     );
@@ -43,11 +49,11 @@ abstract contract DaoBondConfiguration is DaoBondCollateralWhitelist {
      *      have been setup.
      */
     //slither-disable-next-line naming-convention
-    function __DaoBondConfiguration_init() internal onlyInitializing {
-        __DaoBondCollateralWhitelist_init();
+    function __DaoConfiguration_init() internal onlyInitializing {
+        __DaoCollateralWhitelist_init();
     }
 
-    function _daoBondConfiguration(address erc20CapableTreasury)
+    function _daoConfiguration(address erc20CapableTreasury)
         internal
         returns (uint256)
     {

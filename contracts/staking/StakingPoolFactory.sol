@@ -6,10 +6,16 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "./StakingPool.sol";
 import "./StakingPoolLib.sol";
+import "./StakingPoolCreator.sol";
 import "../RoleAccessControl.sol";
 import "../Version.sol";
 
-contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
+contract StakingPoolFactory is
+    RoleAccessControl,
+    PausableUpgradeable,
+    StakingPoolCreator,
+    Version
+{
     event StakingPoolCreated(
         address indexed stakingPool,
         address treasury,
@@ -34,12 +40,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
         StakingPoolLib.Config calldata config,
         bool launchPaused,
         uint32 rewardsAvailableTimestamp
-    )
-        external
-        whenNotPaused
-        atLeastDaoAdminRole(config.daoId)
-        returns (address)
-    {
+    ) external override whenNotPaused returns (address) {
         StakingPool stakingPool = new StakingPool();
 
         emit StakingPoolCreated(
@@ -55,6 +56,7 @@ contract StakingPoolFactory is RoleAccessControl, PausableUpgradeable, Version {
         );
 
         stakingPool.initialize(config, launchPaused, rewardsAvailableTimestamp);
+        stakingPool.transferOwnership(_msgSender());
         return address(stakingPool);
     }
 

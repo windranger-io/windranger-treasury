@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
-abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
+abstract contract DaoCollateralWhitelist is ContextUpgradeable {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     struct CollateralWhitelist {
@@ -62,7 +62,7 @@ abstract contract DaoBondCollateralWhitelist is ContextUpgradeable {
     }
 
     //slither-disable-next-line naming-convention
-    function __DaoBondCollateralWhitelist_init() internal onlyInitializing {}
+    function __DaoCollateralWhitelist_init() internal onlyInitializing {}
 
     /**
      * @notice Performs whitelisting of the ERC20 collateral token.
