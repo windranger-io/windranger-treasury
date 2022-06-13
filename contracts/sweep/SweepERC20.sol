@@ -32,6 +32,6 @@ abstract contract SweepERC20 is TokenSweep {
             tokenSweepBeneficiary(),
             amount
         );
-        require(result, "SweepERC20: transfer failed"); //
+        require(result, "SweepERC20: transfer failed");
     }
 }
