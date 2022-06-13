@@ -87,6 +87,27 @@ abstract contract StakingPoolCurator is RoleAccessControl, PausableUpgradeable {
         StakingPool(stakingPool).setRewardsAvailableTimestamp(timestamp);
     }
 
+    function stakingPoolSweepERC20Tokens(
+        uint256 daoId,
+        address stakingPool,
+        address tokens,
+        uint256 amount
+    ) external atLeastDaoMeepleRole(daoId) {
+        _requireManagingStakingPool(daoId, stakingPool);
+
+        StakingPool(stakingPool).sweepERC20Tokens(tokens, amount);
+    }
+
+    function stakingPoolUpdateTokenSweepBeneficiary(
+        uint256 daoId,
+        address stakingPool,
+        address newBeneficiary
+    ) external atLeastDaoMeepleRole(daoId) {
+        _requireManagingStakingPool(daoId, stakingPool);
+
+        StakingPool(stakingPool).updateTokenSweepBeneficiary(newBeneficiary);
+    }
+
     /**
      * @notice Pauses most side affecting functions.
      */
