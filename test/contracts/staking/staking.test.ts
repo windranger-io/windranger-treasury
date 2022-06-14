@@ -6,7 +6,12 @@ import '@nomiclabs/hardhat-ethers'
 import chai, {expect} from 'chai'
 import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
-import {StakingPool, ERC20PresetMinterPauser} from '../../../typechain-types'
+import {
+    StakingPool,
+    ERC20PresetMinterPauser,
+    BitDAO,
+    IERC20
+} from '../../../typechain-types'
 import {deployContract, signer} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from '../../framework/transaction'
@@ -21,6 +26,18 @@ import {
     verifyWithdrawRewardsEvent
 } from '../../event/staking/verify-staking-events'
 import {RewardType} from '../../event/staking/staking-events'
+import {
+    ExpectedBeneficiaryUpdateEvent,
+    verifyBeneficiaryUpdateEvents,
+    verifyBeneficiaryUpdateLogEvents
+} from '../../event/sweep/verify-token-sweep-events'
+import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
+import {SUPER_USER} from '../../event/bond/roles'
+import {
+    ExpectedERC20SweepEvent,
+    verifyERC20SweepEvents,
+    verifyERC20SweepLogEvents
+} from '../../event/sweep/verify-sweep-erc20-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -76,7 +93,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 true,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
 
             await expect(
@@ -104,6 +122,160 @@ describe('Staking Pool Tests', () => {
                 {rewardTokens: rewardToken1.address, amount},
                 await initializeRewards(rewardToken1, admin, amount, ratio)
             )
+        })
+    })
+
+    describe('ERC20 token sweep', () => {
+        let treasury: string
+        let nonAdmin: SignerWithAddress
+        let collateralTokens: IERC20
+        before(async () => {
+            treasury = (await signer(2)).address
+            nonAdmin = await signer(3)
+            collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
+        })
+        it('init', async () => {
+            stakingPool = await deployContract<StakingPool>('StakingPool')
+
+            const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+            const rewardsAvailableTimestamp =
+                REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
+            const stakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                emergencyMode: false,
+                treasury: admin,
+                stakeToken: stakeTokens.address,
+                rewardType: RewardType.FLOATING,
+                rewardTokens: []
+            }
+
+            const receipt = await successfulTransaction(
+                stakingPool.initialize(
+                    stakingPoolInfo,
+                    false,
+                    rewardsAvailableTimestamp,
+                    treasury
+                )
+            )
+
+            expect(await stakingPool.tokenSweepBeneficiary()).equals(treasury)
+            const expectedEvents = [{beneficiary: treasury, instigator: admin}]
+            verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
+            verifyBeneficiaryUpdateLogEvents(
+                stakingPool,
+                receipt,
+                expectedEvents
+            )
+        })
+
+        describe('update beneficiary', () => {
+            it('side effects', async () => {
+                expect(await stakingPool.tokenSweepBeneficiary()).equals(
+                    treasury
+                )
+
+                const receipt = await successfulTransaction(
+                    stakingPool.updateTokenSweepBeneficiary(nonAdmin.address)
+                )
+
+                expect(await stakingPool.tokenSweepBeneficiary()).equals(
+                    nonAdmin.address
+                )
+                const expectedEvents: ExpectedBeneficiaryUpdateEvent[] = [
+                    {
+                        beneficiary: nonAdmin.address,
+                        instigator: admin
+                    }
+                ]
+                verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
+                verifyBeneficiaryUpdateLogEvents(
+                    stakingPool,
+                    receipt,
+                    expectedEvents
+                )
+            })
+
+            it('onlyOwner', async () => {
+                await expect(
+                    stakingPool
+                        .connect(nonAdmin)
+                        .updateTokenSweepBeneficiary(nonAdmin.address)
+                ).to.be.revertedWith('Ownable: caller is not the owner')
+            })
+
+            it('only when not paused', async () => {
+                await stakingPool.pause()
+
+                await expect(
+                    stakingPool.updateTokenSweepBeneficiary(nonAdmin.address)
+                ).to.be.revertedWith('Pausable: paused')
+            })
+            after(async () => {
+                await stakingPool.unpause()
+                await stakingPool.updateTokenSweepBeneficiary(treasury)
+            })
+        })
+
+        describe('ERC20 token sweep', () => {
+            it('side effects', async () => {
+                const seedFunds = 100n
+                const sweepAmount = 55n
+                await successfulTransaction(
+                    collateralTokens.transfer(stakingPool.address, seedFunds)
+                )
+                expect(
+                    await collateralTokens.balanceOf(stakingPool.address)
+                ).equals(seedFunds)
+                expect(await collateralTokens.balanceOf(treasury)).equals(0)
+
+                const receipt = await successfulTransaction(
+                    stakingPool.sweepERC20Tokens(
+                        collateralTokens.address,
+                        sweepAmount
+                    )
+                )
+
+                expect(
+                    await collateralTokens.balanceOf(stakingPool.address)
+                ).equals(seedFunds - sweepAmount)
+                expect(await collateralTokens.balanceOf(treasury)).equals(
+                    sweepAmount
+                )
+                const expectedEvents: ExpectedERC20SweepEvent[] = [
+                    {
+                        beneficiary: treasury,
+                        tokens: collateralTokens.address,
+                        amount: sweepAmount,
+                        instigator: admin
+                    }
+                ]
+                verifyERC20SweepEvents(receipt, expectedEvents)
+                verifyERC20SweepLogEvents(stakingPool, receipt, expectedEvents)
+            })
+
+            it('onlyOwner', async () => {
+                await expect(
+                    stakingPool
+                        .connect(nonAdmin)
+                        .sweepERC20Tokens(collateralTokens.address, 5)
+                ).to.be.revertedWith('Ownable: caller is not the owner')
+            })
+
+            it('only when not paused', async () => {
+                await stakingPool.pause()
+
+                await expect(
+                    stakingPool.sweepERC20Tokens(collateralTokens.address, 5)
+                ).to.be.revertedWith('Pausable: paused')
+            })
+        })
+        after(async () => {
+            await stakingPool.unpause()
         })
     })
 
@@ -138,7 +310,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 false,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
         })
 
@@ -238,7 +411,8 @@ describe('Staking Pool Tests', () => {
                 await stakingPool.initialize(
                     stakingPoolInfo,
                     false,
-                    rewardsAvailableTimestamp
+                    rewardsAvailableTimestamp,
+                    admin
                 )
             })
 
@@ -302,7 +476,8 @@ describe('Staking Pool Tests', () => {
                 await stakingPool.initialize(
                     stakingPoolInfo,
                     false,
-                    rewardsAvailableTimestamp
+                    rewardsAvailableTimestamp,
+                    admin
                 )
                 await rewardToken1.mint(
                     stakingPool.address,
@@ -439,7 +614,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 false,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })
@@ -515,7 +691,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 false,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
         })
         it('user can deposit and withdraw', async () => {
@@ -629,7 +806,8 @@ describe('Staking Pool Tests', () => {
             await stakingPool.initialize(
                 stakingPoolInfo,
                 false,
-                rewardsAvailableTimestamp
+                rewardsAvailableTimestamp,
+                admin
             )
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })

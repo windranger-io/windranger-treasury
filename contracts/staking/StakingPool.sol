@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./StakingPoolLib.sol";
 import "../Version.sol";
+import "../sweep/SweepERC20.sol";
 
 /**
  * @title StakingPool with optional fixed or floating token rewards
@@ -23,6 +24,7 @@ contract StakingPool is
     PausableUpgradeable,
     ReentrancyGuard,
     OwnableUpgradeable,
+    SweepERC20,
     Version
 {
     using SafeERC20 for IERC20;
@@ -220,14 +222,24 @@ contract StakingPool is
         _withdrawStake();
     }
 
+    function sweepERC20Tokens(address tokens, uint256 amount)
+        external
+        whenNotPaused
+        onlyOwner
+    {
+        _sweepERC20Tokens(tokens, amount);
+    }
+
     function initialize(
         StakingPoolLib.Config calldata info,
         bool paused,
-        uint32 rewardsTimestamp
+        uint32 rewardsTimestamp,
+        address beneficiary
     ) external virtual initializer {
         __Context_init_unchained();
         __Pausable_init();
         __Ownable_init();
+        __TokenSweep_init(beneficiary);
 
         //slither-disable-next-line timestamp
         require(
@@ -282,6 +294,14 @@ contract StakingPool is
 
     function setRewardsAvailableTimestamp(uint32 timestamp) external onlyOwner {
         _setRewardsAvailableTimestamp(timestamp);
+    }
+
+    function updateTokenSweepBeneficiary(address newBeneficiary)
+        external
+        whenNotPaused
+        onlyOwner
+    {
+        _setTokenSweepBeneficiary(newBeneficiary);
     }
 
     function currentExpectedRewards(address user)
