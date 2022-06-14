@@ -31,8 +31,6 @@ import {
     verifyBeneficiaryUpdateEvents,
     verifyBeneficiaryUpdateLogEvents
 } from '../../event/sweep/verify-token-sweep-events'
-import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
-import {SUPER_USER} from '../../event/bond/roles'
 import {
     ExpectedERC20SweepEvent,
     verifyERC20SweepEvents,
