@@ -479,11 +479,24 @@ contract StakingPool is
         _transferStake(currentDepositBalance, _config.stakeToken);
     }
 
+    function _isRewardsAvailable() internal view returns (bool) {
+        //slither-disable-next-line timestamp
+        return block.timestamp >= _rewardsAvailableTimestamp;
+    }
+
+    function _isStakingPeriodComplete() internal view returns (bool) {
+        //slither-disable-next-line timestamp
+        return
+            block.timestamp >=
+            (_stakingPoolConfig.epochStartTimestamp +
+                _stakingPoolConfig.epochDuration);
+    }
+
     function _calculateRewardAmount(
         StakingPoolLib.Config memory _config,
         User memory _user,
         uint256 rewardIndex
-    ) internal view returns (uint256) {
+    ) internal pure returns (uint256) {
         if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
             return _user.rewardAmounts[rewardIndex];
         }
@@ -502,19 +515,6 @@ contract StakingPool is
                 );
         }
         return 0;
-    }
-
-    function _isRewardsAvailable() internal view returns (bool) {
-        //slither-disable-next-line timestamp
-        return block.timestamp >= _rewardsAvailableTimestamp;
-    }
-
-    function _isStakingPeriodComplete() internal view returns (bool) {
-        //slither-disable-next-line timestamp
-        return
-            block.timestamp >=
-            (_stakingPoolConfig.epochStartTimestamp +
-                _stakingPoolConfig.epochDuration);
     }
 
     function _calculateFloatingReward(
