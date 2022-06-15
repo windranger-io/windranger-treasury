@@ -25,6 +25,7 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         private _claimantToRewardPoolDebt;
     Bond.TimeLockRewardPool[] private _rewardPools;
     uint256 private _redemptionTimestamp;
+    mapping(address => bool) private _tokensCounter;
 
     event ClaimReward(
         address indexed tokens,
@@ -312,6 +313,21 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         );
     }
 
+    function _enforceUniqueRewardTokens(
+        Bond.TimeLockRewardPool[] calldata rewardPools
+    ) private {
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            // Ensure no prev entries contain the same tokens address
+            if (_tokensCounter[rewardPools[i].tokens]) {
+                        revert("Rewards: tokens must be unique");
+            } 
+            _tokensCounter[rewardPools[i].tokens] = true;
+        }
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            delete _tokensCounter[rewardPools[i].tokens];
+        }
+    }
+
     function _hasRewardDebt(
         address claimant,
         Bond.TimeLockRewardPool storage rewardPool
@@ -366,19 +382,4 @@ abstract contract TimeLockMultiRewardBond is PausableUpgradeable {
         revert("Rewards: tokens not found");
     }
 
-    function _enforceUniqueRewardTokens(
-        Bond.TimeLockRewardPool[] calldata rewardPools
-    ) private pure {
-        for (uint256 i = 0; i < rewardPools.length; i++) {
-            // Ensure no later entries contain the same tokens address
-            uint256 next = i + 1;
-            if (next < rewardPools.length) {
-                for (uint256 j = next; j < rewardPools.length; j++) {
-                    if (rewardPools[i].tokens == rewardPools[j].tokens) {
-                        revert("Rewards: tokens must be unique");
-                    }
-                }
-            }
-        }
-    }
 }

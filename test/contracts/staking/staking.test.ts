@@ -31,6 +31,8 @@ import {
     verifyBeneficiaryUpdateEvents,
     verifyBeneficiaryUpdateLogEvents
 } from '../../event/sweep/verify-token-sweep-events'
+import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
+import {SUPER_USER} from '../../event/bond/roles'
 import {
     ExpectedERC20SweepEvent,
     verifyERC20SweepEvents,
@@ -56,6 +58,56 @@ describe('Staking Pool Tests', () => {
                 'Another erc20 Token',
                 'SYM'
             )
+        })
+        it('cannot init with duplicated reward tokens', async () => {
+            admin = (await signer(0)).address
+            user = await signer(1)
+            user2 = await signer(2)
+
+            const symbol = 'EEK'
+            stakeTokens = await deployContract<ERC20PresetMinterPauser>(
+                'ERC20PresetMinterPauser',
+                'Another erc20 Token',
+                symbol
+            )
+
+            const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+            const rewardsAvailableTimestamp =
+                REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
+            const stakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                emergencyMode: false,
+                treasury: admin,
+                stakeToken: stakeTokens.address,
+                rewardType: RewardType.FLOATING,
+                rewardTokens: [
+                    {
+                        tokens: rewardToken1.address,
+                        maxAmount: REWARD_TOKEN_1_AMOUNT,
+                        ratio: 0
+                    },
+                    {
+                        tokens: rewardToken1.address,
+                        maxAmount: REWARD_TOKEN_1_AMOUNT,
+                        ratio: 0
+                    }
+                ]
+            }
+
+            stakingPool = await deployContract('StakingPool')
+            await expect(
+                stakingPool.initialize(
+                    stakingPoolInfo,
+                    true,
+                    rewardsAvailableTimestamp,
+                    admin
+                )
+            ).to.be.revertedWith('StakePool: tokens must be unique')
         })
         it('launch paused then unpause', async () => {
             admin = (await signer(0)).address
@@ -111,6 +163,23 @@ describe('Staking Pool Tests', () => {
                         maxAmount: amount,
                         ratio: 0
                     }
+                ])
+            ).to.be.revertedWith('StakingPool: invalid allowance')
+        })
+        it('initialize rewards fails duplicated token', async () => {
+            await expect(
+                stakingPool.initializeRewardTokens(admin, [
+                    {
+                        tokens: rewardToken1.address,
+                        maxAmount: amount,
+                        ratio: 0
+                    },
+                    {
+                        tokens: rewardToken1.address,
+                        maxAmount: amount,
+                        ratio: 0
+                    }
+
                 ])
             ).to.be.revertedWith('StakingPool: invalid allowance')
         })

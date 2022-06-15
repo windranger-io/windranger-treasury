@@ -41,6 +41,7 @@ contract StakingPool is
     }
 
     mapping(address => User) private _users;
+    mapping(address => bool) private _tokensCounter;
 
     uint32 private _rewardsAvailableTimestamp;
     bool private _emergencyMode;
@@ -483,7 +484,7 @@ contract StakingPool is
         StakingPoolLib.Config memory _config,
         User memory _user,
         uint256 rewardIndex
-    ) internal view returns (uint256) {
+    ) internal pure returns (uint256) {
         if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
             return _user.rewardAmounts[rewardIndex];
         }
@@ -591,17 +592,16 @@ contract StakingPool is
      */
     function _enforceUniqueRewardTokens(
         StakingPoolLib.Reward[] calldata rewardPools
-    ) private pure {
+    ) private {
         for (uint256 i = 0; i < rewardPools.length; i++) {
-            // Ensure no later entries contain the same tokens address
-            uint256 next = i + 1;
-            if (next < rewardPools.length) {
-                for (uint256 j = next; j < rewardPools.length; j++) {
-                    if (rewardPools[i].tokens == rewardPools[j].tokens) {
-                        revert("Rewards: tokens must be unique");
-                    }
-                }
-            }
+            // Ensure no prev entries contain the same tokens address
+            if (_tokensCounter[address(rewardPools[i].tokens)]) {
+                        revert("StakePool: tokens must be unique");
+            } 
+            _tokensCounter[address(rewardPools[i].tokens)] = true;
+        }
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            delete _tokensCounter[address(rewardPools[i].tokens)];
         }
     }
 }
