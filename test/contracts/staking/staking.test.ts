@@ -167,21 +167,22 @@ describe('Staking Pool Tests', () => {
             ).to.be.revertedWith('StakingPool: invalid allowance')
         })
         it('initialize rewards fails duplicated token', async () => {
+            await rewardToken1.mint(admin, amount)
+            await rewardToken1.increaseAllowance(stakingPool.address, amount)
             await expect(
                 stakingPool.initializeRewardTokens(admin, [
                     {
                         tokens: rewardToken1.address,
-                        maxAmount: amount,
+                        maxAmount: 0,
                         ratio: 0
                     },
                     {
                         tokens: rewardToken1.address,
-                        maxAmount: amount,
+                        maxAmount: 0,
                         ratio: 0
                     }
-
                 ])
-            ).to.be.revertedWith('StakingPool: invalid allowance')
+            ).to.be.revertedWith('StakePool: tokens must be unique')
         })
         it('initialize rewards', async () => {
             await rewardToken1.mint(admin, amount)
