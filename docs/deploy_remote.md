@@ -25,6 +25,18 @@ export ETHERSCAN_API_KEY=${EtherYourApiKey}
 npx hardhat run ./scripts/deploy/deploy-all.ts --network remote
 ```
 
+#### Optional - BitDAO Token
+_In production (Mainnet) existing ERC20 token contract should be used_
+
+As verify scripts require a collateral token, for which the BIT token contract may be used.
+
+```shell
+npx hardhat run ./scripts/deploy/bitdao-deploy-no-etherscan.ts --network remote
+```
+
+
+#### Environment Variables needed for Verify
+
 The terminal running the JSON-RPC node will output the contract addresses, these are needed for later:
 - `${BondMediator}` : Bond Mediator contract address.
 - `${BondFactory}` : Bond Factory contract address.
@@ -43,7 +55,7 @@ Set the temporary environment variables by substituting the value running the li
 export BOND_MEDIATOR_CONTRACT=${BondMediator}
 export BOND_FACTORY_CONTRACT=${BondFactory}
 export COLLATERAL_TOKENS_CONTRACT=${BitToken}
-export TREASURY_ADDRESS=${Treausy}
+export TREASURY_ADDRESS=${Treasury}
 ```
 
 #### Create a DAO

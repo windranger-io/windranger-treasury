@@ -27,6 +27,9 @@ export TOKEN_SWEEP_BENEFICIARY=${EnterYourAddressHere}
 ```shell
 npx hardhat run ./scripts/deploy/deploy-all-no-etherscan.ts --network localhost
 ```
+
+#### Environment Variables needed for Verify
+
 The terminal running the JSON-RPC node will output the contract addresses, these are needed for later:
 - `${BondMediator}` : Bond Mediator contract address. 
 - `${BondFactory}` : Bond Factory contract address.
@@ -45,7 +48,7 @@ Set the temporary environment variables by substituting the value running the li
 export BOND_MEDIATOR_CONTRACT=${BondMediator}
 export BOND_FACTORY_CONTRACT=${BondFactory}
 export COLLATERAL_TOKENS_CONTRACT=${BitToken}
-export TREASURY_ADDRESS=${Treausy}
+export TREASURY_ADDRESS=${Treasury}
 ```
 
 #### Create a DAO
