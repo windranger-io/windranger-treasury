@@ -2,7 +2,8 @@
   "ignorePatterns": [
     "dist",
     "node_modules",
-    "typechain-types"
+    "typechain-types",
+    "hardhat.config.ts"
   ],
   "root": true,
   "parser": "@typescript-eslint/parser",
