@@ -21,6 +21,6 @@ export async function deployPerformanceBonds(
 
     await awaitContractPropagation()
 
-    await verifyContract<BondFactory>(factory)
-    await verifyContract<BondMediator>(mediator)
+    await verifyContract<BondFactory>(factory, tokenSweepBeneficiary)
+    await verifyContract<BondMediator>(mediator, tokenSweepBeneficiary)
 }
