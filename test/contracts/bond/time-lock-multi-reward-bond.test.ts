@@ -285,6 +285,17 @@ describe('TimeLockMultiRewardBond contract', () => {
         })
     })
 
+    it('cannot init with duplicated tokens', async () => {
+        bond = await deployContract<TimeLockMultiRewardBondBox>(
+            'TimeLockMultiRewardBondBox'
+        )
+        const rewardPoolsDuplicated = [...rewardPools]
+        rewardPoolsDuplicated.push(rewardPools[1])
+        await expect(bond.initialize(rewardPoolsDuplicated)).to.be.revertedWith(
+            'Rewards: tokens must be unique'
+        )
+    })
+
     it('init registers reward pools', async () => {
         bond = await deployContract<TimeLockMultiRewardBondBox>(
             'TimeLockMultiRewardBondBox'

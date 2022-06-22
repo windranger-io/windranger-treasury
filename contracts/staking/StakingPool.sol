@@ -41,6 +41,7 @@ contract StakingPool is
     }
 
     mapping(address => User) private _users;
+    mapping(address => bool) private _supportedRewards;
 
     uint32 private _rewardsAvailableTimestamp;
     bool private _emergencyMode;
@@ -398,6 +399,7 @@ contract StakingPool is
         address benefactor,
         StakingPoolLib.Reward[] calldata _rewardTokens
     ) internal {
+        _enforceUniqueRewardTokens(_rewardTokens);
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
             emit InitializeRewards(
                 address(_rewardTokens[i].tokens),
@@ -591,17 +593,14 @@ contract StakingPool is
      */
     function _enforceUniqueRewardTokens(
         StakingPoolLib.Reward[] calldata rewardPools
-    ) private pure {
+    ) private {
         for (uint256 i = 0; i < rewardPools.length; i++) {
-            // Ensure no later entries contain the same tokens address
-            uint256 next = i + 1;
-            if (next < rewardPools.length) {
-                for (uint256 j = next; j < rewardPools.length; j++) {
-                    if (rewardPools[i].tokens == rewardPools[j].tokens) {
-                        revert("Rewards: tokens must be unique");
-                    }
-                }
-            }
+            // Ensure no prev entries contain the same tokens address
+            require(
+                !_supportedRewards[address(rewardPools[i].tokens)],
+                "StakePool: tokens must be unique"
+            );
+            _supportedRewards[address(rewardPools[i].tokens)] = true;
         }
     }
 }
