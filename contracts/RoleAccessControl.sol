@@ -14,6 +14,8 @@ import "./Roles.sol";
  * - Dao; permissions granted only in a single DAO.
  */
 abstract contract RoleAccessControl is RoleMembership {
+    uint8 private _superUserCounter;
+
     modifier onlySuperUserRole() {
         if (_isMissingGlobalRole(Roles.SUPER_USER, _msgSender())) {
             revert(
@@ -85,6 +87,7 @@ abstract contract RoleAccessControl is RoleMembership {
 
     function grantSuperUserRole(address account) external onlySuperUserRole {
         _grantGlobalRole(Roles.SUPER_USER, account);
+        _superUserCounter++;
     }
 
     function grantDaoCreatorRole(address account) external onlySuperUserRole {
@@ -111,6 +114,8 @@ abstract contract RoleAccessControl is RoleMembership {
 
     function revokeSuperUserRole(address account) external onlySuperUserRole {
         _revokeGlobalRole(Roles.SUPER_USER, account);
+        require(_superUserCounter > 1, "revoking last SuperUser");
+        _superUserCounter--;
     }
 
     function revokeDaoCreatorRole(address account) external onlySuperUserRole {
