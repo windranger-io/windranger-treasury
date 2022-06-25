@@ -966,7 +966,7 @@ describe('Role Access Control contract', () => {
                     accessControl
                         .connect(superUser)
                         .revokeSuperUserRole(superUser.address)
-                ).to.be.revertedWith('revoking last SuperUser')
+                ).to.be.revertedWith('RAC: no revoking last SuperUser')
             })
         })
 

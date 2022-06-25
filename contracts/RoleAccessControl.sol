@@ -114,7 +114,7 @@ abstract contract RoleAccessControl is RoleMembership {
 
     function revokeSuperUserRole(address account) external onlySuperUserRole {
         _revokeGlobalRole(Roles.SUPER_USER, account);
-        require(_superUserCounter > 1, "revoking last SuperUser");
+        require(_superUserCounter > 1, "RAC: no revoking last SuperUser");
         _superUserCounter--;
     }
 
