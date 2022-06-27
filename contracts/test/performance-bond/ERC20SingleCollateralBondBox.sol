@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../../bond/ERC20SingleCollateralBond.sol";
+import "../../performance-bonds/ERC20SingleCollateralPerformanceBond.sol";
 
-contract ERC20SingleCollateralBondBox is ERC20SingleCollateralBond {
+contract ERC20SingleCollateralBondBox is ERC20SingleCollateralPerformanceBond {
     function allowRedemption(string calldata reason) external override {
         _allowRedemption(reason);
     }
@@ -13,8 +13,8 @@ contract ERC20SingleCollateralBondBox is ERC20SingleCollateralBond {
     }
 
     function initialize(
-        Bond.MetaData calldata metadata,
-        Bond.Settings calldata configuration,
+        PerformanceBond.MetaData calldata metadata,
+        PerformanceBond.Settings calldata configuration,
         address treasury
     ) external initializer {
         __ERC20SingleCollateralBond_init(metadata, configuration, treasury);

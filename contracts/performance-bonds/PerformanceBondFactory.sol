@@ -3,31 +3,31 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import "./SingleCollateralMultiRewardBond.sol";
-import "./ERC20SingleCollateralBond.sol";
+import "./SingleCollateralMultiRewardPerformanceBond.sol";
+import "./ERC20SingleCollateralPerformanceBond.sol";
 import "../RoleAccessControl.sol";
-import "./BondCreator.sol";
+import "./PerformanceBondCreator.sol";
 import "../Roles.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
 
 /**
- * @title Creates Bond contracts.
+ * @title Creates Performance Bond contracts.
  *
  * @dev An upgradable contract that encapsulates the Bond implementation and associated deployment cost.
  */
-contract BondFactory is
-    BondCreator,
+contract PerformanceBondFactory is
+    PerformanceBondCreator,
     OwnableUpgradeable,
     PausableUpgradeable,
     SweepERC20,
     Version
 {
-    event CreateBond(
+    event CreatePerformanceBond(
         address indexed bond,
-        Bond.MetaData metadata,
-        Bond.Settings configuration,
-        Bond.TimeLockRewardPool[] rewards,
+        PerformanceBond.MetaData metadata,
+        PerformanceBond.Settings configuration,
+        PerformanceBond.TimeLockRewardPool[] rewards,
         address indexed treasury,
         address indexed instigator
     );
@@ -37,15 +37,15 @@ contract BondFactory is
         __TokenSweep_init(treasury);
     }
 
-    function createBond(
-        Bond.MetaData calldata metadata,
-        Bond.Settings calldata configuration,
-        Bond.TimeLockRewardPool[] calldata rewards,
+    function createPerformanceBond(
+        PerformanceBond.MetaData calldata metadata,
+        PerformanceBond.Settings calldata configuration,
+        PerformanceBond.TimeLockRewardPool[] calldata rewards,
         address treasury
     ) external override whenNotPaused returns (address) {
-        SingleCollateralMultiRewardBond bond = new SingleCollateralMultiRewardBond();
+        SingleCollateralMultiRewardPerformanceBond bond = new SingleCollateralMultiRewardPerformanceBond();
 
-        emit CreateBond(
+        emit CreatePerformanceBond(
             address(bond),
             metadata,
             configuration,

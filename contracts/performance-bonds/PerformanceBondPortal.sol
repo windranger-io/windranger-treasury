@@ -7,19 +7,19 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-import "./Bond.sol";
+import "./PerformanceBond.sol";
 import "../RoleAccessControl.sol";
-import "./BondCreator.sol";
-import "./BondCurator.sol";
+import "./PerformanceBondCreator.sol";
+import "./PerformanceBondCurator.sol";
 import "../Roles.sol";
 import "../Version.sol";
 
 /**
- * @title Entry point for the Bond family of contract.
+ * @title Entry point for the PerformanceBond family of contract.
  *
- * @dev Orchestrates the various Bond contracts to provide a single function to aggregate the various calls.
+ * @dev Orchestrates the various PerformanceBond contracts to provide a single function to aggregate the various calls.
  */
-interface BondPortal {
+interface PerformanceBondPortal {
     /**
      * @notice Initialises a new DAO with essential configuration.
      *
@@ -29,14 +29,14 @@ interface BondPortal {
     function createDao(address erc20CapableTreasury) external returns (uint256);
 
     /**
-     * @notice Creates a new Bond, registering with the Bond Management contract.
+     * @notice Creates a new PerformanceBond, registering with the manager.
      *
-     * @dev Creates a new Bond with the BondCreator and registers it with the BondCurator.
+     * @dev Creates a new PerformanceBond with the creator and registers it with the curator.
      */
-    function createManagedBond(
+    function createManagedPerformanceBond(
         uint256 daoId,
-        Bond.MetaData calldata metadata,
-        Bond.Settings calldata configuration,
-        Bond.TimeLockRewardPool[] calldata rewards
+        PerformanceBond.MetaData calldata metadata,
+        PerformanceBond.Settings calldata configuration,
+        PerformanceBond.TimeLockRewardPool[] calldata rewards
     ) external returns (address);
 }

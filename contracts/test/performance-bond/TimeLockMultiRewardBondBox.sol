@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../../bond/TimeLockMultiRewardBond.sol";
+import "../../performance-bonds/TimeLockMultiRewardPerformanceBond.sol";
 
-contract TimeLockMultiRewardBondBox is TimeLockMultiRewardBond {
+contract TimeLockMultiRewardBondBox is TimeLockMultiRewardPerformanceBond {
     uint256 private constant _TOTAL_SUPPLY = 10000;
 
     function claimantDebt(uint256 amount) external {
@@ -11,7 +11,7 @@ contract TimeLockMultiRewardBondBox is TimeLockMultiRewardBond {
         _calculateRewardDebt(claimant, amount, totalSupply());
     }
 
-    function initialize(Bond.TimeLockRewardPool[] calldata rewards)
+    function initialize(PerformanceBond.TimeLockRewardPool[] calldata rewards)
         external
         initializer
     {

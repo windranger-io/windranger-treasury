@@ -5,47 +5,50 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "../RoleAccessControl.sol";
-import "./SingleCollateralBond.sol";
+import "./SingleCollateralPerformanceBond.sol";
 
 /**
- * @title Manages interactions with Bond contracts.
+ * @title Manages interactions with Performance Bond contracts.
  *
- * @notice A central place to discover created Bonds and apply access control to them.
+ * @notice A central place to discover created Performance Bonds and apply access control to them.
  *
- * @dev Owns of all Bonds it manages, guarding function accordingly allows finer access control to be provided.
+ * @dev Owns of all Performance Bonds that it manages, with guarding function providing finer access control.
  */
-abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
+abstract contract PerformanceBondCurator is
+    RoleAccessControl,
+    PausableUpgradeable
+{
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     mapping(uint256 => EnumerableSetUpgradeable.AddressSet) private _bonds;
 
-    event AddBond(
+    event AddPerformanceBond(
         uint256 indexed daoId,
         address indexed bond,
         address indexed instigator
     );
 
-    function bondAllowRedemption(
+    function performanceBondAllowRedemption(
         uint256 daoId,
         address bond,
         string calldata reason
     ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).allowRedemption(reason);
+        SingleCollateralPerformanceBond(bond).allowRedemption(reason);
     }
 
-    function bondPause(uint256 daoId, address bond)
+    function performanceBondPause(uint256 daoId, address bond)
         external
         whenNotPaused
         atLeastDaoAdminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).pause();
+        SingleCollateralPerformanceBond(bond).pause();
     }
 
-    function bondSlash(
+    function performanceBondSlash(
         uint256 daoId,
         address bond,
         uint256 amount,
@@ -53,30 +56,30 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
     ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).slash(amount, reason);
+        SingleCollateralPerformanceBond(bond).slash(amount, reason);
     }
 
-    function bondSetMetaData(
+    function performanceBondSetMetaData(
         uint256 daoId,
         address bond,
         string calldata data
     ) external whenNotPaused atLeastDaoMeepleRole(daoId) {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).setMetaData(data);
+        SingleCollateralPerformanceBond(bond).setMetaData(data);
     }
 
-    function bondSetTreasury(
+    function performanceBondSetTreasury(
         uint256 daoId,
         address bond,
         address replacement
     ) external whenNotPaused atLeastDaoAdminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).setTreasury(replacement);
+        SingleCollateralPerformanceBond(bond).setTreasury(replacement);
     }
 
-    function bondSweepERC20Tokens(
+    function performanceBondSweepERC20Tokens(
         uint256 daoId,
         address bond,
         address tokens,
@@ -84,10 +87,10 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
     ) external whenNotPaused atLeastDaoAdminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).sweepERC20Tokens(tokens, amount);
+        SingleCollateralPerformanceBond(bond).sweepERC20Tokens(tokens, amount);
     }
 
-    function bondUpdateRewardTimeLock(
+    function performanceBondUpdateRewardTimeLock(
         uint256 daoId,
         address bond,
         address tokens,
@@ -95,27 +98,30 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
     ) external whenNotPaused atLeastDaoAdminRole(daoId) {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).updateRewardTimeLock(tokens, timeLock);
+        SingleCollateralPerformanceBond(bond).updateRewardTimeLock(
+            tokens,
+            timeLock
+        );
     }
 
-    function bondUnpause(uint256 daoId, address bond)
+    function performanceBondUnpause(uint256 daoId, address bond)
         external
         whenNotPaused
         atLeastDaoAdminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).unpause();
+        SingleCollateralPerformanceBond(bond).unpause();
     }
 
-    function bondWithdrawCollateral(uint256 daoId, address bond)
+    function performanceBondWithdrawCollateral(uint256 daoId, address bond)
         external
         whenNotPaused
         atLeastDaoAdminRole(daoId)
     {
         _requireManagingBond(daoId, bond);
 
-        SingleCollateralBond(bond).withdrawCollateral();
+        SingleCollateralPerformanceBond(bond).withdrawCollateral();
     }
 
     /**
@@ -132,7 +138,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         _unpause();
     }
 
-    function bondAt(uint256 daoId, uint256 index)
+    function performanceBondAt(uint256 daoId, uint256 index)
         external
         view
         returns (address)
@@ -145,7 +151,11 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
         return EnumerableSetUpgradeable.at(_bonds[daoId], index);
     }
 
-    function bondCount(uint256 daoId) external view returns (uint256) {
+    function performanceBondCount(uint256 daoId)
+        external
+        view
+        returns (uint256)
+    {
         return EnumerableSetUpgradeable.length(_bonds[daoId]);
     }
 
@@ -156,7 +166,7 @@ abstract contract BondCurator is RoleAccessControl, PausableUpgradeable {
             "BondCurator: not bond owner"
         );
 
-        emit AddBond(daoId, bond, _msgSender());
+        emit AddPerformanceBond(daoId, bond, _msgSender());
 
         bool added = _bonds[daoId].add(bond);
         require(added, "BondCurator: failed to add");

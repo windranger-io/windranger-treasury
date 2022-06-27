@@ -4,31 +4,31 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "./BondCreator.sol";
-import "./BondCurator.sol";
-import "./BondPortal.sol";
-import "./Bond.sol";
+import "./PerformanceBondCreator.sol";
+import "./PerformanceBondCurator.sol";
+import "./PerformanceBondPortal.sol";
+import "./PerformanceBond.sol";
 import "../dao-configuration/DaoConfiguration.sol";
 import "../Version.sol";
 import "../sweep/SweepERC20.sol";
 
 /**
- * @title Mediates between a Bond creator and Bond curator.
+ * @title Mediates between a creator and a curator.
  *
- * @dev Orchestrates a BondCreator and BondCurator to provide a single function to aggregate the various calls
- *      providing a single function to create and setup a bond for management with the curator.
+ * @dev Orchestrates a PerformanceBondCreator and PerformanceBondCurator to provide a single function to aggregate
+ *      the various calls providing a single function to create and setup a bond for management with the curator.
  */
-contract BondMediator is
-    BondCurator,
-    BondPortal,
+contract PerformanceBondMediator is
+    PerformanceBondCurator,
+    PerformanceBondPortal,
     DaoConfiguration,
     SweepERC20,
     UUPSUpgradeable,
     Version
 {
-    BondCreator private _creator;
+    PerformanceBondCreator private _creator;
 
-    event BondCreatorUpdate(
+    event PerformanceBondCreatorUpdate(
         address indexed previousCreator,
         address indexed updateCreator,
         address indexed instigator
@@ -38,7 +38,7 @@ contract BondMediator is
      * @notice The _msgSender() is given membership of all roles, to allow granting and future renouncing after others
      *      have been setup.
      *
-     * @param factory A deployed BondCreator contract to use when creating bonds.
+     * @param factory A deployed PerformanceBondCreator contract to use when creating PerformanceBonds.
      * @param treasury Beneficiary of any token sweeping.
      */
     function initialize(address factory, address treasury)
@@ -55,7 +55,7 @@ contract BondMediator is
         __UUPSUpgradeable_init();
         __TokenSweep_init(treasury);
 
-        _creator = BondCreator(factory);
+        _creator = PerformanceBondCreator(factory);
     }
 
     function createDao(address erc20CapableTreasury)
@@ -72,11 +72,11 @@ contract BondMediator is
         return id;
     }
 
-    function createManagedBond(
+    function createManagedPerformanceBond(
         uint256 daoId,
-        Bond.MetaData calldata metadata,
-        Bond.Settings calldata configuration,
-        Bond.TimeLockRewardPool[] calldata rewards
+        PerformanceBond.MetaData calldata metadata,
+        PerformanceBond.Settings calldata configuration,
+        PerformanceBond.TimeLockRewardPool[] calldata rewards
     )
         external
         override
@@ -90,7 +90,7 @@ contract BondMediator is
             "BM: collateral not whitelisted"
         );
 
-        address bond = _creator.createBond(
+        address bond = _creator.createPerformanceBond(
             metadata,
             configuration,
             rewards,
@@ -105,11 +105,11 @@ contract BondMediator is
     }
 
     /**
-     * @notice Updates the Bond creator reference.
+     * @notice Updates the PerformanceBond creator reference.
      *
-     * @param factory Contract address for the new BondCreator to use from now onwards when creating managed bonds.
+     * @param factory Contract address for the new PerformanceBondCreator to use from now onwards when creating bonds.
      */
-    function setBondCreator(address factory)
+    function setPerformanceBondCreator(address factory)
         external
         whenNotPaused
         atLeastSysAdminRole
@@ -121,8 +121,12 @@ contract BondMediator is
         address previousCreator = address(_creator);
         require(factory != previousCreator, "BM: matches existing");
 
-        emit BondCreatorUpdate(address(_creator), factory, _msgSender());
-        _creator = BondCreator(factory);
+        emit PerformanceBondCreatorUpdate(
+            address(_creator),
+            factory,
+            _msgSender()
+        );
+        _creator = PerformanceBondCreator(factory);
     }
 
     /**

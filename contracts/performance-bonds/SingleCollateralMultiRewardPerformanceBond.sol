@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./ERC20SingleCollateralBond.sol";
-import "./TimeLockMultiRewardBond.sol";
-import "./Bond.sol";
+import "./ERC20SingleCollateralPerformanceBond.sol";
+import "./TimeLockMultiRewardPerformanceBond.sol";
+import "./PerformanceBond.sol";
 
-contract SingleCollateralMultiRewardBond is
-    ERC20SingleCollateralBond,
-    TimeLockMultiRewardBond
+contract SingleCollateralMultiRewardPerformanceBond is
+    ERC20SingleCollateralPerformanceBond,
+    TimeLockMultiRewardPerformanceBond
 {
     function allowRedemption(string calldata reason) external override {
         _allowRedemption(reason);
@@ -22,9 +22,9 @@ contract SingleCollateralMultiRewardBond is
     }
 
     function initialize(
-        Bond.MetaData calldata metadata,
-        Bond.Settings calldata configuration,
-        Bond.TimeLockRewardPool[] calldata rewards,
+        PerformanceBond.MetaData calldata metadata,
+        PerformanceBond.Settings calldata configuration,
+        PerformanceBond.TimeLockRewardPool[] calldata rewards,
         address erc20CapableTreasury
     ) external initializer {
         __ERC20SingleCollateralBond_init(

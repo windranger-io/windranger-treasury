@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-interface SingleCollateralBond {
+interface SingleCollateralPerformanceBond {
     /**
-     * @notice Transitions the Bond state, from being non-redeemable (accepting deposits and slashing) to
+     * @notice Transitions the PerformanceBond state, from being non-redeemable (accepting deposits and slashing) to
      *          redeemable (accepting redeem and withdraw collateral).
      *
      * @dev Debt tokens are not allowed to be redeemed before the owner grants permission.
@@ -36,9 +36,8 @@ interface SingleCollateralBond {
      *  amount of collateral against the remaining amount of debt.
      *  There are operations that reduce the held collateral, while the debt remains constant.
      *
-     * @param amount The number of debt token to transfer from the _msgSender().
+     * @param amount The number of debt token to transfer from the sender.
      *          Must be in the range of one to the number of debt tokens available for swapping.
-     *          The _msgSender() receives the redeemed collateral tokens.
      */
     function redeem(uint256 amount) external;
 
@@ -72,7 +71,7 @@ interface SingleCollateralBond {
     /**
      * @notice Replaces any stored metadata.
      *
-     * @dev As metadata is not pertinent for Bond operations, this may be anything, such as a delimitated string.
+     * @dev As metadata is not pertinent for PerformanceBond operations, this may be anything e.g. a delimitated string.
      *
      * @param data Information useful for off-chain actions e.g. performance factor, assessment date, rewards pool.
      */

@@ -2,15 +2,15 @@
 pragma solidity ^0.8.0;
 
 /**
- * @title Domain model for Bonds.
+ * @title Domain model for Performance Bonds.
  */
-library Bond {
+library PerformanceBond {
     struct MetaData {
-        /** Description of the purpose of the Bond. */
+        /** Description of the purpose for the Performance Bond. */
         string name;
-        /** Abbreviation to identify the Bond. */
+        /** Abbreviation to identify the Performance Bond. */
         string symbol;
-        /** Metadata bucket not required for the operation of the Bond, but needed by external actors. */
+        /** Metadata bucket not required for the operation of the Performance Bond, but needed by external actors. */
         string data;
     }
 

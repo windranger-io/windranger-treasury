@@ -5,27 +5,27 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./ExpiryTimestamp.sol";
-import "./SingleCollateralBond.sol";
+import "./SingleCollateralPerformanceBond.sol";
 import "./MetaDataStore.sol";
 import "./Redeemable.sol";
 import "../Version.sol";
-import "./Bond.sol";
+import "./PerformanceBond.sol";
 import "../sweep/SweepERC20.sol";
 
 /**
- * @title A Bond is an issuance of debt tokens, which are exchange for deposit of collateral.
+ * @title A PerformanceBond is an issuance of debt tokens, which are exchange for deposit of collateral.
  *
  * @notice A single type of ERC20 token is accepted as collateral.
  *
- * The Bond uses a single redemption model. Before redemption, receiving and slashing collateral is permitted,
+ * The PerformanceBond uses a single redemption model. Before redemption, receiving and slashing collateral is permitted,
  * while after redemption, redeem (by guarantors) or complete withdrawal (by owner) is allowed.
  *
- * @dev A single token type is held by the contract as collateral, with the Bond ERC20 token being the debt.
+ * @dev A single token type is held by the contract as collateral, with the PerformanceBond ERC20 token being the debt.
  */
-abstract contract ERC20SingleCollateralBond is
+abstract contract ERC20SingleCollateralPerformanceBond is
     ERC20Upgradeable,
     ExpiryTimestamp,
-    SingleCollateralBond,
+    SingleCollateralPerformanceBond,
     MetaDataStore,
     OwnableUpgradeable,
     PausableUpgradeable,
@@ -278,7 +278,7 @@ abstract contract ERC20SingleCollateralBond is
     /**
      * @notice How much collateral held by the bond is owned to the Guarantors.
      *
-     * @dev  Collateral has come from guarantors, with the balance changes on deposit, redeem, slashing and flushing.
+     * @dev Collateral has come from guarantors, with the balance changes on deposit, redeem, slashing and flushing.
      *      This value may differ to balanceOf(this), if collateral tokens have been directly transferred
      *      i.e. direct transfer interaction with the token contract, rather then using the Bond functions.
      */
@@ -294,7 +294,7 @@ abstract contract ERC20SingleCollateralBond is
     }
 
     /**
-     * @notice Sum of collateral moved from the Bond to the Treasury by slashing.
+     * @notice Sum of collateral moved from the bond to the Treasury by slashing.
      *
      * @dev Other methods of performing moving of collateral outside of slashing, are not included.
      */
@@ -336,7 +336,7 @@ abstract contract ERC20SingleCollateralBond is
     }
 
     /**
-     * @notice Debt tokens created on Bond initialization.
+     * @notice Debt tokens created on initialization.
      *
      * @dev Number of debt tokens minted on init. The total supply of debt tokens will decrease, as redeem burns them.
      */
@@ -345,7 +345,7 @@ abstract contract ERC20SingleCollateralBond is
     }
 
     /**
-     * @notice Minimum amount of debt allowed for the created Bonds.
+     * @notice Minimum amount of debt allowed.
      *
      * @dev Avoids micro holdings, as some operations cost scale linear to debt holders.
      *      Once an account holds the minimum, any deposit from is acceptable as their holding is above the minimum.
@@ -377,8 +377,8 @@ abstract contract ERC20SingleCollateralBond is
 
     //slither-disable-next-line naming-convention
     function __ERC20SingleCollateralBond_init(
-        Bond.MetaData calldata metadata,
-        Bond.Settings calldata configuration,
+        PerformanceBond.MetaData calldata metadata,
+        PerformanceBond.Settings calldata configuration,
         address erc20CapableTreasury
     ) internal onlyInitializing {
         require(
