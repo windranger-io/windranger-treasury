@@ -38,8 +38,8 @@ npx hardhat run ./scripts/deploy/bitdao-deploy-no-etherscan.ts --network remote
 #### Environment Variables needed for Verify
 
 The terminal running the JSON-RPC node will output the contract addresses, these are needed for later:
-- `${BondMediator}` : Bond Mediator contract address.
-- `${BondFactory}` : Bond Factory contract address.
+- `${BondMediator}` : Performance Bond Mediator contract address.
+- `${BondFactory}` : Performance Bond Factory contract address.
 - `${BitToken}` : Collateral token contract address (BIT).
 - `${Treausy}` : Any valid address to use as the treasury.
 
@@ -47,7 +47,7 @@ The terminal running the JSON-RPC node will output the contract addresses, these
 Check the contract deployment and operation with the test scripts.
 
 ### Performance Bonds
-Before any Bonds can be created, a number of setup steps are needed.
+Before any Performance Bonds can be created, a number of setup steps are needed.
 
 ##### MacOS
 Set the temporary environment variables by substituting the value running the lines in your terminal.
@@ -59,7 +59,7 @@ export TREASURY_ADDRESS=${Treasury}
 ```
 
 #### Create a DAO
-All Bond operations occur within the scope of a DAO.
+All Performance Bond operations occur within the scope of a DAO.
 
 The script creates a new DAO using `BOND_MEDIATOR_CONTRACT` and `TREASURY_ADDRESS`
 ```shell
@@ -82,8 +82,8 @@ The script whitelists the value of the environment variable `COLLATERAL_TOKENS_C
 npx hardhat run ./scripts/verify/whitelist-collateral.ts --network remote
 ```
 
-#### Create a Bond
-A Bond managed within the scope of a DAO.
+#### Create a Performance Bond
+A Performance Bond managed within the scope of a DAO.
 
 The script creates a bond using the environment variables `BOND_MEDIATOR_CONTRACT`, `BOND_FACTORY_CONTRACT` and `DAO_ID`
 ```shell
