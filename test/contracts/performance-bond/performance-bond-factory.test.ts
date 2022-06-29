@@ -8,9 +8,9 @@ import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
-    BondFactory,
+    PerformanceBondFactory,
     IERC20,
-    SingleCollateralMultiRewardBond
+    SingleCollateralMultiRewardPerformanceBond
 } from '../../../typechain-types'
 import {
     contractAt,
@@ -31,27 +31,30 @@ import {
     verifyERC20SweepLogEvents
 } from '../../event/sweep/verify-sweep-erc20-events'
 import {events} from '../../framework/events'
-import {Bond} from '../../../typechain-types/contracts/bond/BondFactory'
+import {PerformanceBond} from '../../../typechain-types/contracts/performance-bonds/PerformanceBondFactory'
 import {
-    ExpectCreateBondEvent,
-    verifyCreateBondEventLogs,
-    verifyCreateBondEvents
-} from '../../event/bond/verify-bond-creator-events'
-import {createBondEvents} from '../../event/bond/bond-creator-events'
+    ExpectCreatePerformanceBondEvent,
+    verifyCreatePerformanceBondEventLogs,
+    verifyCreatePerformanceBondEvents
+} from '../../event/performance-bond/verify-performance-bond-creator-events'
+import {createPerformanceBondEvents} from '../../event/performance-bond/performance-bond-creator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-describe('Bond Factory contract', () => {
+describe('Performance Bond Factory contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         treasury = (await signer(1)).address
         nonAdmin = await signer(2)
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        creator = await deployContract<BondFactory>('BondFactory', treasury)
+        creator = await deployContract<PerformanceBondFactory>(
+            'PerformanceBondFactory',
+            treasury
+        )
     })
 
-    describe('create bond', () => {
+    describe('create performance bond', () => {
         after(async () => {
             if (await creator.paused()) {
                 await creator.unpause()
@@ -67,7 +70,7 @@ describe('Bond Factory contract', () => {
             const data = 'a random;delimiter;separated string'
 
             const receipt = await execute(
-                creator.createBond(
+                creator.createPerformanceBond(
                     {name: bondName, symbol: bondSymbol, data: data},
                     {
                         debtTokenAmount: debtTokenAmount,
@@ -79,22 +82,31 @@ describe('Bond Factory contract', () => {
                     treasury
                 )
             )
-            const expectedCreateBondEvent: ExpectCreateBondEvent[] = [
-                {
-                    metadata: {name: bondName, symbol: bondSymbol, data: data},
-                    configuration: {
-                        debtTokenAmount: debtTokenAmount,
-                        collateralTokens: collateralTokens.address,
-                        expiryTimestamp: expiryTimestamp,
-                        minimumDeposit: minimumDeposit
-                    },
-                    rewards: [],
-                    treasury: treasury,
-                    instigator: admin
-                }
-            ]
-            verifyCreateBondEvents(receipt, expectedCreateBondEvent)
-            verifyCreateBondEventLogs(creator, receipt, expectedCreateBondEvent)
+            const expectedCreateBondEvent: ExpectCreatePerformanceBondEvent[] =
+                [
+                    {
+                        metadata: {
+                            name: bondName,
+                            symbol: bondSymbol,
+                            data: data
+                        },
+                        configuration: {
+                            debtTokenAmount: debtTokenAmount,
+                            collateralTokens: collateralTokens.address,
+                            expiryTimestamp: expiryTimestamp,
+                            minimumDeposit: minimumDeposit
+                        },
+                        rewards: [],
+                        treasury: treasury,
+                        instigator: admin
+                    }
+                ]
+            verifyCreatePerformanceBondEvents(receipt, expectedCreateBondEvent)
+            verifyCreatePerformanceBondEventLogs(
+                creator,
+                receipt,
+                expectedCreateBondEvent
+            )
         })
 
         it('passed through multi rewards', async () => {
@@ -118,7 +130,7 @@ describe('Bond Factory contract', () => {
             ]
 
             const receipt = await execute(
-                creator.createBond(
+                creator.createPerformanceBond(
                     {name: bondName, symbol: bondSymbol, data: data},
                     {
                         debtTokenAmount: debtTokenAmount,
@@ -130,28 +142,40 @@ describe('Bond Factory contract', () => {
                     treasury
                 )
             )
-            const expectedCreateBondEvent: ExpectCreateBondEvent[] = [
-                {
-                    metadata: {name: bondName, symbol: bondSymbol, data: data},
-                    configuration: {
-                        debtTokenAmount: debtTokenAmount,
-                        collateralTokens: collateralTokens.address,
-                        expiryTimestamp: expiryTimestamp,
-                        minimumDeposit: minimumDeposit
-                    },
-                    rewards,
-                    treasury: treasury,
-                    instigator: admin
-                }
-            ]
-            verifyCreateBondEvents(receipt, expectedCreateBondEvent)
-            verifyCreateBondEventLogs(creator, receipt, expectedCreateBondEvent)
+            const expectedCreateBondEvent: ExpectCreatePerformanceBondEvent[] =
+                [
+                    {
+                        metadata: {
+                            name: bondName,
+                            symbol: bondSymbol,
+                            data: data
+                        },
+                        configuration: {
+                            debtTokenAmount: debtTokenAmount,
+                            collateralTokens: collateralTokens.address,
+                            expiryTimestamp: expiryTimestamp,
+                            minimumDeposit: minimumDeposit
+                        },
+                        rewards,
+                        treasury: treasury,
+                        instigator: admin
+                    }
+                ]
+            verifyCreatePerformanceBondEvents(receipt, expectedCreateBondEvent)
+            verifyCreatePerformanceBondEventLogs(
+                creator,
+                receipt,
+                expectedCreateBondEvent
+            )
 
             // Does the Bond have the correct rewards?
-            const bond: SingleCollateralMultiRewardBond = await contractAt(
-                'SingleCollateralMultiRewardBond',
-                createBondEvents(events('CreateBond', receipt))[0].bond
-            )
+            const bond: SingleCollateralMultiRewardPerformanceBond =
+                await contractAt(
+                    'SingleCollateralMultiRewardPerformanceBond',
+                    createPerformanceBondEvents(
+                        events('CreatePerformanceBond', receipt)
+                    )[0].bond
+                )
             expectTimeLockRewardsEquals(
                 rewards,
                 await bond.timeLockRewardPools()
@@ -163,7 +187,7 @@ describe('Bond Factory contract', () => {
             expect(await creator.paused()).is.true
 
             await expect(
-                creator.createBond(
+                creator.createPerformanceBond(
                     {name: 'Named bond', symbol: 'AA00AA', data: ''},
                     {
                         debtTokenAmount: 101n,
@@ -180,8 +204,8 @@ describe('Bond Factory contract', () => {
 
     describe('ERC20 token sweep', () => {
         it('init', async () => {
-            const bondFactory = await deployContract<BondFactory>(
-                'BondFactory',
+            const bondFactory = await deployContract<PerformanceBondFactory>(
+                'PerformanceBondFactory',
                 treasury
             )
 
@@ -190,8 +214,8 @@ describe('Bond Factory contract', () => {
 
         describe('update beneficiary', () => {
             after(async () => {
-                creator = await deployContract<BondFactory>(
-                    'BondFactory',
+                creator = await deployContract<PerformanceBondFactory>(
+                    'PerformanceBondFactory',
                     treasury
                 )
             })
@@ -238,8 +262,8 @@ describe('Bond Factory contract', () => {
 
         describe('ERC20 token sweep', () => {
             after(async () => {
-                creator = await deployContract<BondFactory>(
-                    'BondFactory',
+                creator = await deployContract<PerformanceBondFactory>(
+                    'PerformanceBondFactory',
                     treasury
                 )
             })
@@ -360,12 +384,12 @@ describe('Bond Factory contract', () => {
     let treasury: string
     let nonAdmin: SignerWithAddress
     let collateralTokens: IERC20
-    let creator: BondFactory
+    let creator: PerformanceBondFactory
 })
 
 function expectTimeLockRewardsEquals(
-    expected: Bond.TimeLockRewardPoolStruct[],
-    actual: Bond.TimeLockRewardPoolStructOutput[]
+    expected: PerformanceBond.TimeLockRewardPoolStruct[],
+    actual: PerformanceBond.TimeLockRewardPoolStructOutput[]
 ): void {
     expect(expected.length).equals(actual.length)
 
@@ -375,8 +399,8 @@ function expectTimeLockRewardsEquals(
 }
 
 function verifyTimeLockRewardPool(
-    expected: Bond.TimeLockRewardPoolStruct,
-    actual: Bond.TimeLockRewardPoolStructOutput
+    expected: PerformanceBond.TimeLockRewardPoolStruct,
+    actual: PerformanceBond.TimeLockRewardPoolStructOutput
 ): void {
     expect(expected.tokens).equals(actual.tokens)
     expect(expected.amount).equals(actual.amount)

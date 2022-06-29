@@ -10,7 +10,7 @@ import {deployContract, signer} from '../../framework/contracts'
 import {
     BitDAO,
     IERC20,
-    TimeLockMultiRewardBond,
+    TimeLockMultiRewardPerformanceBond,
     TimeLockMultiRewardBondBox
 } from '../../../typechain-types'
 import {successfulTransaction} from '../../framework/transaction'
@@ -24,19 +24,19 @@ import {
     verifyRegisterRewardLogEvents,
     verifyRewardDebtEvents,
     verifyRewardDebtLogEvents
-} from '../../event/bond/verify-time-lock-multi-reward-bond-events'
+} from '../../event/performance-bond/verify-time-lock-multi-reward-performance-bond-events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {divideBigNumberish} from '../../framework/maths'
 import {ContractReceipt} from '@ethersproject/contracts/src.ts'
 import {BigNumber} from 'ethers'
 import {verifyERC20TransferEventLogs} from '../../event/erc20/verify-erc20-events'
 import {DAY_IN_SECONDS} from '../../framework/time'
-import {Bond} from '../../../typechain-types/contracts/bond/BondPortal'
+import {PerformanceBond} from '../../../typechain-types/contracts/performance-bonds/PerformanceBondPortal'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-describe('TimeLockMultiRewardBond contract', () => {
+describe('TimeLockMultiRewardPerformanceBond contract', () => {
     before(async () => {
         admin = await signer(0)
         rewardTokenOne = (await deployContract<BitDAO>(
@@ -340,7 +340,7 @@ describe('TimeLockMultiRewardBond contract', () => {
 
     let admin: SignerWithAddress
     let bond: TimeLockMultiRewardBondBox
-    let rewardPools: Bond.TimeLockRewardPoolStruct[]
+    let rewardPools: PerformanceBond.TimeLockRewardPoolStruct[]
     let claimant: SignerWithAddress
     let rewardTokenOne: IERC20
     let rewardTokenTwo: IERC20
@@ -348,8 +348,8 @@ describe('TimeLockMultiRewardBond contract', () => {
 })
 
 function verifyDeepEqualsRewardPools(
-    actual: Bond.TimeLockRewardPoolStructOutput[],
-    expected: Bond.TimeLockRewardPoolStruct[]
+    actual: PerformanceBond.TimeLockRewardPoolStructOutput[],
+    expected: PerformanceBond.TimeLockRewardPoolStruct[]
 ): void {
     expect(actual.length).equals(expected.length)
 
@@ -359,8 +359,8 @@ function verifyDeepEqualsRewardPools(
 }
 
 function verifyDeepEqualsRewardPool(
-    actual: Bond.TimeLockRewardPoolStructOutput,
-    expected: Bond.TimeLockRewardPoolStruct
+    actual: PerformanceBond.TimeLockRewardPoolStructOutput,
+    expected: PerformanceBond.TimeLockRewardPoolStruct
 ): void {
     expect(actual.tokens).to.equal(expected.tokens)
     expect(actual.amount).to.equal(expected.amount)
@@ -368,8 +368,8 @@ function verifyDeepEqualsRewardPool(
 }
 
 function verifyDeepEqualsClaimableRewards(
-    actual: TimeLockMultiRewardBond.ClaimableRewardStructOutput[],
-    expected: TimeLockMultiRewardBond.ClaimableRewardStruct[]
+    actual: TimeLockMultiRewardPerformanceBond.ClaimableRewardStructOutput[],
+    expected: TimeLockMultiRewardPerformanceBond.ClaimableRewardStruct[]
 ): void {
     expect(actual.length).equals(expected.length)
 
@@ -379,8 +379,8 @@ function verifyDeepEqualsClaimableRewards(
 }
 
 function verifyDeepEqualsClaimableReward(
-    actual: TimeLockMultiRewardBond.ClaimableRewardStructOutput,
-    expected: TimeLockMultiRewardBond.ClaimableRewardStruct
+    actual: TimeLockMultiRewardPerformanceBond.ClaimableRewardStructOutput,
+    expected: TimeLockMultiRewardPerformanceBond.ClaimableRewardStruct
 ): void {
     expect(actual.tokens).to.equal(expected.tokens)
     expect(actual.amount).to.equal(expected.amount)

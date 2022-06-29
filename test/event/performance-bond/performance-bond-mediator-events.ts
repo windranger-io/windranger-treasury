@@ -2,9 +2,9 @@ import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
 import {
-    BondCreatorUpdateEvent,
+    PerformanceBondCreatorUpdateEvent,
     CreateDaoEvent
-} from '../../../typechain-types/contracts/bond/BondMediator'
+} from '../../../typechain-types/contracts/performance-bonds/PerformanceBondMediator'
 
 export type ActualCreateDaoEvent = {
     id: BigNumber
@@ -63,15 +63,15 @@ export function createDaoEventLogs(events: Result[]): ActualCreateDaoEvent[] {
 }
 
 /**
- * Shape check and conversion for a Bond Creator Update event.
+ * Shape check and conversion for a Performance Bond Creator Update event.
  */
-export function bondCreatorUpdateEvents(
+export function performanceBondCreatorUpdateEvents(
     events: Event[]
 ): ActualBondCreatorUpdateEvent[] {
     const bonds: ActualBondCreatorUpdateEvent[] = []
 
     for (const event of events) {
-        const create = event as BondCreatorUpdateEvent
+        const create = event as PerformanceBondCreatorUpdateEvent
         expect(event.args).is.not.undefined
 
         const args = create.args
@@ -86,9 +86,9 @@ export function bondCreatorUpdateEvents(
 }
 
 /**
- * Shape check and conversion for an event log entry for Bond Creator Update event.
+ * Shape check and conversion for an event log entry for Performance Bond Creator Update event.
  */
-export function bondCreatorUpdateEventLogs(
+export function performanceBondCreatorUpdateEventLogs(
     events: Result[]
 ): ActualBondCreatorUpdateEvent[] {
     const results: ActualBondCreatorUpdateEvent[] = []

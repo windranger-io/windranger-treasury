@@ -8,8 +8,8 @@ import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
-    BondFactory,
-    BondMediator,
+    PerformanceBondFactory,
+    PerformanceBondMediator,
     ERC20,
     ERC20PresetMinterPauser,
     IERC20
@@ -25,16 +25,16 @@ import {
     DAO_MEEPLE,
     SUPER_USER,
     SYSTEM_ADMIN
-} from '../../event/bond/roles'
+} from '../../event/performance-bond/roles'
 import {successfulTransaction} from '../../framework/transaction'
 import {eventLog} from '../../framework/event-logs'
-import {erc20SingleCollateralBondContractAt} from '../../event/bond/single-collateral-bond-contract'
+import {erc20SingleCollateralPerformanceBondContractAt} from '../../event/performance-bond/single-collateral-performance-bond-contract'
 import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from '../../event/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {events} from '../../framework/events'
-import {createBondEventLogs} from '../../event/bond/bond-creator-events'
-import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
+import {createPerformanceBondEventLogs} from '../../event/performance-bond/performance-bond-creator-events'
+import {accessControlRevertMessageMissingGlobalRole} from '../../event/performance-bond/access-control-messages'
 import {
     ExpectedBeneficiaryUpdateEvent,
     verifyBeneficiaryUpdateEvents,
@@ -46,21 +46,21 @@ import {
     verifyERC20SweepLogEvents
 } from '../../event/sweep/verify-sweep-erc20-events'
 import {
-    ExpectBondCreatorUpdateEvent,
+    ExpectPerformanceBondCreatorUpdateEvent,
     ExpectCreateDaoEvent,
-    verifyBondCreatorUpdateEvents,
+    verifyPerformanceBondCreatorUpdateEvents,
     verifyBondCreatorUpdateLogEvents,
     verifyCreateDaoEvents,
     verifyCreateDaoLogEvents
-} from '../../event/bond/verify-bond-mediator-events'
-import {createDaoEvents} from '../../event/bond/bond-mediator-events'
+} from '../../event/performance-bond/verify-performance-bond-mediator-events'
+import {createDaoEvents} from '../../event/performance-bond/performance-bond-mediator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
 
 const INVALID_DAO_ID = 0n
 
-describe('Bond Mediator contract', () => {
+describe('Performance Bond Mediator contract', () => {
     before(async () => {
         superUser = (await signer(0)).address
         daoCreator = await signer(1)
@@ -72,9 +72,12 @@ describe('Bond Mediator contract', () => {
             'Name',
             'SYMBOL'
         )
-        creator = await deployContract<BondFactory>('BondFactory', treasury)
-        mediator = await deployContractWithProxy<BondMediator>(
-            'BondMediator',
+        creator = await deployContract<PerformanceBondFactory>(
+            'PerformanceBondFactory',
+            treasury
+        )
+        mediator = await deployContractWithProxy<PerformanceBondMediator>(
+            'PerformanceBondMediator',
             creator.address,
             treasury
         )
@@ -346,7 +349,7 @@ describe('Bond Mediator contract', () => {
         })
     })
 
-    describe('managed bond', () => {
+    describe('managed performance bond', () => {
         after(async () => {
             if (await mediator.paused()) {
                 await mediator.unpause()
@@ -355,7 +358,7 @@ describe('Bond Mediator contract', () => {
         describe('create', () => {
             it('non-whitelisted collateral', async () => {
                 await expect(
-                    mediator.createManagedBond(
+                    mediator.createManagedPerformanceBond(
                         daoId,
                         {
                             name: 'Named bond',
@@ -376,7 +379,7 @@ describe('Bond Mediator contract', () => {
 
             it('invalid DAO id', async () => {
                 await expect(
-                    mediator.createManagedBond(
+                    mediator.createManagedPerformanceBond(
                         INVALID_DAO_ID,
                         {
                             name: 'Named bond',
@@ -397,7 +400,7 @@ describe('Bond Mediator contract', () => {
 
             it('at least dao meeple role', async () => {
                 await expect(
-                    mediator.connect(nonAdmin).createManagedBond(
+                    mediator.connect(nonAdmin).createManagedPerformanceBond(
                         daoId,
                         {
                             name: 'Named bond',
@@ -429,7 +432,7 @@ describe('Bond Mediator contract', () => {
                 const metaData = 'meh'
 
                 const receipt = await successfulTransaction(
-                    mediator.createManagedBond(
+                    mediator.createManagedPerformanceBond(
                         daoId,
                         {
                             name: bondName,
@@ -446,20 +449,21 @@ describe('Bond Mediator contract', () => {
                     )
                 )
 
-                const createBondEvents = createBondEventLogs(
-                    eventLog('CreateBond', creator, receipt)
+                const createBondEvents = createPerformanceBondEventLogs(
+                    eventLog('CreatePerformanceBond', creator, receipt)
                 )
                 expect(createBondEvents.length).to.equal(1)
 
                 const createdBondAddress = createBondEvents[0].bond
-                expect(await mediator.bondCount(daoId)).equals(1)
-                expect(await mediator.bondAt(daoId, 0)).equals(
+                expect(await mediator.performanceBondCount(daoId)).equals(1)
+                expect(await mediator.performanceBondAt(daoId, 0)).equals(
                     createdBondAddress
                 )
 
-                const bond = await erc20SingleCollateralBondContractAt(
-                    createdBondAddress
-                )
+                const bond =
+                    await erc20SingleCollateralPerformanceBondContractAt(
+                        createdBondAddress
+                    )
 
                 verifyOwnershipTransferredEventLogs(
                     [
@@ -491,7 +495,7 @@ describe('Bond Mediator contract', () => {
                 await successfulTransaction(mediator.pause())
                 expect(await mediator.paused()).is.true
                 await expect(
-                    mediator.createManagedBond(
+                    mediator.createManagedPerformanceBond(
                         daoId,
                         {
                             name: 'Named bond',
@@ -544,8 +548,8 @@ describe('Bond Mediator contract', () => {
 
     describe('ERC20 token sweep', () => {
         it('init', async () => {
-            const bondMediator = await deployContract<BondMediator>(
-                'BondMediator'
+            const bondMediator = await deployContract<PerformanceBondMediator>(
+                'PerformanceBondMediator'
             )
 
             const receipt = await successfulTransaction(
@@ -566,11 +570,12 @@ describe('Bond Mediator contract', () => {
 
         describe('update beneficiary', () => {
             after(async () => {
-                mediator = await deployContractWithProxy<BondMediator>(
-                    'BondMediator',
-                    creator.address,
-                    treasury
-                )
+                mediator =
+                    await deployContractWithProxy<PerformanceBondMediator>(
+                        'PerformanceBondMediator',
+                        creator.address,
+                        treasury
+                    )
             })
 
             it('side effects', async () => {
@@ -621,11 +626,12 @@ describe('Bond Mediator contract', () => {
 
         describe('ERC20 token sweep', () => {
             after(async () => {
-                mediator = await deployContractWithProxy<BondMediator>(
-                    'BondMediator',
-                    creator.address,
-                    treasury
-                )
+                mediator =
+                    await deployContractWithProxy<PerformanceBondMediator>(
+                        'PerformanceBondMediator',
+                        creator.address,
+                        treasury
+                    )
             })
             it('side effects', async () => {
                 const seedFunds = 100n
@@ -721,19 +727,21 @@ describe('Bond Mediator contract', () => {
         describe('creator', () => {
             it('is a contract', async () => {
                 await expect(
-                    mediator.setBondCreator(treasury)
+                    mediator.setPerformanceBondCreator(treasury)
                 ).to.be.revertedWith('BM: creator not a contract')
             })
 
             it('not identity operation', async () => {
                 await expect(
-                    mediator.setBondCreator(creator.address)
+                    mediator.setPerformanceBondCreator(creator.address)
                 ).to.be.revertedWith('BM: matches existing')
             })
 
             it('at least system admin role', async () => {
                 await expect(
-                    mediator.connect(nonAdmin).setBondCreator(creator.address)
+                    mediator
+                        .connect(nonAdmin)
+                        .setPerformanceBondCreator(creator.address)
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonAdmin,
@@ -746,21 +754,25 @@ describe('Bond Mediator contract', () => {
                 expect(await mediator.bondCreator()).equals(creator.address)
 
                 const receipt = await successfulTransaction(
-                    mediator.setBondCreator(collateralTokens.address)
+                    mediator.setPerformanceBondCreator(collateralTokens.address)
                 )
 
                 expect(await mediator.bondCreator()).equals(
                     collateralTokens.address
                 )
 
-                const expectedEvents: ExpectBondCreatorUpdateEvent[] = [
-                    {
-                        previousCreator: creator.address,
-                        updateCreator: collateralTokens.address,
-                        instigator: superUser
-                    }
-                ]
-                verifyBondCreatorUpdateEvents(receipt, expectedEvents)
+                const expectedEvents: ExpectPerformanceBondCreatorUpdateEvent[] =
+                    [
+                        {
+                            previousCreator: creator.address,
+                            updateCreator: collateralTokens.address,
+                            instigator: superUser
+                        }
+                    ]
+                verifyPerformanceBondCreatorUpdateEvents(
+                    receipt,
+                    expectedEvents
+                )
                 verifyBondCreatorUpdateLogEvents(
                     mediator,
                     receipt,
@@ -772,7 +784,7 @@ describe('Bond Mediator contract', () => {
                 await mediator.pause()
 
                 await expect(
-                    mediator.setBondCreator(creator.address)
+                    mediator.setPerformanceBondCreator(creator.address)
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -784,13 +796,13 @@ describe('Bond Mediator contract', () => {
     let nonAdmin: SignerWithAddress
     let collateralTokens: IERC20
     let nonWhitelistCollateralTokens: IERC20
-    let mediator: BondMediator
-    let creator: BondFactory
+    let mediator: PerformanceBondMediator
+    let creator: PerformanceBondFactory
     let daoId: bigint
 })
 
 async function createDao(
-    mediator: BondMediator,
+    mediator: PerformanceBondMediator,
     treasury: string
 ): Promise<bigint> {
     const receipt = await successfulTransaction(mediator.createDao(treasury))

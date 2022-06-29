@@ -27,7 +27,7 @@ import {
     withdrawCollateralEvents,
     ActualWithdrawCollateralEvent,
     withdrawCollateralEventLogs
-} from './single-collateral-bond-events'
+} from './single-collateral-performance-bond-events'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {parseEventLog, parseEvents} from '../../framework/events'
 

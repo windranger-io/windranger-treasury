@@ -1,23 +1,23 @@
 import {
-    ActualBondMetaData,
-    ActualBondSettings,
-    ActualCreateBondEvent,
+    ActualPerformanceBondMetaData,
+    ActualPerformanceBondSettings,
+    ActualCreatePerformanceBondEvent,
     ActualTimeLockRewardPool,
-    createBondEventLogs,
-    createBondEvents
-} from './bond-creator-events'
+    createPerformanceBondEventLogs,
+    createPerformanceBondEvents
+} from './performance-bond-creator-events'
 import {ethers} from 'hardhat'
 import {BaseContract, ContractReceipt} from 'ethers'
 import {verifyOrderedEvents} from '../../framework/verify'
 import {parseEventLog, parseEvents} from '../../framework/events'
 
-export type ExpectBondMetaData = {
+export type ExpectPerformanceBondMetaData = {
     name: string
     symbol: string
     data: string
 }
 
-export type ExpectBondSettings = {
+export type ExpectPerformanceBondSettings = {
     debtTokenAmount: bigint
     collateralTokens: string
     expiryTimestamp: bigint
@@ -30,62 +30,77 @@ export type ExpectTimeLockRewardPool = {
     timeLock: bigint
 }
 
-export type ExpectCreateBondEvent = {
-    metadata: ExpectBondMetaData
-    configuration: ExpectBondSettings
+export type ExpectCreatePerformanceBondEvent = {
+    metadata: ExpectPerformanceBondMetaData
+    configuration: ExpectPerformanceBondSettings
     rewards: ExpectTimeLockRewardPool[]
     treasury: string
     instigator: string
 }
 
 /**
- * Verifies the content for CreateBond events.
+ * Verifies the content for CreatePerformanceBond events.
  */
-export function verifyCreateBondEvents(
+export function verifyCreatePerformanceBondEvents(
     receipt: ContractReceipt,
-    expectedEvents: ExpectCreateBondEvent[]
+    expectedEvents: ExpectCreatePerformanceBondEvent[]
 ): void {
-    const actualEvents = parseEvents(receipt, 'CreateBond', createBondEvents)
+    const actualEvents = parseEvents(
+        receipt,
+        'CreatePerformanceBond',
+        createPerformanceBondEvents
+    )
 
-    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsCreateBondEvent)
+    verifyOrderedEvents(
+        expectedEvents,
+        actualEvents,
+        deepEqualsCreatePerformanceBondEvent
+    )
 }
 
 /**
- * Verifies the event log entries contain the expected CreateBond events.
+ * Verifies the event log entries contain the expected CreatePerformanceBond events.
  */
-export function verifyCreateBondEventLogs<T extends BaseContract>(
+export function verifyCreatePerformanceBondEventLogs<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    expectedEvents: ExpectCreateBondEvent[]
+    expectedEvents: ExpectCreatePerformanceBondEvent[]
 ): void {
     const actualEvents = parseEventLog(
         emitter,
         receipt,
-        'CreateBond',
-        createBondEventLogs
+        'CreatePerformanceBond',
+        createPerformanceBondEventLogs
     )
 
-    verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsCreateBondEvent)
+    verifyOrderedEvents(
+        expectedEvents,
+        actualEvents,
+        deepEqualsCreatePerformanceBondEvent
+    )
 }
 
-function deepEqualsCreateBondEvent(
-    expected: ExpectCreateBondEvent,
-    actual: ActualCreateBondEvent
+function deepEqualsCreatePerformanceBondEvent(
+    expected: ExpectCreatePerformanceBondEvent,
+    actual: ActualCreatePerformanceBondEvent
 ): boolean {
     return (
         ethers.utils.isAddress(actual.bond) &&
         actual.bond !== expected.instigator &&
         actual.bond !== expected.treasury &&
         actual.instigator === expected.instigator &&
-        deepEqualsBondMetaData(expected.metadata, actual.metadata) &&
-        deepEqualsBondSettings(expected.configuration, actual.configuration) &&
+        deepEqualsPerformanceBondMetaData(expected.metadata, actual.metadata) &&
+        deepEqualsPerformanceBondSettings(
+            expected.configuration,
+            actual.configuration
+        ) &&
         deepEqualsTimeLockRewardPools(expected.rewards, actual.rewards)
     )
 }
 
-function deepEqualsBondMetaData(
-    expected: ExpectBondMetaData,
-    actual: ActualBondMetaData
+function deepEqualsPerformanceBondMetaData(
+    expected: ExpectPerformanceBondMetaData,
+    actual: ActualPerformanceBondMetaData
 ): boolean {
     return (
         actual.name === expected.name &&
@@ -94,9 +109,9 @@ function deepEqualsBondMetaData(
     )
 }
 
-function deepEqualsBondSettings(
-    expected: ExpectBondSettings,
-    actual: ActualBondSettings
+function deepEqualsPerformanceBondSettings(
+    expected: ExpectPerformanceBondSettings,
+    actual: ActualPerformanceBondSettings
 ): boolean {
     return (
         actual.debtTokenAmount.toBigInt() === expected.debtTokenAmount &&

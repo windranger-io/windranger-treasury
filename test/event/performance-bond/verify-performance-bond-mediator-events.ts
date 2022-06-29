@@ -3,14 +3,14 @@ import {verifyOrderedEvents} from '../../framework/verify'
 import {
     ActualBondCreatorUpdateEvent,
     ActualCreateDaoEvent,
-    bondCreatorUpdateEventLogs,
-    bondCreatorUpdateEvents,
+    performanceBondCreatorUpdateEventLogs,
+    performanceBondCreatorUpdateEvents,
     createDaoEventLogs,
     createDaoEvents
-} from './bond-mediator-events'
+} from './performance-bond-mediator-events'
 import {parseEventLog, parseEvents} from '../../framework/events'
 
-export type ExpectBondCreatorUpdateEvent = {
+export type ExpectPerformanceBondCreatorUpdateEvent = {
     previousCreator: string
     updateCreator: string
     instigator: string
@@ -23,22 +23,22 @@ export type ExpectCreateDaoEvent = {
 }
 
 /**
- * Verifies the content for the Bond Creator Update event.
+ * Verifies the content for the Performance Bond Creator Update event.
  */
-export function verifyBondCreatorUpdateEvents(
+export function verifyPerformanceBondCreatorUpdateEvents(
     receipt: ContractReceipt,
-    expectedEvents: ExpectBondCreatorUpdateEvent[]
+    expectedEvents: ExpectPerformanceBondCreatorUpdateEvent[]
 ): void {
     const actualEvents = parseEvents(
         receipt,
-        'BondCreatorUpdate',
-        bondCreatorUpdateEvents
+        'PerformanceBondCreatorUpdate',
+        performanceBondCreatorUpdateEvents
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        deepEqualsBondCreatorUpdateEvent
+        deepEqualsPerformanceBondCreatorUpdateEvent
     )
 }
 
@@ -48,19 +48,19 @@ export function verifyBondCreatorUpdateEvents(
 export function verifyBondCreatorUpdateLogEvents<T extends BaseContract>(
     emitter: T,
     receipt: ContractReceipt,
-    expectedEvents: ExpectBondCreatorUpdateEvent[]
+    expectedEvents: ExpectPerformanceBondCreatorUpdateEvent[]
 ): void {
     const actualEvents = parseEventLog(
         emitter,
         receipt,
-        'BondCreatorUpdate',
-        bondCreatorUpdateEventLogs
+        'PerformanceBondCreatorUpdate',
+        performanceBondCreatorUpdateEventLogs
     )
 
     verifyOrderedEvents(
         expectedEvents,
         actualEvents,
-        deepEqualsBondCreatorUpdateEvent
+        deepEqualsPerformanceBondCreatorUpdateEvent
     )
 }
 
@@ -94,8 +94,8 @@ export function verifyCreateDaoLogEvents<T extends BaseContract>(
     verifyOrderedEvents(expectedEvents, actualEvents, deepEqualsCreateDaEvent)
 }
 
-function deepEqualsBondCreatorUpdateEvent(
-    expected: ExpectBondCreatorUpdateEvent,
+function deepEqualsPerformanceBondCreatorUpdateEvent(
+    expected: ExpectPerformanceBondCreatorUpdateEvent,
     actual: ActualBondCreatorUpdateEvent
 ): boolean {
     return (

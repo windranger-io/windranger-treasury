@@ -18,7 +18,7 @@ import {
     redemptionTimestampUpdateEvents,
     rewardTimeLockUpdateEventLogs,
     rewardTimeLockUpdateEvents
-} from './time-lock-multi-reward-bond-events'
+} from './time-lock-multi-reward-performance-bond-events'
 
 export type ExpectedClaimRewardEvent = {
     tokens: string

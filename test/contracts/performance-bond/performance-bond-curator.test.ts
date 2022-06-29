@@ -8,7 +8,7 @@ import {before} from 'mocha'
 import {solidity} from 'ethereum-waffle'
 import {
     BitDAO,
-    BondFactory,
+    PerformanceBondFactory,
     BondCuratorBox,
     ERC20SingleCollateralBondBox,
     IERC20
@@ -16,16 +16,20 @@ import {
 import {deployContract, execute, signer} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from '../../framework/transaction'
-import {erc20SingleCollateralBondContractAt} from '../../event/bond/single-collateral-bond-contract'
+import {erc20SingleCollateralPerformanceBondContractAt} from '../../event/performance-bond/single-collateral-performance-bond-contract'
 import {events} from '../../framework/events'
-import {DAO_ADMIN, DAO_MEEPLE, SYSTEM_ADMIN} from '../../event/bond/roles'
-import {accessControlRevertMessageMissingGlobalRole} from '../../event/bond/access-control-messages'
+import {
+    DAO_ADMIN,
+    DAO_MEEPLE,
+    SYSTEM_ADMIN
+} from '../../event/performance-bond/roles'
+import {accessControlRevertMessageMissingGlobalRole} from '../../event/performance-bond/access-control-messages'
 import {
     ExpectedAddBondEvent,
-    verifyAddBondEvents,
-    verifyAddBondLogEvents
-} from '../../event/bond/verify-curator-events'
-import {createBondEvents} from '../../event/bond/bond-creator-events'
+    verifyAddPerformanceBondEvents,
+    verifyAddPerformanceBondLogEvents
+} from '../../event/performance-bond/verify-performance-bond-curator-events'
+import {createPerformanceBondEvents} from '../../event/performance-bond/performance-bond-creator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
@@ -35,19 +39,22 @@ const DAO_ID = 1n
 const REDEMPTION_REASON = 'test redemption reason string'
 const BOND_SLASH_REASON = 'example slash reason'
 
-describe('Bond Curator contract', () => {
+describe('Performance Bond Curator contract', () => {
     before(async () => {
         admin = (await signer(0)).address
         nonBondAdmin = await signer(1)
         treasury = (await signer(2)).address
         collateralTokens = await deployContract<BitDAO>('BitDAO', admin)
         otherCollateralTokens = await deployContract<BitDAO>('BitDAO', admin)
-        creator = await deployContract<BondFactory>('BondFactory', treasury)
+        creator = await deployContract<PerformanceBondFactory>(
+            'PerformanceBondFactory',
+            treasury
+        )
         curator = await deployContract<BondCuratorBox>('BondCuratorBox')
         await successfulTransaction(curator.initialize())
     })
 
-    describe('add bond', () => {
+    describe('add performance bond', () => {
         after(async () => {
             if (await curator.paused()) {
                 await successfulTransaction(curator.unpause())
@@ -72,15 +79,17 @@ describe('Bond Curator contract', () => {
         })
 
         it('only to chosen DAO Id', async () => {
-            const beforeCountOther = await curator.bondCount(INVALID_DAO_ID)
-            const beforeCountChosen = await curator.bondCount(DAO_ID)
+            const beforeCountOther = await curator.performanceBondCount(
+                INVALID_DAO_ID
+            )
+            const beforeCountChosen = await curator.performanceBondCount(DAO_ID)
             const bond = await createBond()
             await successfulTransaction(curator.addBond(DAO_ID, bond.address))
 
-            expect(await curator.bondCount(DAO_ID)).equals(
+            expect(await curator.performanceBondCount(DAO_ID)).equals(
                 beforeCountChosen.add(1n)
             )
-            expect(await curator.bondCount(INVALID_DAO_ID)).equals(
+            expect(await curator.performanceBondCount(INVALID_DAO_ID)).equals(
                 beforeCountOther
             )
         })
@@ -92,16 +101,23 @@ describe('Bond Curator contract', () => {
                 curator.addBond(DAO_ID, bond.address)
             )
 
-            const createdBondIndex = await curator.bondCount(DAO_ID)
+            const createdBondIndex = await curator.performanceBondCount(DAO_ID)
             expect(
-                await curator.bondAt(DAO_ID, createdBondIndex.sub(1n))
+                await curator.performanceBondAt(
+                    DAO_ID,
+                    createdBondIndex.sub(1n)
+                )
             ).equals(bond.address)
 
             const expectedAddBondEvents: ExpectedAddBondEvent[] = [
                 {bond: bond.address, instigator: admin}
             ]
-            verifyAddBondEvents(receipt, expectedAddBondEvents)
-            verifyAddBondLogEvents(curator, receipt, expectedAddBondEvents)
+            verifyAddPerformanceBondEvents(receipt, expectedAddBondEvents)
+            verifyAddPerformanceBondLogEvents(
+                curator,
+                receipt,
+                expectedAddBondEvents
+            )
         })
 
         it('only when not paused', async () => {
@@ -116,7 +132,7 @@ describe('Bond Curator contract', () => {
         })
     })
 
-    describe('bond', () => {
+    describe('performance bond', () => {
         beforeEach(async () => {
             curator = await deployContract<BondCuratorBox>('BondCuratorBox')
             await successfulTransaction(curator.initialize())
@@ -131,7 +147,7 @@ describe('Bond Curator contract', () => {
                 )
 
                 await successfulTransaction(
-                    curator.bondAllowRedemption(
+                    curator.performanceBondAllowRedemption(
                         DAO_ID,
                         bond.address,
                         REDEMPTION_REASON
@@ -143,7 +159,7 @@ describe('Bond Curator contract', () => {
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondAllowRedemption(
+                    curator.performanceBondAllowRedemption(
                         DAO_ID,
                         bond.address,
                         REDEMPTION_REASON
@@ -155,7 +171,7 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondAllowRedemption(
+                        .performanceBondAllowRedemption(
                             DAO_ID,
                             bond.address,
                             REDEMPTION_REASON
@@ -173,7 +189,7 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondAllowRedemption(
+                    curator.performanceBondAllowRedemption(
                         DAO_ID,
                         bond.address,
                         REDEMPTION_REASON
@@ -190,7 +206,7 @@ describe('Bond Curator contract', () => {
                 )
 
                 await successfulTransaction(
-                    curator.bondPause(DAO_ID, bond.address)
+                    curator.performanceBondPause(DAO_ID, bond.address)
                 )
 
                 expect(await bond.paused()).is.true
@@ -198,7 +214,7 @@ describe('Bond Curator contract', () => {
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondPause(DAO_ID, bond.address)
+                    curator.performanceBondPause(DAO_ID, bond.address)
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
@@ -206,7 +222,7 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondPause(DAO_ID, bond.address)
+                        .performanceBondPause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonBondAdmin,
@@ -220,7 +236,7 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondPause(DAO_ID, bond.address)
+                    curator.performanceBondPause(DAO_ID, bond.address)
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -232,7 +248,7 @@ describe('Bond Curator contract', () => {
                 )
 
                 await expect(
-                    curator.bondSlash(
+                    curator.performanceBondSlash(
                         DAO_ID,
                         bond.address,
                         77n,
@@ -243,7 +259,7 @@ describe('Bond Curator contract', () => {
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondSlash(
+                    curator.performanceBondSlash(
                         DAO_ID,
                         bond.address,
                         5n,
@@ -256,7 +272,12 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondSlash(DAO_ID, bond.address, 5n, BOND_SLASH_REASON)
+                        .performanceBondSlash(
+                            DAO_ID,
+                            bond.address,
+                            5n,
+                            BOND_SLASH_REASON
+                        )
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonBondAdmin,
@@ -270,7 +291,7 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondSlash(
+                    curator.performanceBondSlash(
                         DAO_ID,
                         bond.address,
                         4n,
@@ -288,7 +309,7 @@ describe('Bond Curator contract', () => {
                 expect(await bond.metaData()).equals('')
 
                 await successfulTransaction(
-                    curator.bondSetMetaData(
+                    curator.performanceBondSetMetaData(
                         DAO_ID,
                         bond.address,
                         'new meta data'
@@ -300,7 +321,11 @@ describe('Bond Curator contract', () => {
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondSetMetaData(DAO_ID, bond.address, 'meta')
+                    curator.performanceBondSetMetaData(
+                        DAO_ID,
+                        bond.address,
+                        'meta'
+                    )
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
@@ -308,7 +333,11 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondSetMetaData(DAO_ID, bond.address, 'meta')
+                        .performanceBondSetMetaData(
+                            DAO_ID,
+                            bond.address,
+                            'meta'
+                        )
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonBondAdmin,
@@ -322,7 +351,11 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondSetMetaData(DAO_ID, bond.address, 'data')
+                    curator.performanceBondSetMetaData(
+                        DAO_ID,
+                        bond.address,
+                        'data'
+                    )
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -335,7 +368,7 @@ describe('Bond Curator contract', () => {
                 expect(await bond.treasury()).equals(treasury)
 
                 await successfulTransaction(
-                    curator.bondSetTreasury(
+                    curator.performanceBondSetTreasury(
                         DAO_ID,
                         bond.address,
                         curator.address
@@ -347,7 +380,11 @@ describe('Bond Curator contract', () => {
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondSetTreasury(DAO_ID, bond.address, bond.address)
+                    curator.performanceBondSetTreasury(
+                        DAO_ID,
+                        bond.address,
+                        bond.address
+                    )
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
@@ -355,7 +392,11 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondSetTreasury(DAO_ID, bond.address, bond.address)
+                        .performanceBondSetTreasury(
+                            DAO_ID,
+                            bond.address,
+                            bond.address
+                        )
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonBondAdmin,
@@ -369,7 +410,11 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondSetTreasury(DAO_ID, bond.address, bond.address)
+                    curator.performanceBondSetTreasury(
+                        DAO_ID,
+                        bond.address,
+                        bond.address
+                    )
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -390,7 +435,7 @@ describe('Bond Curator contract', () => {
                 )
 
                 await successfulTransaction(
-                    curator.bondSweepERC20Tokens(
+                    curator.performanceBondSweepERC20Tokens(
                         DAO_ID,
                         bond.address,
                         otherCollateralTokens.address,
@@ -410,7 +455,7 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondSweepERC20Tokens(
+                        .performanceBondSweepERC20Tokens(
                             DAO_ID,
                             bond.address,
                             collateralTokens.address,
@@ -429,7 +474,7 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondSweepERC20Tokens(
+                    curator.performanceBondSweepERC20Tokens(
                         DAO_ID,
                         bond.address,
                         collateralTokens.address,
@@ -446,12 +491,12 @@ describe('Bond Curator contract', () => {
                     curator.addBond(DAO_ID, bond.address)
                 )
                 await successfulTransaction(
-                    curator.bondPause(DAO_ID, bond.address)
+                    curator.performanceBondPause(DAO_ID, bond.address)
                 )
                 expect(await bond.paused()).is.true
 
                 await successfulTransaction(
-                    curator.bondUnpause(DAO_ID, bond.address)
+                    curator.performanceBondUnpause(DAO_ID, bond.address)
                 )
 
                 expect(await bond.paused()).is.false
@@ -459,7 +504,7 @@ describe('Bond Curator contract', () => {
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondUnpause(DAO_ID, bond.address)
+                    curator.performanceBondUnpause(DAO_ID, bond.address)
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
@@ -467,7 +512,7 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondUnpause(DAO_ID, bond.address)
+                        .performanceBondUnpause(DAO_ID, bond.address)
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonBondAdmin,
@@ -481,7 +526,7 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondUnpause(DAO_ID, bond.address)
+                    curator.performanceBondUnpause(DAO_ID, bond.address)
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -493,13 +538,19 @@ describe('Bond Curator contract', () => {
                 )
 
                 await expect(
-                    curator.bondWithdrawCollateral(DAO_ID, bond.address)
+                    curator.performanceBondWithdrawCollateral(
+                        DAO_ID,
+                        bond.address
+                    )
                 ).to.be.revertedWith('whenRedeemable: not redeemable')
             })
 
             it('only when managing', async () => {
                 await expect(
-                    curator.bondWithdrawCollateral(DAO_ID, bond.address)
+                    curator.performanceBondWithdrawCollateral(
+                        DAO_ID,
+                        bond.address
+                    )
                 ).to.be.revertedWith('BondCurator: not managing')
             })
 
@@ -507,7 +558,7 @@ describe('Bond Curator contract', () => {
                 await expect(
                     curator
                         .connect(nonBondAdmin)
-                        .bondWithdrawCollateral(DAO_ID, bond.address)
+                        .performanceBondWithdrawCollateral(DAO_ID, bond.address)
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonBondAdmin,
@@ -521,7 +572,10 @@ describe('Bond Curator contract', () => {
                 expect(await curator.paused()).is.true
 
                 await expect(
-                    curator.bondWithdrawCollateral(DAO_ID, bond.address)
+                    curator.performanceBondWithdrawCollateral(
+                        DAO_ID,
+                        bond.address
+                    )
                 ).to.be.revertedWith('Pausable: paused')
             })
         })
@@ -593,7 +647,7 @@ describe('Bond Curator contract', () => {
         owner: string
     ): Promise<ERC20SingleCollateralBondBox> {
         const receipt = await execute(
-            creator.createBond(
+            creator.createPerformanceBond(
                 {name: 'name', symbol: 'symbol', data: ''},
                 {
                     debtTokenAmount: 100n,
@@ -606,8 +660,10 @@ describe('Bond Curator contract', () => {
             )
         )
 
-        const creationEvent = createBondEvents(events('CreateBond', receipt))[0]
-        const bond = await erc20SingleCollateralBondContractAt(
+        const creationEvent = createPerformanceBondEvents(
+            events('CreatePerformanceBond', receipt)
+        )[0]
+        const bond = await erc20SingleCollateralPerformanceBondContractAt(
             creationEvent.bond
         )
         await bond.transferOwnership(owner)
@@ -621,5 +677,5 @@ describe('Bond Curator contract', () => {
     let curator: BondCuratorBox
     let collateralTokens: IERC20
     let otherCollateralTokens: IERC20
-    let creator: BondFactory
+    let creator: PerformanceBondFactory
 })

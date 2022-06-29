@@ -7,7 +7,7 @@ import {before} from 'mocha'
 import {
     BitDAO,
     ERC20,
-    SingleCollateralMultiRewardBond
+    SingleCollateralMultiRewardPerformanceBond
 } from '../../../typechain-types'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {deployContract, signer} from '../../framework/contracts'
@@ -22,7 +22,7 @@ import {
     verifyDepositEvents,
     verifyRedemptionEventLogs,
     verifyRedemptionEvents
-} from '../../event/bond/verify-single-collateral-bond-events'
+} from '../../event/performance-bond/verify-single-collateral-performance-bond-events'
 import {
     ExpectedRewardDebtEvent,
     ExpectedRewardTimeLockUpdateEvent,
@@ -32,17 +32,17 @@ import {
     verifyRedemptionTimestampUpdateLogEvents,
     verifyRewardTimeLockUpdateLogEvents,
     verifyRewardTimeLockUpdateEvents
-} from '../../event/bond/verify-time-lock-multi-reward-bond-events'
-import {GuarantorCollateralSetup} from './erc20-single-collateral-bond.test'
+} from '../../event/performance-bond/verify-time-lock-multi-reward-performance-bond-events'
+import {GuarantorCollateralSetup} from './erc20-single-collateral-performance-bond.test'
 import {divideBigNumberish} from '../../framework/maths'
 import {countEvents} from '../../framework/events'
-import {Bond} from '../../../typechain-types/contracts/bond/BondPortal'
+import {PerformanceBond} from '../../../typechain-types/contracts/performance-bonds/PerformanceBondPortal'
 
 const TOTAL_SUPPLY = 5000n
 const BOND_EXPIRY = 750000n
 const MINIMUM_DEPOSIT = 100n
 
-describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
+describe('Single Collateral TimeLock Multi Reward Performance Bond contract', () => {
     before(async () => {
         admin = await signer(0)
         guarantor = await signer(1)
@@ -596,10 +596,11 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
         let divisor: bigint
     })
 
-    async function createBond(): Promise<SingleCollateralMultiRewardBond> {
-        const bond = await deployContract<SingleCollateralMultiRewardBond>(
-            'SingleCollateralMultiRewardBond'
-        )
+    async function createBond(): Promise<SingleCollateralMultiRewardPerformanceBond> {
+        const bond =
+            await deployContract<SingleCollateralMultiRewardPerformanceBond>(
+                'SingleCollateralMultiRewardPerformanceBond'
+            )
         expect(ethers.utils.isAddress(bond.address)).is.true
 
         await bond.initialize(
@@ -622,8 +623,8 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
     }
 
     let admin: SignerWithAddress
-    let bond: SingleCollateralMultiRewardBond
-    let rewardPools: Bond.TimeLockRewardPoolStruct[]
+    let bond: SingleCollateralMultiRewardPerformanceBond
+    let rewardPools: PerformanceBond.TimeLockRewardPoolStruct[]
     let collateralTokens: ERC20
     let guarantor: SignerWithAddress
     let rewardTokenOne: ERC20
@@ -634,7 +635,7 @@ describe('Single Collateral TimeLock Multi Reward Bond contract', () => {
 
 async function setupGuarantorWithCollateral(
     guarantor: GuarantorCollateralSetup,
-    bond: SingleCollateralMultiRewardBond,
+    bond: SingleCollateralMultiRewardPerformanceBond,
     collateral: ERC20
 ) {
     await collateral.transfer(guarantor.signer.address, guarantor.pledge)

@@ -1,23 +1,25 @@
 import {BigNumber, Event} from 'ethers'
 import {expect} from 'chai'
 import {Result} from '@ethersproject/abi'
-import {AddBondEvent} from '../../../typechain-types/contracts/bond/BondCurator'
+import {AddPerformanceBondEvent} from '../../../typechain-types/contracts/performance-bonds/PerformanceBondCurator'
 
-export type ActualAddBondEvent = {
+export type ActualAddPerformanceBondEvent = {
     daoId: BigNumber
     bond: string
     instigator: string
 }
 
 /**
- * Shape check and conversion for a AddBondEvent.
+ * Shape check and conversion for a AddPerformanceBondEvent.
  */
-export function addBondEvents(events: Event[]): ActualAddBondEvent[] {
-    const bonds: ActualAddBondEvent[] = []
+export function addPerformanceBondEvents(
+    events: Event[]
+): ActualAddPerformanceBondEvent[] {
+    const bonds: ActualAddPerformanceBondEvent[] = []
 
     for (const event of events) {
         expect(event.args).is.not.undefined
-        const create = event as AddBondEvent
+        const create = event as AddPerformanceBondEvent
 
         const args = create.args
         expect(args?.daoId).is.not.undefined
@@ -31,10 +33,12 @@ export function addBondEvents(events: Event[]): ActualAddBondEvent[] {
 }
 
 /**
- * Shape check and conversion for a event log entry for AddBond.
+ * Shape check and conversion for a event log entry for AddPerformanceBond.
  */
-export function addBondEventLogs(events: Result[]): ActualAddBondEvent[] {
-    const results: ActualAddBondEvent[] = []
+export function addPerformanceBondEventLogs(
+    events: Result[]
+): ActualAddPerformanceBondEvent[] {
+    const results: ActualAddPerformanceBondEvent[] = []
 
     for (const event of events) {
         expect(event?.daoId).is.not.undefined

@@ -35,18 +35,18 @@ import {
     verifySlashDepositEvents,
     verifyWithdrawCollateralEventLogs,
     verifyWithdrawCollateralEvents
-} from '../../event/bond/verify-single-collateral-bond-events'
+} from '../../event/performance-bond/verify-single-collateral-performance-bond-events'
 import {verifyERC20TransferEvents} from '../../event/erc20/verify-erc20-events'
 import {
     ExpectedMetaDataUpdateEvent,
     verifyMetaDataUpdateEvents,
     verifyMetaDataUpdateLogEvents
-} from '../../event/bond/verify-meta-data-store-events'
+} from '../../event/performance-bond/verify-meta-data-store-events'
 import {
     ExpectedRedeemableUpdateEvent,
     verifyRedeemableEvents,
     verifyRedeemableUpdateLogEvents
-} from '../../event/bond/verify-redeemable-events'
+} from '../../event/performance-bond/verify-redeemable-events'
 import {
     verifyBeneficiaryUpdateEvents,
     verifyBeneficiaryUpdateLogEvents
@@ -72,7 +72,7 @@ const MINIMUM_DEPOSIT = 100n
 const REDEMPTION_REASON = 'test reason string'
 const BOND_SLASH_REASON = 'example slash reason'
 
-describe('ERC20 Single Collateral Bond contract', () => {
+describe('ERC20 Single Collateral Performance Bond contract', () => {
     before(async () => {
         admin = await signer(0)
         treasury = (await signer(1)).address

@@ -11,7 +11,7 @@ import {
     Role,
     SUPER_USER,
     SYSTEM_ADMIN
-} from '../../event/bond/roles'
+} from '../../event/performance-bond/roles'
 import {before} from 'mocha'
 import {deployContract, signer} from '../../framework/contracts'
 import {BondAccessControlBox} from '../../../typechain-types'
@@ -21,7 +21,7 @@ import {
     accessControlRevertMessageAlreadyGlobalRoleMember,
     accessControlRevertMessageMissingDaoRole,
     accessControlRevertMessageMissingGlobalRole
-} from '../../event/bond/access-control-messages'
+} from '../../event/performance-bond/access-control-messages'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from '../../framework/transaction'
 
