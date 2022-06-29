@@ -3,7 +3,7 @@ import {expect} from 'chai'
 import {
     AddCollateralWhitelistEvent,
     RemoveCollateralWhitelistEvent
-} from '../../../typechain-types/contracts/bond/BondMediator'
+} from '../../../typechain-types/contracts/performance-bonds/PerformanceBondMediator'
 import {Result} from '@ethersproject/abi'
 
 export type ActualAddCollateralEvent = {

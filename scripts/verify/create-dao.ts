@@ -1,12 +1,12 @@
 import {ethers} from 'hardhat'
-import {BondMediator} from '../../typechain-types'
+import {PerformanceBondMediator} from '../../typechain-types'
 import {log} from '../../config/logging'
 import {addressEnvironmentVariable} from '../utils/environment-variable'
 import {logEvents} from '../utils/transaction-event-log'
 
 async function createDao(mediatorAddress: string, treasuryAddress: string) {
     const factory = await ethers.getContractFactory('BondMediator')
-    const contract = <BondMediator>factory.attach(mediatorAddress)
+    const contract = <PerformanceBondMediator>factory.attach(mediatorAddress)
 
     log.info('Creating a new DAO')
 
