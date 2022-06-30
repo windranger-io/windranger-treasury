@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./PerformanceBond.sol";
 
@@ -16,6 +17,8 @@ import "./PerformanceBond.sol";
  *      _calculateRewardDebt() must be called to keep their rewards updated.
  */
 abstract contract TimeLockMultiRewardPerformanceBond is PausableUpgradeable {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+
     struct ClaimableReward {
         address tokens;
         uint256 amount;
@@ -313,10 +316,7 @@ abstract contract TimeLockMultiRewardPerformanceBond is PausableUpgradeable {
         uint256 amount,
         address claimant
     ) private {
-        require(
-            IERC20Upgradeable(tokens).transfer(claimant, amount),
-            "Rewards: transfer failed"
-        );
+        IERC20Upgradeable(tokens).safeTransfer(claimant, amount);
     }
 
     function _enforceUniqueRewardTokens(
