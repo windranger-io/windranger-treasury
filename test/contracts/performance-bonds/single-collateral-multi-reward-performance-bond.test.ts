@@ -22,7 +22,7 @@ import {
     verifyDepositEvents,
     verifyRedemptionEventLogs,
     verifyRedemptionEvents
-} from '../../event/performance-bond/verify-single-collateral-performance-bond-events'
+} from '../../event/performance-bonds/verify-single-collateral-performance-bond-events'
 import {
     ExpectedRewardDebtEvent,
     ExpectedRewardTimeLockUpdateEvent,
@@ -32,7 +32,7 @@ import {
     verifyRedemptionTimestampUpdateLogEvents,
     verifyRewardTimeLockUpdateLogEvents,
     verifyRewardTimeLockUpdateEvents
-} from '../../event/performance-bond/verify-time-lock-multi-reward-performance-bond-events'
+} from '../../event/performance-bonds/verify-time-lock-multi-reward-performance-bond-events'
 import {GuarantorCollateralSetup} from './erc20-single-collateral-performance-bond.test'
 import {divideBigNumberish} from '../../framework/maths'
 import {countEvents} from '../../framework/events'

@@ -25,16 +25,16 @@ import {
     DAO_MEEPLE,
     SUPER_USER,
     SYSTEM_ADMIN
-} from '../../event/performance-bond/roles'
+} from '../../event/performance-bonds/roles'
 import {successfulTransaction} from '../../framework/transaction'
 import {eventLog} from '../../framework/event-logs'
-import {erc20SingleCollateralPerformanceBondContractAt} from '../../event/performance-bond/single-collateral-performance-bond-contract'
+import {erc20SingleCollateralPerformanceBondContractAt} from '../../event/performance-bonds/single-collateral-performance-bond-contract'
 import {constants} from 'ethers'
 import {verifyOwnershipTransferredEventLogs} from '../../event/ownable/verify-ownable-event'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {events} from '../../framework/events'
-import {createPerformanceBondEventLogs} from '../../event/performance-bond/performance-bond-creator-events'
-import {accessControlRevertMessageMissingGlobalRole} from '../../event/performance-bond/access-control-messages'
+import {createPerformanceBondEventLogs} from '../../event/performance-bonds/performance-bond-creator-events'
+import {accessControlRevertMessageMissingGlobalRole} from '../../event/performance-bonds/access-control-messages'
 import {
     ExpectedBeneficiaryUpdateEvent,
     verifyBeneficiaryUpdateEvents,
@@ -52,8 +52,8 @@ import {
     verifyBondCreatorUpdateLogEvents,
     verifyCreateDaoEvents,
     verifyCreateDaoLogEvents
-} from '../../event/performance-bond/verify-performance-bond-mediator-events'
-import {createDaoEvents} from '../../event/performance-bond/performance-bond-mediator-events'
+} from '../../event/performance-bonds/verify-performance-bond-mediator-events'
+import {createDaoEvents} from '../../event/performance-bonds/performance-bond-mediator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)

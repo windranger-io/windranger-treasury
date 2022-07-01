@@ -24,7 +24,7 @@ import {
     verifyRegisterRewardLogEvents,
     verifyRewardDebtEvents,
     verifyRewardDebtLogEvents
-} from '../../event/performance-bond/verify-time-lock-multi-reward-performance-bond-events'
+} from '../../event/performance-bonds/verify-time-lock-multi-reward-performance-bond-events'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {divideBigNumberish} from '../../framework/maths'
 import {ContractReceipt} from '@ethersproject/contracts/src.ts'

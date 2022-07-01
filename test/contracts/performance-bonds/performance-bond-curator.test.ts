@@ -16,20 +16,20 @@ import {
 import {deployContract, execute, signer} from '../../framework/contracts'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {successfulTransaction} from '../../framework/transaction'
-import {erc20SingleCollateralPerformanceBondContractAt} from '../../event/performance-bond/single-collateral-performance-bond-contract'
+import {erc20SingleCollateralPerformanceBondContractAt} from '../../event/performance-bonds/single-collateral-performance-bond-contract'
 import {events} from '../../framework/events'
 import {
     DAO_ADMIN,
     DAO_MEEPLE,
     SYSTEM_ADMIN
-} from '../../event/performance-bond/roles'
-import {accessControlRevertMessageMissingGlobalRole} from '../../event/performance-bond/access-control-messages'
+} from '../../event/performance-bonds/roles'
+import {accessControlRevertMessageMissingGlobalRole} from '../../event/performance-bonds/access-control-messages'
 import {
     ExpectedAddBondEvent,
     verifyAddPerformanceBondEvents,
     verifyAddPerformanceBondLogEvents
-} from '../../event/performance-bond/verify-performance-bond-curator-events'
-import {createPerformanceBondEvents} from '../../event/performance-bond/performance-bond-creator-events'
+} from '../../event/performance-bonds/verify-performance-bond-curator-events'
+import {createPerformanceBondEvents} from '../../event/performance-bonds/performance-bond-creator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
