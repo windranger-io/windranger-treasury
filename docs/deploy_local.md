@@ -25,7 +25,7 @@ export TOKEN_SWEEP_BENEFICIARY=${EnterYourAddressHere}
 
 #### Performance Bonds
 ```shell
-npx hardhat run ./scripts/deploy/deploy-all-no-etherscan.ts --network localhost
+npx hardhat run ./scripts/deploy/deploy-all-no-etherscan.ts --network local
 ```
 
 #### Environment Variables needed for Verify
