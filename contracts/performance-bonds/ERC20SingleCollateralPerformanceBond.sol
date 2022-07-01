@@ -3,7 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+
 import "./ExpiryTimestamp.sol";
 import "./SingleCollateralPerformanceBond.sol";
 import "./MetaDataStore.sol";
@@ -33,6 +35,8 @@ abstract contract ERC20SingleCollateralPerformanceBond is
     SweepERC20,
     Version
 {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+
     struct Slash {
         string reason;
         uint256 collateralAmount;
@@ -145,11 +149,10 @@ abstract contract ERC20SingleCollateralPerformanceBond is
             _msgSender()
         );
 
-        bool transferred = IERC20Upgradeable(_collateralTokens).transfer(
+        IERC20Upgradeable(_collateralTokens).safeTransfer(
             _treasury,
             collateralBalance
         );
-        require(transferred, "Bond: collateral transfer failed");
 
         _pauseSafely();
     }
@@ -184,11 +187,10 @@ abstract contract ERC20SingleCollateralPerformanceBond is
 
         // Slashing can reduce redemption amount to zero
         if (redemptionAmount > 0) {
-            bool transferred = IERC20Upgradeable(_collateralTokens).transfer(
+            IERC20Upgradeable(_collateralTokens).safeTransfer(
                 _msgSender(),
                 redemptionAmount
             );
-            require(transferred, "Bond: collateral transfer failed");
         }
     }
 
@@ -213,11 +215,7 @@ abstract contract ERC20SingleCollateralPerformanceBond is
 
         _slashes.push(Slash(reason, amount));
 
-        bool transferred = IERC20Upgradeable(_collateralTokens).transfer(
-            _treasury,
-            amount
-        );
-        require(transferred, "Bond: collateral transfer failed");
+        IERC20Upgradeable(_collateralTokens).safeTransfer(_treasury, amount);
     }
 
     function setMetaData(string calldata data)
@@ -268,11 +266,10 @@ abstract contract ERC20SingleCollateralPerformanceBond is
             _msgSender()
         );
 
-        bool transferred = IERC20Upgradeable(_collateralTokens).transfer(
+        IERC20Upgradeable(_collateralTokens).safeTransfer(
             _treasury,
             collateralBalance
         );
-        require(transferred, "Bond: collateral transfer failed");
     }
 
     /**
@@ -445,12 +442,11 @@ abstract contract ERC20SingleCollateralPerformanceBond is
 
         emit Deposit(_msgSender(), _collateralTokens, amount);
 
-        bool transferred = IERC20Upgradeable(_collateralTokens).transferFrom(
+        IERC20Upgradeable(_collateralTokens).safeTransferFrom(
             _msgSender(),
             address(this),
             amount
         );
-        require(transferred, "Bond: collateral transfer failed");
 
         emit DebtIssue(_msgSender(), address(this), amount);
 

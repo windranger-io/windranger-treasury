@@ -4,11 +4,14 @@ pragma solidity ^0.8.0;
 import "./TokenSweep.sol";
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 /**
  * @title Adds the ability to sweep ERC20 tokens to a beneficiary address
  */
 abstract contract SweepERC20 is TokenSweep {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+
     event ERC20Sweep(
         address indexed beneficiary,
         address indexed tokens,
@@ -28,10 +31,6 @@ abstract contract SweepERC20 is TokenSweep {
 
         emit ERC20Sweep(tokenSweepBeneficiary(), tokens, amount, _msgSender());
 
-        bool result = IERC20Upgradeable(tokens).transfer(
-            tokenSweepBeneficiary(),
-            amount
-        );
-        require(result, "SweepERC20: transfer failed");
+        IERC20Upgradeable(tokens).safeTransfer(tokenSweepBeneficiary(), amount);
     }
 }
