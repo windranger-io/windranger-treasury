@@ -13,11 +13,11 @@ export async function deployPerformanceBonds(
     tokenSweepBeneficiary: string
 ): Promise<void> {
     const factory = await deployContract<PerformanceBondFactory>(
-        'BondFactory',
+        'PerformanceBondFactory',
         tokenSweepBeneficiary
     )
     const mediator = await deployContractWithProxy<PerformanceBondMediator>(
-        'BondMediator',
+        'PerformanceBondMediator',
         factory.address,
         tokenSweepBeneficiary
     )
