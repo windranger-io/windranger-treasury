@@ -35,18 +35,18 @@ import {
     verifySlashDepositEvents,
     verifyWithdrawCollateralEventLogs,
     verifyWithdrawCollateralEvents
-} from '../../event/performance-bond/verify-single-collateral-performance-bond-events'
+} from '../../event/performance-bonds/verify-single-collateral-performance-bond-events'
 import {verifyERC20TransferEvents} from '../../event/erc20/verify-erc20-events'
 import {
     ExpectedMetaDataUpdateEvent,
     verifyMetaDataUpdateEvents,
     verifyMetaDataUpdateLogEvents
-} from '../../event/performance-bond/verify-meta-data-store-events'
+} from '../../event/performance-bonds/verify-meta-data-store-events'
 import {
     ExpectedRedeemableUpdateEvent,
     verifyRedeemableEvents,
     verifyRedeemableUpdateLogEvents
-} from '../../event/performance-bond/verify-redeemable-events'
+} from '../../event/performance-bonds/verify-redeemable-events'
 import {
     verifyBeneficiaryUpdateEvents,
     verifyBeneficiaryUpdateLogEvents

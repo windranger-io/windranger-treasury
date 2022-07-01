@@ -36,8 +36,8 @@ import {
     ExpectCreatePerformanceBondEvent,
     verifyCreatePerformanceBondEventLogs,
     verifyCreatePerformanceBondEvents
-} from '../../event/performance-bond/verify-performance-bond-creator-events'
-import {createPerformanceBondEvents} from '../../event/performance-bond/performance-bond-creator-events'
+} from '../../event/performance-bonds/verify-performance-bond-creator-events'
+import {createPerformanceBondEvents} from '../../event/performance-bonds/performance-bond-creator-events'
 
 // Wires up Waffle with Chai
 chai.use(solidity)
