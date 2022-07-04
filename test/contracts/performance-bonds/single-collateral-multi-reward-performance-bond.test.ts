@@ -201,16 +201,10 @@ describe('Single Collateral TimeLock Multi Reward Performance Bond contract', ()
                 bond.connect(guarantor).deposit(pledge)
             )
 
-            const rewardOne = divideBigNumberish(
-                await rewardPools[0].amount,
-                divisor
-            )
-            const rewardTwo = divideBigNumberish(
-                await rewardPools[1].amount,
-                divisor
-            )
+            const rewardOne = divideBigNumberish(rewardPools[0].amount, divisor)
+            const rewardTwo = divideBigNumberish(rewardPools[1].amount, divisor)
             const rewardThree = divideBigNumberish(
-                await rewardPools[2].amount,
+                rewardPools[2].amount,
                 divisor
             )
             expect(
@@ -225,19 +219,19 @@ describe('Single Collateral TimeLock Multi Reward Performance Bond contract', ()
 
             verifyRewardDebtEvents(receipt, [
                 {
-                    tokens: await rewardPools[0].tokens,
+                    tokens: rewardPools[0].tokens,
                     claimant: guarantor.address,
                     rewardDebt: rewardOne,
                     instigator: guarantor.address
                 },
                 {
-                    tokens: await rewardPools[1].tokens,
+                    tokens: rewardPools[1].tokens,
                     claimant: guarantor.address,
                     rewardDebt: rewardTwo,
                     instigator: guarantor.address
                 },
                 {
-                    tokens: await rewardPools[2].tokens,
+                    tokens: rewardPools[2].tokens,
                     claimant: guarantor.address,
                     rewardDebt: rewardThree,
                     instigator: guarantor.address
@@ -273,7 +267,7 @@ describe('Single Collateral TimeLock Multi Reward Performance Bond contract', ()
 
             const expectedEvents: ExpectedRewardTimeLockUpdateEvent[] = [
                 {
-                    tokens: await rewardPools[1].tokens,
+                    tokens: rewardPools[1].tokens,
                     timeLock: updatedTimeLock,
                     instigator: admin.address
                 }
@@ -479,37 +473,37 @@ describe('Single Collateral TimeLock Multi Reward Performance Bond contract', ()
 
                 const expectedRewardDebtEvents: ExpectedRewardDebtEvent[] = [
                     {
-                        tokens: await rewardPools[0].tokens,
+                        tokens: rewardPools[0].tokens,
                         claimant: guarantor.address,
                         rewardDebt: 0n,
                         instigator: guarantor.address
                     },
                     {
-                        tokens: await rewardPools[1].tokens,
+                        tokens: rewardPools[1].tokens,
                         claimant: guarantor.address,
                         rewardDebt: 0n,
                         instigator: guarantor.address
                     },
                     {
-                        tokens: await rewardPools[2].tokens,
+                        tokens: rewardPools[2].tokens,
                         claimant: guarantor.address,
                         rewardDebt: 0n,
                         instigator: guarantor.address
                     },
                     {
-                        tokens: await rewardPools[0].tokens,
+                        tokens: rewardPools[0].tokens,
                         claimant: debtPurchaser,
                         rewardDebt: rewardOne.toBigInt(),
                         instigator: guarantor.address
                     },
                     {
-                        tokens: await rewardPools[1].tokens,
+                        tokens: rewardPools[1].tokens,
                         claimant: debtPurchaser,
                         rewardDebt: rewardTwo.toBigInt(),
                         instigator: guarantor.address
                     },
                     {
-                        tokens: await rewardPools[2].tokens,
+                        tokens: rewardPools[2].tokens,
                         claimant: debtPurchaser,
                         rewardDebt: rewardThree.toBigInt(),
                         instigator: guarantor.address

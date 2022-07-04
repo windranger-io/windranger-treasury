@@ -97,28 +97,28 @@ describe('TimeLockMultiRewardPerformanceBond contract', () => {
 
             const expectedRewardDebtEvents: ExpectedRewardDebtEvent[] = [
                 {
-                    tokens: await rewardPools[0].tokens,
+                    tokens: rewardPools[0].tokens,
                     claimant: claimant.address,
                     rewardDebt: divideBigNumberish(
-                        await rewardPools[0].amount,
+                        rewardPools[0].amount,
                         totalSupplyDivisor
                     ),
                     instigator: claimant.address
                 },
                 {
-                    tokens: await rewardPools[1].tokens,
+                    tokens: rewardPools[1].tokens,
                     claimant: claimant.address,
                     rewardDebt: divideBigNumberish(
-                        await rewardPools[1].amount,
+                        rewardPools[1].amount,
                         totalSupplyDivisor
                     ),
                     instigator: claimant.address
                 },
                 {
-                    tokens: await rewardPools[2].tokens,
+                    tokens: rewardPools[2].tokens,
                     claimant: claimant.address,
                     rewardDebt: divideBigNumberish(
-                        await rewardPools[2].amount,
+                        rewardPools[2].amount,
                         totalSupplyDivisor
                     ),
                     instigator: claimant.address
@@ -170,7 +170,7 @@ describe('TimeLockMultiRewardPerformanceBond contract', () => {
                     {
                         tokens: rewardPools[0].tokens,
                         amount: divideBigNumberish(
-                            await rewardPools[0].amount,
+                            rewardPools[0].amount,
                             totalSupplyDivisor
                         )
                     },
@@ -181,7 +181,7 @@ describe('TimeLockMultiRewardPerformanceBond contract', () => {
                     {
                         tokens: rewardPools[2].tokens,
                         amount: divideBigNumberish(
-                            await rewardPools[2].amount,
+                            rewardPools[2].amount,
                             totalSupplyDivisor
                         )
                     }
@@ -210,15 +210,15 @@ describe('TimeLockMultiRewardPerformanceBond contract', () => {
         it('two unlocked rewards', async () => {
             const totalSupplyDivisor = 20n
             const expectedRewardTokenOne = divideBigNumberish(
-                await rewardPools[0].amount,
+                rewardPools[0].amount,
                 totalSupplyDivisor
             )
             const expectedRewardTokenTwo = divideBigNumberish(
-                await rewardPools[1].amount,
+                rewardPools[1].amount,
                 totalSupplyDivisor
             )
             const expectedRewardTokenThree = divideBigNumberish(
-                await rewardPools[2].amount,
+                rewardPools[2].amount,
                 totalSupplyDivisor
             )
             await claimantDebt(totalSupplyDivisor)
@@ -306,19 +306,19 @@ describe('TimeLockMultiRewardPerformanceBond contract', () => {
 
         const expectedEvents: ExpectedRegisterRewardEvent[] = [
             {
-                tokens: await rewardPools[0].tokens,
+                tokens: rewardPools[0].tokens,
                 amount: BigNumber.from(rewardPools[0].amount).toBigInt(),
                 timeLock: BigNumber.from(rewardPools[0].timeLock).toBigInt(),
                 instigator: admin.address
             },
             {
-                tokens: await rewardPools[1].tokens,
+                tokens: rewardPools[1].tokens,
                 amount: BigNumber.from(rewardPools[1].amount).toBigInt(),
                 timeLock: BigNumber.from(rewardPools[1].timeLock).toBigInt(),
                 instigator: admin.address
             },
             {
-                tokens: await rewardPools[2].tokens,
+                tokens: rewardPools[2].tokens,
                 amount: BigNumber.from(rewardPools[2].amount).toBigInt(),
                 timeLock: BigNumber.from(rewardPools[2].timeLock).toBigInt(),
                 instigator: admin.address
