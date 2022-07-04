@@ -66,8 +66,13 @@ describe('Staking Pool Factory', () => {
             'Another erc20 Token',
             symbol
         )
-        stakingPoolFactory = await deployContract('StakingPoolFactory')
-        await stakingPoolFactory.initialize(treasury)
+
+        // eslint-disable-next-line no-console
+        console.log('deploying facotry')
+        stakingPoolFactory = await deployContract<StakingPoolFactory>(
+            'StakingPoolFactory',
+            treasury
+        )
         epochStartTimestamp = BigNumber.from(
             (await getTimestampNow()) + START_DELAY
         )
@@ -80,22 +85,11 @@ describe('Staking Pool Factory', () => {
     describe('ERC20 token sweep', () => {
         it('init', async () => {
             const stakingPoolFactory = await deployContract<StakingPoolFactory>(
-                'StakingPoolFactory'
-            )
-
-            const receipt = await successfulTransaction(
-                stakingPoolFactory.initialize(treasury)
-            )
-
-            expect(await stakingPoolFactory.tokenSweepBeneficiary()).equals(
+                'StakingPoolFactory',
                 treasury
             )
-            const expectedEvents = [{beneficiary: treasury, instigator: admin}]
-            verifyBeneficiaryUpdateEvents(receipt, expectedEvents)
-            verifyBeneficiaryUpdateLogEvents(
-                stakingPoolFactory,
-                receipt,
-                expectedEvents
+            expect(await stakingPoolFactory.tokenSweepBeneficiary()).equals(
+                treasury
             )
         })
 
