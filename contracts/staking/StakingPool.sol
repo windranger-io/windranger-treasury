@@ -41,6 +41,7 @@ contract StakingPool is
     }
 
     mapping(address => User) private _users;
+    mapping(address => bool) private _supportedRewards;
 
     uint32 private _rewardsAvailableTimestamp;
     bool private _emergencyMode;
@@ -398,6 +399,7 @@ contract StakingPool is
         address benefactor,
         StakingPoolLib.Reward[] calldata _rewardTokens
     ) internal {
+        _enforceUniqueRewardTokens(_rewardTokens);
         for (uint256 i = 0; i < _rewardTokens.length; i++) {
             emit InitializeRewards(
                 address(_rewardTokens[i].tokens),
@@ -479,11 +481,24 @@ contract StakingPool is
         _transferStake(currentDepositBalance, _config.stakeToken);
     }
 
+    function _isRewardsAvailable() internal view returns (bool) {
+        //slither-disable-next-line timestamp
+        return block.timestamp >= _rewardsAvailableTimestamp;
+    }
+
+    function _isStakingPeriodComplete() internal view returns (bool) {
+        //slither-disable-next-line timestamp
+        return
+            block.timestamp >=
+            (_stakingPoolConfig.epochStartTimestamp +
+                _stakingPoolConfig.epochDuration);
+    }
+
     function _calculateRewardAmount(
         StakingPoolLib.Config memory _config,
         User memory _user,
         uint256 rewardIndex
-    ) internal view returns (uint256) {
+    ) internal pure returns (uint256) {
         if (_config.rewardType == StakingPoolLib.RewardType.FIXED) {
             return _user.rewardAmounts[rewardIndex];
         }
@@ -502,19 +517,6 @@ contract StakingPool is
                 );
         }
         return 0;
-    }
-
-    function _isRewardsAvailable() internal view returns (bool) {
-        //slither-disable-next-line timestamp
-        return block.timestamp >= _rewardsAvailableTimestamp;
-    }
-
-    function _isStakingPeriodComplete() internal view returns (bool) {
-        //slither-disable-next-line timestamp
-        return
-            block.timestamp >=
-            (_stakingPoolConfig.epochStartTimestamp +
-                _stakingPoolConfig.epochDuration);
     }
 
     function _calculateFloatingReward(
@@ -591,17 +593,14 @@ contract StakingPool is
      */
     function _enforceUniqueRewardTokens(
         StakingPoolLib.Reward[] calldata rewardPools
-    ) private pure {
+    ) private {
         for (uint256 i = 0; i < rewardPools.length; i++) {
-            // Ensure no later entries contain the same tokens address
-            uint256 next = i + 1;
-            if (next < rewardPools.length) {
-                for (uint256 j = next; j < rewardPools.length; j++) {
-                    if (rewardPools[i].tokens == rewardPools[j].tokens) {
-                        revert("Rewards: tokens must be unique");
-                    }
-                }
-            }
+            // Ensure no prev entries contain the same tokens address
+            require(
+                !_supportedRewards[address(rewardPools[i].tokens)],
+                "StakePool: tokens must be unique"
+            );
+            _supportedRewards[address(rewardPools[i].tokens)] = true;
         }
     }
 }

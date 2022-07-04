@@ -31,7 +31,7 @@ task('blockNumber', 'Prints the current block number', async (_, {ethers}) => {
  * You need to export an object to set up your config
  * Go to https://hardhat.org/config/ to learn more
  *
- * At time of authoring 0.8.4 was the latest version supported by Hardhat
+ * At time of authoring 0.8.9 was the latest version supported by Hardhat
  */
 export default {
     networks: {
@@ -45,6 +45,13 @@ export default {
             chainId: 33133,
             allowUnlimitedContractSize: true,
             loggingEnabled: true
+        },
+        remote: {
+            url: process.env.RPC_ENDPOINT_URL || '',
+            accounts:
+                process.env.DEPLOYER_PRIVATE_KEY === undefined
+                    ? []
+                    : [process.env.DEPLOYER_PRIVATE_KEY]
         }
     },
     solidity: {
@@ -59,7 +66,7 @@ export default {
                 }
             },
             {
-                version: '0.8.4',
+                version: '0.8.9',
                 settings: {
                     optimizer: {
                         enabled: true,
@@ -70,7 +77,7 @@ export default {
         ]
     },
     etherscan: {
-        apiKey: ''
+        apiKey: process.env.ETHERSCAN_API_KEY || ''
     },
     contractSizer: {
         alphaSort: true,
