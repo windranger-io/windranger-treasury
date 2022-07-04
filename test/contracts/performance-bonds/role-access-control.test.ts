@@ -958,6 +958,16 @@ describe('Role Access Control contract', () => {
                     )
                 )
             })
+
+            it('not all Super Users', async () => {
+                await ensureSuperUserRoleMembershipMissing(memberOne)
+                await ensureSuperUserRoleMembershipMissing(memberTwo)
+                await expect(
+                    accessControl
+                        .connect(superUser)
+                        .revokeSuperUserRole(superUser.address)
+                ).to.be.revertedWith('RAC: no revoking last SuperUser')
+            })
         })
 
         before(async () => {
