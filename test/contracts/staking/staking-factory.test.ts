@@ -67,8 +67,6 @@ describe('Staking Pool Factory', () => {
             symbol
         )
 
-        // eslint-disable-next-line no-console
-        console.log('deploying facotry')
         stakingPoolFactory = await deployContract<StakingPoolFactory>(
             'StakingPoolFactory',
             treasury
