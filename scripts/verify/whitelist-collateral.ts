@@ -1,5 +1,5 @@
 import {ethers} from 'hardhat'
-import {BondMediator} from '../../typechain-types'
+import {PerformanceBondMediator} from '../../typechain-types'
 import {log} from '../../config/logging'
 import {
     addressEnvironmentVariable,
@@ -13,7 +13,7 @@ async function whitelistCollateral(
     collateralTokens: string
 ) {
     const factory = await ethers.getContractFactory('BondMediator')
-    const contract = <BondMediator>factory.attach(mediatorAddress)
+    const contract = <PerformanceBondMediator>factory.attach(mediatorAddress)
 
     log.info('Whitelisting ERC20 token collateral')
 

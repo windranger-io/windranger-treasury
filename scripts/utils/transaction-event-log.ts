@@ -1,5 +1,5 @@
 import {ContractReceipt, Event} from 'ethers'
-import {createBondEventLogs} from '../../test/event/bond/bond-creator-events'
+import {createPerformanceBondEventLogs} from '../../test/event/performance-bonds/performance-bond-creator-events'
 import {eventLog} from '../../test/framework/event-logs'
 import {log} from '../../config/logging'
 import {BondFactory} from '../../typechain-types'
@@ -21,7 +21,7 @@ export function logCreateBondEvents(
     emitter: BondFactory,
     receipt: ContractReceipt
 ): void {
-    const createBondEvents = createBondEventLogs(
+    const createBondEvents = createPerformanceBondEventLogs(
         eventLog('CreateBond', emitter, receipt)
     )
 

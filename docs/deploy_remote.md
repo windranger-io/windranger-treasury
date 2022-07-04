@@ -1,37 +1,44 @@
-# Local contract deploy
-Run a local JSON-RPC node, build, deploy and verify the contracts execute
-as expected.
-
-## Start a node
-Start a local JSON-RPC node with Hardhat.
-```shell
-npx hardhat node
-```
+# Remote contract deploy
+Build, deploy and verify the contracts execute as expected to a remote RPC endpoint e.g. Pre-production or production.
 
 ## Deploy contracts
-Contracts are best deployed to a local Hardhat JSON-RPC node with scripts.
+Contracts are best deployed using the deploy scripts.
 
-### Local Environment 
-A JSON-RPC node running locally, with no Etherscan service available.
-
-The following environment variables:
+### Deployment Environment
+Set the following environment variables:
 - `${TOKEN_SWEEP_BENEFICIARY}`: Address that will receive ERC20 tokens from any sweep performed.
+- `${RPC_ENDPOINT_URL}`: The URL for the Web3 endpoint to use when deploying and accessing the contracts.
+- `${DEPLOYER_PRIVATE_KEY}` : Private key for the account to use (and pay with) when deploying contracts.
+- `${ETHERSCAN_API_KEY}` : API key to use when verifying the deployed contracts with Etherscan.
 
 ##### MacOS
 Set the temporary environment variables by substituting `EnterYourAddressHere` with a valid Ethereum address (EoA or Contract).
 ```shell
 export TOKEN_SWEEP_BENEFICIARY=${EnterYourAddressHere}
+export RPC_ENDPOINT_URL=${EnterTheRpcEndpointHere}
+export DEPLOYER_PRIVATE_KEY=[${EnterYourPrivateKeyHere}]
+export ETHERSCAN_API_KEY=${EtherYourApiKey}
 ```
 
 #### Performance Bonds
 ```shell
-npx hardhat run ./scripts/deploy/deploy-all-no-etherscan.ts --network local
+npx hardhat run ./scripts/deploy/deploy-all.ts --network remote
 ```
+
+#### Optional - BitDAO Token
+_In production (Mainnet) existing ERC20 token contract should be used_
+
+As verify scripts require a collateral token, for which the BIT token contract may be used.
+
+```shell
+npx hardhat run ./scripts/deploy/bitdao-deploy-no-etherscan.ts --network remote
+```
+
 
 #### Environment Variables needed for Verify
 
 The terminal running the JSON-RPC node will output the contract addresses, these are needed for later:
-- `${BondMediator}` : Performance Bond Mediator contract address. 
+- `${BondMediator}` : Performance Bond Mediator contract address.
 - `${BondFactory}` : Performance Bond Factory contract address.
 - `${BitToken}` : Collateral token contract address (BIT).
 - `${Treausy}` : Any valid address to use as the treasury.
@@ -40,7 +47,7 @@ The terminal running the JSON-RPC node will output the contract addresses, these
 Check the contract deployment and operation with the test scripts.
 
 ### Performance Bonds
-Before any Bonds can be created, a number of setup steps are needed.
+Before any Performance Bonds can be created, a number of setup steps are needed.
 
 ##### MacOS
 Set the temporary environment variables by substituting the value running the lines in your terminal.
@@ -56,7 +63,7 @@ All Performance Bond operations occur within the scope of a DAO.
 
 The script creates a new DAO using `BOND_MEDIATOR_CONTRACT` and `TREASURY_ADDRESS`
 ```shell
-npx hardhat run ./scripts/verify/create-dao.ts --network localhost
+npx hardhat run ./scripts/verify/create-dao.ts --network remote
 ```
 
 Note the `BigNumber` values from the `CreateDao` event, convert from hex to decimal and that is the DAO id.
@@ -72,7 +79,7 @@ Only whitelisted tokens are accepted as collateral.
 
 The script whitelists the value of the environment variable `COLLATERAL_TOKENS_CONTRACT` with the `BOND_MEDIATOR_CONTRACT`.
 ```shell
-npx hardhat run ./scripts/verify/whitelist-collateral.ts --network localhost
+npx hardhat run ./scripts/verify/whitelist-collateral.ts --network remote
 ```
 
 #### Create a Performance Bond
@@ -80,5 +87,5 @@ A Performance Bond managed within the scope of a DAO.
 
 The script creates a bond using the environment variables `BOND_MEDIATOR_CONTRACT`, `BOND_FACTORY_CONTRACT` and `DAO_ID`
 ```shell
-npx hardhat run ./scripts/verify/create-managed-bond.ts --network localhost
+npx hardhat run ./scripts/verify/create-managed-bond.ts --network remote
 ```

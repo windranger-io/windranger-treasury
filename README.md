@@ -80,27 +80,13 @@ To have the JSON logging output into a more human-readable form, pipe the stdout
 npx hardhat accounts | npx bunyan
 ```
 
-## Sequence Diagram Rendering
-
-To create or update the renders for the Plant UML sequence diagrams
-
-#### Ensure Java is installed
-
-```shell
-java -version
-```
-
-The output will vary depending on OS, however if it fails claiming Java is not found, then you must install before proceeding.
-
-#### Generate renders for all Plant UML documents under `docs/spec`
-
-```shell
-npm run plant
-```
-
 ## Deploy & Test contracts locally
 
-The contracts can be deployed locally and their behaviour verified [using our scripts](./docs/deploy_local.md)
+The contracts can be deployed locally and their behaviour verified using our [local deploy scripts](./docs/deploy_local.md)
+
+## Deploy & Test contracts on a RPC endpoint
+
+The contracts can be deployed locally and their behaviour verified using our [remote deploy scripts](./docs/deploy_remote.md)
 
 ## Solidity Static Analysis
 

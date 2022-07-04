@@ -1,4 +1,7 @@
-import {BondFactory, BondMediator} from '../../typechain-types'
+import {
+    PerformanceBondMediator,
+    PerformanceBondFactory
+} from '../../typechain-types'
 import {
     awaitContractPropagation,
     deployContract,
@@ -9,18 +12,21 @@ import {
 export async function deployPerformanceBonds(
     tokenSweepBeneficiary: string
 ): Promise<void> {
-    const factory = await deployContract<BondFactory>(
-        'BondFactory',
+    const factory = await deployContract<PerformanceBondFactory>(
+        'PerformanceBondFactory',
         tokenSweepBeneficiary
     )
-    const mediator = await deployContractWithProxy<BondMediator>(
-        'BondMediator',
+    const mediator = await deployContractWithProxy<PerformanceBondMediator>(
+        'PerformanceBondMediator',
         factory.address,
         tokenSweepBeneficiary
     )
 
     await awaitContractPropagation()
 
-    await verifyContract<BondFactory>(factory)
-    await verifyContract<BondMediator>(mediator)
+    await verifyContract<PerformanceBondFactory>(factory, tokenSweepBeneficiary)
+    await verifyContract<PerformanceBondMediator>(
+        mediator,
+        tokenSweepBeneficiary
+    )
 }

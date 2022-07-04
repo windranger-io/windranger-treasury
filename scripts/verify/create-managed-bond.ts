@@ -1,5 +1,8 @@
 import {ethers} from 'hardhat'
-import {BondFactory, BondMediator} from '../../typechain-types'
+import {
+    PerformanceBondFactory,
+    PerformanceBondMediator
+} from '../../typechain-types'
 import {log} from '../../config/logging'
 import {
     addressEnvironmentVariable,
@@ -14,14 +17,18 @@ async function createManagedBond(
     collateralTokensAddress: string
 ): Promise<void> {
     const mediatorFactory = await ethers.getContractFactory('BondMediator')
-    const mediator = <BondMediator>mediatorFactory.attach(mediatorAddress)
+    const mediator = <PerformanceBondMediator>(
+        mediatorFactory.attach(mediatorAddress)
+    )
 
     const creatorFactory = await ethers.getContractFactory('BondFactory')
-    const creator = <BondFactory>creatorFactory.attach(creatorAddress)
+    const creator = <PerformanceBondFactory>(
+        creatorFactory.attach(creatorAddress)
+    )
 
     log.info('Creating a new managed bond')
 
-    const transaction = await mediator.createManagedBond(
+    const transaction = await mediator.createManagedPerformanceBond(
         BigInt(daoId),
         {
             name: 'Name for testing',
