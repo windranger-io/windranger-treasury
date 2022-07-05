@@ -1,19 +1,21 @@
 import {ethers} from 'hardhat'
-import {PerformanceBondMediator} from '../../typechain-types'
-import {log} from '../../config/logging'
 import {
-    addressEnvironmentVariable,
-    bigintEnvironmentVariable
-} from '../utils/environment-variable'
+    PerformanceBondMediator,
+    StakingPoolMediator
+} from '../../typechain-types'
+import {log} from '../../config/logging'
 import {logEvents} from '../utils/transaction-event-log'
 
-async function whitelistCollateral(
+export async function whitelistCollateral(
     mediatorAddress: string,
     daoId: bigint,
-    collateralTokens: string
+    collateralTokens: string,
+    mediatorType: string
 ) {
-    const factory = await ethers.getContractFactory('BondMediator')
-    const contract = <PerformanceBondMediator>factory.attach(mediatorAddress)
+    const factory = await ethers.getContractFactory(mediatorType)
+    const contract = <StakingPoolMediator | PerformanceBondMediator>(
+        factory.attach(mediatorAddress)
+    )
 
     log.info('Whitelisting ERC20 token collateral')
 
@@ -28,18 +30,3 @@ async function whitelistCollateral(
 
     logEvents(receipt)
 }
-
-async function main(): Promise<void> {
-    const mediator = addressEnvironmentVariable('BOND_MEDIATOR_CONTRACT')
-    const collateral = addressEnvironmentVariable('COLLATERAL_TOKENS_CONTRACT')
-    const daoId = bigintEnvironmentVariable('DAO_ID')
-
-    return whitelistCollateral(mediator, daoId, collateral)
-}
-
-main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-        log.error(error)
-        process.exit(1)
-    })
