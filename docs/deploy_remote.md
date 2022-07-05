@@ -75,7 +75,7 @@ All Performance Bond operations occur within the scope of a DAO.
 
 The script creates a new DAO using `BOND_MEDIATOR_CONTRACT` and `TREASURY_ADDRESS`
 ```shell
-npx hardhat run ./scripts/verify/create-dao.ts --network remote
+npx hardhat run ./scripts/verify/create-bond-dao.ts --network remote
 ```
 
 Note the `BigNumber` values from the `CreateDao` event, convert from hex to decimal and that is the DAO id.

@@ -5,7 +5,7 @@ import {
     addressEnvironmentVariable,
     bigintEnvironmentVariable
 } from '../utils/environment-variable'
-import {logCreateBondEvents} from '../utils/transaction-event-log'
+import {logCreateStakingPoolEvents} from '../utils/transaction-event-log'
 import {getTimestampNow} from '../../test/framework/time'
 import {RewardType} from '../../test/event/staking/staking-events'
 
@@ -36,7 +36,7 @@ async function createManagedStakingPool(
         epochDuration: 100,
         epochStartTimestamp: await getTimestampNow(),
         emergencyMode: false,
-        treasury: creatorAddress, // is this correct? todo
+        treasury: creatorAddress, // todo: is this correct?
         stakeToken: collateralTokensAddress,
         rewardType: RewardType.FLOATING,
         rewardTokens: []
@@ -52,7 +52,7 @@ async function createManagedStakingPool(
 
     log.info('Transaction complete with status %s', receipt.status)
 
-    logCreateBondEvents(creator, receipt)
+    logCreateStakingPoolEvents(creator, receipt)
 }
 
 async function main(): Promise<void> {

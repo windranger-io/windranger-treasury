@@ -24,6 +24,7 @@ export async function createDao(
     const receipt = await transaction.wait()
 
     log.info('Transaction complete with status %s', receipt.status)
+    log.info(receipt)
 
     logEvents(receipt)
 }

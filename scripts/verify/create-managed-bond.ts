@@ -16,12 +16,16 @@ async function createManagedBond(
     daoId: bigint,
     collateralTokensAddress: string
 ): Promise<void> {
-    const mediatorFactory = await ethers.getContractFactory('BondMediator')
+    const mediatorFactory = await ethers.getContractFactory(
+        'PerformanceBondMediator'
+    )
     const mediator = <PerformanceBondMediator>(
         mediatorFactory.attach(mediatorAddress)
     )
 
-    const creatorFactory = await ethers.getContractFactory('BondFactory')
+    const creatorFactory = await ethers.getContractFactory(
+        'PerformanceBondFactory'
+    )
     const creator = <PerformanceBondFactory>(
         creatorFactory.attach(creatorAddress)
     )
@@ -52,6 +56,7 @@ async function createManagedBond(
 
     const receipt = await transaction.wait()
 
+    log.info(receipt)
     log.info('Transaction complete with status %s', receipt.status)
 
     logCreateBondEvents(creator, receipt)
