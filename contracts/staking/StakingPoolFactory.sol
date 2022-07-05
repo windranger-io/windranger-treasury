@@ -29,6 +29,12 @@ contract StakingPoolFactory is
         StakingPoolLib.RewardType rewardType
     );
 
+    constructor(address beneficiary) initializer {
+        __Pausable_init();
+        __Ownable_init();
+        __TokenSweep_init(beneficiary);
+    }
+
     function pause() external whenNotPaused onlyOwner {
         _pause();
     }
@@ -65,12 +71,6 @@ contract StakingPoolFactory is
         stakingPool.transferOwnership(_msgSender());
 
         return address(stakingPool);
-    }
-
-    function initialize(address beneficiary) external initializer {
-        __Pausable_init();
-        __Ownable_init();
-        __TokenSweep_init(beneficiary);
     }
 
     function updateTokenSweepBeneficiary(address newBeneficiary)
