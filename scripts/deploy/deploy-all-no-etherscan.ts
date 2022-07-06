@@ -3,6 +3,7 @@ import {log} from '../../config/logging'
 import {deployBitDao} from './bitdao-deploy-no-etherscan'
 import {deployPerformanceBonds} from './bond-deploy-no-etherscan'
 import {addressEnvironmentVariable} from '../utils/environment-variable'
+import {deployStakingPool} from './staking-pool-deploy-no-etherscan'
 
 async function main() {
     const tokenSweepBeneficiary = addressEnvironmentVariable(
@@ -11,6 +12,7 @@ async function main() {
     await run('compile')
     await deployBitDao()
     await deployPerformanceBonds(tokenSweepBeneficiary)
+    await deployStakingPool(tokenSweepBeneficiary)
 }
 
 main()

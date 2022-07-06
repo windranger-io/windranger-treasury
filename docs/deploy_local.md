@@ -33,6 +33,8 @@ npx hardhat run ./scripts/deploy/deploy-all-no-etherscan.ts --network local
 The terminal running the JSON-RPC node will output the contract addresses, these are needed for later:
 - `${BondMediator}` : Performance Bond Mediator contract address. 
 - `${BondFactory}` : Performance Bond Factory contract address.
+- `${StakingPoolMediator}` : Staking Pool Mediator contract address.
+- `${StakingPoolFactory}` : Staking Pool Factory contract address.
 - `${BitToken}` : Collateral token contract address (BIT).
 - `${Treausy}` : Any valid address to use as the treasury.
 
@@ -56,7 +58,7 @@ All Performance Bond operations occur within the scope of a DAO.
 
 The script creates a new DAO using `BOND_MEDIATOR_CONTRACT` and `TREASURY_ADDRESS`
 ```shell
-npx hardhat run ./scripts/verify/create-dao.ts --network localhost
+npx hardhat run ./scripts/verify/create-bond-dao.ts
 ```
 
 Note the `BigNumber` values from the `CreateDao` event, convert from hex to decimal and that is the DAO id.
@@ -72,7 +74,7 @@ Only whitelisted tokens are accepted as collateral.
 
 The script whitelists the value of the environment variable `COLLATERAL_TOKENS_CONTRACT` with the `BOND_MEDIATOR_CONTRACT`.
 ```shell
-npx hardhat run ./scripts/verify/whitelist-collateral.ts --network localhost
+npx hardhat run ./scripts/verify/whitelist-bond-collateral.ts 
 ```
 
 #### Create a Performance Bond
@@ -80,5 +82,49 @@ A Performance Bond managed within the scope of a DAO.
 
 The script creates a bond using the environment variables `BOND_MEDIATOR_CONTRACT`, `BOND_FACTORY_CONTRACT` and `DAO_ID`
 ```shell
-npx hardhat run ./scripts/verify/create-managed-bond.ts --network localhost
+npx hardhat run ./scripts/verify/create-managed-bond.ts --network local
+```
+
+### Staking Pool
+Before any Staking Pools can be created, a number of setup steps are needed.
+
+##### MacOS
+Set the temporary environment variables by substituting the value running the lines in your terminal.
+```shell
+export STAKING_POOL_MEDIATOR_ADDRESS=${StakingPoolMediator}
+export STAKING_POOL_FACTORY_ADDRESS=${StakingPoolFactory}
+export COLLATERAL_TOKENS_CONTRACT=${BitToken} // do we need this?
+export TREASURY_ADDRESS=${Treasury}
+```
+
+#### Create a DAO
+All Performance Bond operations occur within the scope of a DAO.
+
+The script creates a new DAO using `STAKING_POOL_MEDIATOR_ADDRESS` and `TREASURY_ADDRESS`
+```shell
+npx hardhat run ./scripts/verify/create-staking-pool-dao.ts --network local
+```
+
+Note the `BigNumber` values from the `CreateDao` event, convert from hex to decimal and that is the DAO id.
+
+#### MacOS
+Set the temporary environment variables by substituting the value running the line in your terminal.
+```shell
+export DAO_ID=${DAO_ID}
+```
+
+#### Whitelist the collateral
+Only whitelisted tokens are accepted as collateral.
+
+The script whitelists the value of the environment variable `COLLATERAL_TOKENS_CONTRACT` with the `STAKING_POOL_MEDIATOR_ADDRESS`.
+```shell
+npx hardhat run ./scripts/verify/whitelist-staking-pool-collateral.ts --network local
+```
+
+#### Create a Staking Pool
+A Staking Pool managed within the scope of a DAO.
+
+The script creates a staking pool using the environment variables `STAKING_POOL_MEDIATOR_ADDRESS`, `STAKING_POOL_FACTORY_ADDRESS` and `DAO_ID`
+```shell
+npx hardhat run ./scripts/verify/create-staking-pool.ts --network local
 ```

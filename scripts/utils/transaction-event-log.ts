@@ -2,7 +2,8 @@ import {ContractReceipt, Event} from 'ethers'
 import {createPerformanceBondEventLogs} from '../../test/event/performance-bonds/performance-bond-creator-events'
 import {eventLog} from '../../test/framework/event-logs'
 import {log} from '../../config/logging'
-import {BondFactory} from '../../typechain-types'
+import {PerformanceBondFactory, StakingPoolFactory} from '../../typechain-types'
+import {stakingPoolCreatedEventLogs} from '../../test/event/staking/staking-factory-events'
 
 function receiptEvents(receipt: ContractReceipt): Event[] {
     const availableEvents = receipt.events
@@ -18,11 +19,24 @@ export function logEvents(receipt: ContractReceipt): void {
 }
 
 export function logCreateBondEvents(
-    emitter: BondFactory,
+    emitter: PerformanceBondFactory,
     receipt: ContractReceipt
 ): void {
     const createBondEvents = createPerformanceBondEventLogs(
-        eventLog('CreateBond', emitter, receipt)
+        eventLog('CreatePerformanceBond', emitter, receipt)
+    )
+
+    for (const event of createBondEvents) {
+        log.info('CreateBond event: %s', JSON.stringify(event))
+    }
+}
+
+export function logCreateStakingPoolEvents(
+    emitter: StakingPoolFactory,
+    receipt: ContractReceipt
+): void {
+    const createBondEvents = stakingPoolCreatedEventLogs(
+        eventLog('CreateStakingPool', emitter, receipt)
     )
 
     for (const event of createBondEvents) {
