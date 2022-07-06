@@ -27,7 +27,6 @@ async function createManagedStakingPool(
 
     log.info('Creating a new managed staking pool..')
 
-    // how should we populate this with sensible test values?
     const stakingPoolInfo = {
         daoId,
         minTotalPoolStake: 0,
@@ -36,7 +35,7 @@ async function createManagedStakingPool(
         epochDuration: 100,
         epochStartTimestamp: await getTimestampNow(),
         emergencyMode: false,
-        treasury: creatorAddress, // todo: is this correct?
+        treasury: creatorAddress,
         stakeToken: collateralTokensAddress,
         rewardType: RewardType.FLOATING,
         rewardTokens: []
