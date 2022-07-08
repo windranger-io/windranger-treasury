@@ -2,7 +2,7 @@ import {run} from 'hardhat'
 import {log} from '../../config/logging'
 import {deployPerformanceBonds} from './bond-deploy'
 import {addressEnvironmentVariable} from '../utils/environment-variable'
-import {deployStakingPool} from './staking-pool-deploy-no-etherscan'
+import {deployStakingPool} from './staking-pool-deploy'
 
 async function main() {
     const tokenSweepBeneficiary = addressEnvironmentVariable(

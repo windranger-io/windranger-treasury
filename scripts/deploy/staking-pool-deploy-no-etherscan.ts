@@ -5,7 +5,8 @@ export async function deployStakingPool(
     tokenSweepBeneficiary: string
 ): Promise<void> {
     const factory = await deployContract<StakingPoolFactory>(
-        'StakingPoolFactory'
+        'StakingPoolFactory',
+        tokenSweepBeneficiary
     )
     await deployContractWithProxy<StakingPoolMediator>(
         'StakingPoolMediator',
