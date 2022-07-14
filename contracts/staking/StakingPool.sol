@@ -603,7 +603,7 @@ contract StakingPool is
             _supportedRewards[address(rewardPools[i].tokens)] = true;
         }
         for (uint256 i = 0; i < rewardPools.length; i++) {
-            _supportedRewards[address(rewardPools[i].tokens)] = false;
+            delete _supportedRewards[address(rewardPools[i].tokens)];
         }
     }
 }
