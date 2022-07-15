@@ -99,6 +99,17 @@ contract StakingPoolMediator is
     }
 
     /**
+     * @notice Permits updating the meta data for the DAO.
+     */
+    function setDaoMetaData(uint256 daoId, string calldata replacement)
+        external
+        whenNotPaused
+        atLeastDaoAdminRole(daoId)
+    {
+        _setDaoMetaData(daoId, replacement);
+    }
+
+    /**
      * @notice Updates the StakingPool creator reference.
      *
      * @param factory Contract address for the new StakingPoolCreator to use from now onwards when creating managed bonds.
