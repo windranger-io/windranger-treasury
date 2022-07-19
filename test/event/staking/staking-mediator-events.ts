@@ -21,7 +21,7 @@ export type ExpectedStakingPoolCreatorUpdateEvent = {
 export function stakingPoolCreatorUpdateEvents(
     events: Event[]
 ): ActualStakingPoolCreatorUpdateEvent[] {
-    const bonds: ActualStakingPoolCreatorUpdateEvent[] = []
+    const updateEvents: ActualStakingPoolCreatorUpdateEvent[] = []
 
     for (const event of events) {
         const create = event as StakingPoolCreatorUpdateEvent
@@ -32,10 +32,10 @@ export function stakingPoolCreatorUpdateEvents(
         expect(args?.updateCreator).is.not.undefined
         expect(args?.instigator).is.not.undefined
 
-        bonds.push(create.args)
+        updateEvents.push(create.args)
     }
 
-    return bonds
+    return updateEvents
 }
 
 /**
