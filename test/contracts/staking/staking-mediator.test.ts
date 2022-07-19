@@ -27,10 +27,7 @@ import {
     SYSTEM_ADMIN
 } from '../../event/performance-bonds/roles'
 import {successfulTransaction} from '../../framework/transaction'
-import {eventLog} from '../../framework/event-logs'
-import {erc20SingleCollateralPerformanceBondContractAt} from '../../event/performance-bonds/single-collateral-performance-bond-contract'
-import {BigNumber, constants} from 'ethers'
-import {verifyOwnershipTransferredEventLogs} from '../../event/ownable/verify-ownable-event'
+import {BigNumber} from 'ethers'
 import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 import {events} from '../../framework/events'
 import {accessControlRevertMessageMissingGlobalRole} from '../../event/performance-bonds/access-control-messages'
@@ -45,23 +42,14 @@ import {
     verifyERC20SweepLogEvents
 } from '../../event/sweep/verify-sweep-erc20-events'
 import {
-    ExpectPerformanceBondCreatorUpdateEvent,
     ExpectCreateDaoEvent,
-    verifyPerformanceBondCreatorUpdateEvents,
-    verifyBondCreatorUpdateLogEvents,
     verifyCreateDaoEvents,
     verifyCreateDaoLogEvents
 } from '../../event/performance-bonds/verify-performance-bond-mediator-events'
 import {createDaoEvents} from '../../event/performance-bonds/performance-bond-mediator-events'
 import {RewardType} from '../../event/staking/staking-events'
 import {getTimestampNow} from '../../framework/time'
-import {logCreateStakingPoolEvents} from '../../../scripts/utils/transaction-event-log'
-import {ExpectedStakingPoolCreatedEvent} from '../../event/staking/staking-factory-events'
-import {whitelistCollateral} from '../../../scripts/verify/whitelist-collateral'
-import {
-    verifyStakingPoolCreated,
-    verifyStakingPoolCreatedLogEvents
-} from '../../event/staking/verify-staking-factory-events'
+import {verifyStakingPoolCreatedLogEvents} from '../../event/staking/verify-staking-factory-events'
 import {verifyStakingPoolCreatorUpdateLogEvents} from '../../event/staking/verify-staking-mediator-events'
 
 // Wires up Waffle with Chai
