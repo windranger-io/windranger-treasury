@@ -183,6 +183,34 @@ describe('Staking Pool Tests', () => {
             ).to.be.revertedWith('StakePool: tokens must be unique')
         })
         it('initialize rewards', async () => {
+            const epochStartTimestamp = (await getTimestampNow()) + START_DELAY
+            const rewardsAvailableTimestamp =
+                REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
+            const stakingPoolInfo = {
+                daoId: 0,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: 600,
+                minimumContribution: 5,
+                epochDuration: EPOCH_DURATION,
+                epochStartTimestamp,
+                emergencyMode: false,
+                treasury: admin,
+                stakeToken: stakeTokens.address,
+                rewardType: RewardType.FLOATING,
+                rewardTokens: [
+                    {tokens: rewardToken1.address, maxAmount: amount, ratio: 0}
+                ]
+            }
+
+            stakingPool = await deployContract('StakingPool')
+
+            await stakingPool.initialize(
+                stakingPoolInfo,
+                false,
+                rewardsAvailableTimestamp,
+                admin
+            )
+
             await rewardToken1.mint(admin, amount)
             verifyInitializeRewardsEvent(
                 {rewardTokens: rewardToken1.address, amount},
