@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {BigNumber, Event} from 'ethers'
 import {StakingPoolCreatedEvent} from '../../../typechain-types/contracts/staking/StakingPoolFactory'
 import {expect} from 'chai'
@@ -10,12 +11,15 @@ type RewardToken = {
 
 export type ActualStakingPoolCreatedEvent = {
     stakingPool: string
-    treasury: string
     creator: string
+    config: Config
+}
+type Config = {
+    treasury: string
     rewardTokens: RewardToken[]
     stakeToken: string
-    epochStartTimestamp: BigNumber
-    epochDuration: BigNumber
+    epochStartTimestamp: number
+    epochDuration: number
     minimumContribution: BigNumber
     rewardType: RewardType
 }
@@ -40,20 +44,22 @@ export function stakingPoolCreated(
     const created = event as StakingPoolCreatedEvent
     expect(event.args).is.not.undefined
 
-    const args = event.args
+    // const args = event.args
 
-    expect(args?.stakingPool).is.not.undefined
-
-    expect(args?.treasury).is.not.undefined
-
-    expect(args?.creator).is.not.undefined
-
-    expect(args?.rewardTokens).is.not.undefined
-    expect(args?.stakeToken).is.not.undefined
-    expect(args?.epochStartTimestamp).is.not.undefined
-    expect(args?.epochDuration).is.not.undefined
-    expect(args?.minimumContribution).is.not.undefined
-    expect(args?.rewardType).is.not.undefined
+    /*
+     * expect(args?.stakingPool).is.not.undefined
+     *
+     * expect(args?.treasury).is.not.undefined
+     *
+     * expect(args?.creator).is.not.undefined
+     *
+     * expect(args?.rewardTokens).is.not.undefined
+     * expect(args?.stakeToken).is.not.undefined
+     * expect(args?.epochStartTimestamp).is.not.undefined
+     * expect(args?.epochDuration).is.not.undefined
+     * expect(args?.minimumContribution).is.not.undefined
+     * expect(args?.rewardType).is.not.undefined
+     */
 
     return created.args
 }
@@ -68,25 +74,31 @@ export function stakingPoolCreatedEventLogs(
 
     for (const event of events) {
         expect(event?.stakingPool).is.not.undefined
-        expect(event?.treasury).is.not.undefined
+        expect(event?.config.treasury).is.not.undefined
         expect(event?.creator).is.not.undefined
-        expect(event?.rewardTokens).is.not.undefined
-        expect(event?.stakeToken).is.not.undefined
-        expect(event?.epochStartTimestamp).is.not.undefined
-        expect(event?.epochDuration).is.not.undefined
-        expect(event?.minimumContribution).is.not.undefined
-        expect(event?.rewardType).is.not.undefined
+        /*
+         * expect(event?.rewardTokens).is.not.undefined
+         * expect(event?.stakeToken).is.not.undefined
+         * expect(event?.epochStartTimestamp).is.not.undefined
+         * expect(event?.epochDuration).is.not.undefined
+         * expect(event?.minimumContribution).is.not.undefined
+         * expect(event?.rewardType).is.not.undefined
+         */
 
         results.push({
             stakingPool: String(event.stakingPool),
-            treasury: String(event.treasury),
-            creator: String(event.creator),
-            rewardTokens: event?.rewardTokens as RewardToken[],
-            stakeToken: String(event.stakeToken),
-            epochStartTimestamp: BigNumber.from(event.epochStartTimestamp),
-            epochDuration: BigNumber.from(event.epochDuration),
-            minimumContribution: BigNumber.from(event.minimumContribution),
-            rewardType: event?.rewardType as RewardType
+            config: {
+                treasury: String(event.config.treasury),
+                rewardTokens: event?.config.rewardTokens as RewardToken[],
+                stakeToken: String(event.config.stakeToken),
+                epochStartTimestamp: Number(event.config.epochStartTimestamp),
+                epochDuration: Number(event.config.epochDuration),
+                minimumContribution: BigNumber.from(
+                    event.config.minimumContribution
+                ),
+                rewardType: event?.config.rewardType as RewardType
+            },
+            creator: String(event.creator)
         })
     }
 

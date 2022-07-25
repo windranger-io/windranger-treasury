@@ -19,14 +19,8 @@ contract StakingPoolFactory is
 {
     event StakingPoolCreated(
         address indexed stakingPool,
-        address treasury,
-        address indexed creator,
-        StakingPoolLib.Reward[] rewardTokens,
-        address stakeToken,
-        uint128 epochStartTimestamp,
-        uint128 epochDuration,
-        uint128 minimumContribution,
-        StakingPoolLib.RewardType rewardType
+        StakingPoolLib.Config config,
+        address indexed creator
     );
 
     constructor(address beneficiary) initializer {
@@ -50,17 +44,7 @@ contract StakingPoolFactory is
     ) external override whenNotPaused returns (address) {
         StakingPool stakingPool = new StakingPool();
 
-        emit StakingPoolCreated(
-            address(stakingPool),
-            config.treasury,
-            _msgSender(),
-            config.rewardTokens,
-            address(config.stakeToken),
-            config.epochStartTimestamp,
-            config.epochDuration,
-            config.minimumContribution,
-            config.rewardType
-        );
+        emit StakingPoolCreated(address(stakingPool), config, _msgSender());
 
         stakingPool.initialize(
             config,
