@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {BigNumber, Event} from 'ethers'
 import {StakingPoolCreatedEvent} from '../../../typechain-types/contracts/staking/StakingPoolFactory'
 import {expect} from 'chai'
@@ -21,6 +20,8 @@ type Config = {
     epochStartTimestamp: number
     epochDuration: number
     minimumContribution: BigNumber
+    minTotalPoolStake: BigNumber
+    maxTotalPoolStake: BigNumber
     rewardType: RewardType
 }
 
@@ -44,22 +45,19 @@ export function stakingPoolCreated(
     const created = event as StakingPoolCreatedEvent
     expect(event.args).is.not.undefined
 
-    // const args = event.args
+    const args = event.args
 
-    /*
-     * expect(args?.stakingPool).is.not.undefined
-     *
-     * expect(args?.treasury).is.not.undefined
-     *
-     * expect(args?.creator).is.not.undefined
-     *
-     * expect(args?.rewardTokens).is.not.undefined
-     * expect(args?.stakeToken).is.not.undefined
-     * expect(args?.epochStartTimestamp).is.not.undefined
-     * expect(args?.epochDuration).is.not.undefined
-     * expect(args?.minimumContribution).is.not.undefined
-     * expect(args?.rewardType).is.not.undefined
-     */
+    expect(args?.creator).is.not.undefined
+
+    expect(event?.args?.treasury).is.not.undefined
+    expect(event?.args?.rewardTokens).is.not.undefined
+    expect(event?.args?.stakeToken).is.not.undefined
+    expect(event?.args?.epochStartTimestamp).is.not.undefined
+    expect(event?.args?.epochDuration).is.not.undefined
+    expect(event?.args?.minimumContribution).is.not.undefined
+    expect(event?.args?.rewardType).is.not.undefined
+    expect(event?.args?.minTotalPoolStake).is.not.undefined
+    expect(event?.args?.maxTotalPoolStake).is.not.undefined
 
     return created.args
 }
@@ -74,28 +72,54 @@ export function stakingPoolCreatedEventLogs(
 
     for (const event of events) {
         expect(event?.stakingPool).is.not.undefined
-        expect(event?.config.treasury).is.not.undefined
         expect(event?.creator).is.not.undefined
-        /*
-         * expect(event?.rewardTokens).is.not.undefined
-         * expect(event?.stakeToken).is.not.undefined
-         * expect(event?.epochStartTimestamp).is.not.undefined
-         * expect(event?.epochDuration).is.not.undefined
-         * expect(event?.minimumContribution).is.not.undefined
-         * expect(event?.rewardType).is.not.undefined
-         */
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config?.minTotalPoolStake).is.not.undefined
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config.maxTotalPoolStake).is.not.undefined
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config.treasury).is.not.undefined
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config.rewardTokens).is.not.undefined
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config.stakeToken).is.not.undefined
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config.epochStartTimestamp).is.not.undefined
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config.epochDuration).is.not.undefined
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config.minimumContribution).is.not.undefined
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(event?.config.rewardType).is.not.undefined
 
         results.push({
             stakingPool: String(event.stakingPool),
             config: {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 treasury: String(event.config.treasury),
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 rewardTokens: event?.config.rewardTokens as RewardToken[],
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 stakeToken: String(event.config.stakeToken),
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 epochStartTimestamp: Number(event.config.epochStartTimestamp),
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 epochDuration: Number(event.config.epochDuration),
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                minTotalPoolStake: BigNumber.from(
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    event?.config.minTotalPoolStake
+                ),
+                maxTotalPoolStake: BigNumber.from(
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    event?.config.maxTotalPoolStake
+                ),
                 minimumContribution: BigNumber.from(
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     event.config.minimumContribution
                 ),
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 rewardType: event?.config.rewardType as RewardType
             },
             creator: String(event.creator)

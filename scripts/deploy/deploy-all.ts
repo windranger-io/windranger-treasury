@@ -11,7 +11,7 @@ async function main() {
 
     await run('compile')
 
-    // await deployPerformanceBonds(tokenSweepBeneficiary)
+    await deployPerformanceBonds(tokenSweepBeneficiary)
     await deployStakingPool(tokenSweepBeneficiary)
 }
 
