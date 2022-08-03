@@ -37,10 +37,11 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-const EPOCH_DURATION = 60
+const EPOCH_DURATION = BigNumber.from(60)
 const START_DELAY = 30
 const REWARDS_AVAILABLE_OFFSET = 20
-const MIN_POOL_STAKE = 500
+const MIN_POOL_STAKE = BigNumber.from(500)
+const MAX_POOL_STAKE = BigNumber.from(600)
 
 export type StakingPoolLibData = {
     stakeToken: string
@@ -51,8 +52,8 @@ export type StakingPoolLibData = {
     epochStartTimestamp: BigNumber
     treasury: string
     daoId: number
-    minTotalPoolStake: number
-    maxTotalPoolStake: number
+    minTotalPoolStake: BigNumber
+    maxTotalPoolStake: BigNumber
 }
 
 describe('Staking Pool Factory', () => {
@@ -218,15 +219,15 @@ describe('Staking Pool Factory', () => {
                 rewardType: RewardType.FLOATING,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
-                epochDuration: BigNumber.from(EPOCH_DURATION),
+                epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                treasury: admin
+                treasury: admin,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: MAX_POOL_STAKE
             }
 
             stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
                 ...stakingPoolEventData
             }
 
@@ -276,15 +277,15 @@ describe('Staking Pool Factory', () => {
                 rewardType: RewardType.FIXED,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
-                epochDuration: BigNumber.from(EPOCH_DURATION),
+                epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                treasury: admin
+                treasury: admin,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: MAX_POOL_STAKE
             }
 
             stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
                 ...stakingPoolEventData
             }
 

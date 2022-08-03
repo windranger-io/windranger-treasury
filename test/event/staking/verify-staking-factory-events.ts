@@ -1,6 +1,6 @@
 import {event} from '../../framework/events'
 import {expect} from 'chai'
-import {BaseContract, ContractReceipt} from 'ethers'
+import {BaseContract, BigNumber, ContractReceipt} from 'ethers'
 import {
     ActualStakingPoolCreatedEvent,
     ExpectedStakingPoolCreatedEvent,
@@ -70,6 +70,20 @@ function deepEqualsStakingPoolCreatedEvent(
 ): boolean {
     return (
         actual.config.rewardType === expected.rewardType &&
-        actual.creator === expected.creator
+        actual.creator === expected.creator &&
+        actual.config.treasury === expected.treasury &&
+        actual.config.minimumContribution.eq(expected.minimumContribution) &&
+        BigNumber.from(actual.config.epochDuration).eq(
+            expected.epochDuration
+        ) &&
+        BigNumber.from(actual.config.epochStartTimestamp).eq(
+            expected.epochStartTimestamp
+        ) &&
+        BigNumber.from(actual.config.minTotalPoolStake).eq(
+            expected.minTotalPoolStake
+        ) &&
+        BigNumber.from(actual.config.maxTotalPoolStake).eq(
+            expected.maxTotalPoolStake
+        )
     )
 }
