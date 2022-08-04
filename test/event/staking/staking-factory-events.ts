@@ -52,33 +52,31 @@ export function stakingPoolCreated(
     expect(args.creator).is.not.undefined
     expect(args.stakingPool).is.not.undefined
 
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-    expect(args.config?.treasury).is.not.undefined
-    expect(args.config?.rewardTokens).is.not.undefined
-    expect(args.config?.stakeToken).is.not.undefined
-    expect(args.config?.epochStartTimestamp).is.not.undefined
-    expect(args.config?.epochDuration).is.not.undefined
-    expect(args.config?.minimumContribution).is.not.undefined
-    expect(args.config?.rewardType).is.not.undefined
-    expect(args.config?.minTotalPoolStake).is.not.undefined
-    expect(args.config?.maxTotalPoolStake).is.not.undefined
+    expect(args.config).is.not.undefined
+    const config = args.config
+
+    expect(config.treasury).is.not.undefined
+    expect(config.rewardTokens).is.not.undefined
+    expect(config.stakeToken).is.not.undefined
+    expect(config.epochStartTimestamp).is.not.undefined
+    expect(config.epochDuration).is.not.undefined
+    expect(config.minimumContribution).is.not.undefined
+    expect(config.rewardType).is.not.undefined
+    expect(config.minTotalPoolStake).is.not.undefined
+    expect(config.maxTotalPoolStake).is.not.undefined
 
     return {
         stakingPool: String(args.stakingPool),
         config: {
-            treasury: String(args.config.treasury),
-            rewardTokens: args.config.rewardTokens as RewardToken[],
-            stakeToken: String(args.config.stakeToken),
-            epochStartTimestamp: BigNumber.from(
-                args.config.epochStartTimestamp
-            ),
-            epochDuration: BigNumber.from(args.config.epochDuration),
-            minTotalPoolStake: BigNumber.from(args.config.minTotalPoolStake),
-            maxTotalPoolStake: BigNumber.from(args.config.maxTotalPoolStake),
-            minimumContribution: BigNumber.from(
-                args.config.minimumContribution
-            ),
-            rewardType: args.config.rewardType as RewardType
+            treasury: String(config.treasury),
+            rewardTokens: config.rewardTokens as RewardToken[],
+            stakeToken: String(config.stakeToken),
+            epochStartTimestamp: BigNumber.from(config.epochStartTimestamp),
+            epochDuration: BigNumber.from(config.epochDuration),
+            minTotalPoolStake: BigNumber.from(config.minTotalPoolStake),
+            maxTotalPoolStake: BigNumber.from(config.maxTotalPoolStake),
+            minimumContribution: BigNumber.from(config.minimumContribution),
+            rewardType: config.rewardType as RewardType
         },
         creator: String(args.creator)
     }
