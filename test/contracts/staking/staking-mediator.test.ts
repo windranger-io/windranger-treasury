@@ -397,7 +397,7 @@ describe('Staking Pool Mediator contract', () => {
                 const stakingPoolInfo = {
                     daoId,
                     minTotalPoolStake: MIN_POOL_STAKE,
-                    maxTotalPoolStake: 600,
+                    maxTotalPoolStake: MAX_POOL_STAKE,
                     minimumContribution: BigNumber.from(5),
                     epochDuration: BigNumber.from(EPOCH_DURATION),
                     epochStartTimestamp: BigNumber.from(epochStartTimestamp),
@@ -741,7 +741,8 @@ describe('Staking Pool Mediator contract', () => {
     const EPOCH_DURATION = 60 // time the lockup lasts
     const START_DELAY = 15 // offset time in seconds before the lockup period starts
     const REWARDS_AVAILABLE_OFFSET = 20 // time after the end of the lockup the rewards are available
-    const MIN_POOL_STAKE = 500
+    const MIN_POOL_STAKE = BigNumber.from(500)
+    const MAX_POOL_STAKE = BigNumber.from(600)
 })
 
 async function createDao(

@@ -1,6 +1,6 @@
 import {event} from '../../framework/events'
 import {expect} from 'chai'
-import {BaseContract, ContractReceipt} from 'ethers'
+import {BaseContract, BigNumber, ContractReceipt} from 'ethers'
 import {
     ActualStakingPoolCreatedEvent,
     ExpectedStakingPoolCreatedEvent,
@@ -17,23 +17,29 @@ export function verifyStakingPoolCreated(
     const actualStakingPoolCreatedEvent: ActualStakingPoolCreatedEvent =
         stakingPoolCreated(event('StakingPoolCreated', receipt))
 
-    expect(actualStakingPoolCreatedEvent.treasury).equals(expected.treasury)
+    expect(actualStakingPoolCreatedEvent.config.treasury).equals(
+        expected.treasury
+    )
     expect(actualStakingPoolCreatedEvent.creator).equals(expected.creator)
-    expect(actualStakingPoolCreatedEvent.rewardTokens).deep.equals(
+    expect(actualStakingPoolCreatedEvent.config.rewardTokens).deep.equals(
         expected.rewardTokens
     )
 
-    expect(actualStakingPoolCreatedEvent.stakeToken).equals(expected.stakeToken)
-    expect(actualStakingPoolCreatedEvent.epochStartTimestamp).equals(
+    expect(actualStakingPoolCreatedEvent.config.stakeToken).equals(
+        expected.stakeToken
+    )
+    expect(actualStakingPoolCreatedEvent.config.epochStartTimestamp).equals(
         expected.epochStartTimestamp
     )
-    expect(actualStakingPoolCreatedEvent.epochDuration).equals(
+    expect(actualStakingPoolCreatedEvent.config.epochDuration).equals(
         expected.epochDuration
     )
-    expect(actualStakingPoolCreatedEvent.minimumContribution).equals(
+    expect(actualStakingPoolCreatedEvent.config.minimumContribution).equals(
         expected.minimumContribution
     )
-    expect(actualStakingPoolCreatedEvent.rewardType).equals(expected.rewardType)
+    expect(actualStakingPoolCreatedEvent.config.rewardType).equals(
+        expected.rewardType
+    )
 }
 
 /**
@@ -63,7 +69,23 @@ function deepEqualsStakingPoolCreatedEvent(
     expected: ExpectedStakingPoolCreatedEvent
 ): boolean {
     return (
-        actual.rewardType === expected.rewardType &&
-        actual.creator === expected.creator
+        actual.config.rewardType === expected.rewardType &&
+        actual.creator === expected.creator &&
+        actual.config.treasury === expected.treasury &&
+        BigNumber.from(actual.config.minimumContribution).eq(
+            expected.minimumContribution
+        ) &&
+        BigNumber.from(actual.config.epochDuration).eq(
+            expected.epochDuration
+        ) &&
+        BigNumber.from(actual.config.epochStartTimestamp).eq(
+            expected.epochStartTimestamp
+        ) &&
+        BigNumber.from(actual.config.minTotalPoolStake).eq(
+            expected.minTotalPoolStake
+        ) &&
+        BigNumber.from(actual.config.maxTotalPoolStake).eq(
+            expected.maxTotalPoolStake
+        )
     )
 }

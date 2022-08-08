@@ -12,6 +12,7 @@ import {
     IERC20,
     BitDAO
 } from '../../../typechain-types'
+import {StakingPoolLib} from '../../../typechain-types/contracts/staking/StakingPoolFactory'
 import {deployContract, signer} from '../../framework/contracts'
 import {getTimestampNow} from '../../framework/time'
 import {BigNumber} from 'ethers'
@@ -37,23 +38,13 @@ import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/signers'
 // Wires up Waffle with Chai
 chai.use(solidity)
 
-const EPOCH_DURATION = 60
+const EPOCH_DURATION = 60n
 const START_DELAY = 30
 const REWARDS_AVAILABLE_OFFSET = 20
-const MIN_POOL_STAKE = 500
+const MIN_POOL_STAKE = 500n
+const MAX_POOL_STAKE = 600n
 
-export type StakingPoolLibData = {
-    stakeToken: string
-    rewardType: number
-    rewardTokens: never[]
-    minimumContribution: BigNumber
-    epochDuration: BigNumber
-    epochStartTimestamp: BigNumber
-    treasury: string
-    daoId: number
-    minTotalPoolStake: number
-    maxTotalPoolStake: number
-}
+export type StakingPoolLibData = StakingPoolLib.ConfigStruct
 
 describe('Staking Pool Factory', () => {
     before(async () => {
@@ -218,15 +209,15 @@ describe('Staking Pool Factory', () => {
                 rewardType: RewardType.FLOATING,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
-                epochDuration: BigNumber.from(EPOCH_DURATION),
+                epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                treasury: admin
+                treasury: admin,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: MAX_POOL_STAKE
             }
 
             stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
                 ...stakingPoolEventData
             }
 
@@ -276,15 +267,15 @@ describe('Staking Pool Factory', () => {
                 rewardType: RewardType.FIXED,
                 rewardTokens: [],
                 minimumContribution: BigNumber.from(5),
-                epochDuration: BigNumber.from(EPOCH_DURATION),
+                epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
-                treasury: admin
+                treasury: admin,
+                minTotalPoolStake: MIN_POOL_STAKE,
+                maxTotalPoolStake: MAX_POOL_STAKE
             }
 
             stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
                 ...stakingPoolEventData
             }
 

@@ -1,4 +1,4 @@
-import {BigNumber, Event} from 'ethers'
+import {BigNumber, BigNumberish, Event} from 'ethers'
 import {StakingPoolCreatedEvent} from '../../../typechain-types/contracts/staking/StakingPoolFactory'
 import {expect} from 'chai'
 import {RewardType} from './staking-events'
@@ -10,13 +10,18 @@ type RewardToken = {
 
 export type ActualStakingPoolCreatedEvent = {
     stakingPool: string
-    treasury: string
     creator: string
+    config: Config
+}
+type Config = {
+    treasury: string
     rewardTokens: RewardToken[]
     stakeToken: string
-    epochStartTimestamp: BigNumber
-    epochDuration: BigNumber
-    minimumContribution: BigNumber
+    epochStartTimestamp: BigNumberish
+    epochDuration: BigNumberish
+    minimumContribution: BigNumberish
+    minTotalPoolStake: BigNumberish
+    maxTotalPoolStake: BigNumberish
     rewardType: RewardType
 }
 
@@ -25,9 +30,11 @@ export type ExpectedStakingPoolCreatedEvent = {
     creator: string
     rewardTokens: RewardToken[]
     stakeToken: string
-    epochStartTimestamp: BigNumber
-    epochDuration: BigNumber
-    minimumContribution: BigNumber
+    epochStartTimestamp: BigNumberish
+    epochDuration: BigNumberish
+    minimumContribution: BigNumberish
+    minTotalPoolStake: BigNumberish
+    maxTotalPoolStake: BigNumberish
     rewardType: RewardType
 }
 
@@ -40,22 +47,39 @@ export function stakingPoolCreated(
     const created = event as StakingPoolCreatedEvent
     expect(event.args).is.not.undefined
 
-    const args = event.args
+    const args = created.args
 
-    expect(args?.stakingPool).is.not.undefined
+    expect(args.creator).is.not.undefined
+    expect(args.stakingPool).is.not.undefined
 
-    expect(args?.treasury).is.not.undefined
+    expect(args.config).is.not.undefined
+    const config = args.config
 
-    expect(args?.creator).is.not.undefined
+    expect(config.treasury).is.not.undefined
+    expect(config.rewardTokens).is.not.undefined
+    expect(config.stakeToken).is.not.undefined
+    expect(config.epochStartTimestamp).is.not.undefined
+    expect(config.epochDuration).is.not.undefined
+    expect(config.minimumContribution).is.not.undefined
+    expect(config.rewardType).is.not.undefined
+    expect(config.minTotalPoolStake).is.not.undefined
+    expect(config.maxTotalPoolStake).is.not.undefined
 
-    expect(args?.rewardTokens).is.not.undefined
-    expect(args?.stakeToken).is.not.undefined
-    expect(args?.epochStartTimestamp).is.not.undefined
-    expect(args?.epochDuration).is.not.undefined
-    expect(args?.minimumContribution).is.not.undefined
-    expect(args?.rewardType).is.not.undefined
-
-    return created.args
+    return {
+        stakingPool: String(args.stakingPool),
+        config: {
+            treasury: String(config.treasury),
+            rewardTokens: config.rewardTokens as RewardToken[],
+            stakeToken: String(config.stakeToken),
+            epochStartTimestamp: BigNumber.from(config.epochStartTimestamp),
+            epochDuration: BigNumber.from(config.epochDuration),
+            minTotalPoolStake: BigNumber.from(config.minTotalPoolStake),
+            maxTotalPoolStake: BigNumber.from(config.maxTotalPoolStake),
+            minimumContribution: BigNumber.from(config.minimumContribution),
+            rewardType: config.rewardType as RewardType
+        },
+        creator: String(args.creator)
+    }
 }
 
 /**
@@ -66,27 +90,43 @@ export function stakingPoolCreatedEventLogs(
 ): ActualStakingPoolCreatedEvent[] {
     const results: ActualStakingPoolCreatedEvent[] = []
 
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     for (const event of events) {
         expect(event?.stakingPool).is.not.undefined
-        expect(event?.treasury).is.not.undefined
         expect(event?.creator).is.not.undefined
-        expect(event?.rewardTokens).is.not.undefined
-        expect(event?.stakeToken).is.not.undefined
-        expect(event?.epochStartTimestamp).is.not.undefined
-        expect(event?.epochDuration).is.not.undefined
-        expect(event?.minimumContribution).is.not.undefined
-        expect(event?.rewardType).is.not.undefined
+
+        expect(event?.config.minTotalPoolStake).is.not.undefined
+        expect(event?.config.maxTotalPoolStake).is.not.undefined
+        expect(event?.config.treasury).is.not.undefined
+        expect(event?.config.rewardTokens).is.not.undefined
+        expect(event?.config.stakeToken).is.not.undefined
+        expect(event?.config.epochStartTimestamp).is.not.undefined
+        expect(event?.config.epochDuration).is.not.undefined
+        expect(event?.config.minimumContribution).is.not.undefined
+        expect(event?.config.rewardType).is.not.undefined
 
         results.push({
             stakingPool: String(event.stakingPool),
-            treasury: String(event.treasury),
-            creator: String(event.creator),
-            rewardTokens: event?.rewardTokens as RewardToken[],
-            stakeToken: String(event.stakeToken),
-            epochStartTimestamp: BigNumber.from(event.epochStartTimestamp),
-            epochDuration: BigNumber.from(event.epochDuration),
-            minimumContribution: BigNumber.from(event.minimumContribution),
-            rewardType: event?.rewardType as RewardType
+            config: {
+                treasury: String(event.config.treasury),
+                rewardTokens: event.config.rewardTokens as RewardToken[],
+                stakeToken: String(event.config.stakeToken),
+                epochStartTimestamp: BigNumber.from(
+                    event.config.epochStartTimestamp
+                ),
+                epochDuration: BigNumber.from(event.config.epochDuration),
+                minTotalPoolStake: BigNumber.from(
+                    event.config.minTotalPoolStake
+                ),
+                maxTotalPoolStake: BigNumber.from(
+                    event.config.maxTotalPoolStake
+                ),
+                minimumContribution: BigNumber.from(
+                    event.config.minimumContribution
+                ),
+                rewardType: event.config.rewardType as RewardType
+            },
+            creator: String(event.creator)
         })
     }
 
