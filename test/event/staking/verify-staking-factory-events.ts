@@ -72,7 +72,9 @@ function deepEqualsStakingPoolCreatedEvent(
         actual.config.rewardType === expected.rewardType &&
         actual.creator === expected.creator &&
         actual.config.treasury === expected.treasury &&
-        actual.config.minimumContribution.eq(expected.minimumContribution) &&
+        BigNumber.from(actual.config.minimumContribution).eq(
+            expected.minimumContribution
+        ) &&
         BigNumber.from(actual.config.epochDuration).eq(
             expected.epochDuration
         ) &&

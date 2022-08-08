@@ -1,4 +1,4 @@
-import {BigNumber, Event} from 'ethers'
+import {BigNumber, BigNumberish, Event} from 'ethers'
 import {StakingPoolCreatedEvent} from '../../../typechain-types/contracts/staking/StakingPoolFactory'
 import {expect} from 'chai'
 import {RewardType} from './staking-events'
@@ -17,11 +17,11 @@ type Config = {
     treasury: string
     rewardTokens: RewardToken[]
     stakeToken: string
-    epochStartTimestamp: BigNumber
-    epochDuration: BigNumber
-    minimumContribution: BigNumber
-    minTotalPoolStake: BigNumber
-    maxTotalPoolStake: BigNumber
+    epochStartTimestamp: BigNumberish
+    epochDuration: BigNumberish
+    minimumContribution: BigNumberish
+    minTotalPoolStake: BigNumberish
+    maxTotalPoolStake: BigNumberish
     rewardType: RewardType
 }
 
@@ -30,11 +30,11 @@ export type ExpectedStakingPoolCreatedEvent = {
     creator: string
     rewardTokens: RewardToken[]
     stakeToken: string
-    epochStartTimestamp: BigNumber
-    epochDuration: BigNumber
-    minimumContribution: BigNumber
-    minTotalPoolStake: BigNumber
-    maxTotalPoolStake: BigNumber
+    epochStartTimestamp: BigNumberish
+    epochDuration: BigNumberish
+    minimumContribution: BigNumberish
+    minTotalPoolStake: BigNumberish
+    maxTotalPoolStake: BigNumberish
     rewardType: RewardType
 }
 
