@@ -76,7 +76,7 @@ describe('Staking Pool Tests', () => {
             const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
-                maxTotalPoolStake: 600,
+                maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
@@ -126,7 +126,7 @@ describe('Staking Pool Tests', () => {
             const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
-                maxTotalPoolStake: 600,
+                maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
@@ -190,7 +190,7 @@ describe('Staking Pool Tests', () => {
             const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
-                maxTotalPoolStake: 600,
+                maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
@@ -238,7 +238,7 @@ describe('Staking Pool Tests', () => {
             const stakingPoolInfo = {
                 daoId: 0,
                 minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
-                maxTotalPoolStake: 600,
+                maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
@@ -506,7 +506,7 @@ describe('Staking Pool Tests', () => {
                 const stakingPoolInfo = {
                     daoId: 0,
                     minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
-                    maxTotalPoolStake: 600,
+                    maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                     minimumContribution: 5,
                     epochDuration: EPOCH_DURATION,
                     epochStartTimestamp,
