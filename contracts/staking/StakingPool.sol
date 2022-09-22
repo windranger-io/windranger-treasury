@@ -71,10 +71,15 @@ contract StakingPool is
         _;
     }
 
+    modifier minTotalPoolStakeMet() {
+        require(_isMinTotalPoolStakeMet(), "StakingPool: min total stake");
+        _;
+    }
+
     modifier stakingPoolRequirementsUnmet() {
         //slither-disable-next-line timestamp
         require(
-            (_totalStakedAmount < _stakingPoolConfig.minTotalPoolStake) &&
+            _isMinTotalPoolStakeMet() &&
                 (block.timestamp > _stakingPoolConfig.epochStartTimestamp),
             "StakingPool: requirements unmet"
         );
@@ -145,6 +150,7 @@ contract StakingPool is
         external
         whenNotPaused
         stakingPeriodComplete
+        minTotalPoolStakeMet
         rewardsAvailable
         nonReentrant
     {
@@ -179,6 +185,7 @@ contract StakingPool is
     function withdrawRewards()
         external
         stakingPeriodComplete
+        minTotalPoolStakeMet
         rewardsAvailable
         whenNotPaused
     {
@@ -303,6 +310,10 @@ contract StakingPool is
         onlyOwner
     {
         _setTokenSweepBeneficiary(newBeneficiary);
+    }
+
+    function isMinTotalPoolStakeMet() external view returns (bool) {
+        return _isMinTotalPoolStakeMet();
     }
 
     function currentExpectedRewards(address user)
@@ -484,6 +495,10 @@ contract StakingPool is
     function _isRewardsAvailable() internal view returns (bool) {
         //slither-disable-next-line timestamp
         return block.timestamp >= _rewardsAvailableTimestamp;
+    }
+
+    function _isMinTotalPoolStakeMet() internal view returns (bool) {
+        return _totalStakedAmount >= _stakingPoolConfig.minTotalPoolStake;
     }
 
     function _isStakingPeriodComplete() internal view returns (bool) {

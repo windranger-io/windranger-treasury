@@ -43,7 +43,8 @@ chai.use(solidity)
 const EPOCH_DURATION = 60 // time the lockup lasts
 const START_DELAY = 15 // offset time in seconds before the lockup period starts
 const REWARDS_AVAILABLE_OFFSET = 20 // time after the end of the lockup the rewards are available
-const MIN_POOL_STAKE = 500
+const MIN_TOTAL_POOL_STAKE = 500 // minimum amount of stake tokens for pool to proceed
+const MAX_TOTAL_POOL_STAKE = 10000 // maximum amount of stake tokens that can be deposited into a pool
 const REWARD_TOKEN_1_AMOUNT = 4000
 
 describe('Staking Pool Tests', () => {
@@ -74,7 +75,7 @@ describe('Staking Pool Tests', () => {
                 REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
+                minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
@@ -124,7 +125,7 @@ describe('Staking Pool Tests', () => {
                 REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
+                minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
@@ -188,7 +189,7 @@ describe('Staking Pool Tests', () => {
                 REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
+                minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
@@ -236,7 +237,7 @@ describe('Staking Pool Tests', () => {
                 REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
+                minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
                 maxTotalPoolStake: 600,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
@@ -389,8 +390,8 @@ describe('Staking Pool Tests', () => {
                 REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
+                minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
+                maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
@@ -409,25 +410,27 @@ describe('Staking Pool Tests', () => {
             )
         })
 
-        describe('deposit', () => {
-            const depositAmount = BigNumber.from(20)
+        const depositAmount = BigNumber.from(MIN_TOTAL_POOL_STAKE)
 
+        describe('deposit', () => {
             it('allows user to deposit', async () => {
-                const depositReceipt = await userDeposit(user, depositAmount)
                 verifyDepositEvent(
                     {depositAmount, user: user.address},
-                    depositReceipt
+                    await userDeposit(user, depositAmount)
                 )
             })
 
             it('allows user to deposit again', async () => {
-                await userDeposit(user, depositAmount)
+                verifyDepositEvent(
+                    {depositAmount, user: user.address},
+                    await userDeposit(user, depositAmount)
+                )
             })
 
             it('does not allow user to deposit when staking pool full', async () => {
-                await increaseTime(START_DELAY)
+                // await increaseTime(START_DELAY)
                 await expect(
-                    userDeposit(user, BigNumber.from(1000))
+                    userDeposit(user, BigNumber.from(MAX_TOTAL_POOL_STAKE))
                 ).to.be.revertedWith('StakingPool: oversubscribed')
             })
 
@@ -446,7 +449,6 @@ describe('Staking Pool Tests', () => {
             })
         })
         describe('withdraw', () => {
-            const amount = BigNumber.from(20)
             it('cant withdraw since not past reward start date', async () => {
                 expect(await stakingPool.isRewardsAvailable()).to.be.false
                 await expect(userWithdraw(user)).to.be.revertedWith(
@@ -462,11 +464,12 @@ describe('Staking Pool Tests', () => {
             })
 
             it('allows a user to withdraw', async () => {
-                await increaseTime(EPOCH_DURATION)
+                await increaseTime(EPOCH_DURATION * 2)
                 expect(await stakingPool.isRedeemable()).to.be.true
                 expect(await stakingPool.isRewardsAvailable()).to.be.true
+
                 verifyWithdrawEvent(
-                    {user: user.address, stake: amount.mul(2)},
+                    {user: user.address, stake: depositAmount.mul(2)},
                     await userWithdraw(user)
                 )
             })
@@ -478,9 +481,98 @@ describe('Staking Pool Tests', () => {
             })
         })
 
+        describe('disallows reward withdraws when min stake amount is not met', () => {
+            let epochStartTimestamp: BigNumber
+            let rewardsAvailableTimestamp: BigNumber
+            const amount = BigNumber.from(20)
+
+            beforeEach(async () => {
+                epochStartTimestamp = BigNumber.from(
+                    await getTimestampNow()
+                ).add(Number(START_DELAY))
+
+                rewardsAvailableTimestamp = BigNumber.from(
+                    REWARDS_AVAILABLE_OFFSET
+                )
+                    .add(epochStartTimestamp)
+                    .add(EPOCH_DURATION)
+
+                rewardToken1 = await deployContract<ERC20PresetMinterPauser>(
+                    'ERC20PresetMinterPauser',
+                    'Another erc20 Token',
+                    'SYM'
+                )
+
+                const stakingPoolInfo = {
+                    daoId: 0,
+                    minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
+                    maxTotalPoolStake: 600,
+                    minimumContribution: 5,
+                    epochDuration: EPOCH_DURATION,
+                    epochStartTimestamp,
+                    treasury: admin,
+                    stakeToken: stakeTokens.address,
+                    rewardType: RewardType.FLOATING,
+                    rewardTokens: [
+                        {
+                            tokens: rewardToken1.address,
+                            maxAmount: REWARD_TOKEN_1_AMOUNT,
+                            ratio: 0
+                        }
+                    ]
+                }
+
+                stakingPool = await deployContract('StakingPool')
+                await stakingPool.initialize(
+                    stakingPoolInfo,
+                    false,
+                    rewardsAvailableTimestamp,
+                    admin
+                )
+                await rewardToken1.mint(
+                    stakingPool.address,
+                    REWARD_TOKEN_1_AMOUNT
+                )
+            })
+
+            it('cant withdraw stake and rewards since min total pool staked not met', async () => {
+                await userDeposit(user, amount)
+                expect(
+                    (await stakingPool.totalStakedAmount()).toNumber()
+                ).to.be.lessThan(
+                    (
+                        await stakingPool.stakingPoolData()
+                    ).minTotalPoolStake.toNumber()
+                )
+
+                await increaseTime(EPOCH_DURATION * 2)
+
+                await expect(userWithdraw(user)).to.be.revertedWith(
+                    'StakingPool: min total stake'
+                )
+            })
+
+            it('cant withdraw just rewards since min total pool staked not met', async () => {
+                await userDeposit(user, amount)
+                await increaseTime(EPOCH_DURATION * 2)
+                await userWithdrawStake(user)
+                expect(
+                    (await stakingPool.totalStakedAmount()).toNumber()
+                ).to.be.lessThan(
+                    (
+                        await stakingPool.stakingPoolData()
+                    ).minTotalPoolStake.toNumber()
+                )
+
+                await expect(userWithdrawRewards(user)).to.be.revertedWith(
+                    'StakingPool: min total stake'
+                )
+            })
+        })
+
         describe('withdraw without rewards', () => {
             let epochStartTimestamp: number
-            const amount = BigNumber.from(20)
+            const amount = BigNumber.from(MIN_TOTAL_POOL_STAKE)
 
             beforeEach(async () => {
                 epochStartTimestamp = (await getTimestampNow()) + START_DELAY
@@ -490,8 +582,8 @@ describe('Staking Pool Tests', () => {
                     EPOCH_DURATION
                 const stakingPoolInfo = {
                     daoId: 0,
-                    minTotalPoolStake: MIN_POOL_STAKE,
-                    maxTotalPoolStake: 600,
+                    minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
+                    maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                     minimumContribution: 5,
                     epochDuration: EPOCH_DURATION,
                     epochStartTimestamp,
@@ -528,7 +620,7 @@ describe('Staking Pool Tests', () => {
         describe('withdraw stake', () => {
             let epochStartTimestamp: BigNumber
             let rewardsAvailableTimestamp: BigNumber
-            const amount = BigNumber.from(20)
+            const amount = BigNumber.from(MIN_TOTAL_POOL_STAKE)
 
             beforeEach(async () => {
                 epochStartTimestamp = BigNumber.from(
@@ -549,8 +641,8 @@ describe('Staking Pool Tests', () => {
 
                 const stakingPoolInfo = {
                     daoId: 0,
-                    minTotalPoolStake: MIN_POOL_STAKE,
-                    maxTotalPoolStake: 600,
+                    minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
+                    maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                     minimumContribution: 5,
                     epochDuration: EPOCH_DURATION,
                     epochStartTimestamp,
@@ -666,7 +758,7 @@ describe('Staking Pool Tests', () => {
         })
     })
     describe('Fixed Staking Tests', () => {
-        const rewardAmountRatio = 10
+        const rewardAmountRatio = 3
         before(async () => {
             admin = (await signer(0)).address
             user = await signer(1)
@@ -687,8 +779,8 @@ describe('Staking Pool Tests', () => {
                 REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
+                minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
+                maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
@@ -698,7 +790,7 @@ describe('Staking Pool Tests', () => {
                 rewardTokens: [
                     {
                         tokens: rewardToken1.address,
-                        maxAmount: 2000,
+                        maxAmount: REWARD_TOKEN_1_AMOUNT,
                         ratio: rewardAmountRatio
                     }
                 ]
@@ -714,7 +806,7 @@ describe('Staking Pool Tests', () => {
             await rewardToken1.mint(stakingPool.address, REWARD_TOKEN_1_AMOUNT)
         })
         describe('withdraw stake', () => {
-            const amount = BigNumber.from(80)
+            const amount = BigNumber.from(MIN_TOTAL_POOL_STAKE)
             it('2 users get the same reward', async () => {
                 await userDeposit(user, amount)
                 await userDeposit(user2, amount)
@@ -741,6 +833,7 @@ describe('Staking Pool Tests', () => {
                     },
                     await userWithdrawRewards(user)
                 )
+
                 verifyWithdrawRewardsEvent(
                     {
                         user: user2.address,
@@ -753,7 +846,7 @@ describe('Staking Pool Tests', () => {
         })
     })
     describe('No rewards pool', () => {
-        const amount = BigNumber.from(50)
+        const amount = BigNumber.from(MIN_TOTAL_POOL_STAKE)
         beforeEach(async () => {
             admin = (await signer(0)).address
             user = await signer(1)
@@ -769,8 +862,8 @@ describe('Staking Pool Tests', () => {
                 REWARDS_AVAILABLE_OFFSET + epochStartTimestamp + EPOCH_DURATION
             const stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
+                minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
+                maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
@@ -877,8 +970,8 @@ describe('Staking Pool Tests', () => {
 
             const stakingPoolInfo = {
                 daoId: 0,
-                minTotalPoolStake: MIN_POOL_STAKE,
-                maxTotalPoolStake: 600,
+                minTotalPoolStake: MIN_TOTAL_POOL_STAKE,
+                maxTotalPoolStake: MAX_TOTAL_POOL_STAKE,
                 minimumContribution: 5,
                 epochDuration: EPOCH_DURATION,
                 epochStartTimestamp,
