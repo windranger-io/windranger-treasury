@@ -56,6 +56,7 @@ import {verifyStakingPoolCreatorUpdateLogEvents} from '../../event/staking/verif
 chai.use(solidity)
 
 const INVALID_DAO_ID = 0n
+const METADATA = 'some random metadata'
 
 describe('Staking Pool Mediator contract', () => {
     before(async () => {
@@ -130,7 +131,7 @@ describe('Staking Pool Mediator contract', () => {
                 const expectedDaoId = previousHighestDaoId.add(1).toBigInt()
 
                 const receipt = await successfulTransaction(
-                    mediator.createDao(treasury)
+                    mediator.createDao(treasury, METADATA)
                 )
                 const expectedCreateDaoEvent: ExpectCreateDaoEvent[] = [
                     {
@@ -158,7 +159,7 @@ describe('Staking Pool Mediator contract', () => {
                 const expectedDaoId = previousHighestDaoId.add(1).toBigInt()
 
                 const receipt = await successfulTransaction(
-                    mediator.connect(daoCreator).createDao(treasury)
+                    mediator.connect(daoCreator).createDao(treasury, METADATA)
                 )
                 const expectedCreateDaoEvent: ExpectCreateDaoEvent[] = [
                     {
@@ -188,7 +189,7 @@ describe('Staking Pool Mediator contract', () => {
 
             it('has access control', async () => {
                 await expect(
-                    mediator.connect(nonAdmin).createDao(treasury)
+                    mediator.connect(nonAdmin).createDao(treasury, METADATA)
                 ).to.be.revertedWith(
                     accessControlRevertMessageMissingGlobalRole(
                         nonAdmin,
@@ -254,7 +255,7 @@ describe('Staking Pool Mediator contract', () => {
                 it(' by anyone', async () => {
                     expect(
                         await mediator.connect(nonAdmin).daoMetaData(daoId)
-                    ).equals('')
+                    ).equals(METADATA)
                 })
             })
 
@@ -267,7 +268,7 @@ describe('Staking Pool Mediator contract', () => {
 
                 it('side effect', async () => {
                     const update = 'a new value'
-                    expect(await mediator.daoMetaData(daoId)).equals('')
+                    expect(await mediator.daoMetaData(daoId)).equals(METADATA)
 
                     await successfulTransaction(
                         mediator.setDaoMetaData(daoId, update)
@@ -749,7 +750,9 @@ async function createDao(
     mediator: StakingPoolMediator,
     treasury: string
 ): Promise<bigint> {
-    const receipt = await successfulTransaction(mediator.createDao(treasury))
+    const receipt = await successfulTransaction(
+        mediator.createDao(treasury, METADATA)
+    )
 
     const creationEvents = createDaoEvents(events('CreateDao', receipt))
 
