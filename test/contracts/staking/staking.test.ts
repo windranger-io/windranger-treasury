@@ -428,7 +428,6 @@ describe('Staking Pool Tests', () => {
             })
 
             it('does not allow user to deposit when staking pool full', async () => {
-                // await increaseTime(START_DELAY)
                 await expect(
                     userDeposit(user, BigNumber.from(MAX_TOTAL_POOL_STAKE))
                 ).to.be.revertedWith('StakingPool: oversubscribed')
