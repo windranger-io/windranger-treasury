@@ -71,15 +71,15 @@ contract StakingPool is
         _;
     }
 
-    modifier minTotalPoolStakeMet() {
-        require(_isMinTotalPoolStakeMet(), "StakingPool: min total stake");
+    modifier hasMinimumStake() {
+        require(_hasMinimumStake(), "StakingPool: min total stake");
         _;
     }
 
     modifier stakingPoolRequirementsUnmet() {
         //slither-disable-next-line timestamp
         require(
-            _isMinTotalPoolStakeMet() &&
+            _hasMinimumStake() &&
                 (block.timestamp > _stakingPoolConfig.epochStartTimestamp),
             "StakingPool: requirements unmet"
         );
@@ -150,7 +150,7 @@ contract StakingPool is
         external
         whenNotPaused
         stakingPeriodComplete
-        minTotalPoolStakeMet
+        hasMinimumStake
         rewardsAvailable
         nonReentrant
     {
@@ -185,7 +185,7 @@ contract StakingPool is
     function withdrawRewards()
         external
         stakingPeriodComplete
-        minTotalPoolStakeMet
+        hasMinimumStake
         rewardsAvailable
         whenNotPaused
     {
@@ -313,7 +313,7 @@ contract StakingPool is
     }
 
     function isMinTotalPoolStakeMet() external view returns (bool) {
-        return _isMinTotalPoolStakeMet();
+        return _hasMinimumStake();
     }
 
     function currentExpectedRewards(address user)
@@ -497,10 +497,6 @@ contract StakingPool is
         return block.timestamp >= _rewardsAvailableTimestamp;
     }
 
-    function _isMinTotalPoolStakeMet() internal view returns (bool) {
-        return _totalStakedAmount >= _stakingPoolConfig.minTotalPoolStake;
-    }
-
     function _isStakingPeriodComplete() internal view returns (bool) {
         //slither-disable-next-line timestamp
         return
@@ -620,5 +616,9 @@ contract StakingPool is
         for (uint256 i = 0; i < rewardPools.length; i++) {
             delete _supportedRewards[address(rewardPools[i].tokens)];
         }
+    }
+
+    function _hasMinimumStake() private view returns (bool) {
+        return _totalStakedAmount >= _stakingPoolConfig.minTotalPoolStake;
     }
 }
