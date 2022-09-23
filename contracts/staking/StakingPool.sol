@@ -72,14 +72,14 @@ contract StakingPool is
     }
 
     modifier hasMinimumStake() {
-        require(_hasMinimumStake(), "StakingPool: min total stake");
+        require(_hasTotalMinimumStake(), "StakingPool: min total stake");
         _;
     }
 
     modifier stakingPoolRequirementsUnmet() {
         //slither-disable-next-line timestamp
         require(
-            _hasMinimumStake() &&
+            _hasTotalMinimumStake() &&
                 (block.timestamp > _stakingPoolConfig.epochStartTimestamp),
             "StakingPool: requirements unmet"
         );
@@ -312,8 +312,8 @@ contract StakingPool is
         _setTokenSweepBeneficiary(newBeneficiary);
     }
 
-    function isMinTotalPoolStakeMet() external view returns (bool) {
-        return _hasMinimumStake();
+    function hasTotalMinimumStake() external view returns (bool) {
+        return _hasTotalMinimumStake();
     }
 
     function currentExpectedRewards(address user)
@@ -618,7 +618,7 @@ contract StakingPool is
         }
     }
 
-    function _hasMinimumStake() private view returns (bool) {
+    function _hasTotalMinimumStake() private view returns (bool) {
         return _totalStakedAmount >= _stakingPoolConfig.minTotalPoolStake;
     }
 }
