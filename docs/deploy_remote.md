@@ -112,7 +112,7 @@ export STAKING_POOL_MEDIATOR_ADDRESS=${StakingPoolMediator}
 export STAKING_POOL_FACTORY_ADDRESS=${StakingPoolFactory}
 export COLLATERAL_TOKENS_CONTRACT=${BitToken} 
 export TREASURY_ADDRESS=${Treasury}
-export DAO_METADATA=${metadataString}
+export DAO_METADATA=${DaoMetadata}
 ```
 
 #### Create a DAO

@@ -277,6 +277,14 @@ describe('Staking Pool Mediator contract', () => {
                     expect(await mediator.daoMetaData(daoId)).equals(update)
                 })
 
+                it('set as empty string', async () => {
+                    await successfulTransaction(
+                        mediator.setDaoMetaData(daoId, '')
+                    )
+
+                    expect(await mediator.daoMetaData(daoId)).equals('')
+                })
+
                 it('at least dao admin role', async () => {
                     await expect(
                         mediator
