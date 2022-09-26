@@ -56,7 +56,7 @@ import {verifyStakingPoolCreatorUpdateLogEvents} from '../../event/staking/verif
 chai.use(solidity)
 
 const INVALID_DAO_ID = 0n
-const METADATA = 'some random metadata'
+const METADATA = ''
 
 describe('Staking Pool Mediator contract', () => {
     before(async () => {
