@@ -36,7 +36,8 @@ The terminal running the JSON-RPC node will output the contract addresses, these
 - `${StakingPoolMediator}` : Staking Pool Mediator contract address.
 - `${StakingPoolFactory}` : Staking Pool Factory contract address.
 - `${BitToken}` : Collateral token contract address (BIT).
-- `${Treausy}` : Any valid address to use as the treasury.
+- `${Treasury}` : Any valid address to use as the treasury.
+- `${DaoMetadata}` : Any string to use as metadata for the DAO.
 
 ## Verify contract behaviour
 Check the contract deployment and operation with the test scripts.
@@ -95,10 +96,11 @@ export STAKING_POOL_MEDIATOR_ADDRESS=${StakingPoolMediator}
 export STAKING_POOL_FACTORY_ADDRESS=${StakingPoolFactory}
 export COLLATERAL_TOKENS_CONTRACT=${BitToken} // do we need this?
 export TREASURY_ADDRESS=${Treasury}
+export DAO_METADATA=${DaoMetadata}
 ```
 
 #### Create a DAO
-All Performance Bond operations occur within the scope of a DAO.
+All Staking Pool operations occur within the scope of a DAO.
 
 The script creates a new DAO using `STAKING_POOL_MEDIATOR_ADDRESS` and `TREASURY_ADDRESS`
 ```shell
@@ -124,7 +126,7 @@ npx hardhat run ./scripts/verify/whitelist-staking-pool-collateral.ts --network 
 #### Create a Staking Pool
 A Staking Pool managed within the scope of a DAO.
 
-The script creates a staking pool using the environment variables `STAKING_POOL_MEDIATOR_ADDRESS`, `STAKING_POOL_FACTORY_ADDRESS` and `DAO_ID`
+The script creates a staking pool using the environment variables `STAKING_POOL_MEDIATOR_ADDRESS`, `STAKING_POOL_FACTORY_ADDRESS` for `DAO_ID` with `DAO_METADATA`
 ```shell
 npx hardhat run ./scripts/verify/create-staking-pool.ts --network local
 ```

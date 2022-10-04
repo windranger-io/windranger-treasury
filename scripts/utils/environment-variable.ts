@@ -4,6 +4,10 @@ export function bigintEnvironmentVariable(name: string): bigint {
     return BigInt(parseEnvironmentVariable(name))
 }
 
+export function stringEnvironmentVariable(name: string): string {
+    return String(parseEnvironmentVariable(name))
+}
+
 export function addressEnvironmentVariable(name: string): string {
     const address = parseEnvironmentVariable(name)
 

@@ -9,7 +9,8 @@ import {logEvents} from '../utils/transaction-event-log'
 export async function createDao(
     mediatorAddress: string,
     treasuryAddress: string,
-    mediatorType: string
+    mediatorType: string,
+    metadata: string
 ) {
     const factory = await ethers.getContractFactory(mediatorType)
 
@@ -19,7 +20,7 @@ export async function createDao(
 
     log.info('Creating a new DAO')
 
-    const transaction = await contract.createDao(treasuryAddress)
+    const transaction = await contract.createDao(treasuryAddress, metadata)
 
     const receipt = await transaction.wait()
 

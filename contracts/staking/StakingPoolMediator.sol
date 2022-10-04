@@ -56,13 +56,15 @@ contract StakingPoolMediator is
         _creator = factory;
     }
 
-    function createDao(address erc20CapableTreasury)
+    function createDao(address erc20CapableTreasury, string calldata metadata)
         external
         atLeastDaoCreatorRole
         returns (uint256)
     {
         uint256 id = _daoConfiguration(erc20CapableTreasury);
         _grantDaoCreatorAdminRoleInTheirDao(id);
+
+        _setDaoMetaData(id, metadata);
 
         emit CreateDao(id, erc20CapableTreasury, _msgSender());
 

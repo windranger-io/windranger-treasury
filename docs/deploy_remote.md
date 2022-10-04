@@ -110,12 +110,13 @@ Set the temporary environment variables by substituting the value running the li
 ```shell
 export STAKING_POOL_MEDIATOR_ADDRESS=${StakingPoolMediator}
 export STAKING_POOL_FACTORY_ADDRESS=${StakingPoolFactory}
-export COLLATERAL_TOKENS_CONTRACT=${BitToken} // do we need this?
+export COLLATERAL_TOKENS_CONTRACT=${BitToken} 
 export TREASURY_ADDRESS=${Treasury}
+export DAO_METADATA=${DaoMetadata}
 ```
 
 #### Create a DAO
-All Performance Bond operations occur within the scope of a DAO.
+All Staking Pool operations occur within the scope of a DAO.
 
 The script creates a new DAO using `STAKING_POOL_MEDIATOR_ADDRESS` and `TREASURY_ADDRESS`
 ```shell
