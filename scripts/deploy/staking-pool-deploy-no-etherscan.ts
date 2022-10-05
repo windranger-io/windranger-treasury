@@ -3,12 +3,13 @@ import {deployContract, deployContractWithProxy} from '../utils/contract'
 
 export async function deployStakingPool(
     tokenSweepBeneficiary: string
-): Promise<void> {
+): Promise<StakingPoolMediator> {
     const factory = await deployContract<StakingPoolFactory>(
         'StakingPoolFactory',
         tokenSweepBeneficiary
     )
-    await deployContractWithProxy<StakingPoolMediator>(
+
+    return deployContractWithProxy<StakingPoolMediator>(
         'StakingPoolMediator',
         factory.address,
         tokenSweepBeneficiary
