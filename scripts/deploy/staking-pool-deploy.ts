@@ -8,7 +8,7 @@ import {
 
 export async function deployStakingPool(
     tokenSweepBeneficiary: string
-): Promise<void> {
+): Promise<StakingPoolMediator> {
     const factory = await deployContract<StakingPoolFactory>(
         'StakingPoolFactory',
         tokenSweepBeneficiary
@@ -23,4 +23,6 @@ export async function deployStakingPool(
 
     await verifyContract<StakingPoolFactory>(factory, tokenSweepBeneficiary)
     await verifyContract<StakingPoolMediator>(mediator, tokenSweepBeneficiary)
+
+    return mediator
 }

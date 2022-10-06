@@ -11,7 +11,7 @@ import {
 
 export async function deployPerformanceBonds(
     tokenSweepBeneficiary: string
-): Promise<void> {
+): Promise<PerformanceBondMediator> {
     const factory = await deployContract<PerformanceBondFactory>(
         'PerformanceBondFactory',
         tokenSweepBeneficiary
@@ -29,4 +29,6 @@ export async function deployPerformanceBonds(
         mediator,
         tokenSweepBeneficiary
     )
+
+    return mediator
 }
