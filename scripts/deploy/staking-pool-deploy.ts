@@ -13,12 +13,13 @@ export async function deployStakingPool(
         'StakingPoolFactory',
         tokenSweepBeneficiary
     )
+    await awaitContractPropagation()
+
     const mediator = await deployContractWithProxy<StakingPoolMediator>(
         'StakingPoolMediator',
         factory.address,
         tokenSweepBeneficiary
     )
-
     await awaitContractPropagation()
 
     await verifyContract<StakingPoolFactory>(factory, tokenSweepBeneficiary)

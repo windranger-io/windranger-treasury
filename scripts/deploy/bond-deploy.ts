@@ -16,12 +16,13 @@ export async function deployPerformanceBonds(
         'PerformanceBondFactory',
         tokenSweepBeneficiary
     )
+    await awaitContractPropagation()
+
     const mediator = await deployContractWithProxy<PerformanceBondMediator>(
         'PerformanceBondMediator',
         factory.address,
         tokenSweepBeneficiary
     )
-
     await awaitContractPropagation()
 
     await verifyContract<PerformanceBondFactory>(factory, tokenSweepBeneficiary)

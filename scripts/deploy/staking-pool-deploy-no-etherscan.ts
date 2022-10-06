@@ -1,5 +1,9 @@
 import {StakingPoolMediator, StakingPoolFactory} from '../../typechain-types'
-import {deployContract, deployContractWithProxy} from '../utils/contract'
+import {
+    awaitContractPropagation,
+    deployContract,
+    deployContractWithProxy
+} from '../utils/contract'
 
 export async function deployStakingPool(
     tokenSweepBeneficiary: string
@@ -8,10 +12,14 @@ export async function deployStakingPool(
         'StakingPoolFactory',
         tokenSweepBeneficiary
     )
+    await awaitContractPropagation()
 
-    return deployContractWithProxy<StakingPoolMediator>(
+    const mediator = await deployContractWithProxy<StakingPoolMediator>(
         'StakingPoolMediator',
         factory.address,
         tokenSweepBeneficiary
     )
+    await awaitContractPropagation()
+
+    return mediator
 }
