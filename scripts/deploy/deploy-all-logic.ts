@@ -13,8 +13,8 @@ import {
 const tester = '0xDe9007A43772a745C434F9Eb6C519132Db2b14A5'
 
 // wait period before lockup - then wait additional period before releasing rewards
-const waitBeforeLockup = 60 * 5 // 5 mins
-const waitBeforeRewards = 10 // 10 secs
+const waitBeforeLockup = 86400 * 7 // 7 days
+const waitBeforeRewards = 86400 * 7 // 7 days
 
 // get timestamp from the chain to avoid out-of-sync errors
 const now = async () => {
@@ -141,7 +141,7 @@ export const setup = (
                 // eslint-disable-next-line prettier/prettier
                 minimumContribution: `${1 * (10 ** 18)}`,
                 // 1 week to pay-in - then 1 week lock
-                epochStartTimestamp: `${nowts + waitBeforeLockup}`,
+                epochStartTimestamp: `${nowts + waitBeforeLockup + 60}`,
                 epochDuration: `${waitBeforeRewards}`,
                 treasury: bitdao.address,
                 stakeToken: bitdao.address,
@@ -150,7 +150,7 @@ export const setup = (
             },
             false,
             // eslint-disable-next-line prettier/prettier
-            `${nowts + 1 + waitBeforeLockup + waitBeforeRewards}`
+            `${nowts + 1 + waitBeforeLockup + waitBeforeRewards + 60}`
         )
 
         // createPool - floating (one week before available)
@@ -174,7 +174,7 @@ export const setup = (
                 // eslint-disable-next-line prettier/prettier
                 minimumContribution: `${1 * (10 ** 18)}`,
                 // eg 1 week to pay-in - then 1 week lock
-                epochStartTimestamp: `${nowts + waitBeforeLockup}`,
+                epochStartTimestamp: `${nowts + waitBeforeLockup + 120}`,
                 epochDuration: waitBeforeRewards,
                 treasury: bitdao.address,
                 stakeToken: bitdao.address,
@@ -183,7 +183,7 @@ export const setup = (
             },
             false,
             // eslint-disable-next-line prettier/prettier
-            `${nowts + 1 + waitBeforeLockup + waitBeforeRewards}`
+            `${nowts + 1 + waitBeforeLockup + waitBeforeRewards + 120}`
         )
 
         // createPool - floating (one week before available)
@@ -207,7 +207,7 @@ export const setup = (
                 // eslint-disable-next-line prettier/prettier
                 minimumContribution: `${1 * (10 ** 18)}`,
                 // eg 1 week to pay-in - then 1 week lock
-                epochStartTimestamp: `${nowts + waitBeforeLockup}`,
+                epochStartTimestamp: `${nowts + waitBeforeLockup + 180}`,
                 epochDuration: waitBeforeRewards,
                 treasury: bitdao.address,
                 stakeToken: bitdao.address,
@@ -216,7 +216,7 @@ export const setup = (
             },
             false,
             // eslint-disable-next-line prettier/prettier
-            `${nowts + 1 + waitBeforeLockup + waitBeforeRewards}`
+            `${nowts + 1 + waitBeforeLockup + waitBeforeRewards + 180}`
         )
 
         // get the deployed addresses of both pools
