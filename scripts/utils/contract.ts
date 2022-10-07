@@ -57,8 +57,8 @@ export async function verifyContract<T extends DeployableContract<T>>(
         constructorArguments: [...args]
     })
 }
-export async function awaitContractPropagation() {
-    const sleepyTimeMs = 1500
+
+export async function awaitContractPropagation(sleepyTimeMs = 15000) {
     log.info('Awaiting contract propagation: %s ms', sleepyTimeMs)
 
     return new Promise((resolve) => {

@@ -6,7 +6,13 @@ import {deployStakingPool} from './staking-pool-deploy-no-etherscan'
 
 import {setup} from './deploy-all-logic'
 
-const main = setup(deployBitDao, deployPerformanceBonds, deployStakingPool)
+const main = setup(
+    deployBitDao,
+    deployPerformanceBonds,
+    deployStakingPool,
+    // only wait 1500 ms for timeouts
+    1500
+)
 
 main()
     .then(() => process.exit(0))

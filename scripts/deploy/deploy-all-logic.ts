@@ -1,4 +1,5 @@
-import {ethers, run} from 'hardhat'
+/* eslint-disable no-console */
+import hre, {ethers, run} from 'hardhat'
 import {addressEnvironmentVariable} from '../utils/environment-variable'
 import {signer} from '../../test/framework/contracts'
 
@@ -8,9 +9,7 @@ import {
     PerformanceBondMediator,
     StakingPoolMediator
 } from '../../typechain-types'
-
-// address to use for testing (this wallet will be loaded with BitDAO tokens to test positions)
-const tester = '0xDe9007A43772a745C434F9Eb6C519132Db2b14A5'
+import {awaitContractPropagation} from '../utils/contract'
 
 // wait period before lockup - then wait additional period before releasing rewards
 const waitBeforeLockup = 86400 * 7 // 7 days
@@ -32,20 +31,16 @@ export const setup = (
     ) => Promise<PerformanceBondMediator>,
     deployStakingPool: (
         _tokenSweepBeneficiary: string
-    ) => Promise<StakingPoolMediator>
+    ) => Promise<StakingPoolMediator>,
+    // if we're not verifying we can reduce the sleepyTimeMs (for localhost we can use 0)
+    sleepyTimeMs = 15000
 ): (() => Promise<void>) =>
     async function main() {
+        // this address can sweep all contracts and will be provided Roles and BIT tokens
         const tokenSweepBeneficiary = addressEnvironmentVariable(
             'TOKEN_SWEEP_BENEFICIARY'
         )
         await run('compile')
-
-        // transfer funds to test wallet
-        const deployer = await signer(0)
-        await deployer.sendTransaction({
-            to: tester,
-            value: ethers.utils.parseEther('1') // 1 ether
-        })
 
         // get current time
         let nowts = await now()
@@ -53,25 +48,42 @@ export const setup = (
         // record deployment start ts
         const startts = nowts
 
+        // take reference of the deployer
+        const deployer = await signer(0)
+
         // deploy core contracts
         const bitdao = await deployBitDao()
 
+        // deploy the Performace Bonds factory + mediator then retrieve addresses
         const bondMediator = await deployPerformanceBonds(tokenSweepBeneficiary)
         const bondFactory = await bondMediator.bondCreator()
 
+        // deploy the Staking Pool factory + mediator then retrieve addresses
         const poolMediator = await deployStakingPool(tokenSweepBeneficiary)
         const poolFactory = await poolMediator.stakingPoolCreator()
 
-        // set role for tester (SUPER_ADMIN)
-        await poolMediator.grantSuperUserRole(tester)
+        // set up the test account...
+        if (
+            deployer.address.toLowerCase() !==
+            tokenSweepBeneficiary.toLowerCase()
+        ) {
+            // transfer native currency to the tokenSweepBeneficiary
+            await deployer.sendTransaction({
+                to: tokenSweepBeneficiary,
+                value: ethers.utils.parseEther('1')
+            })
 
-        // transfer 10000 to tester
-        await bitdao.transfer(
-            tester,
-            `${ethers.utils.parseUnits('10000', 18).toString()}`
-        )
+            //  transfer 10000 BIT to tokenSweepBeneficiary
+            await bitdao.transfer(
+                tokenSweepBeneficiary,
+                `${ethers.utils.parseUnits('10000', 18).toString()}`
+            )
 
-        // createDao
+            // set role for tokenSweepBeneficiary (SUPER_ADMIN)
+            await poolMediator.grantSuperUserRole(tokenSweepBeneficiary)
+        }
+
+        // createDao (BitDAO with string of json metadata)
         const createDao = await poolMediator.createDao(
             bitdao.address,
             '{ "name": "BitDAO", "about": "Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.", "website": "https://bitdao.io/", "snapshot": "https://snapshot.org/#/bitdao.eth", "twitter": "https://twitter.com/BitDAO_Official", "github": "https://github.com/bitdao-io", "logo": "https://ipfs.io/ipfs/Qmd9imntULpTZ2AMkhiRjJ4mhMBxSxfi1SfMmQ9JUvSd9J", "slug": "bitdao", "discord": null }'
@@ -219,7 +231,12 @@ export const setup = (
             `${nowts + 1 + waitBeforeLockup + waitBeforeRewards + 180}`
         )
 
-        // get the deployed addresses of both pools
+        // want to wait a minute here for the contracts to finish deploying (dont need to wait on local)
+        if (hre.network.config.chainId !== 33133) {
+            await awaitContractPropagation(60000)
+        }
+
+        // get the deployed addresses of all pools
         const pool1 = await poolMediator.stakingPoolAt(daoid, 0)
         const pool2 = await poolMediator.stakingPoolAt(daoid, 1)
         const pool3 = await poolMediator.stakingPoolAt(daoid, 2)
@@ -242,6 +259,11 @@ export const setup = (
             pool4,
             `${ethers.utils.parseUnits('20000', 18).toString()}`
         )
+
+        // wait for txs to reflect (dont need to wait on local)
+        if (hre.network.config.chainId !== 33133) {
+            await awaitContractPropagation(sleepyTimeMs)
+        }
 
         // initialise rewards (move funds in for each reward set)
         await poolMediator.stakingPoolInitializeRewardTokens(
@@ -273,7 +295,6 @@ export const setup = (
         nowts = await now()
 
         // log all the contract addresses - these to need to be updated in the subgraph
-        // eslint-disable-next-line no-console
         console.log(`
         -- start: ${startts}
         -
