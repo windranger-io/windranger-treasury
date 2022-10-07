@@ -122,9 +122,40 @@ export const setup = (
             `${nowts + 1 + waitBeforeLockup + waitBeforeRewards}`
         )
 
-        // createPool - floating (one week before available)
+        // createPool - fixed (one week before available)
         nowts = await now()
         const pool2Rewards = [
+            {
+                tokens: bitdao.address,
+                maxAmount: `${ethers.utils.parseUnits(`20000`, 18).toString()}`,
+                ratio: '2' // ratio and maxAmount are fixed
+            }
+        ]
+        await poolMediator.createManagedStakingPool(
+            {
+                daoId: daoid,
+                minTotalPoolStake: '0',
+                maxTotalPoolStake: `${ethers.utils
+                    .parseUnits('10000', 18)
+                    .toString()}`,
+                // eslint-disable-next-line prettier/prettier
+                minimumContribution: `${1 * (10 ** 18)}`,
+                // 1 week to pay-in - then 1 week lock
+                epochStartTimestamp: `${nowts + waitBeforeLockup}`,
+                epochDuration: `${waitBeforeRewards}`,
+                treasury: bitdao.address,
+                stakeToken: bitdao.address,
+                rewardTokens: pool2Rewards,
+                rewardType: '1'
+            },
+            false,
+            // eslint-disable-next-line prettier/prettier
+            `${nowts + 1 + waitBeforeLockup + waitBeforeRewards}`
+        )
+
+        // createPool - floating (one week before available)
+        nowts = await now()
+        const pool3Rewards = [
             {
                 tokens: bitdao.address,
                 maxAmount: `${ethers.utils.parseUnits(`20000`, 18).toString()}`,
@@ -147,7 +178,40 @@ export const setup = (
                 epochDuration: waitBeforeRewards,
                 treasury: bitdao.address,
                 stakeToken: bitdao.address,
-                rewardTokens: pool2Rewards,
+                rewardTokens: pool3Rewards,
+                rewardType: '2'
+            },
+            false,
+            // eslint-disable-next-line prettier/prettier
+            `${nowts + 1 + waitBeforeLockup + waitBeforeRewards}`
+        )
+
+        // createPool - floating (one week before available)
+        nowts = await now()
+        const pool4Rewards = [
+            {
+                tokens: bitdao.address,
+                maxAmount: `${ethers.utils.parseUnits(`20000`, 18).toString()}`,
+                ratio: '0' // ratio is calculated from maxAmount and stakeAmount
+            }
+        ]
+        await poolMediator.createManagedStakingPool(
+            {
+                daoId: daoid,
+                minTotalPoolStake: `${ethers.utils
+                    .parseUnits('1000', 18)
+                    .toString()}`,
+                maxTotalPoolStake: `${ethers.utils
+                    .parseUnits('10000', 18)
+                    .toString()}`,
+                // eslint-disable-next-line prettier/prettier
+                minimumContribution: `${1 * (10 ** 18)}`,
+                // eg 1 week to pay-in - then 1 week lock
+                epochStartTimestamp: `${nowts + waitBeforeLockup}`,
+                epochDuration: waitBeforeRewards,
+                treasury: bitdao.address,
+                stakeToken: bitdao.address,
+                rewardTokens: pool4Rewards,
                 rewardType: '2'
             },
             false,
@@ -158,6 +222,8 @@ export const setup = (
         // get the deployed addresses of both pools
         const pool1 = await poolMediator.stakingPoolAt(daoid, 0)
         const pool2 = await poolMediator.stakingPoolAt(daoid, 1)
+        const pool3 = await poolMediator.stakingPoolAt(daoid, 2)
+        const pool4 = await poolMediator.stakingPoolAt(daoid, 3)
 
         // approved spending...
         await bitdao.approve(
@@ -166,6 +232,14 @@ export const setup = (
         )
         await bitdao.approve(
             pool2,
+            `${ethers.utils.parseUnits('20000', 18).toString()}`
+        )
+        await bitdao.approve(
+            pool3,
+            `${ethers.utils.parseUnits('20000', 18).toString()}`
+        )
+        await bitdao.approve(
+            pool4,
             `${ethers.utils.parseUnits('20000', 18).toString()}`
         )
 
@@ -181,6 +255,18 @@ export const setup = (
             pool2,
             deployer.address,
             pool2Rewards
+        )
+        await poolMediator.stakingPoolInitializeRewardTokens(
+            daoid,
+            pool3,
+            deployer.address,
+            pool3Rewards
+        )
+        await poolMediator.stakingPoolInitializeRewardTokens(
+            daoid,
+            pool4,
+            deployer.address,
+            pool4Rewards
         )
 
         // done
@@ -203,6 +289,8 @@ export const setup = (
         -
         ----- Pool1: ${pool1}
         ----- Pool2: ${pool2}
+        ----- Pool3: ${pool3}
+        ----- Pool4: ${pool4}
         -
         -- fin: ${nowts}
         `)
