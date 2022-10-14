@@ -86,7 +86,7 @@ export const setup = (
         // createDao (BitDAO with string of json metadata)
         const createDao = await poolMediator.createDao(
             bitdao.address,
-            '{ "name": "BitDAO", "about": "Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.", "website": "https://bitdao.io/", "snapshot": "https://snapshot.org/#/bitdao.eth", "twitter": "https://twitter.com/BitDAO_Official", "github": "https://github.com/bitdao-io", "logo": "https://ipfs.io/ipfs/Qmd9imntULpTZ2AMkhiRjJ4mhMBxSxfi1SfMmQ9JUvSd9J", "slug": "bitdao", "discord": null }'
+            '{ "name": "BitDAO", "about": "Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.", "website": "https://bitdao.io/", "snapshot": "https://snapshot.org/#/bitdao.eth", "twitter": "https://twitter.com/BitDAO_Official", "github": "https://github.com/bitdao-io", "logo": "https://s2.coinmarketcap.com/static/img/coins/64x64/11221.png", "slug": "bitdao", "discord": null }'
         )
         const createDaoTx = await createDao.wait()
 
