@@ -571,7 +571,8 @@ describe('Staking Pool Tests', () => {
 
         describe('withdraw without rewards', () => {
             let epochStartTimestamp: number
-            const amount = BigNumber.from(MIN_TOTAL_POOL_STAKE).mul(8).div(10)
+            // this amount must always be less than the MIN_TOTAL_POOL_STAKE for these tests
+            const amount = BigNumber.from(MIN_TOTAL_POOL_STAKE).div(2)
 
             beforeEach(async () => {
                 epochStartTimestamp = (await getTimestampNow()) + START_DELAY
