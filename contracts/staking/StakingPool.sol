@@ -79,7 +79,7 @@ contract StakingPool is
     modifier stakingPoolRequirementsUnmet() {
         //slither-disable-next-line timestamp
         require(
-            _hasTotalMinimumStake() &&
+            !_hasTotalMinimumStake() &&
                 (block.timestamp > _stakingPoolConfig.epochStartTimestamp),
             "StakingPool: requirements unmet"
         );
